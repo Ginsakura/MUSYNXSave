@@ -1,0 +1,11 @@
+__pycache__
+/build/
+/dist/
+*.spec
+*.psd
+*.txt
+*.analyze
+*.decode
+*.sfp
+*.bat
+*.json

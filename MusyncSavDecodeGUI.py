@@ -1,3 +1,4 @@
+#Version 1.0.1#
 import sys
 import os
 import json
@@ -42,6 +43,7 @@ class MusyncSavDecodeGUI(object):
 		self.saveCount = 0
 		self.saveCountVar = StringVar()
 		self.saveCountVar.set(str(self.saveCount))
+		self.version = '1.0.1'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)
@@ -62,8 +64,8 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.configure(columns = ["SongID",'SongName',"Difficulty","SpeedStall","SyncNumber","Rank","UploadScore","PlayCount","IsFav"])
 		self.VScroll1 = Scrollbar(self.saveData, orient='vertical', command=self.saveData.yview)
 		self.saveData.configure(yscrollcommand=self.VScroll1.set)
-		self.developer = Label(self.root, text='Version 1.0.0 | Develop By Ginsakura', font=self.font, relief="groove")
-		self.gitHubLink = Button(self.root, text='打开github', command=lambda:webbrowser.open("http://cn.bing.com"), font=self.font, relief="groove")
+		self.developer = Label(self.root, text=f'Version {self.version} | Develop By Ginsakura', font=self.font, relief="groove")
+		self.gitHubLink = Button(self.root, text='https://github.com/Ginsakura/MUSYNCSave    点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
 
 		#筛选控件
 		self.selectPlayedButton = Button(self.root, text='已游玩', command=lambda:self.DataLoad('Played'), anchor="w", font=self.font)
@@ -101,10 +103,27 @@ class MusyncSavDecodeGUI(object):
 					os.remove('./SaveFilePath.sfp')
 					self.GetSaveFile()
 				else:self.saveFilePathVar.set(sfpr)
+		if os.path.isfile('./SavAnalyze.json'):
+			self.DataLoad()
 
 	def CheckUpdate(self):
-		response = requests.get("https://api.github.com/repos/[用户名]/[仓库名]/releases/latest")
-		print(response.json()["tag_name"])
+		oldVersion = int(f'{self.version[0]}{self.version[2]}{self.version[4]}')
+		try:
+			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
+			newVersion = response.json()["tag_name"]
+			version = int(f'{newVersion[0]}.{newVersion[2]}.{newVersion[4]}')
+		except:
+			version = oldVersion
+		if (version > oldVersion):
+			self.gitHubLink.configure(text=f'有新版本啦——    NewVersion: {newVersion}', anchor="center")
+		else:
+			self.gitHubLink.configure(text='https://github.com/Ginsakura/MUSYNCSave    点个Star吧，秋梨膏', anchor="center")
+
+	def UpdateTip(self,newVersion):
+		self.gitHubLink.configure(fg='#4BB1DA')
+		time.sleep(0.5)
+		self.gitHubLink.configure(fg='#C4245C')
+		root.after(1000,self.UpdateTip)
 
 	def GetSaveFile(self):
 		saveFilePath = None
@@ -112,8 +131,8 @@ class MusyncSavDecodeGUI(object):
 			if os.path.isfile(f'{ids}:/Program Files/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav'):
 				saveFilePath = f"{ids}:/Program Files/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav"
 				break
-			elif os.path.isfile(f'{ids}:SteamLibrary/steamapps/common/MUSYNX/SavesDir/savedata.sav'):
-				saveFilePath = f"{ids}:SteamLibrary/steamapps/common/MUSYNX/SavesDir/savedata.sav"
+			elif os.path.isfile(f'{ids}:/SteamLibrary/steamapps/common/MUSYNX/SavesDir/savedata.sav'):
+				saveFilePath = f"{ids}:/SteamLibrary/steamapps/common/MUSYNX/SavesDir/savedata.sav"
 				break
 			elif os.path.isfile(f'{ids}:/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav'):
 				saveFilePath = f"{ids}:/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav"

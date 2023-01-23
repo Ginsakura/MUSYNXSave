@@ -10,3 +10,4 @@ __pycache__
 *.bat
 SavAnalyze.json
 *.b64
+*.ttf

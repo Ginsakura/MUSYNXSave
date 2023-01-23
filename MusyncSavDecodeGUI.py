@@ -23,7 +23,7 @@ class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
 	def __init__(self, root, isTKroot=True):
 		##Init##
-		root.iconbitmap('./MUSYNC.ico')
+		root.iconbitmap('./Musync.ico')
 		super(MusyncSavDecodeGUI, self).__init__()
 		self.isTKroot = isTKroot
 		self.font=('霞鹜文楷等宽',16)
@@ -32,7 +32,7 @@ class MusyncSavDecodeGUI(object):
 		style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',12))
 		style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',12))
 		if isTKroot == True:
-			root.title("同步音律喵赛克SteamPC存档分析")
+			root.title("同步音律喵赛克 Steam端 本地存档分析")
 			root['background'] = '#efefef'
 		self.saveFilePathVar = StringVar()
 		self.saveFilePathVar.set('Input SaveFile or AnalyzeFile Path (savedata.sav)or(SavAnalyze.json)')
@@ -44,7 +44,7 @@ class MusyncSavDecodeGUI(object):
 		self.saveCount = 0
 		self.saveCountVar = StringVar()
 		self.saveCountVar.set(str(self.saveCount))
-		self.version = '1.0.3'
+		self.version = '1.0.4'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)
@@ -217,11 +217,12 @@ class MusyncSavDecodeGUI(object):
 				self.SelectPath()
 			path = MusyncSavDecode.MUSYNCSavProcess(self.saveFilePathVar.get()).Main()
 			with open('./SaveFilePath.sfp','w+') as sfp:
-				sfp.write(path)
+				sfp.write("" if path is None else path)
 
 		saveData = open(f'./SavAnalyze.json','r+')
 		saveDataJson = json.load(saveData)
 		saveData.close()
+
 		if (saveDataJson['SaveData'][0]["SongName"] is None):
 			saveData = open(f'./SavAnalyze.json','w+')
 			for ids in range(len(saveDataJson['SaveData'])):
@@ -231,7 +232,7 @@ class MusyncSavDecodeGUI(object):
 			
 		with open(f'./SavAnalyze.json','r+') as saveData:
 			saveDataJson = json.load(saveData)
-			self.root.title(f'同步音律喵赛克SteamPC存档分析    LastPlay: {saveDataJson["LastPlay"]}')
+			self.root.title(f'同步音律喵赛克 Steam端 本地存档分析    LastPlay: {saveDataJson["LastPlay"]}')
 			for saveLine in saveDataJson['SaveData']:
 				if command == "Played":
 					if saveLine["PlayCount"] == 0:continue
@@ -255,7 +256,7 @@ class MusyncSavDecodeGUI(object):
 					if (float(saveLine["SyncNumber"][0:-1]) >= 75) or (saveLine["PlayCount"] == 0):continue
 				self.saveCount += 1
 				self.saveData.insert('', END, values=(saveLine["SongID"], " "+("" if saveLine["SongName"] is None else saveLine["SongName"][0]), ("" if saveLine["SongName"] is None else saveLine["SongName"][1]), saveLine["SpeedStall"], saveLine["SyncNumber"], ("" if ((saveLine["PlayCount"] == 0) and (saveLine["UploadScore"] == "0.00000000000000%")) else Rank(saveLine["SyncNumber"])), saveLine["UploadScore"], saveLine["PlayCount"], saveLine["IsFav"]))
-		self.initLabel.place(width=0)
+		self.initLabel.place(x=0,width=0)
 
 	def SelectPath(self):
 		path_ = askopenfilename() #使用askdirectory()方法返回文件夹的路径

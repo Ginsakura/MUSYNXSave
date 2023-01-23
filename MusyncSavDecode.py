@@ -22,12 +22,14 @@ class MUSYNCSavProcess():
 		if fileExtension == 'decode':
 			self.SaveFileAnalyze()
 		elif os.path.isfile(self.savPath):
-			try:
-				self.SaveFileDecode()
-				self.SaveFileAnalyze()
-				return self.savPath
-			except:
-				messagebox.showerror("Error", "存档文件不可读或文件并非MUSYNC存档.")
+			self.SaveFileDecode()
+			self.SaveFileAnalyze()
+			# try:
+			# 	self.SaveFileDecode()
+			# 	self.SaveFileAnalyze()
+			# 	return self.savPath
+			# except:
+			# 	messagebox.showerror("Error", "存档文件不可读或文件并非MUSYNC存档.")
 		else:
 			messagebox.showerror("Error", "文件夹内找不到存档文件.")
 
@@ -126,7 +128,7 @@ class MUSYNCSavProcess():
 
 def GetSongName(songID):
 	if os.path.isfile("./SongName.json"):
-		with open("./SongName.json") as songNameFile:
+		with open("./SongName.json",'r',encoding='utf8') as songNameFile:
 			songNameJson = json.load(songNameFile)
 			if f'{songID}' in songNameJson:
 				return songNameJson[f'{songID}']

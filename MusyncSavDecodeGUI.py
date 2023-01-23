@@ -97,13 +97,18 @@ class MusyncSavDecodeGUI(object):
 		if not os.path.isfile('./SaveFilePath.sfp'):
 			self.GetSaveFile()
 		else:
-			with open('./SaveFilePath.sfp','r+') as sfp:
-				sfpr = sfp.read()
-				if not os.path.isfile(sfpr):
-					os.remove('./SaveFilePath.sfp')
-					self.GetSaveFile()
-				else:self.saveFilePathVar.set(sfpr)
-		if os.path.isfile('./SavAnalyze.json'):
+			sfp = open('./SaveFilePath.sfp','r+')
+			sfpr = sfp.read()
+			sfp.close()
+			if (not sfpr == ""):
+				self.GetSaveFile()
+			elif (not os.path.isfile(sfpr)):
+				os.remove('./SaveFilePath.sfp')
+				self.GetSaveFile()
+			else:self.saveFilePathVar.set(sfpr)
+		if os.path.isfile('./SavAnalyze.json'):self.DataLoad()
+		elif os.path.isfile('./SavDecode.decode'):
+			MusyncSavDecode.MUSYNCSavProcess(decodeFile='./SavDecode.decode').Main('decode')
 			self.DataLoad()
 
 	def CheckUpdate(self):
@@ -147,8 +152,8 @@ class MusyncSavDecodeGUI(object):
 			os.remove("./SavAnalyze.json")
 		if os.path.isfile("./SavAnalyze.analyze"):
 			os.remove("./SavAnalyze.analyze")
-		if os.path.isfile("./SavAnalyze.decode"):
-			os.remove("./SavAnalyze.decode")
+		if os.path.isfile("./SavDecode.decode"):
+			os.remove("./SavDecode.decode")
 		self.DataLoad()
 
 	def DataLoad(self,command=None):
@@ -169,13 +174,24 @@ class MusyncSavDecodeGUI(object):
 		else:saveFilePath = self.saveFilePathEntry.get()
 		if os.path.isfile('./SavAnalyze.json'):pass
 		#elif os.path.isfile('./SavAnalyze.analyze'):MusyncSavDecode.MUSYNCSavProcess(analyzeFile='./SavAnalyze.analyze').Main('analyze')
-		elif os.path.isfile('./SavAnalyze.decode'):MusyncSavDecode.MUSYNCSavProcess(decodeFile='./SavAnalyze.decode').Main('decode')
+		elif os.path.isfile('./SavDecode.decode'):MusyncSavDecode.MUSYNCSavProcess(decodeFile='./SavDecode.decode').Main('decode')
 		else:
 			if self.saveFilePathEntry.get() == 'Input SaveFile or AnalyzeFile Path (savedata.sav)or(SavAnalyze.json)':
 				self.SelectPath()
 			path = MusyncSavDecode.MUSYNCSavProcess(self.saveFilePathVar.get()).Main()
 			with open('./SaveFilePath.sfp','w+') as sfp:
 				sfp.write(path)
+
+		saveData = open(f'./SavAnalyze.json','r+')
+		saveDataJson = json.load(saveData)
+		saveData.close()
+		if (saveDataJson['SaveData'][0]["SongName"] is None):
+			saveData = open(f'./SavAnalyze.json','w+')
+			for ids in range(len(saveDataJson['SaveData'])):
+				saveDataJson['SaveData'][ids]["SongName"] = MusyncSavDecode.GetSongName(saveDataJson['SaveData'][ids]["SongID"])
+			json.dump(saveDataJson,saveData,indent="")
+			saveData.close()
+			
 		with open(f'./SavAnalyze.json','r+') as saveData:
 			saveDataJson = json.load(saveData)
 			self.root.title(f'同步音律喵赛克SteamPC存档分析    LastPlay: {saveDataJson["LastPlay"]}')
@@ -201,7 +217,7 @@ class MusyncSavDecodeGUI(object):
 				elif command == "RankC":
 					if (float(saveLine["SyncNumber"][0:-1]) >= 75) or (saveLine["PlayCount"] == 0):continue
 				self.saveCount += 1
-				self.saveData.insert('', END, values=(saveLine["SongID"], saveLine["SongName"][0], saveLine["SongName"][1], saveLine["SpeedStall"], saveLine["SyncNumber"], ("" if ((saveLine["PlayCount"] == 0) and (saveLine["UploadScore"] == "0.00000000000000%")) else Rank(saveLine["SyncNumber"])), saveLine["UploadScore"], saveLine["PlayCount"], saveLine["IsFav"]))
+				self.saveData.insert('', END, values=(saveLine["SongID"], ("" if saveLine["SongName"] is None else saveLine["SongName"][0]), ("" if saveLine["SongName"] is None else saveLine["SongName"][1]), saveLine["SpeedStall"], saveLine["SyncNumber"], ("" if ((saveLine["PlayCount"] == 0) and (saveLine["UploadScore"] == "0.00000000000000%")) else Rank(saveLine["SyncNumber"])), saveLine["UploadScore"], saveLine["PlayCount"], saveLine["IsFav"]))
 
 	def SelectPath(self):
 		path_ = askopenfilename() #使用askdirectory()方法返回文件夹的路径

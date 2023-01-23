@@ -2,6 +2,7 @@ import base64
 import datetime
 import struct
 import os
+import json
 from tkinter import messagebox
 
 class MUSYNCSavProcess():
@@ -15,17 +16,20 @@ class MUSYNCSavProcess():
 		#self.dt = '2023-01-22_16-28-04'
 		self.charDict = dict()
 		self.saveData = ''
+		self.lastPlaySong = list()
 		
 	def Main(self,fileExtension=''):
 		if fileExtension == 'decode':
 			self.SaveFileAnalyze()
 		elif os.path.isfile(self.savPath):
-			try:
-				self.SaveFileDecode()
-				self.SaveFileAnalyze()
-				return self.savPath
-			except:
-				messagebox.showerror("Error", "存档文件不可读或文件并非MUSYNC存档.")
+			self.SaveFileDecode()
+			self.SaveFileAnalyze()
+			#try:
+			#	self.SaveFileDecode()
+			#	self.SaveFileAnalyze()
+			#	return self.savPath
+			#except:
+			#	messagebox.showerror("Error", "存档文件不可读或文件并非MUSYNC存档.")
 		else:
 			messagebox.showerror("Error", "文件夹内找不到存档文件.")
 
@@ -50,14 +54,13 @@ class MUSYNCSavProcess():
 		self.savAnalyzeFile = open(f'./SavAnalyze.analyze','w+')
 		self.SaveBinFileRead(887)
 		self.SaveBinFileRead(22)
-		lastPlaySong = list()
 		while True:
 			binTemp = self.savBinFile.read(1)
 			if binTemp == b'\x06':
-				self.SaveAnalyzeFileWrite(f'上次游玩曲目: {"".join(lastPlaySong)}')
+				self.SaveAnalyzeFileWrite(f'上次游玩曲目: {"".join(self.lastPlaySong)}')
 				break
 			else:
-				lastPlaySong.append(binTemp.decode())
+				self.lastPlaySong.append(binTemp.decode())
 		self.SaveBinFileRead(493)
 		self.SaveBinFileRead(144)
 		self.SaveAnalyzeFileWrite(self.savBinFile.read(12).decode()) #'SongSaveInfo'
@@ -87,13 +90,11 @@ class MUSYNCSavProcess():
 
 	def Analyze2Json(self):
 		saveDataAnalyze = open(f'./SavAnalyze.json','w+')
-		saveDataAnalyze.write("{\n\t\"LastPlay\" : \"Yeyingwu\",\n\t\"SaveData\":[")
-		songStart = True
+		saveDataAnalyzeJson = dict()
+		saveDataAnalyzeJson["LastPlay"] = "".join(self.lastPlaySong)
+		saveDataAnalyzeJson["SaveData"] = list()
 		while (self.savBinFile.read(1) == b'\x01'):
 			def ZeroFormat(score,lenth):return f'{score}{"0"*(lenth-len(str(score)))}%'
-
-			if songStart :saveDataAnalyze.write("\n\t")
-			else:saveDataAnalyze.write(",\n\t")
 			songStart = False
 			self.saveData = self.savBinFile.read(29)
 			SongID = self.Hex2Int_LittleEndian(self.Bytes2HexString(self.saveData[0:4]))
@@ -115,9 +116,8 @@ class MUSYNCSavProcess():
 			elif UploadScore < 100:UploadScore = ZeroFormat(UploadScore,17)
 			else:UploadScore = ZeroFormat(UploadScore,18)
 			self.SaveAnalyzeFileWrite(f'| {" "*(6-len(str(SongID)))}{SongID} | {Unknown0} |  {SpeedStall}  | {Unknown1} |    {" "*(7-len(SyncNumber))}{SyncNumber} | {" "*(19-len(UploadScore))}{UploadScore} | {" "*(9-len(str(PlayCount)))}{PlayCount} |  {IsFav} |')
-			saveDataFormat = '{\"SongID\" : %d,\n\t\"SongName\" : [\"\",\"\"],\n\t\"SpeedStall\" : \"%s\",\n\t\"SyncNumber\" : \"%s\",\n\t\"UploadScore\" : \"%s\",\n\t\"PlayCount\" : %d,\n\t\"IsFav\" : \"%s\"}'%(SongID,SpeedStall,SyncNumber,UploadScore,PlayCount,IsFav)
-			saveDataAnalyze.write(saveDataFormat)
-		saveDataAnalyze.write('\n\t]\n}')
+			saveDataAnalyzeJson["SaveData"].append(dict(SongID=SongID,SongName=GetSongName(SongID),SpeedStall=SpeedStall,SyncNumber=SyncNumber,UploadScore=UploadScore,PlayCount=PlayCount,IsFav=IsFav))
+		json.dump(saveDataAnalyzeJson,saveDataAnalyze,indent="")
 		saveDataAnalyze.close()
 
 	def SaveBinFileRead(self,lenth):
@@ -125,6 +125,17 @@ class MUSYNCSavProcess():
 	def SaveAnalyzeFileWrite(self,text):
 		self.savAnalyzeFile.write(f'{text}\n')
 		print(text)
+
+def GetSongName(songID):
+	if os.path.isfile("./SongName.json"):
+		with open("./SongName.json") as songNameFile:
+			songNameJson = json.load(songNameFile)
+			if f'{songID}' in songNameJson:
+				return songNameJson[f'{songID}']
+			else:
+				return None
+	else:
+		return None
 
 if __name__ == '__main__':
 	#Config#

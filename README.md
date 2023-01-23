@@ -1,4 +1,4 @@
-# MUSYNCSave
+# 同步音律喵赛克 Steam端 存档解析工具
 ## 界面展示
 
 ![主页面](./ReadmeResources/main1.png "主页面")
@@ -10,7 +10,9 @@
 
 1. #### 增加前往GitHub页面的Button
 
-1. #### 第二次及之后的分析会自动读取"./SavAnalyze.json"分析缓存`
+1. #### 第二次及之后的分析会自动读取"./SavAnalyze.json"分析缓存
+
+1. #### 通过读取"./SongName.json"来填充"./SavAnalyze.json"中`SongName`字段
 
 ### Version 1.0.0
 

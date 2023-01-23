@@ -1,7 +1,8 @@
-#Version 1.0.1#
+#Version 1.0.2#
 import sys
 import os
 import json
+import time
 import MusyncSavDecode
 import WriteIcon
 import webbrowser
@@ -43,7 +44,7 @@ class MusyncSavDecodeGUI(object):
 		self.saveCount = 0
 		self.saveCountVar = StringVar()
 		self.saveCountVar.set(str(self.saveCount))
-		self.version = '1.0.1'
+		self.version = '1.0.2'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)
@@ -115,20 +116,22 @@ class MusyncSavDecodeGUI(object):
 		oldVersion = int(f'{self.version[0]}{self.version[2]}{self.version[4]}')
 		try:
 			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
-			newVersion = response.json()["tag_name"]
-			version = int(f'{newVersion[0]}.{newVersion[2]}.{newVersion[4]}')
+			version = response.json()["tag_name"]
+			newVersion = int(f'{version[0]}{version[2]}{version[4]}')
 		except:
-			version = oldVersion
-		if (version > oldVersion):
-			self.gitHubLink.configure(text=f'有新版本啦——    NewVersion: {newVersion}', anchor="center")
+			newVersion = oldVersion
+		if (newVersion > oldVersion):
+			self.gitHubLink.configure(text=f'有新版本啦——    NewVersion: {version}', anchor="center")
+			self.UpdateTip()
 		else:
 			self.gitHubLink.configure(text='https://github.com/Ginsakura/MUSYNCSave    点个Star吧，秋梨膏', anchor="center")
 
-	def UpdateTip(self,newVersion):
-		self.gitHubLink.configure(fg='#4BB1DA')
-		time.sleep(0.5)
-		self.gitHubLink.configure(fg='#C4245C')
-		root.after(1000,self.UpdateTip)
+	def UpdateTip(self):
+		if self.gitHubLink.cget('fg') == '#C4245C':
+			self.gitHubLink.configure(fg='#4BB1DA')
+		else:
+			self.gitHubLink.configure(fg='#C4245C')
+		root.after(500,self.UpdateTip)
 
 	def GetSaveFile(self):
 		saveFilePath = None

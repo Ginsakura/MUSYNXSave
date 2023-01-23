@@ -94,31 +94,27 @@ class MusyncSavDecodeGUI(object):
 		self.deleteAnalyzeFile.place(x=900,y=50,width=100,height=30)
 
 		##AutoRun##
+		self.UpdateWindowInfo()
+		self.CheckUpdate()
 		if not os.path.isfile('./SongName.json'):
 			Error = list()
-			hasLink = False
+			successDown = False
+
 			try:
-				response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
-				for ids in response.json()["assets"]:
-					Downlink = ids["browser_download_url"]
-					if Downlink[-13:] == 'SongName.json':
-						hasLink = True
-						try:
-							with open("./SongName.json",'wb+') as downData:
-								downData.write(requests.get(Downlink))
-						except:
-							Error.append("无法打开SongName.json文件,\n请检查文件是否被占用或读写需要管理员权限.\n")
-						break
-				if not hasLink:
-					Error.append("未从GitHub源获取到SongName.json文件链接.\n")
+				jsonData = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/SongName.json")
+				try:
+					with open("./SongName.json",'wb+') as downData:
+						downData.write(jsonData.content)
+					successDown = True
+				except:
+					Error.append("无法打开SongName.json文件,\n请检查文件是否被占用或读写需要管理员权限.\n")
 			except:
-				Error.append("从GitHub源下载SongName.json文件出现未知错误.\n")
-			if not hasLink:
+				Error.append("无法从GitHub Repo下载SongName.json文件.\n请检查网路连接或者开启代理(VPN)服务.\n")
+			
+			if not successDown:
 				pass
 			if not len(Error) == 0:
 				messagebox.showerror("Error", ''.join(Error))
-		self.UpdateWindowInfo()
-		self.CheckUpdate()
 		if not os.path.isfile('./SaveFilePath.sfp'):
 			self.GetSaveFile()
 		else:

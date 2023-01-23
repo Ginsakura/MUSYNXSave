@@ -4,20 +4,21 @@ import os
 import json
 import time
 import MusyncSavDecode
-import WriteIcon
+import FileExport
 import webbrowser
 import requests
+import pyglet
 from tkinter import *
 from tkinter import Tk
 from tkinter import ttk
 from tkinter import font
 from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
-import win32api
-import win32con
-import win32gui_struct
-import win32gui
-from threading import Thread
+#import win32api
+#import win32con
+#import win32gui_struct
+#import win32gui
+#from threading import Thread
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -93,6 +94,29 @@ class MusyncSavDecodeGUI(object):
 		self.deleteAnalyzeFile.place(x=900,y=50,width=100,height=30)
 
 		##AutoRun##
+		if not os.path.isfile('./SongName.json'):
+			Error = list()
+			hasLink = False
+			try:
+				response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
+				for ids in response.json()["assets"]:
+					Downlink = ids["browser_download_url"]
+					if Downlink[-13:] == 'SongName.json':
+						hasLink = True
+						try:
+							with open("./SongName.json",'wb+') as downData:
+								downData.write(requests.get(Downlink))
+						except:
+							Error.append("无法打开SongName.json文件,\n请检查文件是否被占用或读写需要管理员权限.\n")
+						break
+				if not hasLink:
+					Error.append("未从GitHub源获取到SongName.json文件链接.\n")
+			except:
+				Error.append("从GitHub源下载SongName.json文件出现未知错误.\n")
+			if not hasLink:
+				pass
+			if not len(Error) == 0:
+				messagebox.showerror("Error", ''.join(Error))
 		self.UpdateWindowInfo()
 		self.CheckUpdate()
 		if not os.path.isfile('./SaveFilePath.sfp'):
@@ -106,8 +130,11 @@ class MusyncSavDecodeGUI(object):
 			elif (not os.path.isfile(sfpr)):
 				os.remove('./SaveFilePath.sfp')
 				self.GetSaveFile()
-			else:self.saveFilePathVar.set(sfpr)
-		if os.path.isfile('./SavAnalyze.json'):self.DataLoad()
+			else:
+				self.saveFilePathVar.set(sfpr)
+				self.DataLoad()
+		if os.path.isfile('./SavAnalyze.json'):
+			self.DataLoad()
 		elif os.path.isfile('./SavDecode.decode'):
 			MusyncSavDecode.MUSYNCSavProcess(decodeFile='./SavDecode.decode').Main('decode')
 			self.DataLoad()
@@ -149,6 +176,7 @@ class MusyncSavDecodeGUI(object):
 			with open('./SaveFilePath.sfp','w+') as sfp:
 				sfp.write(saveFilePath)
 				self.saveFilePathVar.set(saveFilePath)
+		self.DataLoad()
 
 	def DeleteAnalyzeFile(self):
 		if os.path.isfile("./SavAnalyze.json"):
@@ -220,7 +248,7 @@ class MusyncSavDecodeGUI(object):
 				elif command == "RankC":
 					if (float(saveLine["SyncNumber"][0:-1]) >= 75) or (saveLine["PlayCount"] == 0):continue
 				self.saveCount += 1
-				self.saveData.insert('', END, values=(saveLine["SongID"], ("" if saveLine["SongName"] is None else saveLine["SongName"][0]), ("" if saveLine["SongName"] is None else saveLine["SongName"][1]), saveLine["SpeedStall"], saveLine["SyncNumber"], ("" if ((saveLine["PlayCount"] == 0) and (saveLine["UploadScore"] == "0.00000000000000%")) else Rank(saveLine["SyncNumber"])), saveLine["UploadScore"], saveLine["PlayCount"], saveLine["IsFav"]))
+				self.saveData.insert('', END, values=(saveLine["SongID"], " "+("" if saveLine["SongName"] is None else saveLine["SongName"][0]), ("" if saveLine["SongName"] is None else saveLine["SongName"][1]), saveLine["SpeedStall"], saveLine["SyncNumber"], ("" if ((saveLine["PlayCount"] == 0) and (saveLine["UploadScore"] == "0.00000000000000%")) else Rank(saveLine["SyncNumber"])), saveLine["UploadScore"], saveLine["PlayCount"], saveLine["IsFav"]))
 
 	def SelectPath(self):
 		path_ = askopenfilename() #使用askdirectory()方法返回文件夹的路径
@@ -232,7 +260,7 @@ class MusyncSavDecodeGUI(object):
 
 	def UpdateWindowInfo(self):
 		self.root.update()
-		self.windowInfo = [root.winfo_x(),root.winfo_y(),root.winfo_width(),root.winfo_height()]
+		self.windowInfo = ['root.winfo_x()','root.winfo_y()',root.winfo_width(),root.winfo_height()]
 
 		self.saveFilePathEntry.place(x=170,y=10,width=(self.windowInfo[2]-260),height=30)
 		self.getSaveFilePath.place(x=(self.windowInfo[2]-90),y=10,width=90,height=30)
@@ -240,9 +268,9 @@ class MusyncSavDecodeGUI(object):
  
 		self.saveData.column("SongID",anchor="e",width=70)
 		self.saveData.heading("SongID",anchor="center",text="谱面编号")
-		self.saveData.column("SongName",anchor="e",width=(self.windowInfo[2]-680 if self.windowInfo[2]-680 > 100 else 100))
+		self.saveData.column("SongName",anchor="w",width=(self.windowInfo[2]-690 if self.windowInfo[2]-690 > 100 else 100))
 		self.saveData.heading("SongName",anchor="center",text="曲名")
-		self.saveData.column("Difficulty",anchor="e",width=80)
+		self.saveData.column("Difficulty",anchor="w",width=90)
 		self.saveData.heading("Difficulty",anchor="center",text="难度")
 		self.saveData.column("SpeedStall",anchor="e",width=90)
 		self.saveData.heading("SpeedStall",anchor="center",text="SpeedStall")
@@ -264,11 +292,18 @@ class MusyncSavDecodeGUI(object):
 		self.developer.place(x=10,y=self.windowInfo[3]-30,width=370,height=30)
 		self.gitHubLink.place(x=380,y=self.windowInfo[3]-30,width=self.windowInfo[2]-380,height=30)
 
-		root.after(100,self.UpdateWindowInfo)
+		root.after(200,self.UpdateWindowInfo)
 
 if __name__ == '__main__':
 	if not os.path.isfile('./MUSYNC.ico'):
-		WriteIcon()
+		FileExport.WriteIcon()
+	if not os.path.isfile('./LXGW.ttf'):
+		FileExport.WriteTTF()
+	try:
+		pyglet.font.add_file('./LXGW.ttf')
+		pyglet.font.load('霞鹜文楷等宽')
+	except Exception as e:
+		messagebox.showerror("Error", f'{e}\n无法加载字体文件')
 	root = Tk()
 	root.resizable(True, True) #允许改变窗口大小
 	window = MusyncSavDecodeGUI(root=root)

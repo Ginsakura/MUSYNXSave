@@ -22,14 +22,12 @@ class MUSYNCSavProcess():
 		if fileExtension == 'decode':
 			self.SaveFileAnalyze()
 		elif os.path.isfile(self.savPath):
-			self.SaveFileDecode()
-			self.SaveFileAnalyze()
-			#try:
-			#	self.SaveFileDecode()
-			#	self.SaveFileAnalyze()
-			#	return self.savPath
-			#except:
-			#	messagebox.showerror("Error", "存档文件不可读或文件并非MUSYNC存档.")
+			try:
+				self.SaveFileDecode()
+				self.SaveFileAnalyze()
+				return self.savPath
+			except:
+				messagebox.showerror("Error", "存档文件不可读或文件并非MUSYNC存档.")
 		else:
 			messagebox.showerror("Error", "文件夹内找不到存档文件.")
 

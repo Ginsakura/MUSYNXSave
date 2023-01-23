@@ -4,23 +4,23 @@
 ![主页面](./ReadmeResources/main1.png "主页面")
 
 ## 更新日志
-### Version 1.0.2
+### Version 1.0.3
+1. #### 更新 "SongName.json"文件
+2. #### 新增 启动状态指示Label
 
+### Version 1.0.2
 2. #### 更改 窗口宽高自动识别频率为200ms
 1. #### 新增 新版本提示颜色闪烁，改变时间为500ms
 3. #### 新增 自动从GitHub Repo获取"./SongName.json"文件
 4. #### 新增 自动从"FileExport.py"释放"霞鹜文楷等宽"字体和图标文件
-5. #### 
 
 ### Version 1.0.1
-
 1. #### 新增 开发者Label和更新获取通道
 1. #### 新增 前往GitHub页面的Button
 1. #### 新增 第二次及之后的分析会自动读取"./SavAnalyze.json"分析缓存
 1. #### 新增 通过读取"./SongName.json"来填充"./SavAnalyze.json"中`SongName`字段
 
 ### Version 1.0.0
-
 1. #### 新增 简易自动搜索存档文件
     首次运行时自动搜索每个磁盘的
     1. `./Program Files/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav`

@@ -1,4 +1,3 @@
-#Version 1.0.2#
 import sys
 import os
 import json
@@ -45,7 +44,7 @@ class MusyncSavDecodeGUI(object):
 		self.saveCount = 0
 		self.saveCountVar = StringVar()
 		self.saveCountVar.set(str(self.saveCount))
-		self.version = '1.0.2'
+		self.version = '1.0.3'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)
@@ -66,8 +65,12 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.configure(columns = ["SongID",'SongName',"Difficulty","SpeedStall","SyncNumber","Rank","UploadScore","PlayCount","IsFav"])
 		self.VScroll1 = Scrollbar(self.saveData, orient='vertical', command=self.saveData.yview)
 		self.saveData.configure(yscrollcommand=self.VScroll1.set)
+
 		self.developer = Label(self.root, text=f'Version {self.version} | Develop By Ginsakura', font=self.font, relief="groove")
 		self.gitHubLink = Button(self.root, text='https://github.com/Ginsakura/MUSYNCSave    点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
+
+		self.initLabel = Label(self.root, text='启动中', anchor="center", font=self.font, relief="groove")
+		self.initLabel.place(x=300,y=300,width=400,height=30)
 
 		#筛选控件
 		self.selectPlayedButton = Button(self.root, text='已游玩', command=lambda:self.DataLoad('Played'), anchor="w", font=self.font)
@@ -99,7 +102,7 @@ class MusyncSavDecodeGUI(object):
 		if not os.path.isfile('./SongName.json'):
 			Error = list()
 			successDown = False
-
+			self.initLabel.configure(text="正在从GitHub Repo下载SongName文件中……", anchor="w")
 			try:
 				jsonData = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/SongName.json")
 				try:
@@ -118,12 +121,14 @@ class MusyncSavDecodeGUI(object):
 		if not os.path.isfile('./SaveFilePath.sfp'):
 			self.GetSaveFile()
 		else:
+			self.initLabel.configure(text="正在读取存档路径……", anchor="w")
 			sfp = open('./SaveFilePath.sfp','r+')
 			sfpr = sfp.read()
 			sfp.close()
 			if (not sfpr == ""):
 				self.GetSaveFile()
 			elif (not os.path.isfile(sfpr)):
+				self.initLabel.configure(text="正在删除存档路径.", anchor="w")
 				os.remove('./SaveFilePath.sfp')
 				self.GetSaveFile()
 			else:
@@ -136,6 +141,7 @@ class MusyncSavDecodeGUI(object):
 			self.DataLoad()
 
 	def CheckUpdate(self):
+		self.initLabel.configure(text="正在拉取更新信息……", anchor="w")
 		oldVersion = int(f'{self.version[0]}{self.version[2]}{self.version[4]}')
 		try:
 			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
@@ -157,6 +163,7 @@ class MusyncSavDecodeGUI(object):
 		root.after(500,self.UpdateTip)
 
 	def GetSaveFile(self):
+		self.initLabel.configure(text="正在搜索存档文件中……", anchor="w")
 		saveFilePath = None
 		for ids in "CDEFGHIJKLMNOPQRSTUVWXYZAB":
 			if os.path.isfile(f'{ids}:/Program Files/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav'):
@@ -172,7 +179,9 @@ class MusyncSavDecodeGUI(object):
 			with open('./SaveFilePath.sfp','w+') as sfp:
 				sfp.write(saveFilePath)
 				self.saveFilePathVar.set(saveFilePath)
-		self.DataLoad()
+			self.DataLoad()
+		else:
+			self.initLabel.configure(text="搜索不到存档文件.", anchor="w")
 
 	def DeleteAnalyzeFile(self):
 		if os.path.isfile("./SavAnalyze.json"):
@@ -184,6 +193,7 @@ class MusyncSavDecodeGUI(object):
 		self.DataLoad()
 
 	def DataLoad(self,command=None):
+		self.initLabel.configure(text="正在分析存档文件中……", anchor="w")
 		def Rank(sync):
 			sync = float(sync[0:-1])
 			if sync < 75:return "C"
@@ -245,6 +255,7 @@ class MusyncSavDecodeGUI(object):
 					if (float(saveLine["SyncNumber"][0:-1]) >= 75) or (saveLine["PlayCount"] == 0):continue
 				self.saveCount += 1
 				self.saveData.insert('', END, values=(saveLine["SongID"], " "+("" if saveLine["SongName"] is None else saveLine["SongName"][0]), ("" if saveLine["SongName"] is None else saveLine["SongName"][1]), saveLine["SpeedStall"], saveLine["SyncNumber"], ("" if ((saveLine["PlayCount"] == 0) and (saveLine["UploadScore"] == "0.00000000000000%")) else Rank(saveLine["SyncNumber"])), saveLine["UploadScore"], saveLine["PlayCount"], saveLine["IsFav"]))
+		self.initLabel.place(width=0)
 
 	def SelectPath(self):
 		path_ = askopenfilename() #使用askdirectory()方法返回文件夹的路径

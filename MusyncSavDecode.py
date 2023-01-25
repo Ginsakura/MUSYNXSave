@@ -22,14 +22,14 @@ class MUSYNCSavProcess():
 		if fileExtension == 'decode':
 			self.SaveFileAnalyze()
 		elif os.path.isfile(self.savPath):
-			self.SaveFileDecode()
-			self.SaveFileAnalyze()
-			# try:
-			# 	self.SaveFileDecode()
-			# 	self.SaveFileAnalyze()
-			# 	return self.savPath
-			# except:
-			# 	messagebox.showerror("Error", "存档文件不可读或文件并非MUSYNC存档.")
+			# self.SaveFileDecode()
+			# self.SaveFileAnalyze()
+			try:
+				self.SaveFileDecode()
+				self.SaveFileAnalyze()
+				return self.savPath
+			except Exception as e:
+				messagebox.showerror("Error", f"存档文件不可读或文件并非MUSYNC存档.\n{e}")
 		else:
 			messagebox.showerror("Error", "文件夹内找不到存档文件.")
 
@@ -127,11 +127,19 @@ class MUSYNCSavProcess():
 		print(text)
 
 def GetSongName(songID):
+	diffcute = ["Easy","Hard","Inferno"]
 	if os.path.isfile("./SongName.json"):
 		with open("./SongName.json",'r',encoding='utf8') as songNameFile:
 			songNameJson = json.load(songNameFile)
 			if f'{songID}' in songNameJson:
-				return songNameJson[f'{songID}']
+				data = songNameJson[f'{songID}']
+				if data is None:
+					return None
+				songName = data[0]
+				songKeys = ("4Key" if data[1]==4 else "6Key")
+				songDifficulty = diffcute[int(data[2])]
+				songDifficultyNumber = "%02d"%data[3]
+				return [songName,songKeys,songDifficulty,songDifficultyNumber]
 			else:
 				return None
 	else:

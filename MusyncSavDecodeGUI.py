@@ -62,7 +62,7 @@ class MusyncSavDecodeGUI(object):
 		self.getSaveFilePath = Button(self.root, text='打开存档', command=self.SelectPath, font=self.font)
 
 		self.saveData = ttk.Treeview(self.root, show="headings")
-		self.saveData.configure(columns = ["SongID",'SongName',"Difficulty","SpeedStall","SyncNumber","Rank","UploadScore","PlayCount","IsFav"])
+		self.saveData.configure(columns = ["SongID",'SongName',"Keys","Difficulty","DifficultyNumber","SpeedStall","SyncNumber","Rank","UploadScore","PlayCount","IsFav"])
 		self.VScroll1 = Scrollbar(self.saveData, orient='vertical', command=self.saveData.yview)
 		self.saveData.configure(yscrollcommand=self.VScroll1.set)
 
@@ -109,10 +109,10 @@ class MusyncSavDecodeGUI(object):
 					with open("./SongName.json",'wb+') as downData:
 						downData.write(jsonData.content)
 					successDown = True
-				except:
-					Error.append("无法打开SongName.json文件,\n请检查文件是否被占用或读写需要管理员权限.\n")
-			except:
-				Error.append("无法从GitHub Repo下载SongName.json文件.\n请检查网路连接或者开启代理(VPN)服务.\n")
+				except Exception as e:
+					Error.append(f"无法打开SongName.json文件,\n请检查文件是否被占用或读写需要管理员权限.\n{e}\n")
+			except Exception as e:
+				Error.append(f"无法从GitHub Repo下载SongName.json文件.\n请检查网路连接或者开启代理(VPN)服务.\n{e}\n")
 			
 			if not successDown:
 				pass
@@ -147,13 +147,23 @@ class MusyncSavDecodeGUI(object):
 			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
 			version = response.json()["tag_name"]
 			newVersion = int(f'{version[0]}{version[2]}{version[4]}')
-		except:
+		except Exception as e:
+			messagebox.showerror("Error", f'发生错误: {e}')
 			newVersion = oldVersion
 		if (newVersion > oldVersion):
 			self.gitHubLink.configure(text=f'有新版本啦——    NewVersion: {version}', anchor="center")
 			self.UpdateTip()
 		else:
 			self.gitHubLink.configure(text='https://github.com/Ginsakura/MUSYNCSave    点个Star吧，秋梨膏', anchor="center")
+
+	def DoubleClick(self,event):
+		e = event.widget									# 取得事件控件
+		itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
+		# state = e.item(itemID,"text")						# 取得text参数
+		songData = e.item(itemID,"values")					# 取得values参数
+		nroot = Toplevel(self.root)
+		nroot.resizable(True, True)
+		newWindow = SubWindow(nroot, songData[0], songData[1], songData[2])
 
 	def UpdateTip(self):
 		if self.gitHubLink.cget('fg') == '#C4245C':
@@ -255,7 +265,14 @@ class MusyncSavDecodeGUI(object):
 				elif command == "RankC":
 					if (float(saveLine["SyncNumber"][0:-1]) >= 75) or (saveLine["PlayCount"] == 0):continue
 				self.saveCount += 1
-				self.saveData.insert('', END, values=(saveLine["SongID"], " "+("" if saveLine["SongName"] is None else saveLine["SongName"][0]), ("" if saveLine["SongName"] is None else saveLine["SongName"][1]), saveLine["SpeedStall"], saveLine["SyncNumber"], ("" if ((saveLine["PlayCount"] == 0) and (saveLine["UploadScore"] == "0.00000000000000%")) else Rank(saveLine["SyncNumber"])), saveLine["UploadScore"], saveLine["PlayCount"], saveLine["IsFav"]))
+				self.saveData.insert('', END, values=(saveLine["SongID"], 
+					("" if saveLine["SongName"] is None else saveLine["SongName"][0]), 
+					("" if saveLine["SongName"] is None else saveLine["SongName"][1]), 
+					("" if saveLine["SongName"] is None else saveLine["SongName"][2]), 
+					("00" if (saveLine["SongName"] is None) else saveLine["SongName"][3]), 
+					saveLine["SpeedStall"], saveLine["SyncNumber"], 
+					("" if ((saveLine["PlayCount"] == 0) and (saveLine["UploadScore"] == "0.00000000000000%")) else Rank(saveLine["SyncNumber"])), 
+					saveLine["UploadScore"], saveLine["PlayCount"], saveLine["IsFav"]))
 		self.initLabel.place(x=0,width=0)
 
 	def SelectPath(self):
@@ -274,12 +291,16 @@ class MusyncSavDecodeGUI(object):
 		self.getSaveFilePath.place(x=(self.windowInfo[2]-90),y=10,width=90,height=30)
 		self.saveData.place(x=10 ,y=90 ,width=(self.windowInfo[2]-10) ,height=(self.windowInfo[3]-120))
  
-		self.saveData.column("SongID",anchor="e",width=70)
-		self.saveData.heading("SongID",anchor="center",text="谱面编号")
-		self.saveData.column("SongName",anchor="w",width=(self.windowInfo[2]-690 if self.windowInfo[2]-690 > 100 else 100))
+		self.saveData.column("SongID",anchor="e",width=60)
+		self.saveData.heading("SongID",anchor="center",text="谱面号")
+		self.saveData.column("SongName",anchor="w",width=(self.windowInfo[2]-740 if self.windowInfo[2]-740 > 100 else 100))
 		self.saveData.heading("SongName",anchor="center",text="曲名")
-		self.saveData.column("Difficulty",anchor="w",width=90)
+		self.saveData.column("Keys",anchor="center",width=40)
+		self.saveData.heading("Keys",anchor="center",text="键数")
+		self.saveData.column("Difficulty",anchor="w",width=70)
 		self.saveData.heading("Difficulty",anchor="center",text="难度")
+		self.saveData.column("DifficultyNumber",anchor="center",width=40)
+		self.saveData.heading("DifficultyNumber",anchor="center",text="等级")
 		self.saveData.column("SpeedStall",anchor="e",width=90)
 		self.saveData.heading("SpeedStall",anchor="center",text="SpeedStall")
 		self.saveData.column("SyncNumber",anchor="e",width=70)
@@ -287,7 +308,7 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.column("Rank",anchor="center",width=50)
 		self.saveData.heading("Rank",anchor="center",text="Rank")
 		self.saveData.column("UploadScore",anchor="e",width=160)
-		self.saveData.heading("UploadScore",anchor="center",text="上传分数")
+		self.saveData.heading("UploadScore",anchor="center",text="云端同步率")
 		self.saveData.column("PlayCount",anchor="e",width=80)
 		self.saveData.heading("PlayCount",anchor="center",text="游玩计数")
 		self.saveData.column("IsFav",anchor="center",width=50)
@@ -300,7 +321,47 @@ class MusyncSavDecodeGUI(object):
 		self.developer.place(x=10,y=self.windowInfo[3]-30,width=370,height=30)
 		self.gitHubLink.place(x=380,y=self.windowInfo[3]-30,width=self.windowInfo[2]-380,height=30)
 
+		self.saveData.bind("<Double-1>",self.DoubleClick)
+
 		root.after(200,self.UpdateWindowInfo)
+
+class SubWindow(object):
+	def __init__(self, nroot, songID, songName, songDifficute):
+		##Init##
+		nroot.iconbitmap('./Musync.ico')
+		super(SubWindow, self).__init__()
+		self.font=('霞鹜文楷等宽',16)
+		nroot.geometry(f'1000x630+500+300')
+		style = ttk.Style()
+		style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',12))
+		style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',12))
+		nroot.title(f"同步音律喵赛克 Steam端 {songID}:{songName}:{songDifficute}全球排行")
+		nroot['background'] = '#efefef'
+		self.root = nroot
+		self.songID = songID
+		self.globalSync = ttk.Treeview(self.root, show="headings")
+		self.globalSync.configure(columns = ['SongName',"Difficulty","Rank","SyncNumber"])
+		self.VScroll = Scrollbar(self.globalSync, orient='vertical', command=self.globalSync.yview)
+		
+		##AutoRun##
+		self.UpdateWindow()
+
+	def UpdateWindow(self):
+		self.root.update()
+		self.windowInfo = ['root.winfo_x()','root.winfo_y()',root.winfo_width(),root.winfo_height()]
+
+		self.globalSync.place(x=10 ,y=10 ,width=(self.windowInfo[2]-20) ,height=(self.windowInfo[3]-20))
+		self.globalSync.column("SongName",anchor="w",width=100)
+		self.globalSync.heading("SongName",anchor="center",text="曲名")
+		self.globalSync.column("Difficulty",anchor="w",width=90)
+		self.globalSync.heading("Difficulty",anchor="center",text="难度")
+		self.globalSync.column("Rank",anchor="e",width=90)
+		self.globalSync.heading("Rank",anchor="center",text="Rank")
+		self.globalSync.column("SyncNumber",anchor="e",width=70)
+		self.globalSync.heading("SyncNumber",anchor="center",text="同步率")
+
+		self.VScroll.place(x=self.windowInfo[2]-40, y=1, width=20, relheight=1)
+		
 
 if __name__ == '__main__':
 	if not os.path.isfile('./MUSYNC.ico'):

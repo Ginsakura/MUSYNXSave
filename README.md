@@ -1,7 +1,7 @@
 # 同步音律喵赛克 Steam端 存档解析工具
 ## 界面展示
 
-![主页面](./ReadmeResources/main1.png "主页面")
+![主页面](./ReadmeResources/main.png "主页面")
 
 ## 更新日志
 ### Version 1.0.4

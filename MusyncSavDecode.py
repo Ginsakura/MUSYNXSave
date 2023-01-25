@@ -133,8 +133,7 @@ def GetSongName(songID):
 			songNameJson = json.load(songNameFile)
 			if f'{songID}' in songNameJson:
 				data = songNameJson[f'{songID}']
-				if data is None:
-					return None
+				if data is None:return None
 				songName = data[0]
 				songKeys = ("4Key" if data[1]==4 else "6Key")
 				songDifficulty = diffcute[int(data[2])]

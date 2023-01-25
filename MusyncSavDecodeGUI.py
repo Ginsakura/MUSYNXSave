@@ -44,7 +44,7 @@ class MusyncSavDecodeGUI(object):
 		self.saveCount = 0
 		self.saveCountVar = StringVar()
 		self.saveCountVar.set(str(self.saveCount))
-		self.version = '1.0.4'
+		self.version = '1.0.5'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)
@@ -269,7 +269,7 @@ class MusyncSavDecodeGUI(object):
 					("" if saveLine["SongName"] is None else saveLine["SongName"][0]), 
 					("" if saveLine["SongName"] is None else saveLine["SongName"][1]), 
 					("" if saveLine["SongName"] is None else saveLine["SongName"][2]), 
-					("00" if (saveLine["SongName"] is None) else saveLine["SongName"][3]), 
+					("" if saveLine["SongName"] is None else ("" if saveLine["SongName"][3]=="00" else saveLine["SongName"][3])), 
 					saveLine["SpeedStall"], saveLine["SyncNumber"], 
 					("" if ((saveLine["PlayCount"] == 0) and (saveLine["UploadScore"] == "0.00000000000000%")) else Rank(saveLine["SyncNumber"])), 
 					saveLine["UploadScore"], saveLine["PlayCount"], saveLine["IsFav"]))

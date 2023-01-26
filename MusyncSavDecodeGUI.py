@@ -47,7 +47,7 @@ class MusyncSavDecodeGUI(object):
 		self.dataSortMethod = None
 		self.dataSortMethodsort = True
 		self.dataSelectMethod = None
-		self.version = '1.0.6'
+		self.version = '1.0.5'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)

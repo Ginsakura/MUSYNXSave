@@ -27,7 +27,7 @@ class MusyncSavDecodeGUI(object):
 		super(MusyncSavDecodeGUI, self).__init__()
 		self.isTKroot = isTKroot
 		self.font=('霞鹜文楷等宽',16)
-		root.geometry(f'1000x630+500+300')
+		root.geometry(f'1000x670+500+300')
 		style = ttk.Style()
 		style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',12))
 		style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',12))
@@ -39,11 +39,14 @@ class MusyncSavDecodeGUI(object):
 		self.analyzeFilePathVar = StringVar()
 		self.analyzeFilePathVar.set('Input Analyze File Dir (or not)')
 		self.root = root
-		self.root.minsize(500, 430)
+		self.root.minsize(500, 460)
 		self.windowInfo = [root.winfo_x(),root.winfo_y(),root.winfo_width(),root.winfo_height()]
 		self.saveCount = 0
 		self.saveCountVar = StringVar()
 		self.saveCountVar.set(str(self.saveCount))
+		self.dataSortMethod = None
+		self.dataSortMethodsort = True
+		self.dataSelectMethod = None
 		self.version = '1.0.5'
 
 		##Controls##
@@ -72,29 +75,46 @@ class MusyncSavDecodeGUI(object):
 		self.initLabel = Label(self.root, text='启动中', anchor="center", font=self.font, relief="groove")
 		self.initLabel.place(x=300,y=300,width=400,height=30)
 
-		#筛选控件
-		self.selectPlayedButton = Button(self.root, text='已游玩', command=lambda:self.DataLoad('Played'), anchor="w", font=self.font)
-		self.selectPlayedButton.place(x=180,y=50,width=70,height=30)
-		self.selectUnplayButton = Button(self.root, text='未游玩', command=lambda:self.DataLoad('Unplay'), anchor="w", font=self.font)
-		self.selectUnplayButton.place(x=250,y=50,width=70,height=30)
-		self.selectIsFavButton = Button(self.root, text='收藏', command=lambda:self.DataLoad('IsFav'), anchor="w", font=self.font)
-		self.selectIsFavButton.place(x=320,y=50,width=50,height=30)
-		self.select122Button = Button(self.root, text='Score>122%', command=lambda:self.DataLoad('Sync122'), anchor="w", font=self.font)
-		self.select122Button.place(x=370,y=50,width=110,height=30)
-		self.select120Button = Button(self.root, text='Score>120%', command=lambda:self.DataLoad('Sync120'), anchor="w", font=self.font)
-		self.select120Button.place(x=480,y=50,width=110,height=30)
-		self.selectExRankButton = Button(self.root, text='RankEX', command=lambda:self.DataLoad('RankEX'), anchor="w", font=self.font)
-		self.selectExRankButton.place(x=590,y=50,width=70,height=30)
-		self.selectSRankButton = Button(self.root, text='RankS', command=lambda:self.DataLoad('RankS'), anchor="w", font=self.font)
-		self.selectSRankButton.place(x=660,y=50,width=60,height=30)
-		self.selectARankButton = Button(self.root, text='RankA', command=lambda:self.DataLoad('RankA'), anchor="w", font=self.font)
-		self.selectARankButton.place(x=720,y=50,width=60,height=30)
-		self.selectBRankButton = Button(self.root, text='RankB', command=lambda:self.DataLoad('RankB'), anchor="w", font=self.font)
-		self.selectBRankButton.place(x=780,y=50,width=60,height=30)
-		self.selectCRankButton = Button(self.root, text='RankC', command=lambda:self.DataLoad('RankC'), anchor="w", font=self.font)
-		self.selectCRankButton.place(x=840,y=50,width=60,height=30)
 		self.deleteAnalyzeFile = Button(self.root, text="重新分析",command=self.DeleteAnalyzeFile, font=self.font, bg="#EE0000")
-		self.deleteAnalyzeFile.place(x=900,y=50,width=100,height=30)
+		self.deleteAnalyzeFile.place(x=10,y=90,width=100,height=30)
+
+		#筛选控件
+		self.selectFrameLabel = Label(self.root, text="", relief="groove")
+		self.selectFrameLabel.place(x=178,y=48,width=426,height=76)
+		self.selectLabel = Label(self.root, text="筛选\n控件", anchor="w", font=self.font, relief="flat")
+		self.selectLabel.place(x=180,y=55,width=50,height=60)
+		self.selectPlayedButton = Button(self.root, text='已游玩', command=lambda:self.SelectMethod('Played'), anchor="w", font=self.font)
+		self.selectPlayedButton.place(x=230,y=50,width=70,height=30)
+		self.selectUnplayButton = Button(self.root, text='未游玩', command=lambda:self.SelectMethod('Unplay'), anchor="w", font=self.font)
+		self.selectUnplayButton.place(x=230,y=90,width=70,height=30)
+		self.selectIsFavButton = Button(self.root, text='已收藏', command=lambda:self.SelectMethod('IsFav'), anchor="w", font=self.font)
+		self.selectIsFavButton.place(x=300,y=50,width=70,height=30)
+		self.selectExRankButton = Button(self.root, text='RankEx', command=lambda:self.SelectMethod('RankEX'), anchor="w", font=self.font)
+		self.selectExRankButton.place(x=300,y=90,width=70,height=30)
+		self.selectSRankButton = Button(self.root, text='RankS', command=lambda:self.SelectMethod('RankS'), anchor="w", font=self.font)
+		self.selectSRankButton.place(x=370,y=50,width=60,height=30)
+		self.selectARankButton = Button(self.root, text='RankA', command=lambda:self.SelectMethod('RankA'), anchor="w", font=self.font)
+		self.selectARankButton.place(x=370,y=90,width=60,height=30)
+		self.selectBRankButton = Button(self.root, text='RankB', command=lambda:self.SelectMethod('RankB'), anchor="w", font=self.font)
+		self.selectBRankButton.place(x=430,y=50,width=60,height=30)
+		self.selectCRankButton = Button(self.root, text='RankC', command=lambda:self.SelectMethod('RankC'), anchor="w", font=self.font)
+		self.selectCRankButton.place(x=430,y=90,width=60,height=30)
+		self.select122Button = Button(self.root, text='Score>122%', command=lambda:self.SelectMethod('Sync122'), anchor="w", font=self.font)
+		self.select122Button.place(x=490,y=50,width=110,height=30)
+		self.select120Button = Button(self.root, text='Score>120%', command=lambda:self.SelectMethod('Sync120'), anchor="w", font=self.font)
+		self.select120Button.place(x=490,y=90,width=110,height=30)
+
+		##排序控件##
+		self.sortFrameLabel = Label(self.root, text="", relief="groove")
+		self.sortFrameLabel.place(x=608,y=48,width=256,height=76)
+		self.sortLabel = Label(self.root,text="排序\n控件", anchor="nw", font=self.font, relief="flat")
+		self.sortLabel.place(x=610,y=55,width=50,height=60)
+		self.sortPlayCountButton = Button(self.root, text="游玩次数", command=lambda:self.SortMethod('PC'), anchor="w", font=self.font)
+		self.sortPlayCountButton.place(x=660,y=50,width=90,height=30)
+		self.sortSyncButton = Button(self.root, text="本地同步率", command=lambda:self.SortMethod('Sync'), anchor="w", font=self.font)
+		self.sortSyncButton.place(x=750,y=50,width=110,height=30)
+		self.sortDiffNumButton = Button(self.root, text="难度等级", command=lambda:self.SortMethod('DiffNum'), anchor="w", font=self.font)
+		self.sortDiffNumButton.place(x=660,y=90,width=90,height=30)
 
 		##AutoRun##
 		self.UpdateWindowInfo()
@@ -140,6 +160,65 @@ class MusyncSavDecodeGUI(object):
 			MusyncSavDecode.MUSYNCSavProcess(decodeFile='./SavDecode.decode').Main('decode')
 			self.DataLoad()
 
+	def SortMethod(self,method):
+		if self.dataSortMethod == method:
+			if self.dataSortMethodsort:
+				self.dataSortMethodsort = False
+				self.SortButtonGreenRed(method)
+			else:
+				self.dataSortMethod = None
+				self.dataSortMethodsort = True
+				self.SortButtonGreenGrey(method)
+		else:
+			self.dataSortMethodsort = True
+			self.SortButtonGreenGrey(self.dataSortMethod)
+			self.dataSortMethod = method
+			self.SortButtonGreen(method)
+		self.DataLoad()
+	def SelectMethod(self,method):
+		if self.dataSelectMethod == method:
+			self.dataSelectMethod = None
+			self.SelectButtonGreenGrey(method)
+		else:
+			self.SelectButtonGreenGrey(self.dataSelectMethod)
+			self.dataSelectMethod = method
+			self.SelectButtonGreen(method)
+		self.DataLoad()
+	def SortButtonGreenRed(self,method):
+		if method == "PC":self.sortPlayCountButton.configure(bg='#FF7B7B')
+		elif method == "Sync":self.sortSyncButton.configure(bg='#FF7B7B')
+		elif method == "DiffNum":self.sortDiffNumButton.configure(bg='#FF7B7B')
+	def SortButtonGreen(self,method):
+		if method == "PC":self.sortPlayCountButton.configure(bg='#98E22B')
+		elif method == "Sync":self.sortSyncButton.configure(bg='#98E22B')
+		elif method == "DiffNum":self.sortDiffNumButton.configure(bg='#98E22B')
+	def SortButtonGreenGrey(self,method):
+		if method == "PC":self.sortPlayCountButton.configure(bg='#F0F0F0')
+		elif method == "Sync":self.sortSyncButton.configure(bg='#F0F0F0')
+		elif method == "DiffNum":self.sortDiffNumButton.configure(bg='#F0F0F0')
+	def SelectButtonGreen(self,method):
+		if method == "Played":self.selectPlayedButton.configure(bg='#98E22B')
+		elif method == "Unplay":self.selectUnplayButton.configure(bg='#98E22B')
+		elif method == "IsFav":self.selectIsFavButton.configure(bg='#98E22B')
+		elif method == "Sync122":self.select122Button.configure(bg='#98E22B')
+		elif method == "Sync120":self.select120Button.configure(bg='#98E22B')
+		elif method == "RankEX":self.selectExRankButton.configure(bg='#98E22B')
+		elif method == "RankS":self.selectSRankButton.configure(bg='#98E22B')
+		elif method == "RankA":self.selectARankButton.configure(bg='#98E22B')
+		elif method == "RankB":self.selectBRankButton.configure(bg='#98E22B')
+		elif method == "RankC":self.selectCRankButton.configure(bg='#98E22B')
+	def SelectButtonGreenGrey(self,method):
+		if method == "Played":self.selectPlayedButton.configure(bg='#F0F0F0')
+		elif method == "Unplay":self.selectUnplayButton.configure(bg='#F0F0F0')
+		elif method == "IsFav":self.selectIsFavButton.configure(bg='#F0F0F0')
+		elif method == "Sync122":self.select122Button.configure(bg='#F0F0F0')
+		elif method == "Sync120":self.select120Button.configure(bg='#F0F0F0')
+		elif method == "RankEX":self.selectExRankButton.configure(bg='#F0F0F0')
+		elif method == "RankS":self.selectSRankButton.configure(bg='#F0F0F0')
+		elif method == "RankA":self.selectARankButton.configure(bg='#F0F0F0')
+		elif method == "RankB":self.selectBRankButton.configure(bg='#F0F0F0')
+		elif method == "RankC":self.selectCRankButton.configure(bg='#F0F0F0')
+
 	def CheckUpdate(self):
 		self.initLabel.configure(text="正在拉取更新信息……", anchor="w")
 		oldVersion = int(f'{self.version[0]}{self.version[2]}{self.version[4]}')
@@ -161,6 +240,7 @@ class MusyncSavDecodeGUI(object):
 		itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
 		# state = e.item(itemID,"text")						# 取得text参数
 		songData = e.item(itemID,"values")					# 取得values参数
+		print(e.item(itemID))
 		nroot = Toplevel(self.root)
 		nroot.resizable(True, True)
 		newWindow = SubWindow(nroot, songData[0], songData[1], songData[2])
@@ -202,7 +282,19 @@ class MusyncSavDecodeGUI(object):
 			os.remove("./SavDecode.decode")
 		self.DataLoad()
 
-	def DataLoad(self,command=None):
+	def DataSort(self,_dict):
+		if self.dataSortMethod == None:
+			return _dict
+		elif self.dataSortMethod == "PC":
+			return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:_dict["PlayCount"]))
+		elif self.dataSortMethod == "Sync":
+			return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:float(_dict["SyncNumber"][0:-1])))
+		elif self.dataSortMethod == "DiffNum":
+			return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:(_dict["SongName"][3]) if (not _dict["SongName"] == None) else "00"))
+		else:
+			return _dict
+
+	def DataLoad(self):
 		self.initLabel.configure(text="正在分析存档文件中……", anchor="w")
 		def Rank(sync):
 			sync = float(sync[0:-1])
@@ -243,26 +335,27 @@ class MusyncSavDecodeGUI(object):
 		with open(f'./SavAnalyze.json','r+') as saveData:
 			saveDataJson = json.load(saveData)
 			self.root.title(f'同步音律喵赛克 Steam端 本地存档分析    LastPlay: {saveDataJson["LastPlay"]}')
-			for saveLine in saveDataJson['SaveData']:
-				if command == "Played":
+			saveDataJson = self.DataSort(saveDataJson['SaveData'])
+			for saveLine in saveDataJson:
+				if self.dataSelectMethod == "Played":
 					if saveLine["PlayCount"] == 0:continue
-				elif command == "Unplay":
+				elif self.dataSelectMethod == "Unplay":
 					if not saveLine["PlayCount"] == 0:continue
-				elif command == "IsFav":
+				elif self.dataSelectMethod == "IsFav":
 					if saveLine["IsFav"] == '0x00':continue
-				elif command == "Sync122":
+				elif self.dataSelectMethod == "Sync122":
 					if float(saveLine["SyncNumber"][0:-1]) < 122:continue
-				elif command == "Sync120":
+				elif self.dataSelectMethod == "Sync120":
 					if float(saveLine["SyncNumber"][0:-1]) < 120:continue
-				elif command == "RankEX":
+				elif self.dataSelectMethod == "RankEX":
 					if float(saveLine["SyncNumber"][0:-1]) < 117:continue
-				elif command == "RankS":
+				elif self.dataSelectMethod == "RankS":
 					if (float(saveLine["SyncNumber"][0:-1]) < 110) or (float(saveLine["SyncNumber"][0:-1]) >= 117):continue
-				elif command == "RankA":
+				elif self.dataSelectMethod == "RankA":
 					if (float(saveLine["SyncNumber"][0:-1]) < 95) or (float(saveLine["SyncNumber"][0:-1]) >= 110):continue
-				elif command == "RankB":
+				elif self.dataSelectMethod == "RankB":
 					if (float(saveLine["SyncNumber"][0:-1]) < 75) or (float(saveLine["SyncNumber"][0:-1]) >= 95):continue
-				elif command == "RankC":
+				elif self.dataSelectMethod == "RankC":
 					if (float(saveLine["SyncNumber"][0:-1]) >= 75) or (saveLine["PlayCount"] == 0):continue
 				self.saveCount += 1
 				self.saveData.insert('', END, values=(saveLine["SongID"], 
@@ -289,7 +382,7 @@ class MusyncSavDecodeGUI(object):
 
 		self.saveFilePathEntry.place(x=170,y=10,width=(self.windowInfo[2]-260),height=30)
 		self.getSaveFilePath.place(x=(self.windowInfo[2]-90),y=10,width=90,height=30)
-		self.saveData.place(x=10 ,y=90 ,width=(self.windowInfo[2]-10) ,height=(self.windowInfo[3]-120))
+		self.saveData.place(x=10 ,y=130 ,width=(self.windowInfo[2]-10) ,height=(self.windowInfo[3]-160))
  
 		self.saveData.column("SongID",anchor="e",width=60)
 		self.saveData.heading("SongID",anchor="center",text="谱面号")
@@ -317,7 +410,6 @@ class MusyncSavDecodeGUI(object):
 		self.VScroll1.place(x=self.windowInfo[2]-30, y=1, width=20, relheight=1)
 		self.saveCountVar.set(self.saveCount)
 		self.saveCountLabel.configure(text=self.saveCountVar.get())
-		self.deleteAnalyzeFile.place(x=self.windowInfo[2]-100,y=50,width=100,height=30)
 		self.developer.place(x=10,y=self.windowInfo[3]-30,width=370,height=30)
 		self.gitHubLink.place(x=380,y=self.windowInfo[3]-30,width=self.windowInfo[2]-380,height=30)
 

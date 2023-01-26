@@ -47,7 +47,7 @@ class MusyncSavDecodeGUI(object):
 		self.dataSortMethod = None
 		self.dataSortMethodsort = True
 		self.dataSelectMethod = None
-		self.version = '1.0.5'
+		self.version = '1.0.6'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)
@@ -111,10 +111,12 @@ class MusyncSavDecodeGUI(object):
 		self.sortLabel.place(x=610,y=55,width=50,height=60)
 		self.sortPlayCountButton = Button(self.root, text="游玩次数", command=lambda:self.SortMethod('PC'), anchor="w", font=self.font)
 		self.sortPlayCountButton.place(x=660,y=50,width=90,height=30)
-		self.sortSyncButton = Button(self.root, text="本地同步率", command=lambda:self.SortMethod('Sync'), anchor="w", font=self.font)
-		self.sortSyncButton.place(x=750,y=50,width=110,height=30)
 		self.sortDiffNumButton = Button(self.root, text="难度等级", command=lambda:self.SortMethod('DiffNum'), anchor="w", font=self.font)
 		self.sortDiffNumButton.place(x=660,y=90,width=90,height=30)
+		self.sortSyncButton = Button(self.root, text="本地同步率", command=lambda:self.SortMethod('Sync'), anchor="w", font=self.font)
+		self.sortSyncButton.place(x=750,y=50,width=110,height=30)
+		self.sortSongNameButton = Button(self.root, text="歌曲名称", command=lambda:self.SortMethod('SongName'), anchor="w", font=self.font)
+		self.sortSongNameButton.place(x=750,y=90,width=90,height=30)
 
 		##AutoRun##
 		self.UpdateWindowInfo()
@@ -188,14 +190,17 @@ class MusyncSavDecodeGUI(object):
 		if method == "PC":self.sortPlayCountButton.configure(bg='#FF7B7B')
 		elif method == "Sync":self.sortSyncButton.configure(bg='#FF7B7B')
 		elif method == "DiffNum":self.sortDiffNumButton.configure(bg='#FF7B7B')
+		elif method == "SongName":self.sortSongNameButton.configure(bg='#FF7B7B')
 	def SortButtonGreen(self,method):
 		if method == "PC":self.sortPlayCountButton.configure(bg='#98E22B')
 		elif method == "Sync":self.sortSyncButton.configure(bg='#98E22B')
 		elif method == "DiffNum":self.sortDiffNumButton.configure(bg='#98E22B')
+		elif method == "SongName":self.sortSongNameButton.configure(bg='#98E22B')
 	def SortButtonGreenGrey(self,method):
 		if method == "PC":self.sortPlayCountButton.configure(bg='#F0F0F0')
 		elif method == "Sync":self.sortSyncButton.configure(bg='#F0F0F0')
 		elif method == "DiffNum":self.sortDiffNumButton.configure(bg='#F0F0F0')
+		elif method == "SongName":self.sortSongNameButton.configure(bg='#F0F0F0')
 	def SelectButtonGreen(self,method):
 		if method == "Played":self.selectPlayedButton.configure(bg='#98E22B')
 		elif method == "Unplay":self.selectUnplayButton.configure(bg='#98E22B')
@@ -291,6 +296,8 @@ class MusyncSavDecodeGUI(object):
 			return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:float(_dict["SyncNumber"][0:-1])))
 		elif self.dataSortMethod == "DiffNum":
 			return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:(_dict["SongName"][3]) if (not _dict["SongName"] == None) else "00"))
+		elif self.dataSortMethod == "SongName":
+			return sorted(_dict, reverse=(not self.dataSortMethodsort), key=(lambda _dict:(_dict["SongName"][0]) if (not _dict["SongName"] == None) else ""))
 		else:
 			return _dict
 

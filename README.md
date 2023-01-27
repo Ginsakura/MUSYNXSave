@@ -4,6 +4,8 @@
 ![主页面](./ReadmeResources/main.png "主页面")
 
 ## 更新日志
+### Version 1.0.6
+1. #### 新增 计算综合同步率
 
 ### Version 1.0.5
 1. #### 新增 谱面排序功能

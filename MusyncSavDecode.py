@@ -21,15 +21,18 @@ class MUSYNCSavProcess():
 	def Main(self,fileExtension=''):
 		if fileExtension == 'decode':
 			self.SaveFileAnalyze()
+			self.FavFix()
 		elif os.path.isfile(self.savPath):
-			# self.SaveFileDecode()
-			# self.SaveFileAnalyze()
-			try:
-				self.SaveFileDecode()
-				self.SaveFileAnalyze()
-				return self.savPath
-			except Exception as e:
-				messagebox.showerror("Error", f"存档文件不可读或文件并非MUSYNC存档.\n{e}")
+			self.SaveFileDecode()
+			self.SaveFileAnalyze()
+			self.FavFix()
+			# try:
+			# 	self.SaveFileDecode()
+			# 	self.SaveFileAnalyze()
+			# 	self.FavFix()
+			# 	return self.savPath
+			# except Exception as e:
+			# 	messagebox.showerror("Error", f"存档文件不可读或文件并非MUSYNC存档.\n{e}")
 		else:
 			messagebox.showerror("Error", "文件夹内找不到存档文件.")
 
@@ -105,6 +108,9 @@ class MUSYNCSavProcess():
 			UploadScore = self.Hex2Float_LittleEndian(self.Bytes2HexString(self.saveData[20:24]))
 			PlayCount = self.Hex2Int_LittleEndian(self.Bytes2HexString(self.saveData[24:28]))
 			IsFav = '0x01' if self.saveData[28]==1 else '0x00'
+
+			if SongID == 935:continue
+
 			if len(SyncNumber) == 5:SyncNumber = f'{SyncNumber[0:3]}.{SyncNumber[3:]}%'
 			elif len(SyncNumber) == 4:SyncNumber = f'{SyncNumber[0:2]}.{SyncNumber[2:]}%'
 			elif len(SyncNumber) == 3:SyncNumber = f'{SyncNumber[0]}.{SyncNumber[1:]}%'
@@ -125,6 +131,22 @@ class MUSYNCSavProcess():
 	def SaveAnalyzeFileWrite(self,text):
 		self.savAnalyzeFile.write(f'{text}\n')
 		print(text)
+
+	def FavFix(self):
+		saveJsonFile = open(f'./SavAnalyze.json','r+')
+		saveJson = json.load(saveJsonFile)
+		saveJsonFavFix = saveJson
+		saveJsonFile.close()
+		saveJsonFile = open(f'./SavAnalyze.json','w+')
+		for ids in range(len(saveJson["SaveData"])):
+			if saveJson["SaveData"][ids]["IsFav"] == "0x01":
+				for idx in range(ids+1,len(saveJson["SaveData"])):
+					oldName = ("" if saveJson["SaveData"][ids]["SongName"] is None else saveJson["SaveData"][ids]["SongName"][0])
+					newName = ("" if saveJson["SaveData"][idx]["SongName"] is None else saveJson["SaveData"][idx]["SongName"][0])
+					if (not oldName == "") and (oldName == newName) and (not newName == ""):
+						saveJsonFavFix["SaveData"][idx]["IsFav"] = "0x01"
+		json.dump(saveJsonFavFix,saveJsonFile,indent="")
+		saveJsonFile.close()
 
 def GetSongName(songID):
 	diffcute = ["Easy","Hard","Inferno"]

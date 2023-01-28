@@ -50,7 +50,7 @@ class MusyncSavDecodeGUI(object):
 		self.dataSortMethod = None
 		self.dataSortMethodsort = True
 		self.dataSelectMethod = None
-		self.version = '1.0.6'
+		self.version = '1.0.7'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)
@@ -132,6 +132,7 @@ class MusyncSavDecodeGUI(object):
 		##AutoRun##
 		self.UpdateWindowInfo()
 		self.CheckUpdate()
+		self.CheckFile()
 		if not os.path.isfile('./SongName.json'):
 			Error = list()
 			successDown = False
@@ -172,6 +173,17 @@ class MusyncSavDecodeGUI(object):
 		elif os.path.isfile('./SavDecode.decode'):
 			MusyncSavDecode.MUSYNCSavProcess(decodeFile='./SavDecode.decode').Main('decode')
 			self.DataLoad()
+
+	def CheckFile(self):
+		try:
+			saveData = open(f'./SavAnalyze.json','r+')
+			saveDataJson = json.load(saveData)
+		except Exception as e:
+			saveData.close()
+			messagebox.showerror("Error", f'SavAnalyze.json文件打开失败\n{e}')
+			os.remove("./SavAnalyze.json")
+		else:
+			saveData.close()
 
 	def SortMethod(self,method):
 		if self.dataSortMethod == method:

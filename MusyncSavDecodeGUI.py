@@ -91,7 +91,7 @@ class MusyncSavDecodeGUI(object):
 
 		#筛选控件
 		self.selectFrameLabel = Label(self.root, text="", relief="groove")
-		self.selectFrameLabel.place(x=178,y=48,width=426,height=74)
+		self.selectFrameLabel.place(x=178,y=48,width=366,height=74)
 		self.selectLabel = Label(self.root, text="筛选\n控件", anchor="w", font=self.font, relief="flat")
 		self.selectLabel.place(x=180,y=55,width=50,height=60)
 		self.selectPlayedButton = Button(self.root, text='已游玩', command=lambda:self.SelectMethod('Played'), anchor="w", font=self.font)
@@ -110,24 +110,24 @@ class MusyncSavDecodeGUI(object):
 		self.selectBRankButton.place(x=430,y=50,width=60,height=30)
 		self.selectCRankButton = Button(self.root, text='RankC', command=lambda:self.SelectMethod('RankC'), anchor="w", font=self.font)
 		self.selectCRankButton.place(x=430,y=88,width=60,height=30)
-		self.select122Button = Button(self.root, text='Score>122%', command=lambda:self.SelectMethod('Sync122'), anchor="w", font=self.font)
-		self.select122Button.place(x=490,y=50,width=110,height=30)
-		self.select120Button = Button(self.root, text='Score>120%', command=lambda:self.SelectMethod('Sync120'), anchor="w", font=self.font)
-		self.select120Button.place(x=490,y=88,width=110,height=30)
+		self.select122Button = Button(self.root, text='黑Ex', command=lambda:self.SelectMethod('Sync122'), anchor="w", font=self.font)
+		self.select122Button.place(x=490,y=50,width=50,height=30)
+		self.select120Button = Button(self.root, text='红Ex', command=lambda:self.SelectMethod('Sync120'), anchor="w", font=self.font)
+		self.select120Button.place(x=490,y=88,width=50,height=30)
 
 		##排序控件##
 		self.sortFrameLabel = Label(self.root, text="", relief="groove")
-		self.sortFrameLabel.place(x=608,y=48,width=256,height=74)
+		self.sortFrameLabel.place(x=548,y=48,width=256,height=74)
 		self.sortLabel = Label(self.root,text="排序\n控件", anchor="nw", font=self.font, relief="flat")
-		self.sortLabel.place(x=610,y=55,width=50,height=60)
+		self.sortLabel.place(x=550,y=55,width=50,height=60)
 		self.sortPlayCountButton = Button(self.root, text="游玩次数", command=lambda:self.SortMethod('PC'), anchor="w", font=self.font)
-		self.sortPlayCountButton.place(x=660,y=50,width=90,height=30)
+		self.sortPlayCountButton.place(x=600,y=50,width=90,height=30)
 		self.sortDiffNumButton = Button(self.root, text="难度等级", command=lambda:self.SortMethod('DiffNum'), anchor="w", font=self.font)
-		self.sortDiffNumButton.place(x=660,y=88,width=90,height=30)
-		self.sortSyncButton = Button(self.root, text="本地同步率", command=lambda:self.SortMethod('Sync'), anchor="w", font=self.font)
-		self.sortSyncButton.place(x=750,y=50,width=110,height=30)
+		self.sortDiffNumButton.place(x=600,y=88,width=90,height=30)
+		self.sortSyncButton = Button(self.root, text="云端同步率", command=lambda:self.SortMethod('Sync'), anchor="w", font=self.font)
+		self.sortSyncButton.place(x=690,y=50,width=110,height=30)
 		self.sortSongNameButton = Button(self.root, text="歌曲名称", command=lambda:self.SortMethod('SongName'), anchor="w", font=self.font)
-		self.sortSongNameButton.place(x=750,y=88,width=90,height=30)
+		self.sortSongNameButton.place(x=690,y=88,width=90,height=30)
 
 		##AutoRun##
 		self.UpdateWindowInfo()
@@ -304,7 +304,7 @@ class MusyncSavDecodeGUI(object):
 		elif self.dataSortMethod == "PC":
 			return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:_dict["PlayCount"]))
 		elif self.dataSortMethod == "Sync":
-			return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:float(_dict["SyncNumber"][0:-1])))
+			return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:float(_dict["UploadScore"][0:-1])))
 		elif self.dataSortMethod == "DiffNum":
 			return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:(_dict["SongName"][3]) if (not _dict["SongName"] == None) else "00"))
 		elif self.dataSortMethod == "SongName":

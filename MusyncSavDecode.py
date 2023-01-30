@@ -111,9 +111,9 @@ class MUSYNCSavProcess():
 
 			if SongID == 935:continue
 			if SongID == 1022:continue
-			# if SongID == 1080:continue
 			if SongID == 1194:continue
 			if SongID == 1283:continue
+			if SongID >= 1342:continue
 
 			if len(SyncNumber) == 5:SyncNumber = f'{SyncNumber[0:3]}.{SyncNumber[3:]}%'
 			elif len(SyncNumber) == 4:SyncNumber = f'{SyncNumber[0:2]}.{SyncNumber[2:]}%'

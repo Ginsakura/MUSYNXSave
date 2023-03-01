@@ -4,6 +4,7 @@ import struct
 import os
 import json
 from tkinter import messagebox
+from GetSongName import GetSongName
 
 class MUSYNCSavProcess():
 	"""docstring for MUSYNCSavProcess"""
@@ -64,10 +65,18 @@ class MUSYNCSavProcess():
 				break
 			else:
 				self.lastPlaySong.append(binTemp.decode())
-		self.SaveBinFileRead(493)
-		self.SaveBinFileRead(144)
-		self.SaveAnalyzeFileWrite(self.savBinFile.read(12).decode()) #'SongSaveInfo'
-		self.SaveBinFileRead(2)
+		self.SaveBinFileRead(475)
+		while True:
+			if self.savBinFile.read(1) == b'\x02':
+				break
+		#self.SaveBinFileRead(143)
+		while True:
+			if (self.savBinFile.read(1) == b'S'):
+				if self.savBinFile.read(1) == b'o':
+					if self.savBinFile.read(1) == b'n':
+						break
+		self.SaveAnalyzeFileWrite("Son"+self.savBinFile.read(9).decode()) #'SongSaveInfo'
+		self.savBinFile.read(2)
 		while (self.savBinFile.read(3) == b'\x00\x00\x09'):
 			char = self.savBinFile.read(1)
 			grop = self.savBinFile.read(1)
@@ -126,7 +135,7 @@ class MUSYNCSavProcess():
 			elif UploadScore < 100:UploadScore = ZeroFormat(UploadScore,17)
 			else:UploadScore = ZeroFormat(UploadScore,18)
 			self.SaveAnalyzeFileWrite(f'| {" "*(6-len(str(SongID)))}{SongID} | {Unknown0} |  {SpeedStall}  | {Unknown1} |    {" "*(7-len(SyncNumber))}{SyncNumber} | {" "*(19-len(UploadScore))}{UploadScore} | {" "*(9-len(str(PlayCount)))}{PlayCount} |  {IsFav} |')
-			saveDataAnalyzeJson["SaveData"].append(dict(SongID=SongID,SongName=GetSongName(SongID),SpeedStall=SpeedStall,SyncNumber=SyncNumber,UploadScore=UploadScore,PlayCount=PlayCount,IsFav=IsFav))
+			saveDataAnalyzeJson["SaveData"].append(dict(SpeedStall=SpeedStall,SongName=GetSongName(SpeedStall),SyncNumber=SyncNumber,UploadScore=UploadScore,PlayCount=PlayCount,IsFav=IsFav))
 		json.dump(saveDataAnalyzeJson,saveDataAnalyze,indent="")
 		saveDataAnalyze.close()
 
@@ -152,27 +161,10 @@ class MUSYNCSavProcess():
 		json.dump(saveJsonFavFix,saveJsonFile,indent="")
 		saveJsonFile.close()
 
-def GetSongName(songID):
-	diffcute = ["Easy","Hard","Inferno"]
-	if os.path.isfile("./SongName.json"):
-		with open("./SongName.json",'r',encoding='utf8') as songNameFile:
-			songNameJson = json.load(songNameFile)
-			if f'{songID}' in songNameJson:
-				data = songNameJson[f'{songID}']
-				if data is None:return None
-				songName = data[0]
-				songKeys = ("4Key" if data[1]==4 else "6Key")
-				songDifficulty = diffcute[int(data[2])]
-				songDifficultyNumber = "%02d"%data[3]
-				return [songName,songKeys,songDifficulty,songDifficultyNumber]
-			else:
-				return None
-	else:
-		return None
-
 if __name__ == '__main__':
 	#Config#
-	savPath = "D:/Program Files/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav"
+	# savPath = "D:/Program Files/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav"
+	savPath = "C:/Users/Ginsakura/Documents/Tencent Files/2602961063/FileRecv/savedata.sav"
 
 	#Run#
 	Object = MUSYNCSavProcess(savPath)

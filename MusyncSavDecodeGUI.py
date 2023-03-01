@@ -50,11 +50,11 @@ class MusyncSavDecodeGUI(object):
 		self.dataSortMethod = None
 		self.dataSortMethodsort = True
 		self.dataSelectMethod = None
-		self.version = '1.0.7'
+		self.version = '1.1.0'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)
-		self.saveFileDecodeButton = Button(self.root, text="存档解码及分析", font=self.font)
+		self.saveFileDecodeButton = Button(self.root, text="存档解码及分析",command=self.DeleteAnalyzeFile, font=self.font)
 		self.saveFileDecodeButton.configure(command=self.DataLoad)
 		self.saveFileDecodeButton.place(x=10,y=10,width=150,height=30)
 
@@ -69,7 +69,7 @@ class MusyncSavDecodeGUI(object):
 		self.getSaveFilePath = Button(self.root, text='打开存档', command=self.SelectPath, font=self.font)
 
 		self.saveData = ttk.Treeview(self.root, show="headings")
-		self.saveData.configure(columns = ["SongID",'SongName',"Keys","Difficulty","DifficultyNumber","SpeedStall","SyncNumber","Rank","UploadScore","PlayCount","IsFav"])
+		self.saveData.configure(columns = ["SpeedStall",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","IsFav"])
 		self.VScroll1 = Scrollbar(self.saveData, orient='vertical', command=self.saveData.yview)
 		self.saveData.configure(yscrollcommand=self.VScroll1.set)
 
@@ -175,15 +175,24 @@ class MusyncSavDecodeGUI(object):
 			self.DataLoad()
 
 	def CheckFile(self):
+		saveData=None
 		try:
 			saveData = open(f'./SavAnalyze.json','r+')
 			saveDataJson = json.load(saveData)
+			saveData.close()
 		except Exception as e:
-			saveData.close()
 			messagebox.showerror("Error", f'SavAnalyze.json文件打开失败\n{e}')
-			os.remove("./SavAnalyze.json")
-		else:
+			try:
+				os.remove("./SavAnalyze.json")
+			except:
+				pass
+		if os.path.isfile('./SavAnalyze.json'):
+			saveData = open(f'./SavAnalyze.json','r+')
+			saveDataJson = json.load(saveData)
 			saveData.close()
+			print(len(saveDataJson['SaveData']))
+			if len(saveDataJson['SaveData']) == 0:
+				os.remove("./SavAnalyze.json")
 
 	def SortMethod(self,method):
 		if self.dataSortMethod == method:
@@ -335,6 +344,7 @@ class MusyncSavDecodeGUI(object):
 			elif sync < 120:return "蓝Ex"
 			elif sync < 122:return "红Ex"
 			else:return "黑Ex"
+
 		ids = self.saveData.get_children()
 		if not len(ids) == 0:
 			for idx in ids:
@@ -390,12 +400,12 @@ class MusyncSavDecodeGUI(object):
 					if (float(saveLine["SyncNumber"][0:-1]) >= 75) or (saveLine["PlayCount"] == 0):continue
 				self.saveCount += 1
 				self.totalSync += float(saveLine["UploadScore"][0:-1])
-				self.saveData.insert('', END, values=(saveLine["SongID"], 
+				self.saveData.insert('', END, values=(saveLine["SpeedStall"],
 					("" if saveLine["SongName"] is None else saveLine["SongName"][0]), 
 					("" if saveLine["SongName"] is None else saveLine["SongName"][1]), 
 					("" if saveLine["SongName"] is None else saveLine["SongName"][2]), 
 					("" if saveLine["SongName"] is None else ("" if saveLine["SongName"][3]=="00" else saveLine["SongName"][3])), 
-					saveLine["SpeedStall"], saveLine["SyncNumber"], 
+					 saveLine["SyncNumber"], 
 					("" if ((saveLine["PlayCount"] == 0) and (saveLine["UploadScore"] == "0.00000000000000%")) else Rank(saveLine["SyncNumber"])), 
 					saveLine["UploadScore"], saveLine["PlayCount"], saveLine["IsFav"]))
 		self.initLabel.place(x=0,width=0)
@@ -416,9 +426,9 @@ class MusyncSavDecodeGUI(object):
 		self.getSaveFilePath.place(x=(self.windowInfo[2]-90),y=10,width=90,height=30)
 		self.saveData.place(x=10 ,y=130 ,width=(self.windowInfo[2]-10) ,height=(self.windowInfo[3]-160))
  
-		self.saveData.column("SongID",anchor="e",width=60)
-		self.saveData.heading("SongID",anchor="center",text="谱面号")
-		self.saveData.column("SongName",anchor="w",width=(self.windowInfo[2]-740 if self.windowInfo[2]-740 > 100 else 100))
+		self.saveData.column("SpeedStall",anchor="e",width=90)
+		self.saveData.heading("SpeedStall",anchor="center",text="谱面号")
+		self.saveData.column("SongName",anchor="w",width=(self.windowInfo[2]-680 if self.windowInfo[2]-680 > 100 else 100))
 		self.saveData.heading("SongName",anchor="center",text="曲名")
 		self.saveData.column("Keys",anchor="center",width=40)
 		self.saveData.heading("Keys",anchor="center",text="键数")
@@ -426,8 +436,6 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.heading("Difficulty",anchor="center",text="难度")
 		self.saveData.column("DifficultyNumber",anchor="center",width=40)
 		self.saveData.heading("DifficultyNumber",anchor="center",text="等级")
-		self.saveData.column("SpeedStall",anchor="e",width=90)
-		self.saveData.heading("SpeedStall",anchor="center",text="SpeedStall")
 		self.saveData.column("SyncNumber",anchor="e",width=70)
 		self.saveData.heading("SyncNumber",anchor="center",text="同步率")
 		self.saveData.column("Rank",anchor="center",width=50)
@@ -461,7 +469,7 @@ class SubWindow(object):
 		style = ttk.Style()
 		style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',12))
 		style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',12))
-		nroot.title(f"同步音律喵赛克 Steam端 {songID}:{songName}:{songDifficute}全球排行")
+		nroot.title(f"{songID}:{songName}:{songDifficute} 全球排行")
 		nroot['background'] = '#efefef'
 		self.root = nroot
 		self.songID = songID

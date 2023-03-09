@@ -13,3 +13,5 @@ SavAnalyze.json
 LXGW.ttf
 *.ico
 *.exe
+*.sav
+/othersSavFile/

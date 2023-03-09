@@ -41,7 +41,7 @@ class MUSYNCSavProcess():
 		with open(self.savPath,'r') as savFile:
 			savEncode = savFile.read()
 		#print(savEncode)
-		with open(f'./SavDecode.decode','wb+') as savBin:
+		with open(f'./musync/SavDecode.decode','wb+') as savBin:
 			savBin.write(base64.standard_b64decode(savEncode))
 	
 	def Hex2Float_LittleEndian(self,tHex): #小端用<,大端用!或>
@@ -54,8 +54,8 @@ class MUSYNCSavProcess():
 		return ''.join(['%02X' % b for b in Bytes])
 	
 	def SaveFileAnalyze(self):
-		self.savBinFile = open(f'./SavDecode.decode','rb+')
-		self.savAnalyzeFile = open(f'./SavAnalyze.analyze','w+')
+		self.savBinFile = open(f'./musync/SavDecode.decode','rb+')
+		self.savAnalyzeFile = open(f'./musync/SavAnalyze.analyze','w+')
 		self.SaveBinFileRead(887)
 		self.SaveBinFileRead(22)
 		while True:
@@ -101,7 +101,7 @@ class MUSYNCSavProcess():
 		self.savAnalyzeFile.close()
 
 	def Analyze2Json(self):
-		saveDataAnalyze = open(f'./SavAnalyze.json','w+')
+		saveDataAnalyze = open(f'./musync/SavAnalyze.json','w+')
 		saveDataAnalyzeJson = dict()
 		saveDataAnalyzeJson["LastPlay"] = "".join(self.lastPlaySong)
 		saveDataAnalyzeJson["SaveData"] = list()
@@ -140,11 +140,11 @@ class MUSYNCSavProcess():
 		print(text)
 
 	def FavFix(self):
-		saveJsonFile = open(f'./SavAnalyze.json','r+')
+		saveJsonFile = open(f'./musync/SavAnalyze.json','r+')
 		saveJson = json.load(saveJsonFile)
 		saveJsonFavFix = saveJson
 		saveJsonFile.close()
-		saveJsonFile = open(f'./SavAnalyze.json','w+')
+		saveJsonFile = open(f'./musync/SavAnalyze.json','w+')
 		for ids in range(len(saveJson["SaveData"])):
 			if saveJson["SaveData"][ids]["IsFav"] == "0x01":
 				for idx in range(ids+1,len(saveJson["SaveData"])):

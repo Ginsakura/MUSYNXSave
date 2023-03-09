@@ -23,7 +23,7 @@ class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
 	def __init__(self, root, isTKroot=True):
 		##Init##
-		root.iconbitmap('./Musync.ico')
+		root.iconbitmap('./musync/Musync.ico')
 		super(MusyncSavDecodeGUI, self).__init__()
 		self.isTKroot = isTKroot
 		self.font=('霞鹜文楷等宽',16)
@@ -133,66 +133,47 @@ class MusyncSavDecodeGUI(object):
 		self.UpdateWindowInfo()
 		self.CheckUpdate()
 		self.CheckFile()
-		if not os.path.isfile('./SongName.json'):
-			Error = list()
-			successDown = False
-			self.initLabel.configure(text="正在从GitHub Repo下载SongName文件中……", anchor="w")
-			try:
-				jsonData = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/SongName.json")
-				try:
-					with open("./SongName.json",'wb+') as downData:
-						downData.write(jsonData.content)
-					successDown = True
-				except Exception as e:
-					Error.append(f"无法打开SongName.json文件,\n请检查文件是否被占用或读写需要管理员权限.\n{e}\n")
-			except Exception as e:
-				Error.append(f"无法从GitHub Repo下载SongName.json文件.\n请检查网路连接或者开启代理(VPN)服务.\n{e}\n")
-			
-			if not successDown:
-				pass
-			if not len(Error) == 0:
-				messagebox.showerror("Error", ''.join(Error))
-		if not os.path.isfile('./SaveFilePath.sfp'):
+		if not os.path.isfile('./musync/SaveFilePath.sfp'):
 			self.GetSaveFile()
 		else:
 			self.initLabel.configure(text="正在读取存档路径……", anchor="w")
-			sfp = open('./SaveFilePath.sfp','r+')
+			sfp = open('./musync/SaveFilePath.sfp','r+')
 			sfpr = sfp.read()
 			sfp.close()
 			if (not sfpr == ""):
 				self.GetSaveFile()
 			elif (not os.path.isfile(sfpr)):
 				self.initLabel.configure(text="正在删除存档路径.", anchor="w")
-				os.remove('./SaveFilePath.sfp')
+				os.remove('./musync/SaveFilePath.sfp')
 				self.GetSaveFile()
 			else:
 				self.saveFilePathVar.set(sfpr)
 				self.DataLoad()
-		if os.path.isfile('./SavAnalyze.json'):
+		if os.path.isfile('./musync/SavAnalyze.json'):
 			self.DataLoad()
-		elif os.path.isfile('./SavDecode.decode'):
-			MusyncSavDecode.MUSYNCSavProcess(decodeFile='./SavDecode.decode').Main('decode')
+		elif os.path.isfile('./musync/SavDecode.decode'):
+			MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync/SavDecode.decode').Main('decode')
 			self.DataLoad()
 
 	def CheckFile(self):
 		saveData=None
 		try:
-			saveData = open(f'./SavAnalyze.json','r+')
+			saveData = open(f'./musync/SavAnalyze.json','r+')
 			saveDataJson = json.load(saveData)
 			saveData.close()
 		except Exception as e:
 			messagebox.showerror("Error", f'SavAnalyze.json文件打开失败\n{e}')
 			try:
-				os.remove("./SavAnalyze.json")
+				os.remove("./musync/SavAnalyze.json")
 			except:
 				pass
-		if os.path.isfile('./SavAnalyze.json'):
-			saveData = open(f'./SavAnalyze.json','r+')
+		if os.path.isfile('./musync/SavAnalyze.json'):
+			saveData = open(f'./musync/SavAnalyze.json','r+')
 			saveDataJson = json.load(saveData)
 			saveData.close()
 			print(len(saveDataJson['SaveData']))
 			if len(saveDataJson['SaveData']) == 0:
-				os.remove("./SavAnalyze.json")
+				os.remove("./musync/SavAnalyze.json")
 
 	def SortMethod(self,method):
 		if self.dataSortMethod == method:
@@ -303,7 +284,7 @@ class MusyncSavDecodeGUI(object):
 				saveFilePath = f"{ids}:/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav"
 				break
 		if not saveFilePath == None:
-			with open('./SaveFilePath.sfp','w+') as sfp:
+			with open('./musync/SaveFilePath.sfp','w+') as sfp:
 				sfp.write(saveFilePath)
 				self.saveFilePathVar.set(saveFilePath)
 			self.DataLoad()
@@ -311,12 +292,12 @@ class MusyncSavDecodeGUI(object):
 			self.initLabel.configure(text="搜索不到存档文件.", anchor="w")
 
 	def DeleteAnalyzeFile(self):
-		if os.path.isfile("./SavAnalyze.json"):
-			os.remove("./SavAnalyze.json")
-		if os.path.isfile("./SavAnalyze.analyze"):
-			os.remove("./SavAnalyze.analyze")
-		if os.path.isfile("./SavDecode.decode"):
-			os.remove("./SavDecode.decode")
+		if os.path.isfile("./musync/SavAnalyze.json"):
+			os.remove("./musync/SavAnalyze.json")
+		if os.path.isfile("./musync/SavAnalyze.analyze"):
+			os.remove("./musync/SavAnalyze.analyze")
+		if os.path.isfile("./musync/SavDecode.decode"):
+			os.remove("./musync/SavDecode.decode")
 		self.DataLoad()
 
 	def DataSort(self,_dict):
@@ -352,28 +333,28 @@ class MusyncSavDecodeGUI(object):
 			self.saveCount = 0
 			self.totalSync = 0
 		else:saveFilePath = self.saveFilePathEntry.get()
-		if os.path.isfile('./SavAnalyze.json'):pass
-		#elif os.path.isfile('./SavAnalyze.analyze'):MusyncSavDecode.MUSYNCSavProcess(analyzeFile='./SavAnalyze.analyze').Main('analyze')
-		elif os.path.isfile('./SavDecode.decode'):MusyncSavDecode.MUSYNCSavProcess(decodeFile='./SavDecode.decode').Main('decode')
+		if os.path.isfile('./musync/SavAnalyze.json'):pass
+		#elif os.path.isfile('./musync/SavAnalyze.analyze'):MusyncSavDecode.MUSYNCSavProcess(analyzeFile='./musync/SavAnalyze.analyze').Main('analyze')
+		elif os.path.isfile('./musync/SavDecode.decode'):MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync/SavDecode.decode').Main('decode')
 		else:
 			if self.saveFilePathEntry.get() == 'Input SaveFile or AnalyzeFile Path (savedata.sav)or(SavAnalyze.json)':
 				self.SelectPath()
 			path = MusyncSavDecode.MUSYNCSavProcess(self.saveFilePathVar.get()).Main()
-			with open('./SaveFilePath.sfp','w+') as sfp:
+			with open('./musync/SaveFilePath.sfp','w+') as sfp:
 				sfp.write("" if path is None else path)
 
-		saveData = open(f'./SavAnalyze.json','r+')
+		saveData = open(f'./musync/SavAnalyze.json','r+')
 		saveDataJson = json.load(saveData)
 		saveData.close()
 
 		if (saveDataJson['SaveData'][0]["SongName"] is None):
-			saveData = open(f'./SavAnalyze.json','w+')
+			saveData = open(f'./musync/SavAnalyze.json','w+')
 			for ids in range(len(saveDataJson['SaveData'])):
 				saveDataJson['SaveData'][ids]["SongName"] = MusyncSavDecode.GetSongName(saveDataJson['SaveData'][ids]["SongID"])
 			json.dump(saveDataJson,saveData,indent="")
 			saveData.close()
 			
-		with open(f'./SavAnalyze.json','r+') as saveData:
+		with open(f'./musync/SavAnalyze.json','r+') as saveData:
 			saveDataJson = json.load(saveData)
 			self.root.title(f'同步音律喵赛克 Steam端 本地存档分析    LastPlay: {saveDataJson["LastPlay"]}')
 			saveDataJson = self.DataSort(saveDataJson['SaveData'])
@@ -455,14 +436,14 @@ class MusyncSavDecodeGUI(object):
 		self.developer.place(x=10,y=self.windowInfo[3]-30,width=370,height=30)
 		self.gitHubLink.place(x=380,y=self.windowInfo[3]-30,width=self.windowInfo[2]-380,height=30)
 
-		self.saveData.bind("<Double-1>",self.DoubleClick)
+		# self.saveData.bind("<Double-1>",self.DoubleClick)
 
 		root.after(200,self.UpdateWindowInfo)
 
 class SubWindow(object):
 	def __init__(self, nroot, songID, songName, songDifficute):
 		##Init##
-		nroot.iconbitmap('./Musync.ico')
+		nroot.iconbitmap('./musync/Musync.ico')
 		super(SubWindow, self).__init__()
 		self.font=('霞鹜文楷等宽',16)
 		nroot.geometry(f'1000x630+500+300')
@@ -476,6 +457,9 @@ class SubWindow(object):
 		self.globalSync = ttk.Treeview(self.root, show="headings")
 		self.globalSync.configure(columns = ['SongName',"Difficulty","Rank","SyncNumber"])
 		self.VScroll = Scrollbar(self.globalSync, orient='vertical', command=self.globalSync.yview)
+
+		self.TIPS = Label(self.root, text="这里还没有被实现鸭——", relief="groove", font=('霞鹜文楷等宽',15))
+		self.TIPS.place(x=10,y=10,width=300,height=30)
 		
 		##AutoRun##
 		self.UpdateWindow()
@@ -498,12 +482,14 @@ class SubWindow(object):
 		
 
 if __name__ == '__main__':
-	if not os.path.isfile('./MUSYNC.ico'):
+	if not os.path.isfile('./musync/MUSYNC.ico'):
 		FileExport.WriteIcon()
-	if not os.path.isfile('./LXGW.ttf'):
+	if not os.path.isfile('./musync/LXGW.ttf'):
 		FileExport.WriteTTF()
+	if not os.path.isfile('./musync/SongName.json'):
+		FileExport.WriteSongNameJson()
 	try:
-		pyglet.font.add_file('./LXGW.ttf')
+		pyglet.font.add_file('./musync/LXGW.ttf')
 		pyglet.font.load('霞鹜文楷等宽')
 	except Exception as e:
 		messagebox.showerror("Error", f'{e}\n无法加载字体文件')

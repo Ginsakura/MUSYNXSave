@@ -13,6 +13,7 @@ from tkinter import ttk
 from tkinter import font
 from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
+from GetSongName import GetSongName
 #import win32api
 #import win32con
 #import win32gui_struct
@@ -50,7 +51,7 @@ class MusyncSavDecodeGUI(object):
 		self.dataSortMethod = None
 		self.dataSortMethodsort = True
 		self.dataSelectMethod = None
-		self.version = '1.1.1'
+		self.version = '1.1.2'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)
@@ -74,7 +75,8 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.configure(yscrollcommand=self.VScroll1.set)
 
 		self.developer = Label(self.root, text=f'Version {self.version} | Develop By Ginsakura', font=self.font, relief="groove")
-		self.gitHubLink = Button(self.root, text='https://github.com/Ginsakura/MUSYNCSave    点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
+		# self.gitHubLink = Button(self.root, text='https://github.com/Ginsakura/MUSYNCSave    点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
+		self.gitHubLink = Button(self.root, text='点击打开下载链接    点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
 
 		self.initLabel = Label(self.root, text='启动中', anchor="center", font=self.font, relief="groove")
 		self.initLabel.place(x=300,y=300,width=400,height=30)
@@ -157,23 +159,21 @@ class MusyncSavDecodeGUI(object):
 
 	def CheckFile(self):
 		saveData=None
-		try:
-			saveData = open(f'./musync/SavAnalyze.json','r+')
-			saveDataJson = json.load(saveData)
-			saveData.close()
-		except Exception as e:
-			messagebox.showerror("Error", f'SavAnalyze.json文件打开失败\n{e}')
-			try:
-				os.remove("./musync/SavAnalyze.json")
-			except:
-				pass
 		if os.path.isfile('./musync/SavAnalyze.json'):
-			saveData = open(f'./musync/SavAnalyze.json','r+')
-			saveDataJson = json.load(saveData)
-			saveData.close()
-			print(len(saveDataJson['SaveData']))
-			if len(saveDataJson['SaveData']) == 0:
+			try:
+				saveData = open(f'./musync/SavAnalyze.json','r+')
+				saveDataJson = json.load(saveData)
+				saveData.close()
+			except Exception as e:
+				messagebox.showerror("Error", f'SavAnalyze.json文件打开失败\n错误的Json文件格式\n{e}')
 				os.remove("./musync/SavAnalyze.json")
+			else:
+				saveData = open(f'./musync/SavAnalyze.json','r+')
+				saveDataJson = json.load(saveData)
+				saveData.close()
+				# print(len(saveDataJson['SaveData']))
+				if len(saveDataJson['SaveData']) == 0:
+					os.remove("./musync/SavAnalyze.json")
 
 	def SortMethod(self,method):
 		if self.dataSortMethod == method:
@@ -251,7 +251,7 @@ class MusyncSavDecodeGUI(object):
 			self.gitHubLink.configure(text=f'有新版本啦——    NewVersion: {version}', anchor="center")
 			self.UpdateTip()
 		else:
-			self.gitHubLink.configure(text='https://github.com/Ginsakura/MUSYNCSave    点个Star吧，秋梨膏', anchor="center")
+			self.gitHubLink.configure(text='点击打开下载链接    点个Star吧，秋梨膏', anchor="center")
 
 	def DoubleClick(self,event):
 		e = event.widget									# 取得事件控件
@@ -350,7 +350,7 @@ class MusyncSavDecodeGUI(object):
 		if (saveDataJson['SaveData'][0]["SongName"] is None):
 			saveData = open(f'./musync/SavAnalyze.json','w+')
 			for ids in range(len(saveDataJson['SaveData'])):
-				saveDataJson['SaveData'][ids]["SongName"] = MusyncSavDecode.GetSongName(saveDataJson['SaveData'][ids]["SongID"])
+				saveDataJson['SaveData'][ids]["SongName"] = GetSongName(saveDataJson['SaveData'][ids]["SpeedStall"])
 			json.dump(saveDataJson,saveData,indent="")
 			saveData.close()
 			

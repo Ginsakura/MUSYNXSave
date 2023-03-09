@@ -3,8 +3,8 @@ import os
 
 def GetSongName(SpeedStall):
 	diffcute = ["Easy","Hard","Inferno"]
-	if os.path.isfile("./SongName.json"):
-		songNameFile = open("./SongName.json",'r',encoding='utf8')
+	if os.path.isfile("./musync/SongName.json"):
+		songNameFile = open("./musync/SongName.json",'r',encoding='utf8')
 		songNameJson = json.load(songNameFile)
 		if f'{SpeedStall}' in songNameJson:
 			data = songNameJson[f'{SpeedStall}']
@@ -20,20 +20,20 @@ def GetSongName(SpeedStall):
 		return None
 
 def SwichLittle2Big():
-	with open('./songname.json','r',encoding='utf8') as f:
+	with open('./musync/songname.json','r',encoding='utf8') as f:
 		d = json.load(f)
 	k = list(d.keys())
 	for ids in k:
 		idx = ids[6:]+ids[4:6]+ids[2:4]+ids[0:2]
 		d[idx] = d.pop(ids)
-	with open('./songname.json','w',encoding='utf8') as f:
+	with open('./musync/songname.json','w',encoding='utf8') as f:
 		json.dump(d,f,indent="",ensure_ascii=False)
 
 def main():
-	jsonFile = open("./SongName.json",'r',encoding='utf8')
+	jsonFile = open("./musync/SongName.json",'r',encoding='utf8')
 	songName = json.load(jsonFile)
 	jsonFile.close()
-	with open("./SavAnalyze.analyze",'r') as analyze:
+	with open("./musync/SavAnalyze.analyze",'r') as analyze:
 		while True:
 			line = analyze.readline()
 			if not line:break
@@ -43,9 +43,9 @@ def main():
 			if songid in songName:
 				dictVue = songName[songid]
 				songName[speedStall] = songName.pop(songid)
-	with open("./SongName.json",'w',encoding='utf8') as jsonFile:
+	with open("./musync/SongName.json",'w',encoding='utf8') as jsonFile:
 		json.dump(songName,jsonFile,indent="")
 
 if __name__ == '__main__':
-	# main()
-	SwichLittle2Big()
+	main()
+	# SwichLittle2Big()

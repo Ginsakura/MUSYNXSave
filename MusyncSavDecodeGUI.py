@@ -50,7 +50,7 @@ class MusyncSavDecodeGUI(object):
 		self.dataSortMethod = None
 		self.dataSortMethodsort = True
 		self.dataSelectMethod = None
-		self.version = '1.1.0'
+		self.version = '1.1.1'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)
@@ -379,7 +379,7 @@ class MusyncSavDecodeGUI(object):
 			saveDataJson = self.DataSort(saveDataJson['SaveData'])
 			for saveLine in saveDataJson:
 				if self.dataSelectMethod == "Played":
-					if saveLine["PlayCount"] == 0:continue
+					if (saveLine["PlayCount"] == 0) and (float(saveLine["SyncNumber"][0:-1]) == 0):continue
 				elif self.dataSelectMethod == "Unplay":
 					if not saveLine["PlayCount"] == 0:continue
 				elif self.dataSelectMethod == "IsFav":

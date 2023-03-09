@@ -19,6 +19,16 @@ def GetSongName(SpeedStall):
 	else:
 		return None
 
+def SwichLittle2Big():
+	with open('./songname.json','r',encoding='utf8') as f:
+		d = json.load(f)
+	k = list(d.keys())
+	for ids in k:
+		idx = ids[6:]+ids[4:6]+ids[2:4]+ids[0:2]
+		d[idx] = d.pop(ids)
+	with open('./songname.json','w',encoding='utf8') as f:
+		json.dump(d,f,indent="",ensure_ascii=False)
+
 def main():
 	jsonFile = open("./SongName.json",'r',encoding='utf8')
 	songName = json.load(jsonFile)
@@ -37,4 +47,5 @@ def main():
 		json.dump(songName,jsonFile,indent="")
 
 if __name__ == '__main__':
-	main()
+	# main()
+	SwichLittle2Big()

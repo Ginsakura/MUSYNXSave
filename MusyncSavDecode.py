@@ -111,19 +111,13 @@ class MUSYNCSavProcess():
 			self.saveData = self.savBinFile.read(29)
 			SongID = self.Hex2Int_LittleEndian(self.Bytes2HexString(self.saveData[0:4]))
 			Unknown0 = self.Bytes2HexString(self.saveData[4:8])
-			SpeedStall = self.Bytes2HexString(self.saveData[8:12])
+			temp = self.Bytes2HexString(self.saveData[8:12])
+			SpeedStall = temp[6:]+temp[4:6]+temp[2:4]+temp[0:2]
 			Unknown1 = self.Bytes2HexString(self.saveData[12:16])
 			SyncNumber = str(self.Hex2Int_LittleEndian(self.Bytes2HexString(self.saveData[16:20])))
 			UploadScore = self.Hex2Float_LittleEndian(self.Bytes2HexString(self.saveData[20:24]))
 			PlayCount = self.Hex2Int_LittleEndian(self.Bytes2HexString(self.saveData[24:28]))
 			IsFav = '0x01' if self.saveData[28]==1 else '0x00'
-
-			if SongID == 935:continue
-			if SongID == 1022:continue
-			if SongID == 1194:continue
-			if SongID == 1283:continue
-			if SongID >= 1342:continue
-
 			if len(SyncNumber) == 5:SyncNumber = f'{SyncNumber[0:3]}.{SyncNumber[3:]}%'
 			elif len(SyncNumber) == 4:SyncNumber = f'{SyncNumber[0:2]}.{SyncNumber[2:]}%'
 			elif len(SyncNumber) == 3:SyncNumber = f'{SyncNumber[0]}.{SyncNumber[1:]}%'

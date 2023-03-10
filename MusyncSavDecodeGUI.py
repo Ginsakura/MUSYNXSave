@@ -53,6 +53,7 @@ class MusyncSavDecodeGUI(object):
 		self.keys = 0
 		self.treeviewColumns = ["SpeedStall",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","IsFav"]
 		self.keysText = ['All Keys','4 Keys', '6 Keys']
+		self.wh = [0,0]
 		self.version = '1.1.3'
 
 		##Controls##
@@ -165,14 +166,14 @@ class MusyncSavDecodeGUI(object):
 		saveData=None
 		if os.path.isfile('./musync/SavAnalyze.json'):
 			try:
-				saveData = open(f'./musync/SavAnalyze.json','r+')
+				saveData = open(f'./musync/SavAnalyze.json','r+',encoding='utf8')
 				saveDataJson = json.load(saveData)
 				saveData.close()
 			except Exception as e:
 				messagebox.showerror("Error", f'SavAnalyze.json文件打开失败\n错误的Json文件格式\n{e}')
 				os.remove("./musync/SavAnalyze.json")
 			else:
-				saveData = open(f'./musync/SavAnalyze.json','r+')
+				saveData = open(f'./musync/SavAnalyze.json','r+',encoding='utf8')
 				saveDataJson = json.load(saveData)
 				saveData.close()
 				# print(len(saveDataJson['SaveData']))
@@ -260,17 +261,17 @@ class MusyncSavDecodeGUI(object):
 		else:
 			self.gitHubLink.configure(text='点击打开下载链接    点个Star吧，秋梨膏', anchor="center")
 
-	def DoubleClick(self,event):
-		e = event.widget									# 取得事件控件
-		itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
-		# state = e.item(itemID,"text")						# 取得text参数
-		songData = e.item(itemID,"values")					# 取得values参数
-		# print(e.item(itemID))
-		nroot = Toplevel(self.root)
-		nroot.resizable(True, True)
-		newWindow = SubWindow(nroot, songData[0], songData[1], songData[2])
+	# def DoubleClick(self,event):
+	# 	e = event.widget									# 取得事件控件
+	# 	itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
+	# 	# state = e.item(itemID,"text")						# 取得text参数
+	# 	songData = e.item(itemID,"values")					# 取得values参数
+	# 	# print(e.item(itemID))
+	# 	nroot = Toplevel(self.root)
+	# 	nroot.resizable(True, True)
+	# 	newWindow = SubWindow(nroot, songData[0], songData[1], songData[2])
 	def SortClick(self,event):
-		def treeview_sort_column(col):
+		def TreeviewSortColumn(col):
 			# print(self.dataSortMethodsort, end=' /// ')
 			if self.dataSortMethodsort[0] == col:
 				self.dataSortMethodsort[1] = not self.dataSortMethodsort[1]
@@ -287,8 +288,12 @@ class MusyncSavDecodeGUI(object):
 			for index, (val, k) in enumerate(l):
 				self.saveData.move(k, '', index)
 			# print(self.dataSortMethodsort)
+			self.TreeviewColumnUpdate()
+		if isinstance(event, list):
+			self.dataSortMethodsort[1] = not self.dataSortMethodsort[1]
+			TreeviewSortColumn(event[0])
 		for col in self.treeviewColumns:
-			self.saveData.heading(col, command=lambda _col=col: treeview_sort_column(_col))
+			self.saveData.heading(col, command=lambda _col=col:TreeviewSortColumn(_col))
 
 	def UpdateTip(self):
 		if self.gitHubLink.cget('fg') == '#C4245C':
@@ -370,18 +375,18 @@ class MusyncSavDecodeGUI(object):
 			with open('./musync/SaveFilePath.sfp','w+') as sfp:
 				sfp.write("" if path is None else path)
 
-		saveData = open(f'./musync/SavAnalyze.json','r+')
+		saveData = open(f'./musync/SavAnalyze.json','r+',encoding='utf8')
 		saveDataJson = json.load(saveData)
 		saveData.close()
 
 		if (saveDataJson['SaveData'][0]["SongName"] is None):
-			saveData = open(f'./musync/SavAnalyze.json','w+')
+			saveData = open(f'./musync/SavAnalyze.json','w+',encoding='utf8')
 			for ids in range(len(saveDataJson['SaveData'])):
 				saveDataJson['SaveData'][ids]["SongName"] = GetSongName(saveDataJson['SaveData'][ids]["SpeedStall"])
-			json.dump(saveDataJson,saveData,indent="")
+			json.dump(saveDataJson,saveData,indent="",ensure_ascii=False)
 			saveData.close()
 			
-		with open(f'./musync/SavAnalyze.json','r+') as saveData:
+		with open(f'./musync/SavAnalyze.json','r+',encoding='utf8') as saveData:
 			saveDataJson = json.load(saveData)
 			self.root.title(f'同步音律喵赛克 Steam端 本地存档分析    LastPlay: {saveDataJson["LastPlay"]}')
 			# saveDataJson = self.DataSort(saveDataJson['SaveData'])
@@ -419,6 +424,8 @@ class MusyncSavDecodeGUI(object):
 					 saveLine["SyncNumber"], 
 					("" if ((saveLine["PlayCount"] == 0) and (saveLine["UploadScore"] == "0.00000000000000%")) else Rank(saveLine["SyncNumber"])), 
 					saveLine["UploadScore"], saveLine["PlayCount"], saveLine["IsFav"]))
+		if not self.dataSortMethodsort[0] is None:
+			self.SortClick(self.dataSortMethodsort)
 		self.initLabel.place(x=0,width=0)
 
 	def SelectPath(self):
@@ -429,6 +436,30 @@ class MusyncSavDecodeGUI(object):
 			path_ = path_.replace("/", "\\")  # 实际在代码中执行的路径为“\“ 所以替换一下
 			self.saveFilePathVar.set(path_)
 
+	def TreeviewColumnUpdate(self):
+		self.saveData.heading("SpeedStall",anchor="center",text="谱面号"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='SpeedStall' else ''))
+		self.saveData.heading("SongName",anchor="center",text="曲名"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='SongName' else ''))
+		self.saveData.heading("Keys",anchor="center",text="键数"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='Keys' else ''))
+		self.saveData.heading("Difficulty",anchor="center",text="难度"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='Difficulty' else ''))
+		self.saveData.heading("DifficultyNumber",anchor="center",text="等级"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='DifficultyNumber' else ''))
+		self.saveData.heading("SyncNumber",anchor="center",text="同步率"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='SyncNumber' else ''))
+		self.saveData.heading("Rank",anchor="center",text="Rank"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='Rank' else ''))
+		self.saveData.heading("UploadScore",anchor="center",text="云端同步率"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='UploadScore' else ''))
+		self.saveData.heading("PlayCount",anchor="center",text="游玩计数"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='PlayCount' else ''))
+		self.saveData.heading("IsFav",anchor="center",text="IsFav"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='IsFav' else ''))
+
+	def UptateTreeviewWidth(self):
+		self.saveData.column("SpeedStall",anchor="e",width=90)
+		self.saveData.column("SongName",anchor="w",width=self.windowInfo[2]-770)
+		self.saveData.column("Keys",anchor="center",width=60)
+		self.saveData.column("Difficulty",anchor="w",width=65)
+		self.saveData.column("DifficultyNumber",anchor="center",width=60)
+		self.saveData.column("SyncNumber",anchor="e",width=80)
+		self.saveData.column("Rank",anchor="center",width=70)
+		self.saveData.column("UploadScore",anchor="e",width=160)
+		self.saveData.column("PlayCount",anchor="e",width=90)
+		self.saveData.column("IsFav",anchor="center",width=70)
+
 	def UpdateWindowInfo(self):
 		self.root.update()
 		self.windowInfo = ['root.winfo_x()','root.winfo_y()',root.winfo_width(),root.winfo_height()]
@@ -436,28 +467,11 @@ class MusyncSavDecodeGUI(object):
 		self.saveFilePathEntry.place(x=170,y=10,width=(self.windowInfo[2]-260),height=30)
 		self.getSaveFilePath.place(x=(self.windowInfo[2]-90),y=10,width=90,height=30)
 		self.saveData.place(x=10 ,y=130 ,width=(self.windowInfo[2]-10) ,height=(self.windowInfo[3]-160))
- 
-		self.saveData.column("SpeedStall",anchor="e",width=90)
-		self.saveData.heading("SpeedStall",anchor="center",text="谱面号"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='SpeedStall' else ''))
-		self.saveData.column("SongName",anchor="w",width=self.windowInfo[2]-770)
-		self.saveData.heading("SongName",anchor="center",text="曲名"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='SongName' else ''))
-		self.saveData.column("Keys",anchor="center",width=60)
-		self.saveData.heading("Keys",anchor="center",text="键数"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='Keys' else ''))
-		self.saveData.column("Difficulty",anchor="w",width=65)
-		self.saveData.heading("Difficulty",anchor="center",text="难度"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='Difficulty' else ''))
-		self.saveData.column("DifficultyNumber",anchor="center",width=60)
-		self.saveData.heading("DifficultyNumber",anchor="center",text="等级"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='DifficultyNumber' else ''))
-		self.saveData.column("SyncNumber",anchor="e",width=80)
-		self.saveData.heading("SyncNumber",anchor="center",text="同步率"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='SyncNumber' else ''))
-		self.saveData.column("Rank",anchor="center",width=70)
-		self.saveData.heading("Rank",anchor="center",text="Rank"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='Rank' else ''))
-		self.saveData.column("UploadScore",anchor="e",width=160)
-		self.saveData.heading("UploadScore",anchor="center",text="云端同步率"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='UploadScore' else ''))
-		self.saveData.column("PlayCount",anchor="e",width=90)
-		self.saveData.heading("PlayCount",anchor="center",text="游玩计数"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='PlayCount' else ''))
-		self.saveData.column("IsFav",anchor="center",width=70)
-		self.saveData.heading("IsFav",anchor="center",text="IsFav"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='IsFav' else ''))
 
+		if not self.wh == self.windowInfo[2:]:
+			self.UptateTreeviewWidth()
+			self.TreeviewColumnUpdate()
+		
 		self.VScroll1.place(x=self.windowInfo[2]-30, y=1, width=20, relheight=1)
 		self.saveCountVar.set(self.saveCount)
 		self.saveCountLabel.configure(text=self.saveCountVar.get())
@@ -470,7 +484,8 @@ class MusyncSavDecodeGUI(object):
 		# self.saveData.bind("<Double-1>",self.DoubleClick)
 		self.saveData.bind("<ButtonRelease-1>",self.SortClick)
 
-		root.after(200,self.UpdateWindowInfo)
+		self.wh = self.windowInfo[2:]
+		root.after(500,self.UpdateWindowInfo)
 
 class SubWindow(object):
 	def __init__(self, nroot, songID, songName, songDifficute):
@@ -514,6 +529,8 @@ class SubWindow(object):
 		
 
 if __name__ == '__main__':
+	if not os.path.exists('./musync/'):
+		os.makedirs('./musync/')
 	if not os.path.isfile('./musync/MUSYNC.ico'):
 		FileExport.WriteIcon()
 	if not os.path.isfile('./musync/LXGW.ttf'):

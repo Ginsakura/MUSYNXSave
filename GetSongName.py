@@ -44,7 +44,7 @@ def main():
 				dictVue = songName[songid]
 				songName[speedStall] = songName.pop(songid)
 	with open("./musync/SongName.json",'w',encoding='utf8') as jsonFile:
-		json.dump(songName,jsonFile,indent="")
+		json.dump(songName,jsonFile,ensure_ascii=False)
 
 if __name__ == '__main__':
 	main()

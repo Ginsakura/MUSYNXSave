@@ -101,7 +101,7 @@ class MUSYNCSavProcess():
 		self.savAnalyzeFile.close()
 
 	def Analyze2Json(self):
-		saveDataAnalyze = open(f'./musync/SavAnalyze.json','w+')
+		saveDataAnalyze = open(f'./musync/SavAnalyze.json','w+',encoding='utf8')
 		saveDataAnalyzeJson = dict()
 		saveDataAnalyzeJson["LastPlay"] = "".join(self.lastPlaySong)
 		saveDataAnalyzeJson["SaveData"] = list()
@@ -130,7 +130,7 @@ class MUSYNCSavProcess():
 			else:UploadScore = ZeroFormat(UploadScore,18)
 			self.SaveAnalyzeFileWrite(f'| {" "*(6-len(str(SongID)))}{SongID} | {Unknown0} |  {SpeedStall}  | {Unknown1} |    {" "*(7-len(SyncNumber))}{SyncNumber} | {" "*(19-len(UploadScore))}{UploadScore} | {" "*(9-len(str(PlayCount)))}{PlayCount} |  {IsFav} |')
 			saveDataAnalyzeJson["SaveData"].append(dict(SpeedStall=SpeedStall,SongName=GetSongName(SpeedStall),SyncNumber=SyncNumber,UploadScore=UploadScore,PlayCount=PlayCount,IsFav=IsFav))
-		json.dump(saveDataAnalyzeJson,saveDataAnalyze,indent="")
+		json.dump(saveDataAnalyzeJson,saveDataAnalyze,indent="",ensure_ascii=False)
 		saveDataAnalyze.close()
 
 	def SaveBinFileRead(self,lenth):
@@ -140,11 +140,11 @@ class MUSYNCSavProcess():
 		print(text)
 
 	def FavFix(self):
-		saveJsonFile = open(f'./musync/SavAnalyze.json','r+')
+		saveJsonFile = open(f'./musync/SavAnalyze.json','r+',encoding='utf8')
 		saveJson = json.load(saveJsonFile)
 		saveJsonFavFix = saveJson
 		saveJsonFile.close()
-		saveJsonFile = open(f'./musync/SavAnalyze.json','w+')
+		saveJsonFile = open(f'./musync/SavAnalyze.json','w+',encoding='utf8')
 		for ids in range(len(saveJson["SaveData"])):
 			if saveJson["SaveData"][ids]["IsFav"] == "0x01":
 				for idx in range(ids+1,len(saveJson["SaveData"])):

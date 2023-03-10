@@ -24,7 +24,7 @@ class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
 	def __init__(self, root, isTKroot=True):
 		##Init##
-		root.iconbitmap('./musync/Musync.ico')
+		root.iconbitmap('./musync_data/Musync.ico')
 		super(MusyncSavDecodeGUI, self).__init__()
 		self.isTKroot = isTKroot
 		self.font=('霞鹜文楷等宽',16)
@@ -54,7 +54,7 @@ class MusyncSavDecodeGUI(object):
 		self.treeviewColumns = ["SpeedStall",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","IsFav"]
 		self.keysText = ['All Keys','4 Keys', '6 Keys']
 		self.wh = [0,0]
-		self.version = '1.1.3'
+		self.version = '1.1.3 rc3'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)
@@ -77,7 +77,7 @@ class MusyncSavDecodeGUI(object):
 
 		self.developer = Label(self.root, text=f'Version {self.version} | Develop By Ginsakura', font=self.font, relief="groove")
 		# self.gitHubLink = Button(self.root, text='https://github.com/Ginsakura/MUSYNCSave    点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
-		self.gitHubLink = Button(self.root, text='点击打开下载链接    点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
+		self.gitHubLink = Button(self.root, text='点击打开下载链接    点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
 
 		self.initLabel = Label(self.root, text='启动中', anchor="center", font=self.font, relief="groove")
 		self.initLabel.place(x=300,y=300,width=400,height=30)
@@ -140,64 +140,53 @@ class MusyncSavDecodeGUI(object):
 		self.UpdateWindowInfo()
 		self.CheckUpdate()
 		self.CheckFile()
-		if not os.path.isfile('./musync/SaveFilePath.sfp'):
+		if not os.path.isfile('./musync_data/SaveFilePath.sfp'):
 			self.GetSaveFile()
 		else:
 			self.initLabel.configure(text="正在读取存档路径……", anchor="w")
-			sfp = open('./musync/SaveFilePath.sfp','r+')
+			sfp = open('./musync_data/SaveFilePath.sfp','r+')
 			sfpr = sfp.read()
 			sfp.close()
 			if (not sfpr == ""):
 				self.GetSaveFile()
 			elif (not os.path.isfile(sfpr)):
 				self.initLabel.configure(text="正在删除存档路径.", anchor="w")
-				os.remove('./musync/SaveFilePath.sfp')
+				os.remove('./musync_data/SaveFilePath.sfp')
 				self.GetSaveFile()
 			else:
 				self.saveFilePathVar.set(sfpr)
 				self.DataLoad()
-		if os.path.isfile('./musync/SavAnalyze.json'):
+		if os.path.isfile('./musync_data/SavAnalyze.json'):
 			self.DataLoad()
-		elif os.path.isfile('./musync/SavDecode.decode'):
-			MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync/SavDecode.decode').Main('decode')
+		elif os.path.isfile('./musync_data/SavDecode.decode'):
+			MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
 			self.DataLoad()
+		del sfpr
+		del sfp
 
 	def CheckFile(self):
 		saveData=None
-		if os.path.isfile('./musync/SavAnalyze.json'):
+		if os.path.isfile('./musync_data/SavAnalyze.json'):
 			try:
-				saveData = open(f'./musync/SavAnalyze.json','r+',encoding='utf8')
+				saveData = open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8')
 				saveDataJson = json.load(saveData)
 				saveData.close()
 			except Exception as e:
 				messagebox.showerror("Error", f'SavAnalyze.json文件打开失败\n错误的Json文件格式\n{e}')
-				os.remove("./musync/SavAnalyze.json")
+				os.remove("./musync_data/SavAnalyze.json")
 			else:
-				saveData = open(f'./musync/SavAnalyze.json','r+',encoding='utf8')
+				saveData = open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8')
 				saveDataJson = json.load(saveData)
 				saveData.close()
 				# print(len(saveDataJson['SaveData']))
 				if len(saveDataJson['SaveData']) == 0:
-					os.remove("./musync/SavAnalyze.json")
+					os.remove("./musync_data/SavAnalyze.json")
+		del saveData
+		del saveDataJson
 
 	def SelectKeys(self):
 		self.keys = (self.keys+1)%3
 		self.DataLoad()
-	# def SortMethod(self,method):
-		# if self.dataSortMethod == method:
-		# 	if self.dataSortMethodsort:
-		# 		self.dataSortMethodsort = False
-		# 		self.SortButtonGreenRed(method)
-		# 	else:
-		# 		self.dataSortMethod = None
-		# 		self.dataSortMethodsort = True
-		# 		self.SortButtonGreenGrey(method)
-		# else:
-		# 	self.dataSortMethodsort = True
-		# 	self.SortButtonGreenGrey(self.dataSortMethod)
-		# 	self.dataSortMethod = method
-		# 	self.SortButtonGreen(method)
-		# self.DataLoad()
 	def SelectMethod(self,method):
 		if self.dataSelectMethod == method:
 			self.dataSelectMethod = None
@@ -207,21 +196,6 @@ class MusyncSavDecodeGUI(object):
 			self.dataSelectMethod = method
 			self.SelectButtonGreen(method)
 		self.DataLoad()
-	# def SortButtonGreenRed(self,method):
-	# 	if method == "PC":self.sortPlayCountButton.configure(bg='#FF7B7B')
-	# 	elif method == "Sync":self.sortSyncButton.configure(bg='#FF7B7B')
-	# 	elif method == "DiffNum":self.sortDiffNumButton.configure(bg='#FF7B7B')
-	# 	elif method == "SongName":self.sortSongNameButton.configure(bg='#FF7B7B')
-	# def SortButtonGreen(self,method):
-	# 	if method == "PC":self.sortPlayCountButton.configure(bg='#98E22B')
-	# 	elif method == "Sync":self.sortSyncButton.configure(bg='#98E22B')
-	# 	elif method == "DiffNum":self.sortDiffNumButton.configure(bg='#98E22B')
-	# 	elif method == "SongName":self.sortSongNameButton.configure(bg='#98E22B')
-	# def SortButtonGreenGrey(self,method):
-	# 	if method == "PC":self.sortPlayCountButton.configure(bg='#F0F0F0')
-	# 	elif method == "Sync":self.sortSyncButton.configure(bg='#F0F0F0')
-	# 	elif method == "DiffNum":self.sortDiffNumButton.configure(bg='#F0F0F0')
-	# 	elif method == "SongName":self.sortSongNameButton.configure(bg='#F0F0F0')
 	def SelectButtonGreen(self,method):
 		if method == "Played":self.selectPlayedButton.configure(bg='#98E22B')
 		elif method == "Unplay":self.selectUnplayButton.configure(bg='#98E22B')
@@ -233,6 +207,7 @@ class MusyncSavDecodeGUI(object):
 		elif method == "RankA":self.selectARankButton.configure(bg='#98E22B')
 		elif method == "RankB":self.selectBRankButton.configure(bg='#98E22B')
 		elif method == "RankC":self.selectCRankButton.configure(bg='#98E22B')
+		del method
 	def SelectButtonGreenGrey(self,method):
 		if method == "Played":self.selectPlayedButton.configure(bg='#F0F0F0')
 		elif method == "Unplay":self.selectUnplayButton.configure(bg='#F0F0F0')
@@ -244,22 +219,41 @@ class MusyncSavDecodeGUI(object):
 		elif method == "RankA":self.selectARankButton.configure(bg='#F0F0F0')
 		elif method == "RankB":self.selectBRankButton.configure(bg='#F0F0F0')
 		elif method == "RankC":self.selectCRankButton.configure(bg='#F0F0F0')
+		del method
 
 	def CheckUpdate(self):
 		self.initLabel.configure(text="正在拉取更新信息……", anchor="w")
 		oldVersion = int(f'{self.version[0]}{self.version[2]}{self.version[4]}')
+		oldRC = int(self.version[-1])
 		try:
 			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
 			version = response.json()["tag_name"]
 			newVersion = int(f'{version[0]}{version[2]}{version[4]}')
+			try:
+				newRC = int(version[-1])
+			except:
+				newRC = 4
 		except Exception as e:
 			messagebox.showerror("Error", f'发生错误: {e}')
 			newVersion = oldVersion
+		# print(newVersion,oldVersion,newRC,oldRC)
 		if (newVersion > oldVersion):
-			self.gitHubLink.configure(text=f'有新版本啦——    NewVersion: {version}', anchor="center")
+			self.gitHubLink.configure(text=f'有新版本啦——点此打开下载页面    NewVersion: {version}', anchor="center")
+			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases"))
+			self.UpdateTip()
+		elif (newVersion == oldVersion) and (newRC > oldRC):
+			self.gitHubLink.configure(text=f'有新版本啦——点此打开下载页面    NewVersion: {version}', anchor="center")
+			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases"))
 			self.UpdateTip()
 		else:
-			self.gitHubLink.configure(text='点击打开下载链接    点个Star吧，秋梨膏', anchor="center")
+			self.gitHubLink.configure(text='点击打开GitHub仓库    点个Star吧，秋梨膏', anchor="center")
+			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"))
+		del oldVersion
+		del newVersion
+		del oldRC
+		del newRC
+		del response
+		del version
 
 	# def DoubleClick(self,event):
 	# 	e = event.widget									# 取得事件控件
@@ -316,7 +310,7 @@ class MusyncSavDecodeGUI(object):
 				saveFilePath = f"{ids}:/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav"
 				break
 		if not saveFilePath == None:
-			with open('./musync/SaveFilePath.sfp','w+') as sfp:
+			with open('./musync_data/SaveFilePath.sfp','w+') as sfp:
 				sfp.write(saveFilePath)
 				self.saveFilePathVar.set(saveFilePath)
 			self.DataLoad()
@@ -324,27 +318,13 @@ class MusyncSavDecodeGUI(object):
 			self.initLabel.configure(text="搜索不到存档文件.", anchor="w")
 
 	def DeleteAnalyzeFile(self):
-		if os.path.isfile("./musync/SavAnalyze.json"):
-			os.remove("./musync/SavAnalyze.json")
-		if os.path.isfile("./musync/SavAnalyze.analyze"):
-			os.remove("./musync/SavAnalyze.analyze")
-		if os.path.isfile("./musync/SavDecode.decode"):
-			os.remove("./musync/SavDecode.decode")
+		if os.path.isfile("./musync_data/SavAnalyze.json"):
+			os.remove("./musync_data/SavAnalyze.json")
+		if os.path.isfile("./musync_data/SavAnalyze.analyze"):
+			os.remove("./musync_data/SavAnalyze.analyze")
+		if os.path.isfile("./musync_data/SavDecode.decode"):
+			os.remove("./musync_data/SavDecode.decode")
 		self.DataLoad()
-
-	# def DataSort(self,_dict):
-	# 	if self.dataSortMethod == None:
-	# 		return _dict
-	# 	elif self.dataSortMethod == "PC":
-	# 		return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:_dict["PlayCount"]))
-	# 	elif self.dataSortMethod == "Sync":
-	# 		return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:float(_dict["UploadScore"][0:-1])))
-	# 	elif self.dataSortMethod == "DiffNum":
-	# 		return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:(_dict["SongName"][3]) if (not _dict["SongName"] == None) else "00"))
-	# 	elif self.dataSortMethod == "SongName":
-	# 		return sorted(_dict, reverse=(not self.dataSortMethodsort), key=(lambda _dict:(_dict["SongName"][0]) if (not _dict["SongName"] == None) else ""))
-	# 	else:
-	# 		return _dict
 
 	def DataLoad(self):
 		self.initLabel.configure(text="正在分析存档文件中……", anchor="w")
@@ -357,6 +337,7 @@ class MusyncSavDecodeGUI(object):
 			elif sync < 120:return "蓝Ex"
 			elif sync < 122:return "红Ex"
 			else:return "黑Ex"
+			del sync
 
 		ids = self.saveData.get_children()
 		if not len(ids) == 0:
@@ -365,31 +346,29 @@ class MusyncSavDecodeGUI(object):
 			self.saveCount = 0
 			self.totalSync = 0
 		else:saveFilePath = self.saveFilePathEntry.get()
-		if os.path.isfile('./musync/SavAnalyze.json'):pass
-		#elif os.path.isfile('./musync/SavAnalyze.analyze'):MusyncSavDecode.MUSYNCSavProcess(analyzeFile='./musync/SavAnalyze.analyze').Main('analyze')
-		elif os.path.isfile('./musync/SavDecode.decode'):MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync/SavDecode.decode').Main('decode')
+		if os.path.isfile('./musync_data/SavAnalyze.json'):pass
+		elif os.path.isfile('./musync_data/SavDecode.decode'):MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
 		else:
 			if self.saveFilePathEntry.get() == 'Input SaveFile or AnalyzeFile Path (savedata.sav)or(SavAnalyze.json)':
 				self.SelectPath()
 			path = MusyncSavDecode.MUSYNCSavProcess(self.saveFilePathVar.get()).Main()
-			with open('./musync/SaveFilePath.sfp','w+') as sfp:
+			with open('./musync_data/SaveFilePath.sfp','w+') as sfp:
 				sfp.write("" if path is None else path)
 
-		saveData = open(f'./musync/SavAnalyze.json','r+',encoding='utf8')
+		saveData = open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8')
 		saveDataJson = json.load(saveData)
 		saveData.close()
 
 		if (saveDataJson['SaveData'][0]["SongName"] is None):
-			saveData = open(f'./musync/SavAnalyze.json','w+',encoding='utf8')
+			saveData = open(f'./musync_data/SavAnalyze.json','w+',encoding='utf8')
 			for ids in range(len(saveDataJson['SaveData'])):
 				saveDataJson['SaveData'][ids]["SongName"] = GetSongName(saveDataJson['SaveData'][ids]["SpeedStall"])
 			json.dump(saveDataJson,saveData,indent="",ensure_ascii=False)
 			saveData.close()
 			
-		with open(f'./musync/SavAnalyze.json','r+',encoding='utf8') as saveData:
+		with open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8') as saveData:
 			saveDataJson = json.load(saveData)
 			self.root.title(f'同步音律喵赛克 Steam端 本地存档分析    LastPlay: {saveDataJson["LastPlay"]}')
-			# saveDataJson = self.DataSort(saveDataJson['SaveData'])
 			for saveLine in saveDataJson['SaveData']:
 				if not saveLine['SongName'] is None:
 					if (self.keys==1) and (saveLine['SongName'][1]=='6Key'):continue
@@ -427,14 +406,17 @@ class MusyncSavDecodeGUI(object):
 		if not self.dataSortMethodsort[0] is None:
 			self.SortClick(self.dataSortMethodsort)
 		self.initLabel.place(x=0,width=0)
+		del saveData
+		del saveDataJson
 
 	def SelectPath(self):
-		path_ = askopenfilename() #使用askdirectory()方法返回文件夹的路径
+		path_ = askopenfilename(title="打开存档文件", filetypes=(("Sav Files", "*.sav"),("All Files","*.*"),)) #使用askdirectory()方法返回文件夹的路径
 		if path_ == "":
 			self.saveFilePathVar.get() #当打开文件路径选择框后点击"取消" 输入框会清空路径，所以使用get()方法再获取一次路径
 		else:
 			path_ = path_.replace("/", "\\")  # 实际在代码中执行的路径为“\“ 所以替换一下
 			self.saveFilePathVar.set(path_)
+		del path_
 
 	def TreeviewColumnUpdate(self):
 		self.saveData.heading("SpeedStall",anchor="center",text="谱面号"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='SpeedStall' else ''))
@@ -477,8 +459,8 @@ class MusyncSavDecodeGUI(object):
 		self.saveCountLabel.configure(text=self.saveCountVar.get())
 		self.avgSyncVar.set(f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount))}')
 		self.avgSyncLabel.configure(text=self.avgSyncVar.get()[0:10]+"%")
-		self.developer.place(x=10,y=self.windowInfo[3]-30,width=370,height=30)
-		self.gitHubLink.place(x=380,y=self.windowInfo[3]-30,width=self.windowInfo[2]-380,height=30)
+		self.developer.place(x=10,y=self.windowInfo[3]-30,width=450,height=30)
+		self.gitHubLink.place(x=460,y=self.windowInfo[3]-30,width=self.windowInfo[2]-460,height=30)
 		self.selectKeys.configure(text=self.keysText[self.keys])
 
 		# self.saveData.bind("<Double-1>",self.DoubleClick)
@@ -490,7 +472,7 @@ class MusyncSavDecodeGUI(object):
 class SubWindow(object):
 	def __init__(self, nroot, songID, songName, songDifficute):
 		##Init##
-		nroot.iconbitmap('./musync/Musync.ico')
+		nroot.iconbitmap('./musync_data/Musync.ico')
 		super(SubWindow, self).__init__()
 		self.font=('霞鹜文楷等宽',16)
 		nroot.geometry(f'1000x630+500+300')
@@ -529,20 +511,23 @@ class SubWindow(object):
 		
 
 if __name__ == '__main__':
-	if not os.path.exists('./musync/'):
-		os.makedirs('./musync/')
-	if not os.path.isfile('./musync/MUSYNC.ico'):
+	if not os.path.exists('./musync_data/'):
+		if os.path.exists('./musync/'):
+			os.rename('./musync/','./musync_data/')
+		else:
+			os.makedirs('./musync_data/')
+	if not os.path.isfile('./musync_data/MUSYNC.ico'):
 		FileExport.WriteIcon()
-	if not os.path.isfile('./musync/LXGW.ttf'):
-		FileExport.WriteTTF()
-	if not os.path.isfile('./musync/SongName.json'):
+	if not os.path.isfile('./musync_data/SongName.json'):
 		FileExport.WriteSongNameJson()
-	try:
-		pyglet.font.add_file('./musync/LXGW.ttf')
-		pyglet.font.load('霞鹜文楷等宽')
-	except Exception as e:
-		messagebox.showerror("Error", f'{e}\n无法加载字体文件')
 	root = Tk()
+	fonts = list(font.families())
+	if not '霞鹜文楷等宽' in fonts:
+		if os.path.isfile('./musync_data/LXGW.ttf'):
+			os.system('./musync_data/LXGW.ttf')
+		else:
+			FileExport.WriteTTF()
+	del fonts
 	root.resizable(True, True) #允许改变窗口大小
 	window = MusyncSavDecodeGUI(root=root)
 	root.update()

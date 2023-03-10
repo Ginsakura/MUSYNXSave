@@ -48,15 +48,16 @@ class MusyncSavDecodeGUI(object):
 		self.totalSync = 0
 		self.avgSyncVar = StringVar()
 		self.avgSyncVar.set(f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount))}')
-		self.dataSortMethod = None
-		self.dataSortMethodsort = True
+		self.dataSortMethodsort = [None,False]
 		self.dataSelectMethod = None
-		self.version = '1.1.2'
+		self.keys = 0
+		self.treeviewColumns = ["SpeedStall",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","IsFav"]
+		self.keysText = ['All Keys','4 Keys', '6 Keys']
+		self.version = '1.1.3'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)
 		self.saveFileDecodeButton = Button(self.root, text="存档解码及分析",command=self.DeleteAnalyzeFile, font=self.font)
-		self.saveFileDecodeButton.configure(command=self.DataLoad)
 		self.saveFileDecodeButton.place(x=10,y=10,width=150,height=30)
 
 		self.CountFrameLanel = Label(self.root,text="", relief="groove")
@@ -69,8 +70,7 @@ class MusyncSavDecodeGUI(object):
 		self.saveFilePathEntry = Entry(self.root, textvariable=self.saveFilePathVar, font=self.font, relief="sunken")
 		self.getSaveFilePath = Button(self.root, text='打开存档', command=self.SelectPath, font=self.font)
 
-		self.saveData = ttk.Treeview(self.root, show="headings")
-		self.saveData.configure(columns = ["SpeedStall",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","IsFav"])
+		self.saveData = ttk.Treeview(self.root, show="headings", columns = self.treeviewColumns)
 		self.VScroll1 = Scrollbar(self.saveData, orient='vertical', command=self.saveData.yview)
 		self.saveData.configure(yscrollcommand=self.VScroll1.set)
 
@@ -117,19 +117,23 @@ class MusyncSavDecodeGUI(object):
 		self.select120Button = Button(self.root, text='红Ex', command=lambda:self.SelectMethod('Sync120'), anchor="w", font=self.font)
 		self.select120Button.place(x=490,y=88,width=50,height=30)
 
-		##排序控件##
-		self.sortFrameLabel = Label(self.root, text="", relief="groove")
-		self.sortFrameLabel.place(x=548,y=48,width=256,height=74)
-		self.sortLabel = Label(self.root,text="排序\n控件", anchor="nw", font=self.font, relief="flat")
-		self.sortLabel.place(x=550,y=55,width=50,height=60)
-		self.sortPlayCountButton = Button(self.root, text="游玩次数", command=lambda:self.SortMethod('PC'), anchor="w", font=self.font)
-		self.sortPlayCountButton.place(x=600,y=50,width=90,height=30)
-		self.sortDiffNumButton = Button(self.root, text="难度等级", command=lambda:self.SortMethod('DiffNum'), anchor="w", font=self.font)
-		self.sortDiffNumButton.place(x=600,y=88,width=90,height=30)
-		self.sortSyncButton = Button(self.root, text="云端同步率", command=lambda:self.SortMethod('Sync'), anchor="w", font=self.font)
-		self.sortSyncButton.place(x=690,y=50,width=110,height=30)
-		self.sortSongNameButton = Button(self.root, text="歌曲名称", command=lambda:self.SortMethod('SongName'), anchor="w", font=self.font)
-		self.sortSongNameButton.place(x=690,y=88,width=90,height=30)
+		# ##排序控件##
+		# self.sortFrameLabel = Label(self.root, text="", relief="groove")
+		# self.sortFrameLabel.place(x=548,y=48,width=256,height=74)
+		# self.sortLabel = Label(self.root,text="排序\n控件", anchor="nw", font=self.font, relief="flat")
+		# self.sortLabel.place(x=550,y=55,width=50,height=60)
+		# self.sortPlayCountButton = Button(self.root, text="游玩次数", command=lambda:self.SortMethod('PC'), anchor="w", font=self.font)
+		# self.sortPlayCountButton.place(x=600,y=50,width=90,height=30)
+		# self.sortDiffNumButton = Button(self.root, text="难度等级", command=lambda:self.SortMethod('DiffNum'), anchor="w", font=self.font)
+		# self.sortDiffNumButton.place(x=600,y=88,width=90,height=30)
+		# self.sortSyncButton = Button(self.root, text="云端同步率", command=lambda:self.SortMethod('Sync'), anchor="w", font=self.font)
+		# self.sortSyncButton.place(x=690,y=50,width=110,height=30)
+		# self.sortSongNameButton = Button(self.root, text="歌曲名称", command=lambda:self.SortMethod('SongName'), anchor="w", font=self.font)
+		# self.sortSongNameButton.place(x=690,y=88,width=90,height=30)
+
+		##键数筛选##
+		self.selectKeys = Button(self.root, text=self.keysText[self.keys], command=lambda:self.SelectKeys(), anchor='w', font=self.font)
+		self.selectKeys.place(x=110,y=88,width=90,height=30)
 
 		##AutoRun##
 		self.UpdateWindowInfo()
@@ -175,21 +179,24 @@ class MusyncSavDecodeGUI(object):
 				if len(saveDataJson['SaveData']) == 0:
 					os.remove("./musync/SavAnalyze.json")
 
-	def SortMethod(self,method):
-		if self.dataSortMethod == method:
-			if self.dataSortMethodsort:
-				self.dataSortMethodsort = False
-				self.SortButtonGreenRed(method)
-			else:
-				self.dataSortMethod = None
-				self.dataSortMethodsort = True
-				self.SortButtonGreenGrey(method)
-		else:
-			self.dataSortMethodsort = True
-			self.SortButtonGreenGrey(self.dataSortMethod)
-			self.dataSortMethod = method
-			self.SortButtonGreen(method)
+	def SelectKeys(self):
+		self.keys = (self.keys+1)%3
 		self.DataLoad()
+	# def SortMethod(self,method):
+		# if self.dataSortMethod == method:
+		# 	if self.dataSortMethodsort:
+		# 		self.dataSortMethodsort = False
+		# 		self.SortButtonGreenRed(method)
+		# 	else:
+		# 		self.dataSortMethod = None
+		# 		self.dataSortMethodsort = True
+		# 		self.SortButtonGreenGrey(method)
+		# else:
+		# 	self.dataSortMethodsort = True
+		# 	self.SortButtonGreenGrey(self.dataSortMethod)
+		# 	self.dataSortMethod = method
+		# 	self.SortButtonGreen(method)
+		# self.DataLoad()
 	def SelectMethod(self,method):
 		if self.dataSelectMethod == method:
 			self.dataSelectMethod = None
@@ -199,21 +206,21 @@ class MusyncSavDecodeGUI(object):
 			self.dataSelectMethod = method
 			self.SelectButtonGreen(method)
 		self.DataLoad()
-	def SortButtonGreenRed(self,method):
-		if method == "PC":self.sortPlayCountButton.configure(bg='#FF7B7B')
-		elif method == "Sync":self.sortSyncButton.configure(bg='#FF7B7B')
-		elif method == "DiffNum":self.sortDiffNumButton.configure(bg='#FF7B7B')
-		elif method == "SongName":self.sortSongNameButton.configure(bg='#FF7B7B')
-	def SortButtonGreen(self,method):
-		if method == "PC":self.sortPlayCountButton.configure(bg='#98E22B')
-		elif method == "Sync":self.sortSyncButton.configure(bg='#98E22B')
-		elif method == "DiffNum":self.sortDiffNumButton.configure(bg='#98E22B')
-		elif method == "SongName":self.sortSongNameButton.configure(bg='#98E22B')
-	def SortButtonGreenGrey(self,method):
-		if method == "PC":self.sortPlayCountButton.configure(bg='#F0F0F0')
-		elif method == "Sync":self.sortSyncButton.configure(bg='#F0F0F0')
-		elif method == "DiffNum":self.sortDiffNumButton.configure(bg='#F0F0F0')
-		elif method == "SongName":self.sortSongNameButton.configure(bg='#F0F0F0')
+	# def SortButtonGreenRed(self,method):
+	# 	if method == "PC":self.sortPlayCountButton.configure(bg='#FF7B7B')
+	# 	elif method == "Sync":self.sortSyncButton.configure(bg='#FF7B7B')
+	# 	elif method == "DiffNum":self.sortDiffNumButton.configure(bg='#FF7B7B')
+	# 	elif method == "SongName":self.sortSongNameButton.configure(bg='#FF7B7B')
+	# def SortButtonGreen(self,method):
+	# 	if method == "PC":self.sortPlayCountButton.configure(bg='#98E22B')
+	# 	elif method == "Sync":self.sortSyncButton.configure(bg='#98E22B')
+	# 	elif method == "DiffNum":self.sortDiffNumButton.configure(bg='#98E22B')
+	# 	elif method == "SongName":self.sortSongNameButton.configure(bg='#98E22B')
+	# def SortButtonGreenGrey(self,method):
+	# 	if method == "PC":self.sortPlayCountButton.configure(bg='#F0F0F0')
+	# 	elif method == "Sync":self.sortSyncButton.configure(bg='#F0F0F0')
+	# 	elif method == "DiffNum":self.sortDiffNumButton.configure(bg='#F0F0F0')
+	# 	elif method == "SongName":self.sortSongNameButton.configure(bg='#F0F0F0')
 	def SelectButtonGreen(self,method):
 		if method == "Played":self.selectPlayedButton.configure(bg='#98E22B')
 		elif method == "Unplay":self.selectUnplayButton.configure(bg='#98E22B')
@@ -258,10 +265,30 @@ class MusyncSavDecodeGUI(object):
 		itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
 		# state = e.item(itemID,"text")						# 取得text参数
 		songData = e.item(itemID,"values")					# 取得values参数
-		print(e.item(itemID))
+		# print(e.item(itemID))
 		nroot = Toplevel(self.root)
 		nroot.resizable(True, True)
 		newWindow = SubWindow(nroot, songData[0], songData[1], songData[2])
+	def SortClick(self,event):
+		def treeview_sort_column(col):
+			# print(self.dataSortMethodsort, end=' /// ')
+			if self.dataSortMethodsort[0] == col:
+				self.dataSortMethodsort[1] = not self.dataSortMethodsort[1]
+			else:
+				self.dataSortMethodsort[0] = col
+				self.dataSortMethodsort[1] = False
+			if col == 'SyncNumber' or col == 'UploadScore':
+				l = [(float((self.saveData.set(k, col))[:-1]), k) for k in self.saveData.get_children('')]
+				pass
+			else:
+				l = [(self.saveData.set(k, col), k) for k in self.saveData.get_children('')]
+			# print(l)
+			l.sort(reverse=self.dataSortMethodsort[1])
+			for index, (val, k) in enumerate(l):
+				self.saveData.move(k, '', index)
+			# print(self.dataSortMethodsort)
+		for col in self.treeviewColumns:
+			self.saveData.heading(col, command=lambda _col=col: treeview_sort_column(_col))
 
 	def UpdateTip(self):
 		if self.gitHubLink.cget('fg') == '#C4245C':
@@ -300,19 +327,19 @@ class MusyncSavDecodeGUI(object):
 			os.remove("./musync/SavDecode.decode")
 		self.DataLoad()
 
-	def DataSort(self,_dict):
-		if self.dataSortMethod == None:
-			return _dict
-		elif self.dataSortMethod == "PC":
-			return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:_dict["PlayCount"]))
-		elif self.dataSortMethod == "Sync":
-			return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:float(_dict["UploadScore"][0:-1])))
-		elif self.dataSortMethod == "DiffNum":
-			return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:(_dict["SongName"][3]) if (not _dict["SongName"] == None) else "00"))
-		elif self.dataSortMethod == "SongName":
-			return sorted(_dict, reverse=(not self.dataSortMethodsort), key=(lambda _dict:(_dict["SongName"][0]) if (not _dict["SongName"] == None) else ""))
-		else:
-			return _dict
+	# def DataSort(self,_dict):
+	# 	if self.dataSortMethod == None:
+	# 		return _dict
+	# 	elif self.dataSortMethod == "PC":
+	# 		return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:_dict["PlayCount"]))
+	# 	elif self.dataSortMethod == "Sync":
+	# 		return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:float(_dict["UploadScore"][0:-1])))
+	# 	elif self.dataSortMethod == "DiffNum":
+	# 		return sorted(_dict, reverse=self.dataSortMethodsort, key=(lambda _dict:(_dict["SongName"][3]) if (not _dict["SongName"] == None) else "00"))
+	# 	elif self.dataSortMethod == "SongName":
+	# 		return sorted(_dict, reverse=(not self.dataSortMethodsort), key=(lambda _dict:(_dict["SongName"][0]) if (not _dict["SongName"] == None) else ""))
+	# 	else:
+	# 		return _dict
 
 	def DataLoad(self):
 		self.initLabel.configure(text="正在分析存档文件中……", anchor="w")
@@ -357,8 +384,11 @@ class MusyncSavDecodeGUI(object):
 		with open(f'./musync/SavAnalyze.json','r+') as saveData:
 			saveDataJson = json.load(saveData)
 			self.root.title(f'同步音律喵赛克 Steam端 本地存档分析    LastPlay: {saveDataJson["LastPlay"]}')
-			saveDataJson = self.DataSort(saveDataJson['SaveData'])
-			for saveLine in saveDataJson:
+			# saveDataJson = self.DataSort(saveDataJson['SaveData'])
+			for saveLine in saveDataJson['SaveData']:
+				if not saveLine['SongName'] is None:
+					if (self.keys==1) and (saveLine['SongName'][1]=='6Key'):continue
+					elif (self.keys==2) and (saveLine['SongName'][1]=='4Key'):continue
 				if self.dataSelectMethod == "Played":
 					if (saveLine["PlayCount"] == 0) and (float(saveLine["SyncNumber"][0:-1]) == 0):continue
 				elif self.dataSelectMethod == "Unplay":
@@ -408,25 +438,25 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.place(x=10 ,y=130 ,width=(self.windowInfo[2]-10) ,height=(self.windowInfo[3]-160))
  
 		self.saveData.column("SpeedStall",anchor="e",width=90)
-		self.saveData.heading("SpeedStall",anchor="center",text="谱面号")
-		self.saveData.column("SongName",anchor="w",width=(self.windowInfo[2]-680 if self.windowInfo[2]-680 > 100 else 100))
-		self.saveData.heading("SongName",anchor="center",text="曲名")
-		self.saveData.column("Keys",anchor="center",width=40)
-		self.saveData.heading("Keys",anchor="center",text="键数")
-		self.saveData.column("Difficulty",anchor="w",width=70)
-		self.saveData.heading("Difficulty",anchor="center",text="难度")
-		self.saveData.column("DifficultyNumber",anchor="center",width=40)
-		self.saveData.heading("DifficultyNumber",anchor="center",text="等级")
-		self.saveData.column("SyncNumber",anchor="e",width=70)
-		self.saveData.heading("SyncNumber",anchor="center",text="同步率")
-		self.saveData.column("Rank",anchor="center",width=50)
-		self.saveData.heading("Rank",anchor="center",text="Rank")
+		self.saveData.heading("SpeedStall",anchor="center",text="谱面号"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='SpeedStall' else ''))
+		self.saveData.column("SongName",anchor="w",width=self.windowInfo[2]-770)
+		self.saveData.heading("SongName",anchor="center",text="曲名"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='SongName' else ''))
+		self.saveData.column("Keys",anchor="center",width=60)
+		self.saveData.heading("Keys",anchor="center",text="键数"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='Keys' else ''))
+		self.saveData.column("Difficulty",anchor="w",width=65)
+		self.saveData.heading("Difficulty",anchor="center",text="难度"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='Difficulty' else ''))
+		self.saveData.column("DifficultyNumber",anchor="center",width=60)
+		self.saveData.heading("DifficultyNumber",anchor="center",text="等级"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='DifficultyNumber' else ''))
+		self.saveData.column("SyncNumber",anchor="e",width=80)
+		self.saveData.heading("SyncNumber",anchor="center",text="同步率"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='SyncNumber' else ''))
+		self.saveData.column("Rank",anchor="center",width=70)
+		self.saveData.heading("Rank",anchor="center",text="Rank"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='Rank' else ''))
 		self.saveData.column("UploadScore",anchor="e",width=160)
-		self.saveData.heading("UploadScore",anchor="center",text="云端同步率")
-		self.saveData.column("PlayCount",anchor="e",width=80)
-		self.saveData.heading("PlayCount",anchor="center",text="游玩计数")
-		self.saveData.column("IsFav",anchor="center",width=50)
-		self.saveData.heading("IsFav",anchor="center",text="IsFav")
+		self.saveData.heading("UploadScore",anchor="center",text="云端同步率"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='UploadScore' else ''))
+		self.saveData.column("PlayCount",anchor="e",width=90)
+		self.saveData.heading("PlayCount",anchor="center",text="游玩计数"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='PlayCount' else ''))
+		self.saveData.column("IsFav",anchor="center",width=70)
+		self.saveData.heading("IsFav",anchor="center",text="IsFav"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='IsFav' else ''))
 
 		self.VScroll1.place(x=self.windowInfo[2]-30, y=1, width=20, relheight=1)
 		self.saveCountVar.set(self.saveCount)
@@ -435,8 +465,10 @@ class MusyncSavDecodeGUI(object):
 		self.avgSyncLabel.configure(text=self.avgSyncVar.get()[0:10]+"%")
 		self.developer.place(x=10,y=self.windowInfo[3]-30,width=370,height=30)
 		self.gitHubLink.place(x=380,y=self.windowInfo[3]-30,width=self.windowInfo[2]-380,height=30)
+		self.selectKeys.configure(text=self.keysText[self.keys])
 
 		# self.saveData.bind("<Double-1>",self.DoubleClick)
+		self.saveData.bind("<ButtonRelease-1>",self.SortClick)
 
 		root.after(200,self.UpdateWindowInfo)
 

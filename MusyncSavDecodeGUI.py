@@ -52,9 +52,9 @@ class MusyncSavDecodeGUI(object):
 		self.dataSelectMethod = None
 		self.keys = 0
 		self.treeviewColumns = ["SpeedStall",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","IsFav"]
-		self.keysText = ['All Keys','4 Keys', '6 Keys']
+		self.keysText = [['4 Keys & 6Keys', 150], ['4 Keys', 72], ['6 Keys', 72]]
 		self.wh = [0,0]
-		self.version = '1.1.3 rc3'
+		self.version = '1.1.4 rc1'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)
@@ -94,51 +94,39 @@ class MusyncSavDecodeGUI(object):
 
 		#筛选控件
 		self.selectFrameLabel = Label(self.root, text="", relief="groove")
-		self.selectFrameLabel.place(x=178,y=48,width=366,height=74)
+		self.selectFrameLabel.place(x=178,y=48,width=383,height=74)
 		self.selectLabel = Label(self.root, text="筛选\n控件", anchor="w", font=self.font, relief="flat")
 		self.selectLabel.place(x=180,y=55,width=50,height=60)
 		self.selectPlayedButton = Button(self.root, text='已游玩', command=lambda:self.SelectMethod('Played'), anchor="w", font=self.font)
-		self.selectPlayedButton.place(x=230,y=50,width=70,height=30)
+		self.selectPlayedButton.place(x=230,y=50,width=75,height=30)
 		self.selectUnplayButton = Button(self.root, text='未游玩', command=lambda:self.SelectMethod('Unplay'), anchor="w", font=self.font)
-		self.selectUnplayButton.place(x=230,y=88,width=70,height=30)
+		self.selectUnplayButton.place(x=230,y=88,width=75,height=30)
 		self.selectIsFavButton = Button(self.root, text='已收藏', command=lambda:self.SelectMethod('IsFav'), anchor="w", font=self.font)
-		self.selectIsFavButton.place(x=300,y=50,width=70,height=30)
+		self.selectIsFavButton.place(x=305,y=50,width=75,height=30)
 		self.selectExRankButton = Button(self.root, text='RankEx', command=lambda:self.SelectMethod('RankEX'), anchor="w", font=self.font)
-		self.selectExRankButton.place(x=300,y=88,width=70,height=30)
+		self.selectExRankButton.place(x=305,y=88,width=75,height=30)
 		self.selectSRankButton = Button(self.root, text='RankS', command=lambda:self.SelectMethod('RankS'), anchor="w", font=self.font)
-		self.selectSRankButton.place(x=370,y=50,width=60,height=30)
+		self.selectSRankButton.place(x=380,y=50,width=62,height=30)
 		self.selectARankButton = Button(self.root, text='RankA', command=lambda:self.SelectMethod('RankA'), anchor="w", font=self.font)
-		self.selectARankButton.place(x=370,y=88,width=60,height=30)
+		self.selectARankButton.place(x=380,y=88,width=62,height=30)
 		self.selectBRankButton = Button(self.root, text='RankB', command=lambda:self.SelectMethod('RankB'), anchor="w", font=self.font)
-		self.selectBRankButton.place(x=430,y=50,width=60,height=30)
+		self.selectBRankButton.place(x=442,y=50,width=62,height=30)
 		self.selectCRankButton = Button(self.root, text='RankC', command=lambda:self.SelectMethod('RankC'), anchor="w", font=self.font)
-		self.selectCRankButton.place(x=430,y=88,width=60,height=30)
+		self.selectCRankButton.place(x=442,y=88,width=62,height=30)
 		self.select122Button = Button(self.root, text='黑Ex', command=lambda:self.SelectMethod('Sync122'), anchor="w", font=self.font)
-		self.select122Button.place(x=490,y=50,width=50,height=30)
+		self.select122Button.place(x=504,y=50,width=52,height=30)
 		self.select120Button = Button(self.root, text='红Ex', command=lambda:self.SelectMethod('Sync120'), anchor="w", font=self.font)
-		self.select120Button.place(x=490,y=88,width=50,height=30)
-
-		# ##排序控件##
-		# self.sortFrameLabel = Label(self.root, text="", relief="groove")
-		# self.sortFrameLabel.place(x=548,y=48,width=256,height=74)
-		# self.sortLabel = Label(self.root,text="排序\n控件", anchor="nw", font=self.font, relief="flat")
-		# self.sortLabel.place(x=550,y=55,width=50,height=60)
-		# self.sortPlayCountButton = Button(self.root, text="游玩次数", command=lambda:self.SortMethod('PC'), anchor="w", font=self.font)
-		# self.sortPlayCountButton.place(x=600,y=50,width=90,height=30)
-		# self.sortDiffNumButton = Button(self.root, text="难度等级", command=lambda:self.SortMethod('DiffNum'), anchor="w", font=self.font)
-		# self.sortDiffNumButton.place(x=600,y=88,width=90,height=30)
-		# self.sortSyncButton = Button(self.root, text="云端同步率", command=lambda:self.SortMethod('Sync'), anchor="w", font=self.font)
-		# self.sortSyncButton.place(x=690,y=50,width=110,height=30)
-		# self.sortSongNameButton = Button(self.root, text="歌曲名称", command=lambda:self.SortMethod('SongName'), anchor="w", font=self.font)
-		# self.sortSongNameButton.place(x=690,y=88,width=90,height=30)
+		self.select120Button.place(x=504,y=88,width=52,height=30)
 
 		##键数筛选##
-		self.selectKeys = Button(self.root, text=self.keysText[self.keys], command=lambda:self.SelectKeys(), anchor='w', font=self.font)
-		self.selectKeys.place(x=110,y=88,width=90,height=30)
+		self.selectKeys = Button(self.root, text=self.keysText[self.keys][0], command=lambda:self.SelectKeys(), anchor='w', font=self.font)
+		self.selectKeys.place(x=580,y=50,width=self.keysText[self.keys][1],height=30)
 
 		##AutoRun##
 		self.InitLabel('初始化函数执行中......')
 		self.UpdateWindowInfo()
+		self.TreeviewWidthUptate()
+		self.TreeviewColumnUpdate()
 		self.CheckUpdate()
 		self.CheckJsonUpdate()
 		self.CheckFile()
@@ -146,7 +134,6 @@ class MusyncSavDecodeGUI(object):
 			self.GetSaveFile()
 		else:
 			self.InitLabel(text="正在读取存档路径……")
-			self.root.update()
 			sfp = open('./musync_data/SaveFilePath.sfp','r+')
 			sfpr = sfp.read()
 			sfp.close()
@@ -154,7 +141,6 @@ class MusyncSavDecodeGUI(object):
 				self.GetSaveFile()
 			elif (not os.path.isfile(sfpr)):
 				self.InitLabel(text="正在删除存档路径.")
-				self.root.update()
 				os.remove('./musync_data/SaveFilePath.sfp')
 				self.GetSaveFile()
 			else:
@@ -191,6 +177,9 @@ class MusyncSavDecodeGUI(object):
 
 	def SelectKeys(self):
 		self.keys = (self.keys+1)%3
+		self.selectKeys.configure(text=self.keysText[self.keys][0])
+		self.selectKeys.place(width=self.keysText[self.keys][1])
+		self.root.update()
 		self.DataLoad()
 	def SelectMethod(self,method):
 		if self.dataSelectMethod == method:
@@ -228,7 +217,6 @@ class MusyncSavDecodeGUI(object):
 
 	def CheckJsonUpdate(self):
 		self.InitLabel(text="正在从GitHub拉取SongName.json的更新信息……")
-		self.root.update()
 		try:
 			response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
 			githubVersion = response.content.decode('utf8')
@@ -252,7 +240,6 @@ class MusyncSavDecodeGUI(object):
 
 	def CheckUpdate(self):
 		self.InitLabel(text="正在从Github拉取软件的更新信息……")
-		self.root.update()
 		oldVersion = int(f'{self.version[0]}{self.version[2]}{self.version[4]}')
 		oldRC = int(self.version[-1])
 		try:
@@ -467,10 +454,11 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.heading("UploadScore",anchor="center",text="云端同步率"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='UploadScore' else ''))
 		self.saveData.heading("PlayCount",anchor="center",text="游玩计数"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='PlayCount' else ''))
 		self.saveData.heading("IsFav",anchor="center",text="IsFav"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='IsFav' else ''))
+		self.root.update()
 
-	def UptateTreeviewWidth(self):
+	def TreeviewWidthUptate(self):
 		self.saveData.column("SpeedStall",anchor="e",width=90)
-		self.saveData.column("SongName",anchor="w",width=self.windowInfo[2]-770)
+		self.saveData.column("SongName",anchor="w",width=self.windowInfo[2]-761)
 		self.saveData.column("Keys",anchor="center",width=60)
 		self.saveData.column("Difficulty",anchor="w",width=65)
 		self.saveData.column("DifficultyNumber",anchor="center",width=60)
@@ -479,32 +467,32 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.column("UploadScore",anchor="e",width=160)
 		self.saveData.column("PlayCount",anchor="e",width=90)
 		self.saveData.column("IsFav",anchor="center",width=70)
+		self.root.update()
 
 	def UpdateWindowInfo(self):
-		self.root.update()
 		self.windowInfo = ['root.winfo_x()','root.winfo_y()',root.winfo_width(),root.winfo_height()]
 
 		self.saveFilePathEntry.place(x=170,y=10,width=(self.windowInfo[2]-260),height=30)
 		self.getSaveFilePath.place(x=(self.windowInfo[2]-90),y=10,width=90,height=30)
-		self.saveData.place(x=10 ,y=130 ,width=(self.windowInfo[2]-10) ,height=(self.windowInfo[3]-160))
+		self.saveData.place(x=0 ,y=130 ,width=(self.windowInfo[2]-1) ,height=(self.windowInfo[3]-160))
 
 		if not self.wh == self.windowInfo[2:]:
-			self.UptateTreeviewWidth()
+			self.TreeviewWidthUptate()
 			self.TreeviewColumnUpdate()
 		
-		self.VScroll1.place(x=self.windowInfo[2]-30, y=1, width=20, relheight=1)
+		self.VScroll1.place(x=self.windowInfo[2]-22, y=1, width=20, height=self.windowInfo[3]-162)
 		self.saveCountVar.set(self.saveCount)
 		self.saveCountLabel.configure(text=self.saveCountVar.get())
 		self.avgSyncVar.set(f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount))}')
 		self.avgSyncLabel.configure(text=self.avgSyncVar.get()[0:10]+"%")
-		self.developer.place(x=10,y=self.windowInfo[3]-30,width=450,height=30)
-		self.gitHubLink.place(x=460,y=self.windowInfo[3]-30,width=self.windowInfo[2]-460,height=30)
-		self.selectKeys.configure(text=self.keysText[self.keys])
+		self.developer.place(x=0,y=self.windowInfo[3]-30,width=450,height=30)
+		self.gitHubLink.place(x=450,y=self.windowInfo[3]-30,width=self.windowInfo[2]-450,height=30)
 
 		# self.saveData.bind("<Double-1>",self.DoubleClick)
 		self.saveData.bind("<ButtonRelease-1>",self.SortClick)
 
 		self.wh = self.windowInfo[2:]
+		self.root.update()
 		root.after(500,self.UpdateWindowInfo)
 
 class SubWindow(object):

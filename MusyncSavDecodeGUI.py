@@ -139,6 +139,7 @@ class MusyncSavDecodeGUI(object):
 		##AutoRun##
 		self.UpdateWindowInfo()
 		self.CheckUpdate()
+		# self.CheckJsonUpdate()
 		self.CheckFile()
 		if not os.path.isfile('./musync_data/SaveFilePath.sfp'):
 			self.GetSaveFile()
@@ -220,6 +221,21 @@ class MusyncSavDecodeGUI(object):
 		elif method == "RankB":self.selectBRankButton.configure(bg='#F0F0F0')
 		elif method == "RankC":self.selectCRankButton.configure(bg='#F0F0F0')
 		del method
+
+	def CheckJsonUpdate(self):
+		try:
+			response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.json")
+			songNameJson = response.json()
+			with open("./musync_data/SongName.json",'r',encoding='utf8') as snj:
+				tempJson = json.load(snj)
+			if songNameJson["Version"]>tempJson["Version"]:
+				with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
+					json.dump(songNameJson,snj,indent="",ensure_ascii=False)
+		except Exception as e:
+			messagebox.showerror("Error", f'发生错误: {e}')
+		del response
+		del songNameJson
+		del tempJson
 
 	def CheckUpdate(self):
 		self.initLabel.configure(text="正在拉取更新信息……", anchor="w")

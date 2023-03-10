@@ -231,7 +231,7 @@ class MusyncSavDecodeGUI(object):
 		self.root.update()
 		try:
 			response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
-			githubVersion = response.content
+			githubVersion = response.content.decode('utf8')
 			with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
 				localVersion = snju.read()
 			if githubVersion>localVersion:
@@ -242,8 +242,8 @@ class MusyncSavDecodeGUI(object):
 					json.dump(songNameJson,snj,indent="",ensure_ascii=False)
 				with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
 					snju.write(githubVersion)
+				del songNameJson
 			del response
-			del songNameJson
 			del githubVersion
 			del localVersion
 		except Exception as e:

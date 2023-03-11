@@ -1,12 +1,11 @@
-import sys
+﻿#import sys
 import os
 import json
-import time
+#import time
 import MusyncSavDecode
 import FileExport
 import webbrowser
 import requests
-import pyglet
 from tkinter import *
 from tkinter import Tk
 from tkinter import ttk
@@ -52,7 +51,7 @@ class MusyncSavDecodeGUI(object):
 		self.dataSelectMethod = None
 		self.keys = 0
 		self.treeviewColumns = ["SpeedStall",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","IsFav"]
-		self.keysText = [['4 Keys & 6Keys', 150], ['4 Keys', 72], ['6 Keys', 72]]
+		self.difficute = 3
 		self.wh = [0,0]
 		self.version = '1.1.4 rc1'
 
@@ -93,10 +92,10 @@ class MusyncSavDecodeGUI(object):
 		self.avgSyncLabel.place(x=870,y=90,width=120,height=30)
 
 		#筛选控件
-		self.selectFrameLabel = Label(self.root, text="", relief="groove")
-		self.selectFrameLabel.place(x=178,y=48,width=383,height=74)
-		self.selectLabel = Label(self.root, text="筛选\n控件", anchor="w", font=self.font, relief="flat")
-		self.selectLabel.place(x=180,y=55,width=50,height=60)
+		self.selectFrameLabel0 = Label(self.root, text="", relief="groove")
+		self.selectFrameLabel0.place(x=178,y=48,width=383,height=74)
+		self.selectLabel0 = Label(self.root, text="筛选\n控件", anchor="w", font=self.font, relief="flat")
+		self.selectLabel0.place(x=180,y=55,width=50,height=60)
 		self.selectPlayedButton = Button(self.root, text='已游玩', command=lambda:self.SelectMethod('Played'), anchor="w", font=self.font)
 		self.selectPlayedButton.place(x=230,y=50,width=75,height=30)
 		self.selectUnplayButton = Button(self.root, text='未游玩', command=lambda:self.SelectMethod('Unplay'), anchor="w", font=self.font)
@@ -118,9 +117,15 @@ class MusyncSavDecodeGUI(object):
 		self.select120Button = Button(self.root, text='红Ex', command=lambda:self.SelectMethod('Sync120'), anchor="w", font=self.font)
 		self.select120Button.place(x=504,y=88,width=52,height=30)
 
-		##键数筛选##
-		self.selectKeys = Button(self.root, text=self.keysText[self.keys][0], command=lambda:self.SelectKeys(), anchor='w', font=self.font)
-		self.selectKeys.place(x=580,y=50,width=self.keysText[self.keys][1],height=30)
+		##额外筛选##
+		self.selectFrameLabel1 = Label(self.root, text="", relief="groove")
+		self.selectFrameLabel1.place(x=568,y=48,width=207,height=74)
+		self.selectLabel1 = Label(self.root, text="额外\n筛选", anchor="w", font=self.font, relief="flat")
+		self.selectLabel1.place(x=570,y=55,width=50,height=60)
+		self.selectKeys = Button(self.root, text=['4 Keys & 6Keys','4 Keys','6 Keys'][self.keys], command=lambda:self.SelectKeys(), anchor='w', font=self.font)
+		self.selectKeys.place(x=620,y=50,width=[150,72,72][self.keys],height=30)
+		self.selectDifficute = Button(self.root, text=['Easy','Hard',"Inferno",'所有难度'][self.difficute], command=lambda:self.SelectDifficute(), anchor='w', font=self.font)
+		self.selectDifficute.place(x=620,y=88,width=[52,52,82,92][self.difficute],height=30)
 
 		##AutoRun##
 		self.InitLabel('初始化函数执行中......')
@@ -128,7 +133,7 @@ class MusyncSavDecodeGUI(object):
 		self.TreeviewWidthUptate()
 		self.TreeviewColumnUpdate()
 		self.CheckUpdate()
-		self.CheckJsonUpdate()
+		# self.CheckJsonUpdate()
 		self.CheckFile()
 		if not os.path.isfile('./musync_data/SaveFilePath.sfp'):
 			self.GetSaveFile()
@@ -152,8 +157,6 @@ class MusyncSavDecodeGUI(object):
 			self.InitLabel('解码存档中......')
 			MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
 			self.DataLoad()
-		del sfpr
-		del sfp
 
 	def CheckFile(self):
 		saveData=None
@@ -172,13 +175,17 @@ class MusyncSavDecodeGUI(object):
 				# print(len(saveDataJson['SaveData']))
 				if len(saveDataJson['SaveData']) == 0:
 					os.remove("./musync_data/SavAnalyze.json")
-		del saveData
-		del saveDataJson
 
 	def SelectKeys(self):
 		self.keys = (self.keys+1)%3
-		self.selectKeys.configure(text=self.keysText[self.keys][0])
-		self.selectKeys.place(width=self.keysText[self.keys][1])
+		self.selectKeys.configure(text=['4 Keys & 6Keys','4 Keys','6 Keys'][self.keys])
+		self.selectKeys.place(width=[150,72,72][self.keys])
+		self.root.update()
+		self.DataLoad()
+	def SelectDifficute(self):
+		self.difficute = (self.difficute+1)%4
+		self.selectDifficute.configure(text=['Easy','Hard',"Inferno",'所有难度'][self.difficute])
+		self.selectDifficute.place(width=[52,52,82,92][self.difficute])
 		self.root.update()
 		self.DataLoad()
 	def SelectMethod(self,method):
@@ -201,7 +208,6 @@ class MusyncSavDecodeGUI(object):
 		elif method == "RankA":self.selectARankButton.configure(bg='#98E22B')
 		elif method == "RankB":self.selectBRankButton.configure(bg='#98E22B')
 		elif method == "RankC":self.selectCRankButton.configure(bg='#98E22B')
-		del method
 	def SelectButtonGreenGrey(self,method):
 		if method == "Played":self.selectPlayedButton.configure(bg='#F0F0F0')
 		elif method == "Unplay":self.selectUnplayButton.configure(bg='#F0F0F0')
@@ -213,7 +219,6 @@ class MusyncSavDecodeGUI(object):
 		elif method == "RankA":self.selectARankButton.configure(bg='#F0F0F0')
 		elif method == "RankB":self.selectBRankButton.configure(bg='#F0F0F0')
 		elif method == "RankC":self.selectCRankButton.configure(bg='#F0F0F0')
-		del method
 
 	def CheckJsonUpdate(self):
 		self.InitLabel(text="正在从GitHub拉取SongName.json的更新信息……")
@@ -230,47 +235,26 @@ class MusyncSavDecodeGUI(object):
 					json.dump(songNameJson,snj,indent="",ensure_ascii=False)
 				with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
 					snju.write(githubVersion)
-				del songNameJson
-			del response
-			del githubVersion
-			del localVersion
 		except Exception as e:
 			messagebox.showerror("Error", f'发生错误: {e}')
-
 
 	def CheckUpdate(self):
 		self.InitLabel(text="正在从Github拉取软件的更新信息……")
-		oldVersion = int(f'{self.version[0]}{self.version[2]}{self.version[4]}')
-		oldRC = int(self.version[-1])
+		oldVersion = int(f'{self.version[0]}{self.version[2]}{self.version[4]}{self.version[-1]}')
 		try:
 			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
 			version = response.json()["tag_name"]
-			newVersion = int(f'{version[0]}{version[2]}{version[4]}')
-			try:
-				newRC = int(version[-1])
-			except:
-				newRC = 4
+			newVersion = int(f'{version[0]}{version[2]}{version[4]}{version[-1]}')
 		except Exception as e:
 			messagebox.showerror("Error", f'发生错误: {e}')
 			newVersion = oldVersion
-		# print(newVersion,oldVersion,newRC,oldRC)
 		if (newVersion > oldVersion):
-			self.gitHubLink.configure(text=f'有新版本啦——点此打开下载页面    NewVersion: {version}', anchor="center")
-			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases"))
-			self.UpdateTip()
-		elif (newVersion == oldVersion) and (newRC > oldRC):
 			self.gitHubLink.configure(text=f'有新版本啦——点此打开下载页面    NewVersion: {version}', anchor="center")
 			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases"))
 			self.UpdateTip()
 		else:
 			self.gitHubLink.configure(text='点击打开GitHub仓库    点个Star吧，秋梨膏', anchor="center")
 			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"))
-		del oldVersion
-		del newVersion
-		del oldRC
-		del newRC
-		del response
-		del version
 
 	def InitLabel(self,text,close=False):
 		self.initLabel.place(x=250,y=300,width=500,height=30)
@@ -361,7 +345,6 @@ class MusyncSavDecodeGUI(object):
 			elif sync < 120:return "蓝Ex"
 			elif sync < 122:return "红Ex"
 			else:return "黑Ex"
-			del sync
 
 		ids = self.saveData.get_children()
 		if not len(ids) == 0:
@@ -369,7 +352,6 @@ class MusyncSavDecodeGUI(object):
 				self.saveData.delete(idx)
 			self.saveCount = 0
 			self.totalSync = 0
-		else:saveFilePath = self.saveFilePathEntry.get()
 		if os.path.isfile('./musync_data/SavAnalyze.json'):pass
 		elif os.path.isfile('./musync_data/SavDecode.decode'):MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
 		else:
@@ -398,6 +380,9 @@ class MusyncSavDecodeGUI(object):
 				if not saveLine['SongName'] is None:
 					if (self.keys==1) and (saveLine['SongName'][1]=='6Key'):continue
 					elif (self.keys==2) and (saveLine['SongName'][1]=='4Key'):continue
+					if (self.difficute==0) and (not saveLine['SongName'][2]=='Easy'):continue
+					elif (self.difficute==1) and (not saveLine['SongName'][2]=='Hard'):continue
+					elif (self.difficute==2) and (not saveLine['SongName'][2]=='Inferno'):continue
 				if self.dataSelectMethod == "Played":
 					if (saveLine["PlayCount"] == 0) and (float(saveLine["SyncNumber"][0:-1]) == 0):continue
 				elif self.dataSelectMethod == "Unplay":
@@ -431,8 +416,6 @@ class MusyncSavDecodeGUI(object):
 		if not self.dataSortMethodsort[0] is None:
 			self.SortClick(self.dataSortMethodsort)
 		self.InitLabel('存档分析完成.',close=True)
-		del saveData
-		del saveDataJson
 
 	def SelectPath(self):
 		path_ = askopenfilename(title="打开存档文件", filetypes=(("Sav Files", "*.sav"),("All Files","*.*"),)) #使用askdirectory()方法返回文件夹的路径
@@ -441,8 +424,7 @@ class MusyncSavDecodeGUI(object):
 		else:
 			path_ = path_.replace("/", "\\")  # 实际在代码中执行的路径为“\“ 所以替换一下
 			self.saveFilePathVar.set(path_)
-		del path_
-
+		
 	def TreeviewColumnUpdate(self):
 		self.saveData.heading("SpeedStall",anchor="center",text="谱面号"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='SpeedStall' else ''))
 		self.saveData.heading("SongName",anchor="center",text="曲名"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='SongName' else ''))
@@ -478,8 +460,6 @@ class MusyncSavDecodeGUI(object):
 
 		if not self.wh == self.windowInfo[2:]:
 			self.TreeviewWidthUptate()
-			self.TreeviewColumnUpdate()
-		
 		self.VScroll1.place(x=self.windowInfo[2]-22, y=1, width=20, height=self.windowInfo[3]-162)
 		self.saveCountVar.set(self.saveCount)
 		self.saveCountLabel.configure(text=self.saveCountVar.get())
@@ -553,8 +533,8 @@ if __name__ == '__main__':
 			os.system('./musync_data/LXGW.ttf')
 		else:
 			FileExport.WriteTTF()
+		root.resizable(True, True) #允许改变窗口大小
 	del fonts
-	root.resizable(True, True) #允许改变窗口大小
 	window = MusyncSavDecodeGUI(root=root)
 	root.update()
 	root.mainloop()

@@ -53,7 +53,8 @@ class MusyncSavDecodeGUI(object):
 		self.treeviewColumns = ["SpeedStall",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","IsFav"]
 		self.difficute = 3
 		self.wh = [0,0]
-		self.version = '1.1.4 rc1'
+		self.vScrollpos = (0,1)
+		self.version = '1.1.4 rc2'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)
@@ -72,6 +73,7 @@ class MusyncSavDecodeGUI(object):
 
 		self.saveData = ttk.Treeview(self.root, show="headings", columns = self.treeviewColumns)
 		self.VScroll1 = Scrollbar(self.saveData, orient='vertical', command=self.saveData.yview)
+		# self.VScroll1 = Scrollbar(self.saveData, orient='vertical', command=print)
 		self.saveData.configure(yscrollcommand=self.VScroll1.set)
 
 		self.developer = Label(self.root, text=f'Version {self.version} | Develop By Ginsakura', font=self.font, relief="groove")
@@ -336,6 +338,7 @@ class MusyncSavDecodeGUI(object):
 
 	def DataLoad(self):
 		self.InitLabel(text="正在分析存档文件中……")
+		self.vScrollpos = self.VScroll1.get()
 		def Rank(sync):
 			sync = float(sync[0:-1])
 			if sync < 75:return "C"
@@ -416,6 +419,9 @@ class MusyncSavDecodeGUI(object):
 		if not self.dataSortMethodsort[0] is None:
 			self.SortClick(self.dataSortMethodsort)
 		self.InitLabel('存档分析完成.',close=True)
+		if not (self.vScrollpos[0]==0 and self.vScrollpos[1]==1):
+			self.VScroll1.set(self.vScrollpos[0],self.vScrollpos[1])
+			self.saveData.yview_moveto(self.vScrollpos[0])
 
 	def SelectPath(self):
 		path_ = askopenfilename(title="打开存档文件", filetypes=(("Sav Files", "*.sav"),("All Files","*.*"),)) #使用askdirectory()方法返回文件夹的路径
@@ -436,6 +442,8 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.heading("UploadScore",anchor="center",text="云端同步率"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='UploadScore' else ''))
 		self.saveData.heading("PlayCount",anchor="center",text="游玩计数"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='PlayCount' else ''))
 		self.saveData.heading("IsFav",anchor="center",text="IsFav"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='IsFav' else ''))
+		self.VScroll1.set(self.vScrollpos[0],self.vScrollpos[1])
+		self.saveData.yview_moveto(self.vScrollpos[0])
 		self.root.update()
 
 	def TreeviewWidthUptate(self):
@@ -457,10 +465,10 @@ class MusyncSavDecodeGUI(object):
 		self.saveFilePathEntry.place(x=170,y=10,width=(self.windowInfo[2]-260),height=30)
 		self.getSaveFilePath.place(x=(self.windowInfo[2]-90),y=10,width=90,height=30)
 		self.saveData.place(x=0 ,y=130 ,width=(self.windowInfo[2]-1) ,height=(self.windowInfo[3]-160))
-
 		if not self.wh == self.windowInfo[2:]:
 			self.TreeviewWidthUptate()
-		self.VScroll1.place(x=self.windowInfo[2]-22, y=1, width=20, height=self.windowInfo[3]-162)
+			self.VScroll1.place(x=self.windowInfo[2]-22, y=1, width=20, height=self.windowInfo[3]-162)
+		self.saveData.yview_moveto(self.VScroll1.get()[0])
 		self.saveCountVar.set(self.saveCount)
 		self.saveCountLabel.configure(text=self.saveCountVar.get())
 		self.avgSyncVar.set(f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount))}')

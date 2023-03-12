@@ -18,11 +18,13 @@ from GetSongName import GetSongName
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
+version = '1.1.4_rc3'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
-	def __init__(self, root, isTKroot=True):
+	def __init__(self, root=None, isTKroot=True):
 		##Init##
+		self.version = version
 		root.iconbitmap('./musync_data/Musync.ico')
 		super(MusyncSavDecodeGUI, self).__init__()
 		self.isTKroot = isTKroot
@@ -54,7 +56,6 @@ class MusyncSavDecodeGUI(object):
 		self.difficute = 3
 		self.wh = [0,0]
 		self.vScrollpos = (0,1)
-		self.version = '1.1.4 rc3'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)

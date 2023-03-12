@@ -100,14 +100,23 @@ class MUSYNCSavProcess():
 		self.savBinFile.close()
 		self.savAnalyzeFile.close()
 
+
 	def Analyze2Json(self):
 		saveDataAnalyze = open(f'./musync_data/SavAnalyze.json','w+',encoding='utf8')
 		saveDataAnalyzeJson = dict()
 		saveDataAnalyzeJson["LastPlay"] = "".join(self.lastPlaySong)
 		saveDataAnalyzeJson["SaveData"] = list()
 		while (self.savBinFile.read(1) == b'\x01'):
-			def ZeroFormat(score,lenth):return f'{score}{"0"*(lenth-len(str(score)))}%'
-			songStart = False
+			def ZeroFormat(score,lenth):
+				return f'{score}{"0"*(lenth-len(str(score)))}%'
+			def IsSkip(self,ss):
+				skipSS = ['00018B01','00018C91','00018C93','0001B211']
+				if ss in skipSS:return True
+				else:return False
+			def NoCopyRight(self,ss):
+				NCR = []
+				if ss in NCR:return True
+				else:return False
 			self.saveData = self.savBinFile.read(29)
 			SongID = self.Hex2Int_LittleEndian(self.Bytes2HexString(self.saveData[0:4]))
 			Unknown0 = self.Bytes2HexString(self.saveData[4:8])
@@ -117,6 +126,10 @@ class MUSYNCSavProcess():
 			SyncNumber = str(self.Hex2Int_LittleEndian(self.Bytes2HexString(self.saveData[16:20])))
 			UploadScore = self.Hex2Float_LittleEndian(self.Bytes2HexString(self.saveData[20:24]))
 			PlayCount = self.Hex2Int_LittleEndian(self.Bytes2HexString(self.saveData[24:28]))
+
+			if self.IsSkip(SpeedStall):continue
+			if self.NoCopyRight(SpeedStall):continue
+
 			IsFav = '0x01' if self.saveData[28]==1 else '0x00'
 			if len(SyncNumber) == 5:SyncNumber = f'{SyncNumber[0:3]}.{SyncNumber[3:]}%'
 			elif len(SyncNumber) == 4:SyncNumber = f'{SyncNumber[0:2]}.{SyncNumber[2:]}%'
@@ -125,7 +138,7 @@ class MUSYNCSavProcess():
 			else:SyncNumber = f'0.0{SyncNumber}%'
 			UploadScore = UploadScore*100
 			if UploadScore == 0:UploadScore = '0.00000000000000%'
-			elif UploadScore < 10:UploadScore = ZeroFormat(UploadScore,16)
+			elif UploadScore < 10:UploadScore = ZeroFormat(UploadScore,16) #'%.16f%%'%UploadScore
 			elif UploadScore < 100:UploadScore = ZeroFormat(UploadScore,17)
 			else:UploadScore = ZeroFormat(UploadScore,18)
 			self.SaveAnalyzeFileWrite(f'| {" "*(6-len(str(SongID)))}{SongID} | {Unknown0} |  {SpeedStall}  | {Unknown1} |    {" "*(7-len(SyncNumber))}{SyncNumber} | {" "*(19-len(UploadScore))}{UploadScore} | {" "*(9-len(str(PlayCount)))}{PlayCount} |  {IsFav} |')

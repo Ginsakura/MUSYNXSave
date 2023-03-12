@@ -54,7 +54,7 @@ class MusyncSavDecodeGUI(object):
 		self.difficute = 3
 		self.wh = [0,0]
 		self.vScrollpos = (0,1)
-		self.version = '1.1.4 rc2'
+		self.version = '1.1.4 rc3'
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)
@@ -134,8 +134,11 @@ class MusyncSavDecodeGUI(object):
 		self.UpdateWindowInfo()
 		self.TreeviewWidthUptate()
 		self.TreeviewColumnUpdate()
-		self.CheckUpdate()
-		# self.CheckJsonUpdate()
+		if not os.path.isfile('./musync_data/UpdateDisable'):
+			self.CheckUpdate()
+			self.CheckJsonUpdate()
+		if os.path.isfile('./musync_data/AutoAnalyze'):
+			self.DeleteAnalyzeFile()
 		self.CheckFile()
 		if not os.path.isfile('./musync_data/SaveFilePath.sfp'):
 			self.GetSaveFile()
@@ -168,6 +171,7 @@ class MusyncSavDecodeGUI(object):
 				saveDataJson = json.load(saveData)
 				saveData.close()
 			except Exception as e:
+				saveData.close()
 				messagebox.showerror("Error", f'SavAnalyze.json文件打开失败\n错误的Json文件格式\n{e}')
 				os.remove("./musync_data/SavAnalyze.json")
 			else:
@@ -468,7 +472,7 @@ class MusyncSavDecodeGUI(object):
 		if not self.wh == self.windowInfo[2:]:
 			self.TreeviewWidthUptate()
 			self.VScroll1.place(x=self.windowInfo[2]-22, y=1, width=20, height=self.windowInfo[3]-162)
-		self.saveData.yview_moveto(self.VScroll1.get()[0])
+		# self.saveData.yview_moveto(self.VScroll1.get()[0])
 		self.saveCountVar.set(self.saveCount)
 		self.saveCountLabel.configure(text=self.saveCountVar.get())
 		self.avgSyncVar.set(f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount))}')

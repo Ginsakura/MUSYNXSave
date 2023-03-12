@@ -4,9 +4,13 @@
 ![主页面](./ReadmeResources/main.png "主页面")
 
 ## 未来的计划
-- [ ] 重排版SongName.json
 - [ ] 将提供一个文档来演示使用方法
 - [ ] 使用文件夹内指定文件名的方式自定义美化UI
+已完成的计划
+- [x] 重排版SongName.json
+- [x] 滑动条在重加载后保持位置不变
+- [x] 隐藏cmd窗口
+- [x] 将像Windows资源管理器一样使用列标题栏进行排序
 
 ## Release版本说明
 NoConsole版本为没有命令提示符界面，适合正常使用

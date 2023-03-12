@@ -18,7 +18,7 @@ from GetSongName import GetSongName
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.4_rc3'
+version = '1.1.4_rc4'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""

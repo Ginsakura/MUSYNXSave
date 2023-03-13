@@ -12,13 +12,12 @@ from tkinter import ttk
 from tkinter import font
 from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
-from GetSongName import GetSongName
 #import win32api
 #import win32con
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.4_rc4'
+version = '1.1.5_rc1'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -373,13 +372,6 @@ class MusyncSavDecodeGUI(object):
 		saveDataJson = json.load(saveData)
 		saveData.close()
 
-		if (saveDataJson['SaveData'][0]["SongName"] is None):
-			self.InitLabel('获取谱面关系中...')
-			saveData = open(f'./musync_data/SavAnalyze.json','w+',encoding='utf8')
-			for ids in range(len(saveDataJson['SaveData'])):
-				saveDataJson['SaveData'][ids]["SongName"] = GetSongName(saveDataJson['SaveData'][ids]["SpeedStall"])
-			json.dump(saveDataJson,saveData,indent="",ensure_ascii=False)
-			saveData.close()
 		self.InitLabel('正在分析存档文件中……')
 		with open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8') as saveData:
 			saveDataJson = json.load(saveData)

@@ -4,10 +4,10 @@
 /musync
 /othersSavFile
 /.vs
-Push.bat
 SavAnalyze.json
 LXGW.ttf
 UpdateDisable
+*.bat
 *.b64
 *.spec
 *.psd

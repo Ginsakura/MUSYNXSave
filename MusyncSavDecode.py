@@ -4,14 +4,12 @@ import struct
 import os
 import json
 from tkinter import messagebox
-from GetSongName import GetSongName
 
 class MUSYNCSavProcess():
 	"""docstring for MUSYNCSavProcess"""
 	def __init__(self, savFile='', decodeFile=''):
 		super(MUSYNCSavProcess, self).__init__()
 		self.savPath = savFile
-		#self.analyzeFile = analyzeFile
 		self.decodeFile = decodeFile
 		#self.dt = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 		#self.dt = '2023-01-22_16-28-04'
@@ -27,13 +25,6 @@ class MUSYNCSavProcess():
 			self.SaveFileDecode()
 			self.SaveFileAnalyze()
 			self.FavFix()
-			# try:
-			# 	self.SaveFileDecode()
-			# 	self.SaveFileAnalyze()
-			# 	self.FavFix()
-			# 	return self.savPath
-			# except Exception as e:
-			# 	messagebox.showerror("Error", f"存档文件不可读或文件并非MUSYNC存档.\n{e}")
 		else:
 			messagebox.showerror("Error", "文件夹内找不到存档文件.")
 
@@ -106,13 +97,22 @@ class MUSYNCSavProcess():
 		saveDataAnalyzeJson = dict()
 		saveDataAnalyzeJson["LastPlay"] = "".join(self.lastPlaySong)
 		saveDataAnalyzeJson["SaveData"] = list()
+		with open("./musync_data/SongName.json",'r',encoding='utf8') as songNameFile:
+			songNameJson = json.load(songNameFile)
 		while (self.savBinFile.read(1) == b'\x01'):
+			def GetSongName(ss):
+				diffcute = ["Easy","Hard","Inferno"]
+				if f'{ss}' in songNameJson:
+					data = songNameJson[f'{ss}']
+					songName = data[0]
+					songKeys = ("4Key" if data[1]==4 else "6Key")
+					songDifficulty = diffcute[int(data[2])]
+					songDifficultyNumber = "%02d"%data[3]
+					return [songName,songKeys,songDifficulty,songDifficultyNumber]
+				else:
+					return None
 			def ZeroFormat(score,lenth):
 				return f'{score}{"0"*(lenth-len(str(score)))}%'
-			def IsSkip(ss):
-				skipSS = ['00018B01','00018C91','00018C93','0001B211']
-				if ss in skipSS:return True
-				else:return False
 			def NoCopyright(ss):
 				NCR = ['0001F8B1','0001F8B2','0001F8BB','0001F8BC', #404 Not Found
 				'0001F915','0001F916','0001F91F','0001F920', #ArroganT
@@ -135,7 +135,10 @@ class MUSYNCSavProcess():
 			UploadScore = self.Hex2Float_LittleEndian(self.Bytes2HexString(self.saveData[20:24]))
 			PlayCount = self.Hex2Int_LittleEndian(self.Bytes2HexString(self.saveData[24:28]))
 
-			if IsSkip(SpeedStall):continue
+			songName = GetSongName(SpeedStall)
+			if songName is None:
+				self.SaveAnalyzeFileWrite(SpeedStall)
+				continue
 			if NoCopyright(SpeedStall):continue
 
 			IsFav = '0x01' if self.saveData[28]==1 else '0x00'
@@ -150,7 +153,7 @@ class MUSYNCSavProcess():
 			elif UploadScore < 100:UploadScore = ZeroFormat(UploadScore,17)
 			else:UploadScore = ZeroFormat(UploadScore,18)
 			self.SaveAnalyzeFileWrite(f'| {" "*(6-len(str(SongID)))}{SongID} | {Unknown0} |  {SpeedStall}  | {Unknown1} |    {" "*(7-len(SyncNumber))}{SyncNumber} | {" "*(19-len(UploadScore))}{UploadScore} | {" "*(9-len(str(PlayCount)))}{PlayCount} |  {IsFav} |')
-			saveDataAnalyzeJson["SaveData"].append(dict(SpeedStall=SpeedStall,SongName=GetSongName(SpeedStall),SyncNumber=SyncNumber,UploadScore=UploadScore,PlayCount=PlayCount,IsFav=IsFav))
+			saveDataAnalyzeJson["SaveData"].append(dict(SpeedStall=SpeedStall,SongName=songName,SyncNumber=SyncNumber,UploadScore=UploadScore,PlayCount=PlayCount,IsFav=IsFav))
 		json.dump(saveDataAnalyzeJson,saveDataAnalyze,indent="",ensure_ascii=False)
 		saveDataAnalyze.close()
 

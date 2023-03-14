@@ -20,5 +20,4 @@ UpdateDisable
 *.sav
 *.pyproj
 *.sln
-*.dll
 *.log

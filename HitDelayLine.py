@@ -5,7 +5,7 @@ class DrawHDLine(object):
 	"""docstring for DrawHDLine"""
 	def __init__(self):
 		super(DrawHDLine, self).__init__()
-		self.filePath = './musync_data/HitDelay.txt'
+		self.filePath = './musync_data/HitDelay.log'
 		with open(self.filePath,'r',encoding='utf8') as f:
 			self.data = f.read().split('\n')
 		p = self.GetIndex()
@@ -27,8 +27,9 @@ class DrawHDLine(object):
 		self.avgDelay = sum(self.y_axis)/self.allKeys
 		self.avgAcc = sum([abs(i) for i in self.y_axis])/self.allKeys
 		self.fig = plt.figure(f'AvgDelay: {"%.4fms"%self.avgDelay}    AllKeys: {self.allKeys}    AvgAcc: {"%.4fms"%self.avgAcc}',figsize=(9, 4))
-		print(f'平均延迟: {self.avgAcc}')
-		print(f'总按键数: {self.allKeys}')
+		print(f'AvgDelay: {self.avgDelay}')
+		print(f'AllKeys: {self.allKeys}')
+		print(f'AvgAcc: {self.avgAcc}')
 		self.Label()
 		self.Draw()
 		plt.show()

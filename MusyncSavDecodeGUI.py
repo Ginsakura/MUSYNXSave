@@ -17,7 +17,7 @@ from tkinter.filedialog import askopenfilename
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.5_rc1'
+version = '1.1.5_rc2'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -137,6 +137,8 @@ class MusyncSavDecodeGUI(object):
 		if not os.path.isfile('./musync_data/UpdateDisable'):
 			self.CheckUpdate()
 			self.CheckJsonUpdate()
+		else:
+			self.gitHubLink.configure(text='更新已禁用    点击打开GitHub仓库页')
 		if os.path.isfile('./musync_data/AutoAnalyze'):
 			self.DeleteAnalyzeFile()
 		self.CheckFile()
@@ -197,9 +199,9 @@ class MusyncSavDecodeGUI(object):
 	def SelectMethod(self,method):
 		if self.dataSelectMethod == method:
 			self.dataSelectMethod = None
-			self.SelectButtonGreenGrey(method)
+			self.SelectButtonGrey(method)
 		else:
-			self.SelectButtonGreenGrey(self.dataSelectMethod)
+			self.SelectButtonGrey(self.dataSelectMethod)
 			self.dataSelectMethod = method
 			self.SelectButtonGreen(method)
 		self.DataLoad()
@@ -214,7 +216,7 @@ class MusyncSavDecodeGUI(object):
 		elif method == "RankA":self.selectARankButton.configure(bg='#98E22B')
 		elif method == "RankB":self.selectBRankButton.configure(bg='#98E22B')
 		elif method == "RankC":self.selectCRankButton.configure(bg='#98E22B')
-	def SelectButtonGreenGrey(self,method):
+	def SelectButtonGrey(self,method):
 		if method == "Played":self.selectPlayedButton.configure(bg='#F0F0F0')
 		elif method == "Unplay":self.selectUnplayButton.configure(bg='#F0F0F0')
 		elif method == "IsFav":self.selectIsFavButton.configure(bg='#F0F0F0')
@@ -288,7 +290,8 @@ class MusyncSavDecodeGUI(object):
 				self.dataSortMethodsort[1] = False
 			if col == 'SyncNumber' or col == 'UploadScore':
 				l = [(float((self.saveData.set(k, col))[:-1]), k) for k in self.saveData.get_children('')]
-				pass
+			elif col == 'PlayCount':
+				l = [(int(self.saveData.set(k, col)), k) for k in self.saveData.get_children('')]
 			else:
 				l = [(self.saveData.set(k, col), k) for k in self.saveData.get_children('')]
 			# print(l)
@@ -386,7 +389,7 @@ class MusyncSavDecodeGUI(object):
 				if self.dataSelectMethod == "Played":
 					if (saveLine["PlayCount"] == 0) and (float(saveLine["SyncNumber"][0:-1]) == 0):continue
 				elif self.dataSelectMethod == "Unplay":
-					if not saveLine["PlayCount"] == 0:continue
+					if not (saveLine["PlayCount"] == 0) and (float(saveLine["SyncNumber"][0:-1]) == 0):continue
 				elif self.dataSelectMethod == "IsFav":
 					if saveLine["IsFav"] == '0x00':continue
 				elif self.dataSelectMethod == "Sync122":

@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-import re
+from matplotlib.pyplot import MultipleLocator
 
 class DrawHDLine(object):
 	"""docstring for DrawHDLine"""
@@ -17,6 +17,7 @@ class DrawHDLine(object):
 		self.Extrab = [-90 for i in range(p,len(self.data)-1)]
 		self.Greata = [150 for i in range(p,len(self.data)-1)]
 		self.Greatb = [-150 for i in range(p,len(self.data)-1)]
+		self.Right = [250 for i in range(p,len(self.data)-1)]
 		self.pos = p
 		self.y_axis = list()
 		for i in range(p,len(self.data)-1):
@@ -37,13 +38,16 @@ class DrawHDLine(object):
 	def GetIndex(self):
 		b=list()
 		for index, value in enumerate(self.data):
-		    if value == '> Game Start!':
-		        b.append(index)
-		return (b[-1]+1)
+			if value == '> Game Start!':
+				b.append(index)
+		if len(b)==0:
+			return 0
+		else:
+			return (b[-1]+1)
 
 	def Label(self):
-		plt.text(0,70,"Slower↑", ha='right',fontsize=10,color='#c22472')
-		plt.text(0,-70,"Faster↓", ha='right',fontsize=10,color='#288328')
+		plt.text(0,70,"Slower→", ha='right',fontsize=10,color='#c22472',rotation=90)
+		plt.text(0,-70,"←Faster", ha='right',va='top',fontsize=10,color='#288328',rotation=90)
 		for x,y in zip(self.x_axis,self.y_axis):
 			if y<0:
 				plt.text(x,y-3,'%.0fms'%y,ha='center',va='top',fontsize=7.5,alpha=0.7)
@@ -60,11 +64,14 @@ class DrawHDLine(object):
 		plt.plot(self.x_axis,self.Extrab,linestyle='--',alpha=0.7,linewidth=1,color='blue')
 		plt.plot(self.x_axis,self.Greata,linestyle='--',alpha=0.7,linewidth=1,color='green',label='Great(±150ms)')
 		plt.plot(self.x_axis,self.Greatb,linestyle='--',alpha=0.7,linewidth=1,color='green')
+		plt.plot(self.x_axis,self.Right,linestyle='--',alpha=0.7,linewidth=1,color='red',label='Right(+250ms)')
 		plt.plot(self.x_axis,self.y_axis,linestyle='-',alpha=0.7,linewidth=1,color='#8a68d0',label='HitDelay(ms)',marker='.'
          ,markeredgecolor='#c4245c',markersize='3')
 		plt.legend()  #显示上面的label
 		plt.xlabel('HitCount') #x_label
 		plt.ylabel('Delay')#y_label
+		plt.gca().yaxis.set_major_locator(MultipleLocator(20))
+		plt.xlim(-15,len(self.x_axis)+15)
 
 if __name__ == '__main__':
 	DrawHDLine()

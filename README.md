@@ -4,9 +4,10 @@
 ![主页面](./ReadmeResources/main.png "主页面")
 
 ## 未来的计划
+- [ ] 提供全球排行榜显示功能
 - [ ] 将提供一个文档来演示使用方法
 - [ ] 使用文件夹内指定文件名的方式自定义美化UI
-已完成的计划
+### 已完成的计划
 - [x] 重排版SongName.json
 - [x] 滑动条在重加载后保持位置不变
 - [x] 隐藏cmd窗口
@@ -24,7 +25,7 @@ WithConsole版本为带命令提示符界面，适合出现bug时快速定位错
 #### 其他功能组件
 下列组件对游戏客户端有修改,请谨慎使用
 
-***<font style=background:red> 注意备份 </font><font style=background:red> 注意备份 </font><font style=background:red> 注意备份 </font>***
+***<font style=background:red color=#00FF00> 注意备份  注意备份  注意备份 </font>***
 
 <font color=#cc0000>请自行决定是否使用,使用过程中出现任何意外</font> ***<font style=background:red> 后果自负,开发者概不负责'</font>***
 
@@ -44,6 +45,9 @@ HitDelay模块用法:替换游戏DLL后,在本次游戏进行首次谱面游玩�
 
         该值越小,就说明您击打的越精准,(在该值小于45ms时)分值就会越高.
 ## 更新日志
+### Version 1.1.5 rc2
+1. #### 修复 修复了对"游玩计数"排序功能无法正确排序的bug
+2. 修改少量函数名,使其更加贴近实现的功能
 ### Version 1.1.5 rc1
 1. #### 更新 修改排除空白谱面的函数，使其更加自动化
     - 已找出空白谱面的规律: 加入收藏后会在收藏曲目的6KHD难度的编号+9位置产生一个空白谱面

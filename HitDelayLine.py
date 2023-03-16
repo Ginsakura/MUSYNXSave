@@ -31,6 +31,10 @@ class DrawHDLine(object):
 		print(f'AvgDelay: {self.avgDelay}')
 		print(f'AllKeys: {self.allKeys}')
 		print(f'AvgAcc: {self.avgAcc}')
+		
+		plt.text(0,70,"Slower→", ha='right',fontsize=10,color='#c22472',rotation=90)
+		plt.text(0,-70,"←Faster", ha='right',va='top',fontsize=10,color='#288328',rotation=90)
+		
 		self.Label()
 		self.Draw()
 		plt.show()
@@ -46,8 +50,6 @@ class DrawHDLine(object):
 			return (b[-1]+1)
 
 	def Label(self):
-		plt.text(0,70,"Slower→", ha='right',fontsize=10,color='#c22472',rotation=90)
-		plt.text(0,-70,"←Faster", ha='right',va='top',fontsize=10,color='#288328',rotation=90)
 		for x,y in zip(self.x_axis,self.y_axis):
 			if y<0:
 				plt.text(x,y-3,'%.0fms'%y,ha='center',va='top',fontsize=7.5,alpha=0.7)

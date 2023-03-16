@@ -25,15 +25,15 @@ WithConsole版本为带命令提示符界面，适合出现bug时快速定位错
 #### 其他功能组件
 下列组件对游戏客户端有修改,请谨慎使用
 
-***注意备份  注意备份  注意备份{background:red color=#00FF00}***
+***<font style=background:red color=#00FF00> 注意备份  注意备份  注意备份 </font>***
 
-请自行决定是否使用,使用过程中出现任何意外{color=red} *** 后果自负,开发者概不负责{background:red} ***
+<font color=#cc0000>请自行决定是否使用,使用过程中出现任何意外</font> ***<font style=background:red> 后果自负,开发者概不负责'</font>***
 
 
 
 HitDelay模块用法:替换游戏DLL后,在本次游戏进行首次谱面游玩时会打开一个cmd窗口 ***<font color=#cc0000>请勿关闭该窗口</font>***
 
-当您游玩完毕本次谱面后,可以从上文打开的cmd窗口中看见大量的字符信息,用`鼠标左键`单击一下cmd窗口内部或标题栏,然后按`Ctrl+A`键全选,再按`Ctrl+C`键复制,然后打开`./musync_data/HitDelay.log`文件,粘贴进去, **并保存{color=#cc0000}**,然后执行`HitDelayLine.py`文件即可展示您刚刚的谱面的游玩信息.
+当您游玩完毕本次谱面后,可以从上文打开的cmd窗口中看见大量的字符信息,用`鼠标左键`单击一下cmd窗口内部或标题栏,然后按`Ctrl+A`键全选,再按`Ctrl+C`键复制,然后打开`./musync_data/HitDelay.log`文件,粘贴进去, **<font color=#cc0000>并保存</font>**,然后执行`HitDelayLine.py`文件即可展示您刚刚的谱面的游玩信息.
 - `HitDelayFix.dll` 被精心修改过的客户端文件,原始文件为`./MUSYNX_Data/Managed/Assembly-CSharp.dll`,如果想要使用,复制替换即可(记得备份原始文件).
 - `HitDelayLine.py` 用于读取`./musync_data/HitDelay.log`中的击打信息生成可视化数据表,标题栏提供三个统计信息.
     - `AvgDelay` 平均击打延迟,即所有击打的平均值,能够一定程度上提示游戏延迟应该调整的数值(可能有较大偏差,仅供参考).

@@ -24,3 +24,4 @@ Program*
 *.pyproj
 *.sln
 *.log
+*.db

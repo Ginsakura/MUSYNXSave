@@ -16,7 +16,7 @@ from HitDelay import HitDelayCheck,HitDelayText
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.6_pre1'
+version = '1.1.6_rc1'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -141,7 +141,7 @@ class MusyncSavDecodeGUI(object):
 		if os.path.isfile('./musync_data/AutoAnalyze'):
 			self.DeleteAnalyzeFile()
 		self.CheckFile()
-		if os.path.isfile('./musync_data/ProgramInjection'):
+		if os.path.isfile('./musync_data/InjectionEnable'):
 			self.hitDelay = Button(self.root, text="DLL注入\n分析\n游玩结果",command=self.HitDelay, font=self.font,bg='#FF0000')
 			self.hitDelay.place(x=776,y=48,width=90,height=74)
 		if not os.path.isfile('./musync_data/SaveFilePath.sfp'):
@@ -488,7 +488,7 @@ class MusyncSavDecodeGUI(object):
 
 		self.wh = self.windowInfo[2:]
 		self.root.update()
-		root.after(500,self.UpdateWindowInfo)
+		root.after(1000,self.UpdateWindowInfo)
 
 class SubWindow(object):
 	def __init__(self, nroot, songID, songName, songDifficute):

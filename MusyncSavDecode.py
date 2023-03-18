@@ -1,7 +1,7 @@
 ﻿import base64
 #import datetime
-import struct
-import os
+from struct import unpack
+from os.path import isfile
 import json
 from tkinter import messagebox
 
@@ -21,7 +21,7 @@ class MUSYNCSavProcess():
 		if fileExtension == 'decode':
 			self.SaveFileAnalyze()
 			self.FavFix()
-		elif os.path.isfile(self.savPath):
+		elif isfile(self.savPath):
 			self.SaveFileDecode()
 			self.SaveFileAnalyze()
 			self.FavFix()
@@ -36,10 +36,10 @@ class MUSYNCSavProcess():
 			savBin.write(base64.standard_b64decode(savEncode))
 	
 	def Hex2Float_LittleEndian(self,tHex): #小端用<,大端用!或>
-		return struct.unpack('<f',bytes.fromhex(tHex))[0]
+		return unpack('<f',bytes.fromhex(tHex))[0]
 	
 	def Hex2Int_LittleEndian(self,tHex):
-		return struct.unpack('<i',bytes.fromhex(tHex))[0]
+		return unpack('<i',bytes.fromhex(tHex))[0]
 
 	def Bytes2HexString(self,Bytes):
 		return ''.join(['%02X' % b for b in Bytes])

@@ -7,17 +7,16 @@ import FileExport
 import webbrowser
 import requests
 from tkinter import *
-from tkinter import Tk
-from tkinter import ttk
-from tkinter import font
+from tkinter import Tk,ttk,font
 from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
+from HitDelay import HitDelayCheck,HitDelayText
 #import win32api
 #import win32con
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.5_rc2'
+version = '1.1.6_pre1'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -30,8 +29,8 @@ class MusyncSavDecodeGUI(object):
 		self.font=('霞鹜文楷等宽',16)
 		root.geometry(f'1000x670+500+300')
 		style = ttk.Style()
-		style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',12))
-		style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',12))
+		style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',13))
+		style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
 		if isTKroot == True:
 			root.title("同步音律喵赛克 Steam端 本地存档分析")
 			root['background'] = '#efefef'
@@ -84,7 +83,7 @@ class MusyncSavDecodeGUI(object):
 		self.initLabel.place(x=250,y=300,width=500,height=30)
 
 		self.deleteAnalyzeFile = Button(self.root, text="重新分析",command=self.DeleteAnalyzeFile, font=self.font, bg="#EE0000")
-		self.deleteAnalyzeFile.place(x=10,y=88,width=100,height=30)
+		self.deleteAnalyzeFile.place(x=10,y=88,width=90,height=30)
 
 		self.totalSyncFrameLabel = Label(self.root, text='', relief="groove")
 		self.totalSyncFrameLabel.place(x=868,y=48,width=124,height=74)
@@ -142,14 +141,16 @@ class MusyncSavDecodeGUI(object):
 		if os.path.isfile('./musync_data/AutoAnalyze'):
 			self.DeleteAnalyzeFile()
 		self.CheckFile()
+		if os.path.isfile('./musync_data/ProgramInjection'):
+			self.hitDelay = Button(self.root, text="DLL注入\n分析\n游玩结果",command=self.HitDelay, font=self.font,bg='#FF0000')
+			self.hitDelay.place(x=776,y=48,width=90,height=74)
 		if not os.path.isfile('./musync_data/SaveFilePath.sfp'):
 			self.GetSaveFile()
 		else:
 			self.InitLabel(text="正在读取存档路径……")
-			sfp = open('./musync_data/SaveFilePath.sfp','r+')
-			sfpr = sfp.read()
-			sfp.close()
-			if (not sfpr == ""):
+			with open('./musync_data/SaveFilePath.sfp','r+',encoding='utf8') as sfp:
+				sfpr = sfp.read()
+			if not sfpr:
 				self.GetSaveFile()
 			elif (not os.path.isfile(sfpr)):
 				self.InitLabel(text="正在删除存档路径.")
@@ -327,7 +328,7 @@ class MusyncSavDecodeGUI(object):
 				saveFilePath = f"{ids}:/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav"
 				break
 		if not saveFilePath == None:
-			with open('./musync_data/SaveFilePath.sfp','w+') as sfp:
+			with open('./musync_data/SaveFilePath.sfp','w',encoding="utf8") as sfp:
 				sfp.write(saveFilePath)
 				self.saveFilePathVar.set(saveFilePath)
 			self.DataLoad()
@@ -342,7 +343,13 @@ class MusyncSavDecodeGUI(object):
 		if os.path.isfile("./musync_data/SavDecode.decode"):
 			os.remove("./musync_data/SavDecode.decode")
 		self.DataLoad()
-
+	def HitDelay(self):
+		nroot = Toplevel(self.root)
+		nroot.resizable(True, True)
+		if not HitDelayCheck():
+			messagebox.showerror("Error", f'DLL注入失败：版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁')
+		else:
+			newWindow = HitDelayText(nroot)
 	def DataLoad(self):
 		self.InitLabel(text="正在分析存档文件中……")
 		self.vScrollpos = self.VScroll1.get()

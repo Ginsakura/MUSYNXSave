@@ -4,9 +4,12 @@
 /musync
 /othersSavFile
 /.vs
+/PlayHistory
 SavAnalyze.json
 LXGW.ttf
 UpdateDisable
+HitDelayHistory.json
+Program*
 *.bat
 *.b64
 *.spec

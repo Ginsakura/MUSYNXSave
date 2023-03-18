@@ -22,9 +22,18 @@ def EncodeJson():
 			snjEncode.write(b64e)
 			pyperclip.copy(b64e.decode('utf8'))
 
+def EncodeDLL():
+	with open('./HitDelayFix.dll','rb') as hdf:
+		with open('./musync_data/HitDelayFix.b64','wb') as hdfE:
+			hdfD = hdf.read()
+			b64e = b64encode(hdfD)
+			hdfE.write(b64e)
+
 if __name__ == '__main__':
 	if not path.isfile("./musync_data/ttf.b64"):
 		EncodeTTF()
 	if not path.isfile('./musync_data/icon.b64'):
 		EncodeIcon()
-	EncodeJson()
+	# EncodeJson()
+	if not path.isfile('./musync_data/HitDelayFix.b64'):
+		EncodeDLL()

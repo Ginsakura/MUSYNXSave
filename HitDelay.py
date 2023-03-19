@@ -7,7 +7,7 @@ import json
 from datetime import datetime as dt
 from os.path import isfile
 from hashlib import md5
-from os import rename
+from os import rename,remove
 from FileExport import WriteHitDelayFix
 import sqlite3 as sql
 
@@ -16,6 +16,7 @@ class HitDelayCheck(object):
 	def __init__(self):
 		self.md5l = '9C7A7CE7C2C69DEF7C56316394D193D3' # HitDelayFix.dll
 		self.md5o = 'B6852581AA60C7E2EDC7EF44DF3ACC96' # Assembly-CSharp.dll
+
 		with open('./musync_data/SaveFilePath.sfp','r+',encoding='utf8') as sfp:
 			self.spfr = sfp.read()[:-21]+'MUSYNX_Data/Managed/Assembly-CSharp.dll'
 		self.DLLCheck()
@@ -32,6 +33,8 @@ class HitDelayCheck(object):
 			return False
 
 	def DLLInjection(self):
+		if isfile(self.spfr+'.old'):
+			remove(self.spfr+'.old')
 		rename(self.spfr,self.spfr+'.old')
 		WriteHitDelayFix(self.spfr)
 

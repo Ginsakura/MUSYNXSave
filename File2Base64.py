@@ -34,6 +34,6 @@ if __name__ == '__main__':
 		EncodeTTF()
 	if not path.isfile('./musync_data/icon.b64'):
 		EncodeIcon()
-	# EncodeJson()
+	EncodeJson()
 	if not path.isfile('./musync_data/HitDelayFix.b64'):
 		EncodeDLL()

@@ -14,8 +14,8 @@ import sqlite3 as sql
 class HitDelayCheck(object):
 	"""docstring for HitDelayWindow"""
 	def __init__(self):
-		self.md5l = '9C7A7CE7C2C69DEF7C56316394D193D3' # HitDelayFix.dll
-		self.md5o = 'B6852581AA60C7E2EDC7EF44DF3ACC96' # Assembly-CSharp.dll
+		self.md5l = '6771D7829013707B491104DCC1D8902A' # HitDelayFix.dll
+		self.md5o = 'EDA085BDD1136D6739BCB31C4247EAA3' # Assembly-CSharp.dll
 
 		with open('./musync_data/SaveFilePath.sfp','r+',encoding='utf8') as sfp:
 			self.spfr = sfp.read()[:-21]+'MUSYNX_Data/Managed/Assembly-CSharp.dll'
@@ -104,7 +104,6 @@ class HitDelayText(object):
 		allKeys = len(dataList)
 		avgDelay = sum(dataList)/allKeys
 		avgAcc = sum([abs(i) for i in dataList])/allKeys
-		dataList = [name,avgDelay,allKeys,avgAcc,dataList]
 		self.delayHistory.insert('', END, values=(name,allKeys,'%.6f ms'%avgDelay,'%.6f ms'%avgAcc))
 		dataListStr = ""
 		for i in dataList:
@@ -112,6 +111,7 @@ class HitDelayText(object):
 		self.cur.execute("insert into HitDelayHistory values(?,?,?,?,?)",(name,avgDelay,allKeys,avgAcc,dataListStr[:-1]))
 		self.db.commit()
 		self.HistoryUpdate()
+		dataList = [name,avgDelay,allKeys,avgAcc,dataList]
 		HitDelayDraw(dataList,isHistory=False)
 
 

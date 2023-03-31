@@ -164,17 +164,16 @@ class MUSYNCSavProcess():
 		print(text)
 
 	def FavFix(self):
-		saveJsonFile = open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8')
-		saveJson = json.load(saveJsonFile)
-		saveJsonFavFix = saveJson
-		saveJsonFile.close()
+		with open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8') as saveJsonFile:
+			saveJson = json.load(saveJsonFile)
+			saveJsonFavFix = saveJson
 		saveJsonFile = open(f'./musync_data/SavAnalyze.json','w+',encoding='utf8')
 		for ids in range(len(saveJson["SaveData"])):
 			if saveJson["SaveData"][ids]["IsFav"] == "0x01":
 				for idx in range(ids+1,len(saveJson["SaveData"])):
 					oldName = ("" if saveJson["SaveData"][ids]["SongName"] is None else saveJson["SaveData"][ids]["SongName"][0])
 					newName = ("" if saveJson["SaveData"][idx]["SongName"] is None else saveJson["SaveData"][idx]["SongName"][0])
-					if (not oldName == "") and (oldName == newName) and (not newName == ""):
+					if (not oldName == "") and (oldName[:4] == newName[:4]) and (not newName == ""):
 						saveJsonFavFix["SaveData"][idx]["IsFav"] = "0x01"
 		json.dump(saveJsonFavFix,saveJsonFile,indent="")
 		saveJsonFile.close()

@@ -16,7 +16,7 @@ from HitDelay import HitDelayCheck,HitDelayText
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.6_rc2'
+version = '1.1.7_rc1'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -374,9 +374,7 @@ class MusyncSavDecodeGUI(object):
 		else:
 			if self.saveFilePathEntry.get() == 'Input SaveFile or AnalyzeFile Path (savedata.sav)or(SavAnalyze.json)':
 				self.SelectPath()
-			path = MusyncSavDecode.MUSYNCSavProcess(self.saveFilePathVar.get()).Main()
-			with open('./musync_data/SaveFilePath.sfp','w+') as sfp:
-				sfp.write("" if path is None else path)
+			MusyncSavDecode.MUSYNCSavProcess(self.saveFilePathVar.get()).Main()
 
 		saveData = open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8')
 		saveDataJson = json.load(saveData)

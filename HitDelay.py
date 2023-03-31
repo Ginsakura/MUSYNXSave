@@ -10,6 +10,7 @@ from hashlib import md5
 from os import rename,remove
 from FileExport import WriteHitDelayFix
 import sqlite3 as sql
+from AllHitAnalyze import HitAnalyze
 
 class HitDelayCheck(object):
 	"""docstring for HitDelayWindow"""
@@ -66,8 +67,10 @@ class HitDelayText(object):
 		self.logText.place(relx=0.7,y=70,relheight=0.88,relwidth=0.3)
 		self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
 		self.logButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
+		self.hitAnalyzeButton = Button(self.subroot,text='All\nHit',command=lambda:HitAnalyze().Analyze(),font=self.font, relief="groove")
+		self.hitAnalyzeButton.place(x=0,y=40,height=60,relwidth=0.05)
 		self.nameDelayLabel = Label(self.subroot,font=self.font, relief="groove",text='↓请在下面输入曲名与谱面难度↓这只是用来标记你玩的哪个谱面而已，\n只要你能分辨就行，没有格式要求。如"ニニ 4KEZ"、"二重4H"等')
-		self.nameDelayLabel.place(x=0,y=40,height=60,relwidth=0.7)
+		self.nameDelayLabel.place(relx=0.05,y=40,height=60,relwidth=0.65)
 		self.nameDelayEntry = Entry(self.subroot,font=self.font, relief="sunken")
 		self.nameDelayEntry.place(relx=0.01,y=100,height=30,relwidth=0.68)
 		self.delayHistory = ttk.Treeview(self.subroot, show="headings", columns = ['name','AllKeys','AvgDelay','AvgAcc'])

@@ -3,6 +3,7 @@
 
 ![主页面](./ReadmeResources/main.png "主页面")
 ![HitDelay页面](./ReadmeResources/HitDelay.png "HitDelay页面")
+![HitAnalyze页面](./ReadmeResources/HitAnalyze.png "HitAnalyze页面")
 
 ## 未来的计划
 - [ ] 提供全球排行榜显示功能

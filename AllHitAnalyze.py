@@ -45,7 +45,7 @@ class HitAnalyze(object):
 		# print(yAxis)
 
 		fig = plt.figure(f"HitAnalyze (total:{sum(yAxis)})", figsize=(16, 8))
-		fig.subplots_adjust(**{"left":0.04,"bottom":0.09,"right":1,"top":1})
+		fig.subplots_adjust(**{"left":0.04,"bottom":0.06,"right":1,"top":1})
 		plt.xlabel("Delay(ms)")
 		plt.ylabel("HitNumber")
 		plt.xlim(-155,255)

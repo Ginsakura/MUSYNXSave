@@ -104,7 +104,12 @@ class HitDelayText(object):
 		for ids in range(dataIndex,len(data)-1):
 			dataList.append(float(data[ids][13:-2]))
 		allKeys = len(dataList)
-		avgDelay = sum(dataList)/allKeys
+		sumNums,sumKeys = 0,0
+		for ids in dataList:
+			if (ids < 90) and (ids > -90):
+				sumNums += ids
+				sumKeys += 1
+		avgDelay = sumNums/sumKeys
 		avgAcc = sum([abs(i) for i in dataList])/allKeys
 		self.delayHistory.insert('', END, values=(name,allKeys,'%.6f ms'%avgDelay,'%.6f ms'%avgAcc))
 		dataListStr = ""

@@ -16,7 +16,7 @@ from HitDelay import HitDelayCheck,HitDelayText
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.7_rc2'
+version = '1.1.7_rc3'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -82,7 +82,7 @@ class MusyncSavDecodeGUI(object):
 		self.initLabel = Label(self.root, text='启动中......', anchor="center", font=self.font, relief="groove")
 		self.initLabel.place(x=250,y=300,width=500,height=30)
 
-		self.deleteAnalyzeFile = Button(self.root, text="重新分析",command=self.DeleteAnalyzeFile, font=self.font, bg="#EE0000")
+		self.deleteAnalyzeFile = Button(self.root, text="刷新",command=self.DeleteAnalyzeFile, font=self.font, bg="#EEBBBB")
 		self.deleteAnalyzeFile.place(x=10,y=88,width=90,height=30)
 
 		self.totalSyncFrameLabel = Label(self.root, text='', relief="groove")
@@ -394,13 +394,13 @@ class MusyncSavDecodeGUI(object):
 				if self.dataSelectMethod == "Played":
 					if (saveLine["PlayCount"] == 0) and (float(saveLine["SyncNumber"][0:-1]) == 0):continue
 				elif self.dataSelectMethod == "Unplay":
-					if not (saveLine["PlayCount"] == 0) and (float(saveLine["SyncNumber"][0:-1]) == 0):continue
+					if not ((saveLine["PlayCount"] == 0) and (float(saveLine["SyncNumber"][0:-1]) == 0)):continue
 				elif self.dataSelectMethod == "IsFav":
 					if saveLine["IsFav"] == '0x00':continue
 				elif self.dataSelectMethod == "Sync122":
 					if float(saveLine["SyncNumber"][0:-1]) < 122:continue
 				elif self.dataSelectMethod == "Sync120":
-					if float(saveLine["SyncNumber"][0:-1]) < 120:continue
+					if (float(saveLine["SyncNumber"][0:-1]) < 120) or (float(saveLine["SyncNumber"][0:-1]) > 122):continue
 				elif self.dataSelectMethod == "RankEX":
 					if float(saveLine["SyncNumber"][0:-1]) < 117:continue
 				elif self.dataSelectMethod == "RankS":

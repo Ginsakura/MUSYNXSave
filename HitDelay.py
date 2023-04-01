@@ -1,14 +1,13 @@
 from tkinter import *
 from tkinter import Tk,ttk,font,Text
 from tkinter.filedialog import askopenfilename
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 from matplotlib.pyplot import MultipleLocator
 import json
 from datetime import datetime as dt
-from os.path import isfile
 from hashlib import md5
-from os import rename,remove
-from FileExport import WriteHitDelayFix
+import os
+import FileExport
 import sqlite3 as sql
 from AllHitAnalyze import HitAnalyze
 
@@ -34,15 +33,15 @@ class HitDelayCheck(object):
 			return False
 
 	def DLLInjection(self):
-		if isfile(self.spfr+'.old'):
-			remove(self.spfr+'.old')
-		rename(self.spfr,self.spfr+'.old')
-		WriteHitDelayFix(self.spfr)
+		if os.path.isfile(self.spfr+'.old'):
+			os.remove(self.spfr+'.old')
+		os.rename(self.spfr,self.spfr+'.old')
+		FileExport.WriteHitDelayFix(self.spfr)
 
 class HitDelayText(object):
 	"""docstring for DrawHDLine"""
 	def __init__(self,subroot):
-		if isfile('./musync_data/HitDelayHistory.db'):
+		if os.path.isfile('./musync_data/HitDelayHistory.db'):
 			self.db = sql.connect('./musync_data/HitDelayHistory.db')
 			self.cur = self.db.cursor()
 

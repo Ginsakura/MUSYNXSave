@@ -1,6 +1,6 @@
-from base64 import *
-from os import path
-import pyperclip
+from base64 import b64encode,b64decode
+import os
+# import pyperclip
 
 def EncodeIcon():
 	with open("./musync_data/MUSYNC.ico", 'rb+') as icon:
@@ -30,10 +30,10 @@ def EncodeDLL():
 			hdfE.write(b64e)
 
 if __name__ == '__main__':
-	if not path.isfile("./musync_data/ttf.b64"):
+	if not os.path.isfile("./musync_data/ttf.b64"):
 		EncodeTTF()
-	if not path.isfile('./musync_data/icon.b64'):
+	if not os.path.isfile('./musync_data/icon.b64'):
 		EncodeIcon()
 	EncodeJson()
-	if not path.isfile('./musync_data/HitDelayFix.b64'):
+	if not os.path.isfile('./musync_data/HitDelayFix.b64'):
 		EncodeDLL()

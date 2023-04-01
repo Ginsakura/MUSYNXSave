@@ -1,4 +1,4 @@
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 from matplotlib.pyplot import MultipleLocator
 import sqlite3 as sql
 

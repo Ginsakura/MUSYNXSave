@@ -11,7 +11,7 @@ class HitAnalyze(object):
 		cur = db.cursor()
 		res = cur.execute('select HitMap from HitDelayHistory')
 		res = res.fetchall()
-		self.hitMapA = [0]*150 # -149~0
+		self.hitMapA = [0]*150 # -149~-0
 		self.hitMapB = [0]*251 # +0~+250
 		self.avg = 0
 		self.var = 0
@@ -49,7 +49,7 @@ class HitAnalyze(object):
 			# pdf = np.exp((x-self.avg)**2/(-2*self.var))/(np.sqrt(2*np.pi)*self.std)
 			e=2.718281828459045
 			p=3.141592653589793
-			pdf = e**(-1*(((x-self.avg)**2)/(2*self.var))) / (((2*p)**0.5)*self.std)
+			pdf = (e**(-1*(((x-self.avg)**2))/(2*self.var))) / (((2*p)**0.5)*self.std)
 			return pdf*self.sumy
 
 		xAxis = [i for i in range(-150,251)]
@@ -65,6 +65,7 @@ class HitAnalyze(object):
 		maxLen = 10**len(str(max(yAxis)))
 		maxLenSub2 = maxLen//100
 		# print(max(yAxis), maxLen*0.2,maxLenSub2,(int(str(max(yAxis))[0:2])+2))
+
 		if max(yAxis) < maxLen*0.2:
 			for ids in range(maxLen//400,maxLenSub2,maxLen//400):
 				yLine.append([ids for i in range(-150,251)])

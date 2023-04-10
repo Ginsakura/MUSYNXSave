@@ -178,13 +178,21 @@ class HitDelayDraw(object):
 		self.Greata = [150 for i in range(0,len(dataList))]
 		self.Greatb = [-150 for i in range(0,len(dataList))]
 		self.Right = [250 for i in range(0,len(dataList))]
-		self.y_axis = dataList
+		self.y_axis = [int(i) for i in dataList]
+
+		self.sum = [0,0,0,0,0]
+		for ids in dataList:
+			ids = abs(ids)
+			if ids < 45: self.sum[0] += 1
+			elif ids < 90: self.sum[1] += 1
+			elif ids < 150: self.sum[2] += 1
+			elif ids < 250: self.sum[3] += 1
+			else: self.sum[4] += 1
+		print(self.sum)
 
 		# print(self.x_axis,self.y_axis)
 		self.fig = plt.figure(f'AvgDelay: {"%.4fms"%self.avgDelay}    AllKeys: {self.allKeys}    AvgAcc: {"%.4fms"%self.avgAcc}',figsize=(9, 4))
-		print(f'AvgDelay: {self.avgDelay}',end='\t')
-		print(f'AllKeys: {self.allKeys}',end='\t')
-		print(f'AvgAcc: {self.avgAcc}')
+		print(f'AvgDelay: {self.avgDelay}\tAllKeys: {self.allKeys}\tAvgAcc: {self.avgAcc}')
 		
 		plt.text(0,70,"Slower→", ha='right',fontsize=10,color='#c22472',rotation=90)
 		plt.text(0,-70,"←Faster", ha='right',va='top',fontsize=10,color='#288328',rotation=90)
@@ -197,23 +205,23 @@ class HitDelayDraw(object):
 	def Label(self):
 		for x,y in zip(self.x_axis,self.y_axis):
 			if y<0:
-				plt.text(x,y-3,'%.0fms'%y,ha='center',va='top',fontsize=7.5,alpha=0.7)
+				plt.text(x,y-3,'%dms'%y,ha='center',va='top',fontsize=7.5,alpha=0.7)
 			else:
-				plt.text(x,y+3,'%.0fms'%y,ha='center',va='bottom',fontsize=7.5,alpha=0.7)
+				plt.text(x,y+3,'%dms'%y,ha='center',va='bottom',fontsize=7.5,alpha=0.7)
 
 
 	def Draw(self):
 		self.fig.subplots_adjust(**{"left":0.04,"bottom":0.05,"right":1,"top":1})
-		plt.plot(self.x_axis,self.zero_axis,linestyle='-',alpha=1,linewidth=1,color='red',label='0ms')
-		plt.plot(self.x_axis,self.EXTRAa,linestyle='--',alpha=0.7,linewidth=1,color='cyan',label='Cyan Extra(±45ms)')
+		plt.plot(self.x_axis,self.zero_axis,linestyle='-',alpha=1,linewidth=1,color='red',label='0ms                    miss--%d'%self.sum[4])
+		plt.plot(self.x_axis,self.EXTRAa,linestyle='--',alpha=0.7,linewidth=1,color='cyan',label='Cyan Extra(±45ms)   --%d'%self.sum[0])
 		plt.plot(self.x_axis,self.EXTRAb,linestyle='--',alpha=0.7,linewidth=1,color='cyan')
-		plt.plot(self.x_axis,self.Extraa,linestyle='--',alpha=0.7,linewidth=1,color='blue',label='Blue Extra(±90ms)')
+		plt.plot(self.x_axis,self.Extraa,linestyle='--',alpha=0.7,linewidth=1,color='blue',label='Blue Extra(±90ms)    --%d'%self.sum[1])
 		plt.plot(self.x_axis,self.Extrab,linestyle='--',alpha=0.7,linewidth=1,color='blue')
-		plt.plot(self.x_axis,self.Greata,linestyle='--',alpha=0.7,linewidth=1,color='green',label='Great(±150ms)')
+		plt.plot(self.x_axis,self.Greata,linestyle='--',alpha=0.7,linewidth=1,color='green',label='Great(±150ms)         --%d'%self.sum[2])
 		plt.plot(self.x_axis,self.Greatb,linestyle='--',alpha=0.7,linewidth=1,color='green')
-		plt.plot(self.x_axis,self.Right,linestyle='--',alpha=0.7,linewidth=1,color='red',label='Right(+250ms)')
-		plt.plot(self.x_axis,self.y_axis,linestyle='-',alpha=0.7,linewidth=1,color='#8a68d0',label='HitDelay(ms)',marker='.'
-         ,markeredgecolor='#c4245c',markersize='3')
+		plt.plot(self.x_axis,self.Right,linestyle='--',alpha=0.7,linewidth=1,color='red',label='Right(+250ms)          --%d'%self.sum[3])
+		plt.plot(self.x_axis,self.y_axis,linestyle='-',alpha=0.7,linewidth=1,color='#8a68d0',label='HitDelay(ms)',marker='.',
+			markeredgecolor='#c4245c',markersize='3')
 		plt.legend()  #显示上面的label
 		plt.xlabel('HitCount') #x_label
 		plt.ylabel('Delay')#y_label

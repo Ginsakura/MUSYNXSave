@@ -428,7 +428,7 @@ class MusyncSavDecodeGUI(object):
 			self.saveData.yview_moveto(self.vScrollpos[0])
 
 	def SelectPath(self):
-		path_ = os.askopenfilename(title="打开存档文件", filetypes=(("Sav Files", "*.sav"),("All Files","*.*"),)) #使用askdirectory()方法返回文件夹的路径
+		path_ = askopenfilename(title="打开存档文件", filetypes=(("Sav Files", "*.sav"),("All Files","*.*"),)) #使用askdirectory()方法返回文件夹的路径
 		if path_ == "":
 			self.saveFilePathVar.get() #当打开文件路径选择框后点击"取消" 输入框会清空路径，所以使用get()方法再获取一次路径
 		else:

@@ -10,19 +10,15 @@ class HitAnalyze(object):
 		db = sql.connect('./musync_data/HitDelayHistory.db')
 		cur = db.cursor()
 		res = cur.execute('select HitMap from HitDelayHistory')
-		self.res = res.fetchall()
+		res = res.fetchall()
 		hitMapA = [0]*150 # -149~-0
 		hitMapB = [0]*251 # +0~+250
 		sumY = 0
-		self.sumYnumT = 0
-		self.sumYnum = 0
-		for ids in self.res:
+		self.sumYnum = 0 # with miss
+		for ids in res:
 			for idx in ids[0].split("|"):
 				idx = float(idx)
-				self.sumYnumT += 1
-				if idx < 250:
-					sumY += idx
-					self.sumYnum += 1
+				self.sumYnum += 1
 
 				if idx < 0:
 					idx = int(idx)-1
@@ -35,10 +31,11 @@ class HitAnalyze(object):
 					hitMapB[250] += 1
 				else:
 					hitMapA[idx] += 1
+
 		self.xAxis = [i for i in range(-150,251)]
 		self.yAxis = hitMapA + hitMapB
-		self.avg = sumY/self.sumYnum
-		self.var = sum([((ids[1] / self.sumYnum) * ((ids[0] - self.avg) ** 2)) for ids in zip(self.xAxis,self.yAxis)])
+		self.avg = sum([ids[0]*ids[1]/self.sumYnum for ids in zip(self.xAxis,self.yAxis)])
+		self.var = sum([(ids[1]/self.sumYnum)*((ids[0] - self.avg) ** 2) for ids in zip(self.xAxis,self.yAxis)])
 		self.std = self.var**0.5
 		print(self.avg,self.var,self.std,self.sumYnum)
 
@@ -77,7 +74,7 @@ class HitAnalyze(object):
 			for ids in range(maxLen//10,maxY+maxLen//10,maxLen//10):
 				yLine.append([ids for i in range(-150,251)])
 
-		fig = plt.figure(f"HitAnalyze (total:{self.sumYnumT})", figsize=(16, 8))
+		fig = plt.figure(f"HitAnalyze (total:{self.sumYnum})", figsize=(16, 8))
 		fig.subplots_adjust(**{"left":0.04,"bottom":0.06,"right":1,"top":1})
 		plt.xlabel("Delay(ms)")
 		plt.ylabel("HitNumber")

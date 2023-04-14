@@ -316,7 +316,7 @@ class MusyncSavDecodeGUI(object):
 	def GetSaveFile(self):
 		self.InitLabel("正在搜索存档文件中……")
 		saveFilePath = None
-		for ids in "CDEFGHIJKLMNOPQRSTUVWXYZAB":
+		for ids in "DEFCGHIJKLMNOPQRSTUVWXYZAB":
 			if os.path.isfile(f'{ids}:/Program Files/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav'):
 				saveFilePath = f"{ids}:/Program Files/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav"
 				break
@@ -345,8 +345,8 @@ class MusyncSavDecodeGUI(object):
 	def HitDelay(self):
 		nroot = Toplevel(self.root)
 		nroot.resizable(True, True)
-		if not HitDelayCheck():
-			messagebox.showerror("Error", f'DLL注入失败：版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁')
+		if not HitDelayCheck().DLLCheck():
+			messagebox.showerror("Error", f'DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁')
 		else:
 			newWindow = HitDelayText(nroot)
 	def DataLoad(self):

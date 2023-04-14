@@ -22,8 +22,8 @@ class HitDelayCheck(object):
 		self.DLLCheck()
 
 	def DLLCheck(self):
-		with open(self.spfr,'rb') as dllO:
-			md5o = md5(dllO.read()).hexdigest().upper()
+		with open(self.spfr,'rb') as spfrb:
+			md5o = md5(spfrb.read()).hexdigest().upper()
 		if (md5o == self.md5o) and (not md5o == self.md5l):
 			self.DLLInjection()
 			return True

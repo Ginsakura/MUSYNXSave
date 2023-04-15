@@ -1,3 +1,4 @@
+#-*- coding: utf-8 -*-
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import MultipleLocator
 # import numpy as np
@@ -13,12 +14,19 @@ class HitAnalyze(object):
 		res = res.fetchall()
 		hitMapA = [0]*150 # -149~-0
 		hitMapB = [0]*251 # +0~+250
-		sumY = 0
 		self.sumYnum = 0 # with miss
+		self.rate=[0,0,0,0,0]
 		for ids in res:
 			for idx in ids[0].split("|"):
 				idx = float(idx)
 				self.sumYnum += 1
+
+				idxAbs = abs(idx)
+				if idxAbs<45:self.rate[0] += 1
+				elif idxAbs<90:self.rate[1] += 1
+				elif idxAbs<150:self.rate[2] += 1
+				elif idxAbs<250:self.rate[3] += 1
+				else :self.rate[4] += 1
 
 				if idx < 0:
 					idx = int(idx)-1
@@ -37,7 +45,14 @@ class HitAnalyze(object):
 		self.avg = sum([ids[0]*ids[1]/self.sumYnum for ids in zip(self.xAxis,self.yAxis)])
 		self.var = sum([(ids[1]/self.sumYnum)*((ids[0] - self.avg) ** 2) for ids in zip(self.xAxis,self.yAxis)])
 		self.std = self.var**0.5
+
+		self.sumYnumEx = sum(self.yAxis[60:240])
+		self.avgEx = sum([ids[0]*ids[1]/self.sumYnumEx for ids in zip(self.xAxis[60:240],self.yAxis[60:240])])
+		self.varEx = sum([(ids[1]/self.sumYnumEx)*((ids[0] - self.avg) ** 2) for ids in zip(self.xAxis[60:240],self.yAxis[60:240])])
+		self.stdEx = self.varEx**0.5
+		# del db,cur,hitMapA,hitMapB,res,idxAbs
 		print(self.avg,self.var,self.std,self.sumYnum)
+		print(self.avgEx,self.varEx,self.stdEx,self.sumYnumEx)
 
 	def Analyze(self):
 		def PDFx(x):
@@ -46,9 +61,16 @@ class HitAnalyze(object):
 			p = 3.141592653589793
 			pdf = (e**(-1*(((x-self.avg)**2))/(2*self.var))) / (((2*p)**0.5)*self.std)
 			return pdf*self.sumYnum
+		def PDFxEx(x):
+			# pdf = np.exp((x-self.avg)**2/(-2*self.var))/(np.sqrt(2*np.pi)*self.std)
+			e = 2.718281828459045
+			p = 3.141592653589793
+			pdf = (e**(-1*(((x-self.avgEx)**2))/(2*self.varEx))) / (((2*p)**0.5)*self.stdEx)
+			return pdf*self.sumYnumEx
 
 		##正态分布函数曲线
 		pdfAxis = [PDFx(i) for i in self.xAxis]
+		pdfExAxis = [PDFxEx(i) for i in self.xAxis]
 
 		colors = ['red','orange','yellow','green','cyan','blue','purple']
 		yLine = []
@@ -74,7 +96,7 @@ class HitAnalyze(object):
 			for ids in range(maxLen//10,maxY+maxLen//10,maxLen//10):
 				yLine.append([ids for i in range(-150,251)])
 
-		fig = plt.figure(f"HitAnalyze (total:{self.sumYnum})", figsize=(16, 8))
+		fig = plt.figure(f"HitAnalyze (total:{self.sumYnum},  CyanEx:{self.rate[0]},  BlueEx:{self.rate[1]},  Great:{self.rate[2]},  Right:{self.rate[3]},  Miss:{self.rate[4]})", figsize=(16, 8))
 		fig.subplots_adjust(**{"left":0.04,"bottom":0.06,"right":1,"top":1})
 		plt.xlabel("Delay(ms)")
 		plt.ylabel("HitNumber")
@@ -102,11 +124,13 @@ class HitAnalyze(object):
 			x = (x+1)%7
 			# print(ids[0],end=',')
 		# print()
-		plt.plot(self.xAxis,pdfAxis,linestyle='-',alpha=1,linewidth=1,color='black')
+		plt.plot(self.xAxis,pdfAxis,linestyle=':',alpha=1,linewidth=1,color='black',label='Fitting all data')
+		plt.plot(self.xAxis,pdfExAxis,linestyle='-',alpha=1,linewidth=1,color='black',label='Fitting only on Extra rate')
 
 		for i in range(len(self.xAxis)):
 			plt.bar(self.xAxis[i],self.yAxis[i])
 
+		plt.legend()  #显示上面的label
 		plt.show()
 	
 

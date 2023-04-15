@@ -124,6 +124,11 @@ class MUSYNCSavProcess():
 				]
 				if ss in NCR:return True
 				else:return False
+			def OldAprilFoolsDay(ss):
+				OAFD = []
+				if ss in OAFD:return True
+				else:return False
+
 			self.saveData = self.savBinFile.read(29)
 			SongID = self.Hex2Int_LittleEndian(self.Bytes2HexString(self.saveData[0:4]))
 			Unknown0 = self.Bytes2HexString(self.saveData[4:8])
@@ -139,6 +144,7 @@ class MUSYNCSavProcess():
 				self.SaveAnalyzeFileWrite(SpeedStall)
 				continue
 			if NoCopyright(SpeedStall):continue
+			if OldAprilFoolsDay(SpeedStall):continue
 
 			IsFav = '0x01' if self.saveData[28]==1 else '0x00'
 			if len(SyncNumber) == 5:SyncNumber = f'{SyncNumber[0:3]}.{SyncNumber[3:]}%'

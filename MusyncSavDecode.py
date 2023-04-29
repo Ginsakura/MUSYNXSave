@@ -141,10 +141,14 @@ class MUSYNCSavProcess():
 
 			songName = GetSongName(SpeedStall)
 			if songName is None:
-				self.SaveAnalyzeFileWrite(SpeedStall)
+				self.SaveAnalyzeFileWrite(SpeedStall+' ,No Name')
 				continue
-			if NoCopyright(SpeedStall):continue
-			if OldAprilFoolsDay(SpeedStall):continue
+			if NoCopyright(SpeedStall):
+				print(SpeedStall,"NoCopyright")
+				continue
+			if OldAprilFoolsDay(SpeedStall):
+				print(SpeedStall,'OldAprilFoolsDay')
+				continue
 
 			IsFav = '0x01' if self.saveData[28]==1 else '0x00'
 			if len(SyncNumber) == 5:SyncNumber = f'{SyncNumber[0:3]}.{SyncNumber[3:]}%'
@@ -164,9 +168,9 @@ class MUSYNCSavProcess():
 
 	def SaveBinFileRead(self,lenth):
 		print(self.savBinFile.read(lenth))
-	def SaveAnalyzeFileWrite(self,text):
+	def SaveAnalyzeFileWrite(self,text,end='\n'):
 		self.savAnalyzeFile.write(f'{text}\n')
-		print(text)
+		print(text,end=end)
 
 	def FavFix(self):
 		with open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8') as saveJsonFile:

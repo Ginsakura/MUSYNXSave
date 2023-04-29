@@ -49,9 +49,22 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 
 ## 更新日志
 ### Version 1.1.8
+1. #### 更新 *** 适配本体`劳动节更新` ***
+2. #### 更新 更新本次喵赛克更新的新曲目
+    - luxianuz(EZ HD)
+    - Four leaf clover(EZ HD)
+    - 惊涛落日(IN)
+    - diamond smile(IN)
+    - platina(IN)
+    - Sakura fubuki(IN)
+    - supersonic(IN)
+    - trojan(IN)
+    - when you are away(IN)
+    - 人里に下ったアタイがいつの間にか社畜にな(IN)
 1. #### 优化 在`AllHitAnalyze`的标题栏中,新增各个评级的统计数字.
 1. #### 优化 在`AllHitAnalyze`中,新增仅对Extra评级进行拟合曲线(黑色实线),原对所有数据进行拟合的曲线变更为黑色虚线.
 2. #### 优化 优化`Readme.md`排版.
+3. #### 优化 更详细的控制台输出
 
 ### Version 1.1.7
 1. #### 更新 更新本次喵赛克更新的新曲目

@@ -14,6 +14,7 @@ for ids in data:
 fig = plt.figure('AvgAcc与SYNC.Rate之间的回归分析')
 # print(acc,sync)
 
+fig.subplots_adjust(**{"left":0.09,"bottom":0.095,"right":0.99,"top":0.99})
 plt.gca().yaxis.set_major_locator(MultipleLocator((max(sync)-min(sync))//15))
 plt.gca().xaxis.set_major_locator(MultipleLocator((max(acc)-min(acc))//10))
 plt.xlim(int(min(acc))-1,int(max(acc))+1)
@@ -34,4 +35,7 @@ plt.text(int(max(acc))-5,75.5,'B',ha='center',va='top',fontsize=7.5,alpha=0.7)
 
 plt.scatter(acc,sync,alpha=0.7,color='#8a68d0',s=10)
 # plt.plot(acc,sync,'o')
+plt.xlabel('AvgAcc') #x_label
+plt.ylabel('SYNC.Rate')#y_label
+
 plt.show()

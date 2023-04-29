@@ -14,8 +14,8 @@ from AllHitAnalyze import HitAnalyze
 class HitDelayCheck(object):
 	"""docstring for HitDelayWindow"""
 	def __init__(self):
-		self.md5l = '6771D7829013707B491104DCC1D8902A' # HitDelayFix.dll
-		self.md5o = 'EDA085BDD1136D6739BCB31C4247EAA3' # Assembly-CSharp.dll
+		self.md5l = '03CF2A2DCFE6572B26D08D94D3B581FE' # HitDelayFix.dll
+		self.md5o = '0722724F7D0AC74AD42F6FC648D81359' # Assembly-CSharp.dll
 
 		with open('./musync_data/SaveFilePath.sfp','r+',encoding='utf8') as sfp:
 			self.spfr = sfp.read()[:-21]+'MUSYNX_Data/Managed/Assembly-CSharp.dll'

@@ -124,8 +124,8 @@ class HitAnalyze(object):
 			x = (x+1)%7
 			# print(ids[0],end=',')
 		# print()
-		plt.plot(self.xAxis,pdfAxis,linestyle=':',alpha=1,linewidth=1,color='black',label='Fitting all data')
-		plt.plot(self.xAxis,pdfExAxis,linestyle='-',alpha=1,linewidth=1,color='black',label='Fitting only on Extra rate')
+		plt.plot(self.xAxis,pdfAxis,linestyle=':',alpha=1,linewidth=1,color='black',label=f'Fitting all data\n(μ={self.avg}\nσ={self.std})')
+		plt.plot(self.xAxis,pdfExAxis,linestyle='-',alpha=1,linewidth=1,color='black',label=f'Fitting only on Extra rate\n(μ={self.avgEx}\nσ={self.stdEx})')
 
 		for i in range(len(self.xAxis)):
 			plt.bar(self.xAxis[i],self.yAxis[i])

@@ -15,7 +15,7 @@ from HitDelay import HitDelayCheck,HitDelayText
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.8_rc2'
+version = '1.1.9_rc1'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -119,11 +119,11 @@ class MusyncSavDecodeGUI(object):
 
 		##额外筛选##
 		self.selectFrameLabel1 = Label(self.root, text="", relief="groove")
-		self.selectFrameLabel1.place(x=568,y=48,width=207,height=74)
+		self.selectFrameLabel1.place(x=568,y=48,width=169,height=74)
 		self.selectLabel1 = Label(self.root, text="额外\n筛选", anchor="w", font=self.font, relief="flat")
 		self.selectLabel1.place(x=570,y=55,width=50,height=60)
-		self.selectKeys = Button(self.root, text=['4 Keys & 6Keys','4 Keys','6 Keys'][self.keys], command=lambda:self.SelectKeys(), anchor='w', font=self.font)
-		self.selectKeys.place(x=620,y=50,width=[150,72,72][self.keys],height=30)
+		self.selectKeys = Button(self.root, text=['4 & 6 Keys','4 Keys','6 Keys'][self.keys], command=lambda:self.SelectKeys(), anchor='w', font=self.font)
+		self.selectKeys.place(x=620,y=50,width=[112,72,72][self.keys],height=30)
 		self.selectDifficute = Button(self.root, text=['Easy','Hard',"Inferno",'所有难度'][self.difficute], command=lambda:self.SelectDifficute(), anchor='w', font=self.font)
 		self.selectDifficute.place(x=620,y=88,width=[52,52,82,92][self.difficute],height=30)
 
@@ -186,8 +186,8 @@ class MusyncSavDecodeGUI(object):
 
 	def SelectKeys(self):
 		self.keys = (self.keys+1)%3
-		self.selectKeys.configure(text=['4 Keys & 6Keys','4 Keys','6 Keys'][self.keys])
-		self.selectKeys.place(width=[150,72,72][self.keys])
+		self.selectKeys.configure(text=['4 & 6Keys','4 Keys','6 Keys'][self.keys])
+		self.selectKeys.place(width=[102,72,72][self.keys])
 		self.root.update()
 		self.DataLoad()
 	def SelectDifficute(self):

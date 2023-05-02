@@ -113,14 +113,16 @@ class MUSYNCSavProcess():
 			def ZeroFormat(score,lenth):
 				return f'{score}{"0"*(lenth-len(str(score)))}%'
 			def NoCopyright(ss):
-				NCR = ['0001F8B1','0001F8B2','0001F8BB','0001F8BC', #404 Not Found
-				'0001F915','0001F916','0001F91F','0001F920', #ArroganT
+				NCR = [
 				'000199C5','000199C6','000199CF','000199D0', #TWINKLE STAR
 				'0001AC21','0001AC22','0001AC2B','0001AC2C', #为你而来
-				'0001F20D','0001F20E','0001F217','0001F218', #寓言预见遇见你的那刻
 				'0001AC85','0001AC86','0001AC8F','0001AC90', #星之伊始
-				'0001F979','0001F97A','0001F983','0001F984', #樂園 - Atlantis
 				'0001ACE9','0001ACEA','0001ACF3','0001ACF4', #观星者
+				'0001F20D','0001F20E','0001F217','0001F218', #寓言预见遇见你的那刻
+				'0001F8B1','0001F8B2','0001F8BB','0001F8BC', #404 Not Found
+				'0001F915','0001F916','0001F91F','0001F920', #ArroganT
+				'0001F979','0001F97A','0001F983','0001F984', #樂園 - Atlantis
+				#海棠仙
 				]
 				if ss in NCR:return True
 				else:return False

@@ -64,8 +64,16 @@ class HitDelayText(object):
 		self.tipLabel.place(x=0,y=0,height=40,relwidth=1)
 		self.logText = Text(self.subroot,font=self.font)
 		self.logText.place(relx=0.7,y=70,relheight=0.88,relwidth=0.3)
-		self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
-		self.logButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
+
+		if os.path.isfile('./musync_data/Acc-SyncEnable'):
+			self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
+			self.logButton.place(relx=0.7,y=40,height=30,relwidth=0.2)
+			self.txtButton = Button(self.subroot,text='Acc-Sync',command=self.OpenTxt,font=self.font)
+			self.txtButton.place(relx=0.9,y=40,height=30,relwidth=0.1)
+		else:
+			self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
+			self.logButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
+
 		self.hitAnalyzeButton = Button(self.subroot,text='All\nHit',command=lambda:HitAnalyze().Analyze(),font=self.font, relief="groove")
 		self.hitAnalyzeButton.place(x=0,y=40,height=60,relwidth=0.05)
 		self.nameDelayLabel = Label(self.subroot,font=self.font, relief="groove",text='↓请在下面输入曲名与谱面难度↓这只是用来标记你玩的哪个谱面而已，\n只要你能分辨就行，没有格式要求。如"ニニ 4KEZ"、"二重4H"等')
@@ -121,6 +129,12 @@ class HitDelayText(object):
 		dataList = [name,avgDelay,allKeys,avgAcc,dataList]
 		HitDelayDraw(dataList,isHistory=False)
 
+	def OpenTxt(self):
+		os.system('start notepad ./musync_data/Acc-Sync.json')
+		# print(os.getcwd())
+		# os.system(f'start explorer {os.getcwd()}')
+		import AvgAcc_SynxAnalyze
+		AvgAcc_SynxAnalyze.main()
 
 	def GetIndex(self,data):
 		b=list()

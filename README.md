@@ -54,6 +54,9 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 ### Version 1.1.9
 1. #### 更新 于`HitDelay`模块处更新Acc-Sync分析功能
 2. #### 更新 于`AllHitAnalyze`模块处更新tap的Rate环形图
+3. #### 修复 修复`songname.json`中`惊涛落日 IN`谱面难度评级未更新的bug
+<del>这玩意儿算bug吗？</del>
+
 3. #### 优化 修改图表字体为`霞鹜文楷`
 2. #### 优化 优化部分按钮提示词
 3. #### 优化 对`AllHitAnalyze`模块中的环形图使用更加细化的Rate分级：将Cyan Extra分成`±5ms内、±6~10ms、±11~20ms、±21~45ms`四段

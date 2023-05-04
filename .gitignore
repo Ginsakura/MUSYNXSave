@@ -2,7 +2,7 @@
 /build
 /Release
 /musync
-/othersSavFile
+/othersSavFile/*
 /.vs
 /venv
 SavAnalyze.json
@@ -10,7 +10,9 @@ LXGW.ttf
 UpdateDisable
 InjectionEnable
 HitDelayHistory.db
-*.bat
+Push.ps1
+ExtraFunction.cfg.init
+ExtraFunction.cfg.env
 *.b64
 *.spec
 *.psd
@@ -20,9 +22,6 @@ HitDelayHistory.db
 *.sfp
 *.ico
 *.exe
-*.sav
 *.pyproj
 *.sln
 *.log
-ExtraFunction.cfg.init
-ExtraFunction.cfg.env

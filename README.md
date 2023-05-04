@@ -51,7 +51,10 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 ## 更新日志
 ### Version 1.1.9
 1. #### 更新 于`HitDelay`模块处更新Acc-Sync分析功能
+2. #### 更新 于`AllHitAnalyze`模块处更新tap的Rate环形图
+3. #### 优化 修改图表字体为`霞鹜文楷`
 2. #### 优化 优化部分按钮提示词
+<del>3. #### 优化 将额外功能修改为配置文件形式，放置于`./musync_data/ExtraFunction.conf`</del>
 
 ### Version 1.1.8
 1. #### 更新 **适配本体** ***劳动节更新***

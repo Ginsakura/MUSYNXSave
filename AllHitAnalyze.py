@@ -53,6 +53,9 @@ class HitAnalyze(object):
 		# del db,cur,hitMapA,hitMapB,res,idxAbs
 		print(self.avg,self.var,self.std,self.sumYnum)
 		print(self.avgEx,self.varEx,self.stdEx,self.sumYnumEx)
+		self.Analyze()
+		self.Pie()
+		plt.show()
 
 	def Analyze(self):
 		def PDFx(x):
@@ -97,9 +100,9 @@ class HitAnalyze(object):
 				yLine.append([ids for i in range(-150,251)])
 
 		fig = plt.figure(f"HitAnalyze (total:{self.sumYnum},  CyanEx:{self.rate[0]},  BlueEx:{self.rate[1]},  Great:{self.rate[2]},  Right:{self.rate[3]},  Miss:{self.rate[4]})", figsize=(16, 8))
-		fig.subplots_adjust(**{"left":0.04,"bottom":0.06,"right":1,"top":1})
-		plt.xlabel("Delay(ms)")
-		plt.ylabel("HitNumber")
+		fig.subplots_adjust(**{"left":0.045,"bottom":0.06,"right":1,"top":1})
+		plt.xlabel("Delay(ms)",fontproperties='LXGW WenKai Mono',fontsize=15)
+		plt.ylabel("HitNumber",fontproperties='LXGW WenKai Mono',fontsize=15)
 		plt.xlim(-155,255)
 
 		plt.gca().xaxis.set_major_locator(MultipleLocator(10))
@@ -124,16 +127,44 @@ class HitAnalyze(object):
 			x = (x+1)%7
 			# print(ids[0],end=',')
 		# print()
-		plt.plot(self.xAxis,pdfAxis,linestyle=':',alpha=1,linewidth=1,color='black',label=f'Fitting all data\n(μ={self.avg}\nσ={self.std})')
-		plt.plot(self.xAxis,pdfExAxis,linestyle='-',alpha=1,linewidth=1,color='black',label=f'Fitting only on Extra rate\n(μ={self.avgEx}\nσ={self.stdEx})')
+		plt.plot(self.xAxis,pdfAxis,linestyle=':',alpha=1,linewidth=1,color='black',label=f'Fitting all data\n(μ={self.avg}\n σ={self.std})')
+		plt.plot(self.xAxis,pdfExAxis,linestyle='-',alpha=1,linewidth=1,color='black',label=f'Fitting only on Extra rate\n(μ={self.avgEx}\n σ={self.stdEx})')
 
 		for i in range(len(self.xAxis)):
 			plt.bar(self.xAxis[i],self.yAxis[i])
 
-		plt.legend()  #显示上面的label
-		plt.show()
-	
+		plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':15})  #显示上面的label
+
+	def Pie(self):
+		def Percentage(num):
+			per = self.rate[num]/sum(self.rate)*100
+			return ' '*(3-len(str(int((per)))))+'%.3f%%'%(per)
+		def Count(num):
+			cou = str(self.rate[num])
+			return ' '*(6-len(cou))+cou
+		fig = plt.figure(f'Pie')
+		fig.subplots_adjust(**{"left":0,"bottom":0,"right":1,"top":1})
+		wedgeprops = {'width':0.2, 'edgecolor':'black', 'linewidth':0.2}
+		plt.pie(self.rate, wedgeprops=wedgeprops, startangle=90,
+			colors=['cyan', 'blue', 'green', 'orange', 'red'],
+			# autopct=lambda x:'%d'%(x*sum(self.rate)/100+0.5),
+			labels=["EXTRA", "Extra", "Great", "Right", "Miss"],
+			textprops={'family':'LXGW WenKai Mono','weight':'normal','size':12})
+		plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':12},loc='center',
+			labels=[f"EXTRA  {Count(0)}  {Percentage(0)}", 
+				f"Extra  {Count(1)}  {Percentage(1)}", 
+				f"Great  {Count(2)}  {Percentage(2)}", 
+				f"Right  {Count(3)}  {Percentage(3)}", 
+				f"Miss   {Count(4)}  {Percentage(4)}"],
+			)
+# 		plt.text(-0.65, -0.35, 
+# f'''
+# EXTRA  {self.rate[0]}{' '*(6-len(str(self.rate[0])))}  {' '*(3-len(str(int((self.rate[0]/sum(self.rate)*100)))))}{'%.3f%%'%(self.rate[0]/sum(self.rate)*100)}
+# Extra  {self.rate[1]}{' '*(6-len(str(self.rate[1])))}  {' '*(3-len(str(int((self.rate[1]/sum(self.rate)*100)))))}{'%.3f%%'%(self.rate[1]/sum(self.rate)*100)}
+# Great  {self.rate[2]}{' '*(6-len(str(self.rate[2])))}  {' '*(3-len(str(int((self.rate[2]/sum(self.rate)*100)))))}{'%.3f%%'%(self.rate[2]/sum(self.rate)*100)}
+# Right  {self.rate[3]}{' '*(6-len(str(self.rate[3])))}  {' '*(3-len(str(int((self.rate[3]/sum(self.rate)*100)))))}{'%.3f%%'%(self.rate[3]/sum(self.rate)*100)}
+# Miss   {self.rate[4]}{' '*(6-len(str(self.rate[4])))}  {' '*(3-len(str(int((self.rate[4]/sum(self.rate)*100)))))}{'%.3f%%'%(self.rate[4]/sum(self.rate)*100)}
+# ''', fontdict={'family':'LXGW WenKai Mono','weight':'normal','size':15})
 
 if __name__ == '__main__':
-	obj = HitAnalyze()
-	obj.Analyze()
+	HitAnalyze()

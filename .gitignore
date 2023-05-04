@@ -11,8 +11,8 @@ UpdateDisable
 InjectionEnable
 HitDelayHistory.db
 Push.ps1
-ExtraFunction.cfg.init
-ExtraFunction.cfg.env
+ExtraFunction.cfg
+*.bat
 *.b64
 *.spec
 *.psd

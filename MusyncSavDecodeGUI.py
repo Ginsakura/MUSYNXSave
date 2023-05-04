@@ -15,7 +15,7 @@ from HitDelay import HitDelayCheck,HitDelayText
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.9_rc5'
+version = '1.1.9_rc6'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -134,10 +134,10 @@ class MusyncSavDecodeGUI(object):
 		self.TreeviewColumnUpdate()
 
 		if not os.path.isfile('./musync_data/ExtraFunction.cfg'):
-			config = dict()
-		else:
-			with open('./musync_data/ExtraFunction.cfg') as confFile:
-				config = json.load(confFile)
+			json.dump({"EnableAcc-Sync": False,"DisableCheckUpdate": False,"EnableAnalyzeWhenStarting": False,
+				"EnableDLLInjection": False},open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
+		with open('./musync_data/ExtraFunction.cfg','r') as confFile:
+			config = json.load(confFile)
 
 		if ('DisableCheckUpdate' in config) and (config['DisableCheckUpdate'] == True):
 			self.gitHubLink.configure(text='更新已禁用    点击打开GitHub仓库页')

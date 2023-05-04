@@ -65,11 +65,8 @@ class HitDelayText(object):
 		self.logText = Text(self.subroot,font=self.font)
 		self.logText.place(relx=0.7,y=70,relheight=0.88,relwidth=0.3)
 
-		if not os.path.isfile('./musync_data/ExtraFunction.cfg'):
-			config = dict()
-		else:
-			with open('./musync_data/ExtraFunction.cfg') as confFile:
-				config = json.load(confFile)
+		with open('./musync_data/ExtraFunction.cfg') as confFile:
+			config = json.load(confFile)
 
 		if ('EnableAcc-Sync' in config) and (config['EnableAcc-Sync'] == True):
 			self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')

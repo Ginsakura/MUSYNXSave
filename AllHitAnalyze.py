@@ -64,16 +64,14 @@ class HitAnalyze(object):
 		plt.show()
 
 	def Analyze(self):
+		e = 2.718281828459045
+		p = 3.141592653589793
 		def PDFx(x):
 			# pdf = np.exp((x-self.avg)**2/(-2*self.var))/(np.sqrt(2*np.pi)*self.std)
-			e = 2.718281828459045
-			p = 3.141592653589793
 			pdf = (e**(-1*(((x-self.avg)**2))/(2*self.var))) / (((2*p)**0.5)*self.std)
 			return pdf*self.sumYnum
 		def PDFxEx(x):
 			# pdf = np.exp((x-self.avg)**2/(-2*self.var))/(np.sqrt(2*np.pi)*self.std)
-			e = 2.718281828459045
-			p = 3.141592653589793
 			pdf = (e**(-1*(((x-self.avgEx)**2))/(2*self.varEx))) / (((2*p)**0.5)*self.stdEx)
 			return pdf*self.sumYnumEx
 
@@ -131,10 +129,10 @@ class HitAnalyze(object):
 		for ids in yLine:
 			plt.plot(self.xAxis,ids,linestyle='--',alpha=1,linewidth=1,color=colors[x])
 			x = (x+1)%7
-			# print(ids[0],end=',')
-		# print()
-		plt.plot(self.xAxis,pdfAxis,linestyle=':',alpha=1,linewidth=1,color='black',label=f'Fitting all data\n(μ={self.avg}\n σ={self.std})')
-		plt.plot(self.xAxis,pdfExAxis,linestyle='-',alpha=1,linewidth=1,color='black',label=f'Fitting only on Extra rate\n(μ={self.avgEx}\n σ={self.stdEx})')
+		plt.plot(self.xAxis,pdfAxis,linestyle=':',alpha=1,linewidth=1,color='black',
+			label=f'Fitting all data\n(μ={self.avg}\n σ={self.std})')
+		plt.plot(self.xAxis,pdfExAxis,linestyle='-',alpha=1,linewidth=1,color='black',
+			label=f'Fitting only on Extra rate\n(μ={self.avgEx}\n σ={self.stdEx})')
 
 		for i in range(len(self.xAxis)):
 			plt.bar(self.xAxis[i],self.yAxis[i])
@@ -148,9 +146,9 @@ class HitAnalyze(object):
 		def Count(num):
 			cou = str(self.accurateRate[num])
 			return ' '*(6-len(cou))+cou
-		fig = plt.figure(f'Pie', figsize=(6, 6))
+		fig = plt.figure(f'Pie', figsize=(7, 6))
 		fig.subplots_adjust(**{"left":0,"bottom":0,"right":1,"top":1})
-		wedgeprops = {'width':0.2, 'edgecolor':'black', 'linewidth':0.2}
+		wedgeprops = {'width':0.1, 'edgecolor':'black', 'linewidth':0.2}
 		plt.pie(self.accurateRate, wedgeprops=wedgeprops, startangle=90,
 			colors=['#AAFFFF','#00B5B5','#78BEFF','cyan', 'blue', 'green', 'orange', 'red'],
 			# autopct=lambda x:'%d'%(x*sum(self.accurateRate)/100+0.5),

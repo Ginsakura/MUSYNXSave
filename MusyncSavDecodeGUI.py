@@ -15,7 +15,7 @@ from HitDelay import HitDelayCheck,HitDelayText
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.9_rc3'
+version = '1.1.9_rc5'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -132,15 +132,22 @@ class MusyncSavDecodeGUI(object):
 		self.UpdateWindowInfo()
 		self.TreeviewWidthUptate()
 		self.TreeviewColumnUpdate()
-		if not os.path.isfile('./musync_data/UpdateDisable'):
+
+		if not os.path.isfile('./musync_data/ExtraFunction.cfg'):
+			config = dict()
+		else:
+			with open('./musync_data/ExtraFunction.cfg') as confFile:
+				config = json.load(confFile)
+
+		if ('DisableCheckUpdate' in config) and (config['DisableCheckUpdate'] == True):
+			self.gitHubLink.configure(text='更新已禁用    点击打开GitHub仓库页')
+		else:
 			self.CheckUpdate()
 			self.CheckJsonUpdate()
-		else:
-			self.gitHubLink.configure(text='更新已禁用    点击打开GitHub仓库页')
-		if os.path.isfile('./musync_data/AutoAnalyze'):
+		if ('EnableAnalyzeWhenStarting' in config) and (config['EnableAnalyzeWhenStarting'] == True):
 			self.DeleteAnalyzeFile()
 		self.CheckFile()
-		if os.path.isfile('./musync_data/InjectionEnable'):
+		if ('EnableDLLInjection' in config) and (config['EnableDLLInjection'] == True):
 			self.hitDelay = Button(self.root, text="DLL注入\n分析\n游玩结果",command=self.HitDelay, font=self.font,bg='#FF0000')
 			self.hitDelay.place(x=776,y=48,width=90,height=74)
 		if not os.path.isfile('./musync_data/SaveFilePath.sfp'):
@@ -169,17 +176,15 @@ class MusyncSavDecodeGUI(object):
 		saveData=None
 		if os.path.isfile('./musync_data/SavAnalyze.json'):
 			try:
-				saveData = open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8')
-				saveDataJson = json.load(saveData)
-				saveData.close()
+				with open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8') as saveData:
+					saveDataJson = json.load(saveData)
 			except Exception as e:
-				saveData.close()
 				messagebox.showerror("Error", f'SavAnalyze.json文件打开失败\n错误的Json文件格式\n{e}')
 				os.remove("./musync_data/SavAnalyze.json")
 			else:
-				saveData = open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8')
-				saveDataJson = json.load(saveData)
-				saveData.close()
+				# saveData = open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8')
+				# saveDataJson = json.load(saveData)
+				# saveData.close()
 				# print(len(saveDataJson['SaveData']))
 				if len(saveDataJson['SaveData']) == 0:
 					os.remove("./musync_data/SavAnalyze.json")

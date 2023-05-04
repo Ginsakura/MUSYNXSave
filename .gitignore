@@ -24,3 +24,5 @@ HitDelayHistory.db
 *.pyproj
 *.sln
 *.log
+ExtraFunction.cfg.init
+ExtraFunction.cfg.env

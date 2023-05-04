@@ -16,6 +16,7 @@
 - [x] 滑动条在重加载后保持位置不变
 - [x] 隐藏cmd窗口
 - [x] 将像Windows资源管理器一样使用列标题栏进行排序
+- [x] 将高级功能整合为`ExtraFunction.cfg`配置文件
 
 ## Release版本说明
 NoConsole版本为没有命令提示符界面，适合正常使用
@@ -23,11 +24,11 @@ NoConsole版本为没有命令提示符界面，适合正常使用
 WithConsole版本为带命令提示符界面，适合出现bug时快速定位错误发生地点以及原因
 
 ### 功能控制模块
-#### 在`./musync_data/`目录中创建指定文件名的无扩展名文件,即可启用/禁用对应功能
-1. `UpdateDisable` 禁用更新检测
-2. `AutoAutoAnalyze` 启用每次启动时强制重新扫描存档文件
-3. `InjectionEnable` 启用DLL注入以开启高级功能
-4. `Acc-SynxEnable` 启用Acc-Synx图表
+#### 在`./musync_data/ExtraFunction.cfg`文件中启用/禁用对应功能
+1. `DisableCheckUpdate` 禁用更新检测
+2. `EnableAnalyzeWhenStarting` 启用每次启动时强制重新扫描存档文件
+3. `EnableDLLInjection` 启用DLL注入以开启高级功能
+5. `EnableAcc-Sync` 启用Acc-Synx图表
 
 #### 其他功能组件
 下列组件对游戏客户端有修改,请谨慎使用
@@ -57,10 +58,11 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 3. #### 修复 修复`songname.json`中`惊涛落日 IN`谱面难度评级未更新的bug
 <del>这玩意儿算bug吗？</del>
 
-3. #### 优化 修改图表字体为`霞鹜文楷`
+4. #### 修复 修复些许文案错误
+3. #### 优化 修改图表字体为`霞鹜文楷等宽`
 2. #### 优化 优化部分按钮提示词
 3. #### 优化 对`AllHitAnalyze`模块中的环形图使用更加细化的Rate分级：将Cyan Extra分成`±5ms内、±6~10ms、±11~20ms、±21~45ms`四段
-<del>3. #### 优化 将额外功能修改为配置文件形式，放置于`./musync_data/ExtraFunction.conf`</del>
+3. #### 优化 将额外功能修改为配置文件形式，放置于`./musync_data/ExtraFunction.cfg`
 
 ### Version 1.1.8
 1. #### 更新 **适配本体** ***劳动节更新***

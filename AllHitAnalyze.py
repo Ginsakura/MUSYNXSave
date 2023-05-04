@@ -15,7 +15,9 @@ class HitAnalyze(object):
 		hitMapA = [0]*150 # -149~-0
 		hitMapB = [0]*251 # +0~+250
 		self.sumYnum = 0 # with miss
-		self.rate=[0,0,0,0,0]
+		self.sumYnumEx = 0 # only extra
+		self.rate=[0,0,0,0,0] # EXTRA,Extra,Great,Right,Miss
+		self.accurateRate=[0,0,0,0,0,0,0,0] # ±5ms,±10ms,±20ms,±45ms,Extra,Great,Right,Miss
 		for ids in res:
 			for idx in ids[0].split("|"):
 				idx = float(idx)
@@ -27,18 +29,23 @@ class HitAnalyze(object):
 				elif idxAbs<150:self.rate[2] += 1
 				elif idxAbs<250:self.rate[3] += 1
 				else :self.rate[4] += 1
+				if idxAbs<5:self.accurateRate[0] += 1
+				elif idxAbs<10:self.accurateRate[1] += 1
+				elif idxAbs<20:self.accurateRate[2] += 1
+				elif idxAbs<45:self.accurateRate[3] += 1
+				elif idxAbs<90:self.accurateRate[4] += 1
+				elif idxAbs<150:self.accurateRate[5] += 1
+				elif idxAbs<250:self.accurateRate[6] += 1
+				else :self.accurateRate[7] += 1
 
-				if idx < 0:
-					idx = int(idx)-1
-				else:
-					idx = int(idx)
+				if idxAbs<90:self.sumYnumEx += 1
 
-				if (idx >= 0) and (idx < 250):
-					hitMapB[idx] += 1
-				elif idx >= 250:
-					hitMapB[250] += 1
-				else:
-					hitMapA[idx] += 1
+				if idx < 0:idx = int(idx)-1
+				else:idx = int(idx)
+
+				if (idx >= 0) and (idx < 250):hitMapB[idx] += 1
+				elif (idx >= 250):hitMapB[250] += 1
+				else:hitMapA[idx] += 1
 
 		self.xAxis = [i for i in range(-150,251)]
 		self.yAxis = hitMapA + hitMapB
@@ -46,7 +53,6 @@ class HitAnalyze(object):
 		self.var = sum([(ids[1]/self.sumYnum)*((ids[0] - self.avg) ** 2) for ids in zip(self.xAxis,self.yAxis)])
 		self.std = self.var**0.5
 
-		self.sumYnumEx = sum(self.yAxis[60:240])
 		self.avgEx = sum([ids[0]*ids[1]/self.sumYnumEx for ids in zip(self.xAxis[60:240],self.yAxis[60:240])])
 		self.varEx = sum([(ids[1]/self.sumYnumEx)*((ids[0] - self.avg) ** 2) for ids in zip(self.xAxis[60:240],self.yAxis[60:240])])
 		self.stdEx = self.varEx**0.5
@@ -102,7 +108,7 @@ class HitAnalyze(object):
 		fig = plt.figure(f"HitAnalyze (total:{self.sumYnum},  CyanEx:{self.rate[0]},  BlueEx:{self.rate[1]},  Great:{self.rate[2]},  Right:{self.rate[3]},  Miss:{self.rate[4]})", figsize=(16, 8))
 		fig.subplots_adjust(**{"left":0.045,"bottom":0.06,"right":1,"top":1})
 		plt.xlabel("Delay(ms)",fontproperties='LXGW WenKai Mono',fontsize=15)
-		plt.ylabel("HitNumber",fontproperties='LXGW WenKai Mono',fontsize=15)
+		plt.ylabel("HitCount",fontproperties='LXGW WenKai Mono',fontsize=15)
 		plt.xlim(-155,255)
 
 		plt.gca().xaxis.set_major_locator(MultipleLocator(10))
@@ -137,34 +143,30 @@ class HitAnalyze(object):
 
 	def Pie(self):
 		def Percentage(num):
-			per = self.rate[num]/sum(self.rate)*100
+			per = self.accurateRate[num]/sum(self.accurateRate)*100
 			return ' '*(3-len(str(int((per)))))+'%.3f%%'%(per)
 		def Count(num):
-			cou = str(self.rate[num])
+			cou = str(self.accurateRate[num])
 			return ' '*(6-len(cou))+cou
-		fig = plt.figure(f'Pie')
+		fig = plt.figure(f'Pie', figsize=(6, 6))
 		fig.subplots_adjust(**{"left":0,"bottom":0,"right":1,"top":1})
 		wedgeprops = {'width':0.2, 'edgecolor':'black', 'linewidth':0.2}
-		plt.pie(self.rate, wedgeprops=wedgeprops, startangle=90,
-			colors=['cyan', 'blue', 'green', 'orange', 'red'],
-			# autopct=lambda x:'%d'%(x*sum(self.rate)/100+0.5),
-			labels=["EXTRA", "Extra", "Great", "Right", "Miss"],
+		plt.pie(self.accurateRate, wedgeprops=wedgeprops, startangle=90,
+			colors=['#AAFFFF','#00B5B5','#78BEFF','cyan', 'blue', 'green', 'orange', 'red'],
+			# autopct=lambda x:'%d'%(x*sum(self.accurateRate)/100+0.5),
+			labels=["EXTRA±5ms", "EXTRA±10ms", "EXTRA±20ms", "EXTRA±45ms", "Extra", "Great", "Right", "Miss"],
 			textprops={'family':'LXGW WenKai Mono','weight':'normal','size':12})
 		plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':12},loc='center',
-			labels=[f"EXTRA  {Count(0)}  {Percentage(0)}", 
-				f"Extra  {Count(1)}  {Percentage(1)}", 
-				f"Great  {Count(2)}  {Percentage(2)}", 
-				f"Right  {Count(3)}  {Percentage(3)}", 
-				f"Miss   {Count(4)}  {Percentage(4)}"],
+			labels=[
+				f"EXTRA± 5ms  {Count(0)}  {Percentage(0)}", 
+				f"EXTRA±10ms  {Count(1)}  {Percentage(1)}", 
+				f"EXTRA±20ms  {Count(2)}  {Percentage(2)}", 
+				f"EXTRA±45ms  {Count(3)}  {Percentage(3)}", 
+				f"Extra±90ms  {Count(4)}  {Percentage(4)}", 
+				f"Great±150ms {Count(5)}  {Percentage(5)}", 
+				f"Right＋250ms {Count(6)}  {Percentage(6)}", 
+				f"Miss > 250ms {Count(7)}  {Percentage(7)}"],
 			)
-# 		plt.text(-0.65, -0.35, 
-# f'''
-# EXTRA  {self.rate[0]}{' '*(6-len(str(self.rate[0])))}  {' '*(3-len(str(int((self.rate[0]/sum(self.rate)*100)))))}{'%.3f%%'%(self.rate[0]/sum(self.rate)*100)}
-# Extra  {self.rate[1]}{' '*(6-len(str(self.rate[1])))}  {' '*(3-len(str(int((self.rate[1]/sum(self.rate)*100)))))}{'%.3f%%'%(self.rate[1]/sum(self.rate)*100)}
-# Great  {self.rate[2]}{' '*(6-len(str(self.rate[2])))}  {' '*(3-len(str(int((self.rate[2]/sum(self.rate)*100)))))}{'%.3f%%'%(self.rate[2]/sum(self.rate)*100)}
-# Right  {self.rate[3]}{' '*(6-len(str(self.rate[3])))}  {' '*(3-len(str(int((self.rate[3]/sum(self.rate)*100)))))}{'%.3f%%'%(self.rate[3]/sum(self.rate)*100)}
-# Miss   {self.rate[4]}{' '*(6-len(str(self.rate[4])))}  {' '*(3-len(str(int((self.rate[4]/sum(self.rate)*100)))))}{'%.3f%%'%(self.rate[4]/sum(self.rate)*100)}
-# ''', fontdict={'family':'LXGW WenKai Mono','weight':'normal','size':15})
 
 if __name__ == '__main__':
 	HitAnalyze()

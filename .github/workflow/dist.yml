@@ -1,0 +1,11 @@
+name: Auto Dist
+on: push
+jobs:
+  init:
+    name: Env
+
+  dist:
+    name: Dist
+    needs: init
+    runs-on: windows-2019
+    

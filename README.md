@@ -4,11 +4,13 @@
 ![主页面](./ReadmeResources/main.png "主页面")
 ![HitDelay页面](./ReadmeResources/HitDelay.png "HitDelay页面")
 ![HitAnalyze页面](./ReadmeResources/HitAnalyze.png "HitAnalyze页面")
+![HitAnalyzePie页面](./ReadmeResources/HitAnalyzePie.png "HitAnalyzePie页面")
 
 ## 未来的计划
 - [ ] 提供全球排行榜显示功能
 - [ ] 将提供一个文档来演示使用方法
 - [ ] 使用文件夹内指定文件名的方式自定义美化UI
+- [ ] 使用workflow功能实现自动生成分发版本
 ### 已完成的计划
 - [x] 重排版SongName.json
 - [x] 滑动条在重加载后保持位置不变
@@ -54,6 +56,7 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 2. #### 更新 于`AllHitAnalyze`模块处更新tap的Rate环形图
 3. #### 优化 修改图表字体为`霞鹜文楷`
 2. #### 优化 优化部分按钮提示词
+3. #### 优化 对`AllHitAnalyze`模块中的环形图使用更加细化的Rate分级：将Cyan Extra分成`±5ms内、±6~10ms、±11~20ms、±21~45ms`四段
 <del>3. #### 优化 将额外功能修改为配置文件形式，放置于`./musync_data/ExtraFunction.conf`</del>
 
 ### Version 1.1.8

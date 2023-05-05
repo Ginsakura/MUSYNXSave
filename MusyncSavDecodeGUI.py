@@ -15,7 +15,7 @@ from HitDelay import HitDelayCheck,HitDelayText
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.9_rc6'
+version = '1.1.9_rc7'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -133,9 +133,6 @@ class MusyncSavDecodeGUI(object):
 		self.TreeviewWidthUptate()
 		self.TreeviewColumnUpdate()
 
-		if not os.path.isfile('./musync_data/ExtraFunction.cfg'):
-			json.dump({"EnableAcc-Sync": False,"DisableCheckUpdate": False,"EnableAnalyzeWhenStarting": False,
-				"EnableDLLInjection": False},open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
 		with open('./musync_data/ExtraFunction.cfg','r') as confFile:
 			config = json.load(confFile)
 
@@ -534,15 +531,17 @@ class SubWindow(object):
 		
 
 if __name__ == '__main__':
+	if os.path.exists('./musync/'):
+		os.rename('./musync/','./musync_data/')
 	if not os.path.exists('./musync_data/'):
-		if os.path.exists('./musync/'):
-			os.rename('./musync/','./musync_data/')
-		else:
-			os.makedirs('./musync_data/')
+		os.makedirs('./musync_data/')
 	if not os.path.isfile('./musync_data/MUSYNC.ico'):
 		FileExport.WriteIcon()
 	if not os.path.isfile('./musync_data/SongName.json'):
 		FileExport.WriteSongNameJson()
+	if not os.path.isfile('./musync_data/ExtraFunction.cfg'):
+		json.dump({"EnableAcc-Sync": False,"DisableCheckUpdate": False,"EnableAnalyzeWhenStarting": False,
+			"EnableDLLInjection": False},open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
 	root = Tk()
 	fonts = list(font.families())
 	if not '霞鹜文楷等宽' in fonts:

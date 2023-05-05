@@ -146,13 +146,24 @@ class HitAnalyze(object):
 		def Count(num):
 			cou = str(self.accurateRate[num])
 			return ' '*(6-len(cou))+cou
+		def PercentageLabel(num):
+			per = self.accurateRate[num]/sum(self.accurateRate)*100
+			return '%.1f%%'%(per)
 		fig = plt.figure(f'Pie', figsize=(7, 6))
 		fig.subplots_adjust(**{"left":0,"bottom":0,"right":1,"top":1})
-		wedgeprops = {'width':0.1, 'edgecolor':'black', 'linewidth':0.2}
+		wedgeprops = {'width':0.15, 'edgecolor':'black', 'linewidth':0.2}
 		plt.pie(self.accurateRate, wedgeprops=wedgeprops, startangle=90,
 			colors=['#AAFFFF','#00B5B5','#78BEFF','cyan', 'blue', 'green', 'orange', 'red'],
-			# autopct=lambda x:'%d'%(x*sum(self.accurateRate)/100+0.5),
-			labels=["EXTRA±5ms", "EXTRA±10ms", "EXTRA±20ms", "EXTRA±45ms", "Extra", "Great", "Right", "Miss"],
+			# autopct=lambda x:'%.3f%%'%(x*sum(self.accurateRate)/100+0.5),
+			labels=[
+				f"EXTRA±5ms {PercentageLabel(0)}", 
+				f"EXTRA±10ms {PercentageLabel(1)}", 
+				f"EXTRA±20ms {PercentageLabel(2)}", 
+				f"EXTRA±45ms {PercentageLabel(3)}", 
+				f"Extra {PercentageLabel(4)}", 
+				f"Great {PercentageLabel(5)}", 
+				f"Right {PercentageLabel(6)}", 
+				f"Miss {PercentageLabel(7)}"],
 			textprops={'family':'LXGW WenKai Mono','weight':'normal','size':12})
 		plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':12},loc='center',
 			labels=[

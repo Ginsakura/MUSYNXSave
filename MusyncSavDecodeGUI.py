@@ -2,7 +2,7 @@
 import json
 #import time
 import MusyncSavDecode
-import FileExport
+import ctypes
 import webbrowser
 import requests
 from tkinter import *
@@ -10,26 +10,39 @@ from tkinter import Tk,ttk,font
 from tkinter import messagebox
 from tkinter.filedialog import askopenfilename
 from HitDelay import HitDelayCheck,HitDelayText
+import Functions
 #import win32api
 #import win32con
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.9_rc7'
+version = '1.1.9_rc10'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
-	def __init__(self, root=None, isTKroot=True):
+	def __init__(self, root=None, isTKroot=True, dpi=100):
 		##Init##
 		self.version = version
 		root.iconbitmap('./musync_data/Musync.ico')
 		super(MusyncSavDecodeGUI, self).__init__()
 		self.isTKroot = isTKroot
-		self.font=('霞鹜文楷等宽',16)
 		root.geometry(f'1000x670+500+300')
 		style = ttk.Style()
-		style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',13))
-		style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
+		if dpi == 100:
+			style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',13))
+			style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
+			style.configure("reload.TButton", font=('霞鹜文楷等宽',16))
+			#, background='#EEBBBB', foreground='#00CCFF',relief='ridge')
+			style.configure("F5.TButton", font=('霞鹜文楷等宽',16), bg="#EEBBBB")
+			self.font=('霞鹜文楷等宽',16)
+		# elif dpi == 125:
+		else:
+			style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',11))
+			style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
+			style.configure("reload.TButton", font=('霞鹜文楷等宽',13.5))
+			#, background='#EEBBBB', foreground='#00CCFF',relief='ridge')
+			style.configure("F5.TButton", font=('霞鹜文楷等宽',13.5), bg="#EEBBBB")
+			self.font=('霞鹜文楷等宽',13.5)
 		if isTKroot == True:
 			root.title("同步音律喵赛克 Steam端 本地存档分析")
 			root['background'] = '#efefef'
@@ -56,7 +69,8 @@ class MusyncSavDecodeGUI(object):
 
 		##Controls##
 		#self..place(x= ,y= ,width= ,height=)
-		self.saveFileDecodeButton = Button(self.root, text="存档解码及分析",command=self.DeleteAnalyzeFile, font=self.font)
+		#self.saveFileDecodeButton = Button(self.root, text="存档解码及分析",command=self.DeleteAnalyzeFile, font=self.font)
+		self.saveFileDecodeButton = ttk.Button(self.root, text="存档解码及分析",command=self.DeleteAnalyzeFile, style='reload.TButton')
 		self.saveFileDecodeButton.place(x=10,y=10,width=150,height=30)
 
 		self.CountFrameLanel = Label(self.root,text="", relief="groove")
@@ -81,7 +95,7 @@ class MusyncSavDecodeGUI(object):
 		self.initLabel = Label(self.root, text='启动中......', anchor="center", font=self.font, relief="groove")
 		self.initLabel.place(x=250,y=300,width=500,height=30)
 
-		self.deleteAnalyzeFile = Button(self.root, text="刷新",command=self.DeleteAnalyzeFile, font=self.font, bg="#EEBBBB")
+		self.deleteAnalyzeFile = ttk.Button(self.root, text="刷新",command=self.DeleteAnalyzeFile,style='F5.TButton')
 		self.deleteAnalyzeFile.place(x=10,y=88,width=90,height=30)
 
 		self.totalSyncFrameLabel = Label(self.root, text='', relief="groove")
@@ -136,15 +150,15 @@ class MusyncSavDecodeGUI(object):
 		with open('./musync_data/ExtraFunction.cfg','r') as confFile:
 			config = json.load(confFile)
 
-		if ('DisableCheckUpdate' in config) and (config['DisableCheckUpdate'] == True):
+		if ('DisableCheckUpdate' in config) and (config['DisableCheckUpdate']):
 			self.gitHubLink.configure(text='更新已禁用    点击打开GitHub仓库页')
 		else:
 			self.CheckUpdate()
 			self.CheckJsonUpdate()
-		if ('EnableAnalyzeWhenStarting' in config) and (config['EnableAnalyzeWhenStarting'] == True):
+		if ('EnableAnalyzeWhenStarting' in config) and (config['EnableAnalyzeWhenStarting']):
 			self.DeleteAnalyzeFile()
 		self.CheckFile()
-		if ('EnableDLLInjection' in config) and (config['EnableDLLInjection'] == True):
+		if ('EnableDLLInjection' in config) and (config['EnableDLLInjection']):
 			self.hitDelay = Button(self.root, text="DLL注入\n分析\n游玩结果",command=self.HitDelay, font=self.font,bg='#FF0000')
 			self.hitDelay.place(x=776,y=48,width=90,height=74)
 		if not os.path.isfile('./musync_data/SaveFilePath.sfp'):
@@ -350,7 +364,7 @@ class MusyncSavDecodeGUI(object):
 		if not HitDelayCheck().DLLCheck():
 			messagebox.showerror("Error", f'DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁')
 		else:
-			newWindow = HitDelayText(nroot)
+			HitDelayText(nroot)
 	def DataLoad(self):
 		self.InitLabel(text="正在分析存档文件中……")
 		self.vScrollpos = self.VScroll1.get()
@@ -531,26 +545,16 @@ class SubWindow(object):
 		
 
 if __name__ == '__main__':
-	if os.path.exists('./musync/'):
-		os.rename('./musync/','./musync_data/')
-	if not os.path.exists('./musync_data/'):
-		os.makedirs('./musync_data/')
-	if not os.path.isfile('./musync_data/MUSYNC.ico'):
-		FileExport.WriteIcon()
-	if not os.path.isfile('./musync_data/SongName.json'):
-		FileExport.WriteSongNameJson()
-	if not os.path.isfile('./musync_data/ExtraFunction.cfg'):
-		json.dump({"EnableAcc-Sync": False,"DisableCheckUpdate": False,"EnableAnalyzeWhenStarting": False,
-			"EnableDLLInjection": False},open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
+	ctypes.windll.shcore.SetProcessDpiAwareness(1)
 	root = Tk()
 	fonts = list(font.families())
-	if not '霞鹜文楷等宽' in fonts:
-		if os.path.isfile('./musync_data/LXGW.ttf'):
-			os.system('./musync_data/LXGW.ttf')
-		else:
-			FileExport.WriteTTF()
-		root.resizable(True, True) #允许改变窗口大小
+	Functions.CheckFileBeforeStarting(fonts)
 	del fonts
-	window = MusyncSavDecodeGUI(root=root)
+	Functions.CheckConfig()
+	#root.state('zoomed') #隐藏最小化、最大化按钮
+	#设置程序缩放
+	# root.tk.call('tk', 'scaling', (ctypes.windll.shcore.GetScaleFactorForDevice(0))/75)
+	root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
+	window = MusyncSavDecodeGUI(root=root, dpi=Functions.GetDpi())
 	root.update()
 	root.mainloop()

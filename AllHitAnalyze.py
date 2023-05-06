@@ -3,11 +3,14 @@ from matplotlib import pyplot as plt
 from matplotlib.pyplot import MultipleLocator
 # import numpy as np
 import sqlite3 as sql
+import json
 
 class HitAnalyze(object):
 	"""docstring for HitAnalyze"""
 	def __init__(self):
 		super(HitAnalyze, self).__init__()
+		with open('./musync_data/ExtraFunction.cfg', 'r') as confFile:
+			config = json.load(confFile)
 		db = sql.connect('./musync_data/HitDelayHistory.db')
 		cur = db.cursor()
 		res = cur.execute('select HitMap from HitDelayHistory')
@@ -60,7 +63,8 @@ class HitAnalyze(object):
 		print(self.avg,self.var,self.std,self.sumYnum)
 		print(self.avgEx,self.varEx,self.stdEx,self.sumYnumEx)
 		self.Analyze()
-		self.Pie()
+		if ('EnableDonutChartinAllHitAnalyze' in config) and (config['EnableDonutChartinAllHitAnalyze']):
+			self.Pie()
 		plt.show()
 
 	def Analyze(self):
@@ -140,15 +144,16 @@ class HitAnalyze(object):
 		plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':15})  #显示上面的label
 
 	def Pie(self):
-		def Percentage(num):
-			per = self.accurateRate[num]/sum(self.accurateRate)*100
+		def Percentage(num, summ):
+			per = num/summ*100
 			return ' '*(3-len(str(int((per)))))+'%.3f%%'%(per)
 		def Count(num):
-			cou = str(self.accurateRate[num])
+			cou = str(num)
 			return ' '*(6-len(cou))+cou
-		def PercentageLabel(num):
-			per = self.accurateRate[num]/sum(self.accurateRate)*100
+		def PercentageLabel(num, summ):
+			per = num/summ*100
 			return '%.1f%%'%(per)
+		accurateRateSum = sum(self.accurateRate)
 		fig = plt.figure(f'Pie', figsize=(7, 6))
 		fig.subplots_adjust(**{"left":0,"bottom":0,"right":1,"top":1})
 		wedgeprops = {'width':0.15, 'edgecolor':'black', 'linewidth':0.2}
@@ -156,26 +161,29 @@ class HitAnalyze(object):
 			colors=['#AAFFFF','#00B5B5','#78BEFF','cyan', 'blue', 'green', 'orange', 'red'],
 			# autopct=lambda x:'%.3f%%'%(x*sum(self.accurateRate)/100+0.5),
 			labels=[
-				f"EXTRA±5ms {PercentageLabel(0)}", 
-				f"EXTRA±10ms {PercentageLabel(1)}", 
-				f"EXTRA±20ms {PercentageLabel(2)}", 
-				f"EXTRA±45ms {PercentageLabel(3)}", 
-				f"Extra {PercentageLabel(4)}", 
-				f"Great {PercentageLabel(5)}", 
-				f"Right {PercentageLabel(6)}", 
-				f"Miss {PercentageLabel(7)}"],
+				f"EXTRA±5ms {PercentageLabel(self.accurateRate[0], accurateRateSum)}", 
+				f"EXTRA±10ms {PercentageLabel(self.accurateRate[1], accurateRateSum)}", 
+				f"EXTRA±20ms {PercentageLabel(self.accurateRate[2], accurateRateSum)}", 
+				f"EXTRA±45ms {PercentageLabel(self.accurateRate[3], accurateRateSum)}", 
+				f"Extra {PercentageLabel(self.accurateRate[4], accurateRateSum)}", 
+				f"Great {PercentageLabel(self.accurateRate[5], accurateRateSum)}", 
+				f"Right {PercentageLabel(self.accurateRate[6], accurateRateSum)}", 
+				f"Miss {PercentageLabel(self.accurateRate[7], accurateRateSum)}"],
 			textprops={'family':'LXGW WenKai Mono','weight':'normal','size':12})
 		plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':12},loc='center',
 			labels=[
-				f"EXTRA± 5ms  {Count(0)}  {Percentage(0)}", 
-				f"EXTRA±10ms  {Count(1)}  {Percentage(1)}", 
-				f"EXTRA±20ms  {Count(2)}  {Percentage(2)}", 
-				f"EXTRA±45ms  {Count(3)}  {Percentage(3)}", 
-				f"Extra±90ms  {Count(4)}  {Percentage(4)}", 
-				f"Great±150ms {Count(5)}  {Percentage(5)}", 
-				f"Right＋250ms {Count(6)}  {Percentage(6)}", 
-				f"Miss > 250ms {Count(7)}  {Percentage(7)}"],
+				f"EXTRA± 5ms  {Count(self.accurateRate[0])}  {Percentage(self.accurateRate[0], accurateRateSum)}", 
+				f"EXTRA±10ms  {Count(self.accurateRate[1])}  {Percentage(self.accurateRate[1], accurateRateSum)}", 
+				f"EXTRA±20ms  {Count(self.accurateRate[2])}  {Percentage(self.accurateRate[2], accurateRateSum)}", 
+				f"EXTRA±45ms  {Count(self.accurateRate[3])}  {Percentage(self.accurateRate[3], accurateRateSum)}", 
+				f"Extra±90ms  {Count(self.accurateRate[4])}  {Percentage(self.accurateRate[4], accurateRateSum)}", 
+				f"Great±150ms {Count(self.accurateRate[5])}  {Percentage(self.accurateRate[5], accurateRateSum)}", 
+				f"Right＋250ms {Count(self.accurateRate[6])}  {Percentage(self.accurateRate[6], accurateRateSum)}", 
+				f"Miss > 250ms {Count(self.accurateRate[7])}  {Percentage(self.accurateRate[7], accurateRateSum)}"],
 			)
+		plt.text(-0.41,0.48,f"EXTRA        {Count(sum(self.accurateRate[0:4]))}  {Percentage(sum(self.accurateRate[0:4]), accurateRateSum)}", 
+			ha='left',va='top',fontsize=12,color='#00B5B5', 
+			fontdict={'family':'LXGW WenKai Mono','weight':'normal'})
 
 if __name__ == '__main__':
 	HitAnalyze()

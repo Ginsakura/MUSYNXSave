@@ -1,6 +1,5 @@
-from tkinter import *
+﻿from tkinter import *
 from tkinter import Tk,ttk,font,Text
-from tkinter.filedialog import askopenfilename
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import MultipleLocator
 from datetime import datetime as dt
@@ -41,6 +40,7 @@ class HitDelayCheck(object):
 class HitDelayText(object):
 	"""docstring for DrawHDLine"""
 	def __init__(self,subroot):
+		global config
 		if os.path.isfile('./musync_data/HitDelayHistory.db'):
 			self.db = sql.connect('./musync_data/HitDelayHistory.db')
 			self.cur = self.db.cursor()
@@ -65,19 +65,10 @@ class HitDelayText(object):
 		self.logText = Text(self.subroot,font=self.font)
 		self.logText.place(relx=0.7,y=70,relheight=0.88,relwidth=0.3)
 
-		with open('./musync_data/ExtraFunction.cfg') as confFile:
+		with open('./musync_data/ExtraFunction.cfg', 'r') as confFile:
 			config = json.load(confFile)
 
-		if ('EnableAcc-Sync' in config) and (config['EnableAcc-Sync'] == True):
-			self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
-			self.logButton.place(relx=0.7,y=40,height=30,relwidth=0.2)
-			self.txtButton = Button(self.subroot,text='Acc-Sync',command=self.OpenTxt,font=self.font)
-			self.txtButton.place(relx=0.9,y=40,height=30,relwidth=0.1)
-		else:
-			self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
-			self.logButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
-
-		self.hitAnalyzeButton = Button(self.subroot,text='All\nHit',command=lambda:HitAnalyze().Analyze(),font=self.font, relief="groove")
+		self.hitAnalyzeButton = Button(self.subroot,text='All\nHit',command=lambda : HitAnalyze(),font=self.font, relief="groove")
 		self.hitAnalyzeButton.place(x=0,y=40,height=60,relwidth=0.05)
 		self.nameDelayLabel = Label(self.subroot,font=self.font, relief="groove",text='↓请在下面输入曲名与谱面难度↓这只是用来标记你玩的哪个谱面而已，\n只要你能分辨就行，没有格式要求。如"ニニ 4KEZ"、"二重4H"等')
 		self.nameDelayLabel.place(relx=0.05,y=40,height=60,relwidth=0.65)
@@ -88,6 +79,15 @@ class HitDelayText(object):
 		self.VScroll1 = Scrollbar(self.subroot, orient='vertical', command=self.delayHistory.yview)
 		self.delayHistory.configure(yscrollcommand=self.VScroll1.set)
 		self.VScroll1.place(relx=0.68,y=130,relheight=0.78,relwidth=0.02)
+		
+		if ('EnableAcc-Sync' in config) and (config['EnableAcc-Sync']):
+			self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
+			self.logButton.place(relx=0.7,y=40,height=30,relwidth=0.2)
+			self.txtButton = Button(self.subroot,text='Acc-Sync',command=self.OpenTxt,font=self.font)
+			self.txtButton.place(relx=0.9,y=40,height=30,relwidth=0.1)
+		else:
+			self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
+			self.logButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
 
 		self.history = list()
 		self.HistoryUpdate()
@@ -198,19 +198,23 @@ class HitDelayDraw(object):
 		self.y_axis = [int(i) for i in dataList]
 
 		self.sum = [0,0,0,0,0]
+		self.exCount = [0,0,0]
 		for ids in dataList:
 			ids = abs(ids)
+			if ids < 5:self.exCount[0] += 1
+			elif ids < 10:self.exCount[1] += 1
+			elif ids < 20:self.exCount[2] += 1
 			if ids < 45: self.sum[0] += 1
 			elif ids < 90: self.sum[1] += 1
 			elif ids < 150: self.sum[2] += 1
 			elif ids < 250: self.sum[3] += 1
 			else: self.sum[4] += 1
-		print(self.sum)
-
+		self.exCount = self.exCount + self.sum
+		print(self.sum,self.exCount)
+		fig = plt.figure(f'AvgDelay: {"%.4fms"%self.avgDelay}    AllKeys: {self.allKeys}    AvgAcc: {"%.4fms"%self.avgAcc}',figsize=(9, 4))
+		fig.subplots_adjust(**{"left":0.04,"bottom":0.05,"right":1,"top":1})
 		# print(self.x_axis,self.y_axis)
-		self.fig = plt.figure(f'AvgDelay: {"%.4fms"%self.avgDelay}    AllKeys: {self.allKeys}    AvgAcc: {"%.4fms"%self.avgAcc}',figsize=(9, 4))
 		print(f'AvgDelay: {self.avgDelay}\tAllKeys: {self.allKeys}\tAvgAcc: {self.avgAcc}')
-		
 		plt.text(0,70,"Slower→", ha='right',fontsize=10,color='#c22472',rotation=90, 
 			fontdict={'family':'LXGW WenKai Mono','weight':'normal','size':15})
 		plt.text(0,-70,"←Faster", ha='right',va='top',fontsize=10,color='#288328',rotation=90, 
@@ -218,6 +222,9 @@ class HitDelayDraw(object):
 		
 		self.Label()
 		self.Draw()
+		global config
+		if ('EnableDonutChartinHitDelay' in config) and (config['EnableDonutChartinHitDelay']):
+			self.Pie()
 		plt.show()
 
 
@@ -232,7 +239,6 @@ class HitDelayDraw(object):
 
 
 	def Draw(self):
-		self.fig.subplots_adjust(**{"left":0.04,"bottom":0.05,"right":1,"top":1})
 		plt.plot(self.x_axis,self.zero_axis,linestyle='-',alpha=1,linewidth=1,color='red',label='0ms')
 		plt.plot(self.x_axis,self.EXTRAa,linestyle='--',alpha=0.7,linewidth=1,color='cyan',
 			label='Cyan Extra(±45ms)    --%d'%self.sum[0])
@@ -252,6 +258,70 @@ class HitDelayDraw(object):
 		plt.ylabel('Delay')#y_label
 		plt.gca().yaxis.set_major_locator(MultipleLocator(20))
 		plt.xlim(-15,len(self.x_axis)+15)
+
+	def Pie(self):
+		def Percentage(num, summ):
+			per = num/summ*100
+			return ' '*(3-len(str(int((per)))))+'%.3f%%'%(per)
+		def Count(num):
+			cou = str(num)
+			return ' '*(6-len(cou))+cou
+		def PercentageLabel(num, summ):
+			per = num/summ*100
+			return '%.1f%%'%(per)
+		fig = plt.figure(f'Pie', figsize=(5.5, 4.5))
+		fig.subplots_adjust(**{"left":0,"bottom":0,"right":1,"top":1})
+		wedgeprops = {'width':0.15, 'edgecolor':'black', 'linewidth':0.2}
+		if self.sum[0]/sum(self.sum) > 0.6:
+			exCountSum = sum(self.exCount)
+			plt.pie(self.exCount, wedgeprops=wedgeprops, startangle=90,
+				colors=['#AAFFFF','#00B5B5','#78BEFF','cyan', 'blue', 'green', 'orange', 'red'],
+				# autopct=lambda x:'%.3f%%'%(x*sum(self.exCount)/100+0.5),
+				labels=[
+					f"EXTRA±5ms {PercentageLabel(self.exCount[0], exCountSum)}", 
+					f"EXTRA±10ms {PercentageLabel(self.exCount[1], exCountSum)}", 
+					f"EXTRA±20ms {PercentageLabel(self.exCount[2], exCountSum)}", 
+					f"EXTRA±45ms {PercentageLabel(self.exCount[3], exCountSum)}", 
+					f"Extra {PercentageLabel(self.exCount[4], exCountSum)}", 
+					f"Great {PercentageLabel(self.exCount[5], exCountSum)}", 
+					f"Right {PercentageLabel(self.exCount[6], exCountSum)}", 
+					f"Miss {PercentageLabel(self.exCount[7], exCountSum)}"],
+				textprops={'family':'LXGW WenKai Mono','weight':'normal','size':9})
+			plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':9},loc='center',
+				labels=[
+					f"EXTRA± 5ms  {Count(self.exCount[0])}  {Percentage(self.exCount[0], exCountSum)}", 
+					f"EXTRA±10ms  {Count(self.exCount[1])}  {Percentage(self.exCount[1], exCountSum)}", 
+					f"EXTRA±20ms  {Count(self.exCount[2])}  {Percentage(self.exCount[2], exCountSum)}", 
+					f"EXTRA±45ms  {Count(self.exCount[3])}  {Percentage(self.exCount[3], exCountSum)}", 
+					f"Extra±90ms  {Count(self.exCount[4])}  {Percentage(self.exCount[4], exCountSum)}", 
+					f"Great±150ms {Count(self.exCount[5])}  {Percentage(self.exCount[5], exCountSum)}", 
+					f"Right＋250ms {Count(self.exCount[6])}  {Percentage(self.exCount[6], exCountSum)}", 
+					f"Miss > 250ms {Count(self.exCount[7])}  {Percentage(self.exCount[7], exCountSum)}"],
+				)
+			plt.text(-0.41,0.48,f"EXTRA        {Count(sum(self.exCount[0:4]))}  {Percentage(sum(self.exCount[0:4]), exCountSum)}", 
+				ha='left',va='top',fontsize=9,color='#00B5B5', 
+				fontdict={'family':'LXGW WenKai Mono','weight':'normal'})
+		else:
+			summ = sum(self.sum)
+			plt.pie(self.sum, wedgeprops=wedgeprops, startangle=90,
+				colors=['cyan', 'blue', 'green', 'orange', 'red'],
+				# autopct=lambda x:'%.3f%%'%(x*sum(self.exCount)/100+0.5),
+				labels=[
+					f"EXTRA {PercentageLabel(self.sum[0], summ)}", 
+					f"Extra {PercentageLabel(self.sum[1], summ)}", 
+					f"Great {PercentageLabel(self.sum[2], summ)}", 
+					f"Right {PercentageLabel(self.sum[3], summ)}", 
+					f"Miss  {PercentageLabel(self.sum[4], summ)}"],
+				textprops={'family':'LXGW WenKai Mono','weight':'normal','size':9})
+			plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':9},loc='center',
+				labels=[
+					f"EXTRA±45ms  {Count(self.sum[0], summ)}  {Percentage(self.sum[0], summ)}", 
+					f"Extra±90ms  {Count(self.sum[1], summ)}  {Percentage(self.sum[1], summ)}", 
+					f"Great±150ms {Count(self.sum[2], summ)}  {Percentage(self.sum[2], summ)}", 
+					f"Right＋250ms {Count(self.sum[3], summ)}  {Percentage(self.sum[3], summ)}", 
+					f"Miss > 250ms {Count(self.sum[4], summ)}  {Percentage(self.sum[4], summ)}"],
+				)
+
 
 if __name__ == '__main__':
 	# HitDelayCheck()

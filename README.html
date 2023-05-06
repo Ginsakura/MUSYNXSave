@@ -1084,70 +1084,60 @@ body .markdown-body
 <li class="task-list-item"><input type="checkbox" disabled checked/> 滑动条在重加载后保持位置不变</li>
 <li class="task-list-item"><input type="checkbox" disabled checked/> 隐藏cmd窗口</li>
 <li class="task-list-item"><input type="checkbox" disabled checked/> 将像Windows资源管理器一样使用列标题栏进行排序</li>
+<li class="task-list-item"><input type="checkbox" disabled checked/> 将高级功能整合为<code>ExtraFunction.cfg</code>配置文件</li>
 </ul>
 <h2 id="release">Release版本说明<a class="headerlink" href="#release" title="Permanent link"></a></h2>
 <p>NoConsole版本为没有命令提示符界面，适合正常使用</p>
 <p>WithConsole版本为带命令提示符界面，适合出现bug时快速定位错误发生地点以及原因</p>
 <h3 id="_4">功能控制模块<a class="headerlink" href="#_4" title="Permanent link"></a></h3>
-<h4 id="musync_data">在<code>./musync_data/</code>目录中创建指定文件名的无扩展名文件,即可启用/禁用对应功能<a class="headerlink" href="#musync_data" title="Permanent link"></a></h4>
-<ol>
-<li><code>UpdateDisable</code> 禁用更新检测</li>
-<li><code>AutoAutoAnalyze</code> 启用每次启动时强制重新扫描存档文件</li>
-<li><code>InjectionEnable</code> 启用DLL注入以开启高级功能</li>
-<li><code>Acc-SynxEnable</code> 启用Acc-Synx图表</li>
-</ol>
-<h4 id="_5">其他功能组件<a class="headerlink" href="#_5" title="Permanent link"></a></h4>
-<p>下列组件对游戏客户端有修改,请谨慎使用</p>
-<p><em>*</em> $\color{Red}{ 注意备份  注意备份  注意备份 }$ <em>*</em></p>
+<p>于<code>./musync_data/ExtraFunction.cfg</code>文件中启用/禁用对应功能
+1. <code>DisableCheckUpdate</code> 禁用更新检测
+2. <code>EnableAnalyzeWhenStarting</code> 启用每次启动时强制重新扫描存档文件
+3. <code>EnableDLLInjection</code> 启用DLL注入以开启高级功能
+5. <code>EnableAcc-Sync</code> 启用Acc-Synx图表</p>
+<p>其他功能组件
+下列组件对游戏客户端有修改,请谨慎使用</p>
+<p><em>*</em> $\color{Red}{ 注意备份 注意备份 注意备份 }$ <em>*</em></p>
 <p>$\color{Red}{请自行决定是否使用,使用过程中出现任何意外}$ <em>*</em> $\color{Red}{ 后果自负,开发者概不负责 }$ <em>*</em></p>
 <p>HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩时会打开一个cmd窗口 <em>*</em> $\color{Red}{请勿关闭该窗口}$ <em>*</em></p>
 <ul>
 <li><code>HitDelayFix.dll</code> 被精心修改过的客户端文件,原始文件为<code>./MUSYNX_Data/Managed/Assembly-CSharp.dll</code>,如果想要使用,复制替换即可(记得备份原始文件).</li>
-<li><code>HitDelayLine.py</code> 用于读取<code>./musync_data/HitDelay.log</code>中的击打信息生成可视化数据表,标题栏提供三个统计信息.<ul>
-<li><code>AvgDelay</code> 平均击打延迟,即所有击打的平均值,能够一定程度上提示游戏延迟应该调整的数值(可能有较大偏差,仅供参考).
-    比如游戏内判定补偿是+010ms,AvgDelay数值为-5ms,那么就应将游戏内判定补偿下调,但是具体需要调整多少请多次测试.</li>
-<li><code>AllKeys</code> 游戏进行了多少次判定,如果有长条中断,这个值会比游戏内真实按键数偏大.</li>
 <li>
-<p><code>AvgAcc</code> 平均击打偏差,即所有击打的绝对值的平均值,该值总为正数.
-    该值反应了您当前谱面本次游玩击打Key的时机的精准度,该值与您本次游玩的结算成绩有一定的关联:</p>
+<p><code>HitDelayLine.py</code> 用于读取<code>./musync_data/HitDelay.log</code>中的击打信息生成可视化数据表,标题栏提供三个统计信息.</p>
+<ul>
+<li><code>AvgDelay</code> 平均击打延迟,即所有击打的平均值,能够一定程度上提示游戏延迟应该调整的数值(可能有较大偏差,仅供参考).
+比如游戏内判定补偿是+010ms,AvgDelay数值为-5ms,那么就应将游戏内判定补偿下调,但是具体需要调整多少请多次测试.</li>
+<li><code>AllKeys</code> 游戏进行了多少次判定,如果有长条中断,这个值会比游戏内真实按键数偏大.</li>
+<li><code>AvgAcc</code> 平均击打偏差,即所有击打的绝对值的平均值,该值总为正数.
+该值反应了您当前谱面本次游玩击打Key的时机的精准度,该值与您本次游玩的结算成绩有一定的关联:</li>
+</ul>
 <p>该值越小,就说明您击打的越精准,(在该值小于45ms时，您的)分值就会越高.</p>
 </li>
 </ul>
-</li>
-</ul>
-<h2 id="_6">更新日志<a class="headerlink" href="#_6" title="Permanent link"></a></h2>
+<h2 id="_5">更新日志<a class="headerlink" href="#_5" title="Permanent link"></a></h2>
 <h3 id="version-119">Version 1.1.9<a class="headerlink" href="#version-119" title="Permanent link"></a></h3>
 <ol>
+<li>更新 于<code>HitDelay</code>模块处更新Acc-Sync分析功能</li>
+<li>更新 于<code>AllHitAnalyze</code>模块处更新tap的Rate环形图</li>
 <li>
-<h4 id="hitdelayacc-sync">更新 于<code>HitDelay</code>模块处更新Acc-Sync分析功能<a class="headerlink" href="#hitdelayacc-sync" title="Permanent link"></a></h4>
+<p>修复 修复<code>songname.json</code>中<code>惊涛落日 IN</code>谱面难度评级未更新的bug
+<del>这玩意儿算bug吗？</del></p>
 </li>
 <li>
-<h4 id="allhitanalyzetaprate">更新 于<code>AllHitAnalyze</code>模块处更新tap的Rate环形图<a class="headerlink" href="#allhitanalyzetaprate" title="Permanent link"></a></h4>
+<p>修复 修复些许文案错误</p>
 </li>
-<li>
-<h4 id="songnamejson-inbug">修复 修复<code>songname.json</code>中<code>惊涛落日 IN</code>谱面难度评级未更新的bug<a class="headerlink" href="#songnamejson-inbug" title="Permanent link"></a></h4>
-<p><del>这玩意儿算bug吗？</del></p>
-</li>
-<li>
-<h4 id="_7">修复 修复些许文案错误<a class="headerlink" href="#_7" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_8">优化 修改图表字体为<code>霞鹜文楷等宽</code><a class="headerlink" href="#_8" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_9">优化 优化部分按钮提示词<a class="headerlink" href="#_9" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="allhitanalyzeratecyan-extra5ms610ms1120ms2145ms">优化 对<code>AllHitAnalyze</code>模块中的环形图使用更加细化的Rate分级：将Cyan Extra分成<code>±5ms内、±6~10ms、±11~20ms、±21~45ms</code>四段<a class="headerlink" href="#allhitanalyzeratecyan-extra5ms610ms1120ms2145ms" title="Permanent link"></a></h4>
-<del>3. #### 优化 将额外功能修改为配置文件形式，放置于<code>./musync_data/ExtraFunction.conf</code></del></li>
+<li>优化 修改图表字体为<code>霞鹜文楷等宽</code></li>
+<li>优化 优化部分按钮提示词</li>
+<li>优化 对<code>AllHitAnalyze</code>模块中的环形图使用更加细化的Rate分级：将Cyan Extra分成<code>±5ms内、±6~10ms、±11~20ms、±21~45ms</code>四段</li>
+<li>优化 将额外功能修改为配置文件形式，放置于<code>./musync_data/ExtraFunction.cfg</code></li>
+<li>优化 微调环形图</li>
+<li>优化 对系统DPI非100%的情况进行兼容优化</li>
 </ol>
 <h3 id="version-118">Version 1.1.8<a class="headerlink" href="#version-118" title="Permanent link"></a></h3>
 <ol>
+<li>更新 适配本体<em>劳动节更新</em></li>
 <li>
-<h4 id="_10">更新 <strong>适配本体</strong> <strong><em>劳动节更新</em></strong><a class="headerlink" href="#_10" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_11">更新 更新本次喵赛克更新的新曲目<a class="headerlink" href="#_11" title="Permanent link"></a></h4>
+<h4 id="_6">更新 更新本次喵赛克更新的新曲目<a class="headerlink" href="#_6" title="Permanent link"></a></h4>
 <ul>
 <li>luxianuz(EZ HD)</li>
 <li>Four leaf clover(EZ HD)</li>
@@ -1161,126 +1151,67 @@ body .markdown-body
 <li>人里に下ったアタイがいつの間にか社畜にな(IN)</li>
 </ul>
 </li>
-<li>
-<h4 id="allhitanalyze">优化 在<code>AllHitAnalyze</code>的标题栏中,新增各个评级的统计数字.<a class="headerlink" href="#allhitanalyze" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="allhitanalyzeextra">优化 在<code>AllHitAnalyze</code>中,新增仅对Extra评级进行拟合曲线(黑色实线),原对所有数据进行拟合的曲线变更为黑色虚线<a class="headerlink" href="#allhitanalyzeextra" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="allhitanalyze_1">优化 在<code>AllHitAnalyze</code>中,标签栏新增正态分布的方差与标准差的数值显示<a class="headerlink" href="#allhitanalyze_1" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="readmemd">优化 优化<code>Readme.md</code>排版.<a class="headerlink" href="#readmemd" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_12">优化 更详细的控制台输出<a class="headerlink" href="#_12" title="Permanent link"></a></h4>
-</li>
+<li>优化 在<code>AllHitAnalyze</code>的标题栏中,新增各个评级的统计数字.</li>
+<li>优化 在<code>AllHitAnalyze</code>中,新增仅对Extra评级进行拟合曲线(黑色实线),原对所有数据进行拟合的曲线变更为黑色虚线</li>
+<li>优化 在<code>AllHitAnalyze</code>中,标签栏新增正态分布的方差与标准差的数值显示</li>
+<li>优化 优化<code>Readme.md</code>排版.</li>
+<li>优化 更详细的控制台输出</li>
 </ol>
 <h3 id="version-117">Version 1.1.7<a class="headerlink" href="#version-117" title="Permanent link"></a></h3>
 <ol>
-<li>
-<h4 id="_13">更新 更新本次喵赛克更新的新曲目<a class="headerlink" href="#_13" title="Permanent link"></a></h4>
-<ul>
+<li>更新 更新本次喵赛克更新的新曲目<ul>
 <li>黄老饼梦游惊奇(EZ HD)</li>
 <li>惊涛落日(愚人节IN)</li>
 </ul>
 </li>
-<li>
-<h4 id="dll">更新 对更新的DLL文件进行适配<a class="headerlink" href="#dll" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="label">更新 对延迟图表的Label增加评级统计<a class="headerlink" href="#label" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="all-hit">更新 新增一个统计所有击打的延迟的柱状图，在延迟分析页面的&rdquo;All Hit&rdquo;按钮<a class="headerlink" href="#all-hit" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="allhitanalyze_2">更新 在<code>AllHitAnalyze</code>中新增 <strong><em>正态分布曲线</em></strong> 计算(不过可能不准确)<a class="headerlink" href="#allhitanalyze_2" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="bug">修复 修复了&rdquo;未游玩&rdquo;筛选没有正确实现的bug<a class="headerlink" href="#bug" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="exexbug">修复 修复了&rdquo;红Ex&rdquo;筛选中混杂&rdquo;黑Ex&rdquo;的bug<a class="headerlink" href="#exexbug" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="hitanalyze-110bug">修复 修复了<code>HitAnalyze</code>中关于打击延迟在(-1,1)之间全被统计为0的bug,现在负数方向统一 <strong>减去一毫秒</strong><a class="headerlink" href="#hitanalyze-110bug" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="rank-cbug">修复 修复了&rdquo;Rank C&rdquo;筛选没有正确生效的bug<a class="headerlink" href="#rank-cbug" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="bug-tm">修复 修复了无法打开文件选择窗口的bug <del>(我tm用错模块了🌿)</del><a class="headerlink" href="#bug-tm" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_14">优化 提供散装发布文件与单发布文件两种，按需使用，没啥区别<a class="headerlink" href="#_14" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="38mib">优化 优化打包发布环境，降低可执行文件的包大小至38MiB<a class="headerlink" href="#38mib" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="hitdelayavgdelay">优化 优化了HitDelay模块中<code>AvgDelay</code>参数的计算方式<a class="headerlink" href="#hitdelayavgdelay" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_15">优化 优化文件自动搜索流程<a class="headerlink" href="#_15" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_16">优化 优化正态分布计算流程<a class="headerlink" href="#_16" title="Permanent link"></a></h4>
-</li>
+<li>更新 对更新的DLL文件进行适配</li>
+<li>更新 对延迟图表的Label增加评级统计</li>
+<li>更新 新增一个统计所有击打的延迟的柱状图，在延迟分析页面的&rdquo;All Hit&rdquo;按钮</li>
+<li>更新 在<code>AllHitAnalyze</code>中新增 <strong><em>正态分布曲线</em></strong> 计算(不过可能不准确)</li>
+<li>修复 修复了&rdquo;未游玩&rdquo;筛选没有正确实现的bug</li>
+<li>修复 修复了&rdquo;红Ex&rdquo;筛选中混杂&rdquo;黑Ex&rdquo;的bug</li>
+<li>修复 修复了<code>HitAnalyze</code>中关于打击延迟在(-1,1)之间全被统计为0的bug,现在负数方向统一 <strong>减去一毫秒</strong></li>
+<li>修复 修复了&rdquo;Rank C&rdquo;筛选没有正确生效的bug</li>
+<li>修复 修复了无法打开文件选择窗口的bug <del>(我tm用错模块了🌿)</del></li>
+<li>优化 提供散装发布文件与单发布文件两种，按需使用，没啥区别</li>
+<li>优化 优化打包发布环境，降低可执行文件的包大小至38MiB</li>
+<li>优化 优化了HitDelay模块中<code>AvgDelay</code>参数的计算方式</li>
+<li>优化 优化文件自动搜索流程</li>
+<li>优化 优化正态分布计算流程</li>
 </ol>
 <h3 id="version-116">Version 1.1.6<a class="headerlink" href="#version-116" title="Permanent link"></a></h3>
 <ol>
-<li>
-<h4 id="dll_1">更新 将DLL注入与详细延迟图表功能整合进主程序中，需要您具备一定的计算机操作能力才可启用<a class="headerlink" href="#dll_1" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_17">更新 加大了表格内的字体大小，更护眼了<a class="headerlink" href="#_17" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="musync_datahitdelayhistorydb">更新 您的历史游玩记录可以在<code>./musync_data/HitDelayHistory.db</code>中查看<a class="headerlink" href="#musync_datahitdelayhistorydb" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="dllbug">修复 修复了对DLL注入时写入错误数据的bug<a class="headerlink" href="#dllbug" title="Permanent link"></a></h4>
-</li>
+<li>更新 将DLL注入与详细延迟图表功能整合进主程序中，需要您具备一定的计算机操作能力才可启用</li>
+<li>更新 加大了表格内的字体大小，更护眼了</li>
+<li>更新 您的历史游玩记录可以在<code>./musync_data/HitDelayHistory.db</code>中查看</li>
+<li>修复 修复了对DLL注入时写入错误数据的bug</li>
 <li>修复些许bug(也许?)</li>
 <li>优化执行流程(也许?)</li>
 <li><del>这次打包大小咋突然翻了三倍???<br/>又nm什么原理🌿??？</del></li>
 </ol>
 <h3 id="version-115">Version 1.1.5<a class="headerlink" href="#version-115" title="Permanent link"></a></h3>
 <ol>
-<li>
-<h4 id="_18">更新 修改排除空白谱面的函数，使其更加自动化<a class="headerlink" href="#_18" title="Permanent link"></a></h4>
-<ul>
+<li>更新 修改排除空白谱面的函数，使其更加自动化<ul>
 <li>已找出空白谱面的规律: 加入收藏后会在收藏曲目的6KHD难度的编号+9位置产生一个空白谱面</li>
 </ul>
 </li>
-<li>
-<h4 id="songnamejson">更新 <code>songname.json</code><a class="headerlink" href="#songnamejson" title="Permanent link"></a></h4>
-<ul>
+<li>更新 <code>songname.json</code><ul>
 <li>更新曲目: Chivalric</li>
 </ul>
 </li>
-<li>
-<h4 id="bug_1">修复 修复了对&rdquo;游玩计数&rdquo;排序功能无法正确排序的bug<a class="headerlink" href="#bug_1" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_19">优化 修改少量函数名,使其更加贴近实现的功能<a class="headerlink" href="#_19" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_20">优化 整合本地功能函数库<a class="headerlink" href="#_20" title="Permanent link"></a></h4>
-</li>
+<li>修复 修复了对&rdquo;游玩计数&rdquo;排序功能无法正确排序的bug</li>
+<li>优化 修改少量函数名,使其更加贴近实现的功能</li>
+<li>优化 整合本地功能函数库</li>
 <li>修复少量bug</li>
 <li>优化执行流程</li>
 </ol>
 <h3 id="version-114-rc2">Version 1.1.4 rc2<a class="headerlink" href="#version-114-rc2" title="Permanent link"></a></h3>
 <ul class="task-list">
 <li class="task-list-item"><input type="checkbox" disabled checked/> 滑动条在重加载后保持位置不变
-1. #### 更新 排除空白谱面<ul>
-<li>排除的谱面编号为: <code>00018B01</code>,<code>00018C91</code>,<code>00018C93</code>,<code>0001B211</code>
-2. #### 更新 补全当前版本所有SongName
-3. #### 更新 增加版权到期排除谱面功能
-版权到期的曲目有：</li>
+1. 更新 排除空白谱面
+2. 更新 补全当前版本所有SongName
+3. 更新 增加版权到期排除谱面功能
+  版权到期的曲目有：<ul>
 <li>404 Not Found</li>
 <li>ArroganT</li>
 <li>TWINKLE STAR</li>
@@ -1289,13 +1220,13 @@ body .markdown-body
 <li>星之伊始</li>
 <li>樂園 - Atlantis</li>
 <li>观星者
-1. #### 更新 新增一个筛选按钮用于筛选谱面难度</li>
+1. 更新 新增一个筛选按钮用于筛选谱面难度</li>
 <li>(Easy | Hard | Inferno | All)</li>
 <li>默认为All
-2. #### 更新 新增一个筛选按钮用于筛选谱面按键数</li>
+2. 更新 新增一个筛选按钮用于筛选谱面按键数</li>
 <li>(4K | 6K | 4K&amp;6K)</li>
 <li>默认为4K&amp;6K
-2. #### 更新 新增一个Label将上述两个按钮包裹在内(伪装成一个Frame(bushi))
+2. 更新 新增一个Label将上述两个按钮包裹在内(伪装成一个Frame(bushi))
 3. 优化执行流程
 4. 修复些许bug
 5. <del>这次打包咋小了一半？？？什么原理🌿？</del></li>
@@ -1306,15 +1237,15 @@ body .markdown-body
 <ul class="task-list">
 <li class="task-list-item"><input type="checkbox" disabled checked/> 隐藏cmd窗口</li>
 <li class="task-list-item"><input type="checkbox" disabled checked/> 将像Windows资源管理器一样使用列标题栏进行排序
-2. #### 更新 通过点击标题栏来进行排序显示<ul>
+2. 更新 通过点击标题栏来进行排序显示<ul>
 <li>升序:<code>▲</code></li>
 <li>降序:<code>▼</code>
-4. #### 更新 文件选择功能增加扩展名限制
-5. #### 更新 <code>SongName.json</code>的内容
-6. #### 更新 从GitHub下载<code>SongName.json</code>文件
-7. #### 修复 修复等待状态栏不能正常使用的bug
-3. #### 优化 将程序生成的文件放置于<code>./musnyc_data/</code>中,让可执行文件所在目录不显得那么杂乱
-1. #### 优化 移除排序按钮
+4. 更新 文件选择功能增加扩展名限制
+5. 更新 <code>SongName.json</code>的内容
+6. 更新 从GitHub下载<code>SongName.json</code>文件
+7. 修复 修复等待状态栏不能正常使用的bug
+3. 优化 将程序生成的文件放置于<code>./musnyc_data/</code>中,让可执行文件所在目录不显得那么杂乱
+1. 优化 移除排序按钮
 6. 更新 部分优化占用与卡顿
 3. 修复 修复些许bug</li>
 </ul>
@@ -1322,204 +1253,118 @@ body .markdown-body
 </ul>
 <h3 id="version-112">Version 1.1.2<a class="headerlink" href="#version-112" title="Permanent link"></a></h3>
 <ol start="2">
-<li>
-<h4 id="jsonbug">修复 修复了第一次启动时json文件报错的bug<a class="headerlink" href="#jsonbug" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_21">优化 发布可执行文件去掉了命令提示符框<a class="headerlink" href="#_21" title="Permanent link"></a></h4>
-</li>
+<li>修复 修复了第一次启动时json文件报错的bug</li>
+<li>优化 发布可执行文件去掉了命令提示符框</li>
 </ol>
 <h3 id="version-111">Version 1.1.1<a class="headerlink" href="#version-111" title="Permanent link"></a></h3>
 <ol>
-<li>
-<h4 id="bug_2">修复 修复某些bug<a class="headerlink" href="#bug_2" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="songname">优化 更改SongName数据表的键名<a class="headerlink" href="#songname" title="Permanent link"></a></h4>
-<ul>
+<li>修复 修复某些bug</li>
+<li>优化 更改SongName数据表的键名<ul>
 <li>将小端键名替换为大端</li>
 </ul>
 </li>
-<li>
-<h4 id="_22">优化 更改&rdquo;未游玩&rdquo;筛选的判定条件<a class="headerlink" href="#_22" title="Permanent link"></a></h4>
-<ul>
+<li>优化 更改&rdquo;未游玩&rdquo;筛选的判定条件<ul>
 <li>现在&rdquo;未游玩&rdquo;的判定条件为: 游玩计数和本地同步率同时为0</li>
 </ul>
 </li>
 </ol>
 <h3 id="version-110">Version 1.1.0<a class="headerlink" href="#version-110" title="Permanent link"></a></h3>
 <ol>
-<li>
-<h4 id="_23">优化 更改判定一条存储内容是哪首歌哪个谱面的方式<a class="headerlink" href="#_23" title="Permanent link"></a></h4>
-<ul>
+<li>优化 更改判定一条存储内容是哪首歌哪个谱面的方式<ul>
 <li>已通过(本人的)多版本存档验证</li>
 <li>缺少更多的存档进行更多的测试</li>
 </ul>
 </li>
-<li>
-<h4 id="json">优化 修改Json文件的内容<a class="headerlink" href="#json" title="Permanent link"></a></h4>
-</li>
+<li>优化 修改Json文件的内容</li>
 </ol>
 <h3 id="version-107">Version 1.0.7<a class="headerlink" href="#version-107" title="Permanent link"></a></h3>
 <ol>
-<li>
-<h4 id="_24">更新 排除空谱面<a class="headerlink" href="#_24" title="Permanent link"></a></h4>
-<ol>
+<li>更新 排除空谱面</li>
 <li>排除0935号谱面ID 原因 该编号未被分配</li>
 <li>排除1022号谱面ID 原因 该编号未被分配</li>
 <li>排除1194号谱面ID 原因 该编号未被分配</li>
 <li>排除1283号谱面ID 原因 该编号未被分配</li>
 <li>排除1342及更高的谱面ID 原因 该编号未被分配</li>
-</ol>
-</li>
-<li>
-<h4 id="_25">修复 歌曲收藏功能异常<a class="headerlink" href="#_25" title="Permanent link"></a></h4>
-<p>游戏中&rdquo;收藏&rdquo;功能仅标记4K Easy难度，目前实现自动对其他难度在分析文件中同时添加标记</p>
-</li>
-<li>
-<h4 id="savanalyzejson">修复 打开错误的<code>SavAnalyze.json</code>文件导致异常闪退的问题<a class="headerlink" href="#savanalyzejson" title="Permanent link"></a></h4>
-<p>现在将会自动删除错误文件并重新生成
-如果生成错误，有可能会再次闪退</p>
-</li>
+<li>修复 歌曲收藏功能异常
+  游戏中&rdquo;收藏&rdquo;功能仅标记4K Easy难度，目前实现自动对其他难度在分析文件中同时添加标记</li>
+<li>修复 打开错误的<code>SavAnalyze.json</code>文件导致异常闪退的问题
+  现在将会自动删除错误文件并重新生成
+  如果生成错误，有可能会再次闪退</li>
 </ol>
 <h3 id="version-106">Version 1.0.6<a class="headerlink" href="#version-106" title="Permanent link"></a></h3>
 <ol>
-<li>
-<h4 id="_26">更新 通过&rdquo;云端同步率&rdquo;计算&rdquo;综合同步率&rdquo;<a class="headerlink" href="#_26" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_27">优化 排序控件<a class="headerlink" href="#_27" title="Permanent link"></a></h4>
-<ol>
+<li>更新 通过&rdquo;云端同步率&rdquo;计算&rdquo;综合同步率&rdquo;</li>
+<li>优化 排序控件</li>
 <li>&ldquo;本地同步率&rdquo;改为&rdquo;云端同步率&rdquo;</li>
-</ol>
-</li>
-<li>
-<h4 id="_28">优化 筛选控件<a class="headerlink" href="#_28" title="Permanent link"></a></h4>
-<ol>
+<li>优化 筛选控件</li>
 <li>&ldquo;Score&gt;122%&rdquo;改为&rdquo;黑Ex&rdquo;</li>
 <li>&ldquo;Score&gt;120%&rdquo;改为&rdquo;红Ex&rdquo;</li>
 </ol>
-</li>
-</ol>
 <h3 id="version-105">Version 1.0.5<a class="headerlink" href="#version-105" title="Permanent link"></a></h3>
 <ol>
-<li>
-<h4 id="_29">更新 谱面排序功能<a class="headerlink" href="#_29" title="Permanent link"></a></h4>
-<ul>
+<li>更新 谱面排序功能<ul>
 <li>灰色(#F0F0F0)表示未启用该排序方法</li>
 <li>绿色(#98E22B)表示已启用该排序的倒序方法</li>
-<li>红色(#FF7B7B)表示已启用该排序的正序方法
-1. 按 游玩次数 排序
-2. 按 难度等级 排序
-3. 按 本地同步率 排序
-1. 按 名称 排序</li>
+<li>红色(#FF7B7B)表示已启用该排序的正序方法</li>
 </ul>
 </li>
-<li>
-<h4 id="_30">更新 谱面筛选按钮增加背景颜色启用标识<a class="headerlink" href="#_30" title="Permanent link"></a></h4>
-<ul>
+<li>按 游玩次数 排序</li>
+<li>按 难度等级 排序</li>
+<li>按 本地同步率 排序</li>
+<li>按 名称 排序</li>
+<li>更新 谱面筛选按钮增加背景颜色启用标识<ul>
 <li>灰色(#F0F0F0)表示未启用该筛选方法</li>
 <li>绿色(#98E22B)表示已启用该筛选方法</li>
 </ul>
 </li>
-<li>
-<h4 id="_31">更新 谱面筛选功能与谱面排序功能可同时使用<a class="headerlink" href="#_31" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_32">优化 筛选控件与排序控件的排版大幅度改动<a class="headerlink" href="#_32" title="Permanent link"></a></h4>
-</li>
+<li>更新 谱面筛选功能与谱面排序功能可同时使用</li>
+<li>优化 筛选控件与排序控件的排版大幅度改动</li>
 </ol>
 <h3 id="version-104">Version 1.0.4<a class="headerlink" href="#version-104" title="Permanent link"></a></h3>
 <ol>
-<li>
-<h4 id="_33">更新 双击谱面打开新窗口爬取全球数据(未找到排行榜链接)<a class="headerlink" href="#_33" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="songnamejson_1">更新 &ldquo;SongName.json&rdquo;文件<a class="headerlink" href="#songnamejson_1" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_34">更新 谱面难度等级列<a class="headerlink" href="#_34" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_35">优化 谱面难度列分拆为&rdquo;键数&rdquo;列和&rdquo;难度&rdquo;列<a class="headerlink" href="#_35" title="Permanent link"></a></h4>
-</li>
+<li>更新 双击谱面打开新窗口爬取全球数据(未找到排行榜链接)</li>
+<li>更新 &ldquo;SongName.json&rdquo;文件</li>
+<li>更新 谱面难度等级列</li>
+<li>优化 谱面难度列分拆为&rdquo;键数&rdquo;列和&rdquo;难度&rdquo;列</li>
 </ol>
 <h3 id="version-103">Version 1.0.3<a class="headerlink" href="#version-103" title="Permanent link"></a></h3>
 <ol>
-<li>
-<h4 id="songnamejson_2">更新 &ldquo;SongName.json&rdquo;文件<a class="headerlink" href="#songnamejson_2" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="label_1">更新 启动状态指示Label<a class="headerlink" href="#label_1" title="Permanent link"></a></h4>
-</li>
+<li>更新 &ldquo;SongName.json&rdquo;文件</li>
+<li>更新 启动状态指示Label</li>
 </ol>
 <h3 id="version-102">Version 1.0.2<a class="headerlink" href="#version-102" title="Permanent link"></a></h3>
 <ol>
-<li>
-<h4 id="500ms">更新 新版本提示颜色闪烁，改变时间为500ms<a class="headerlink" href="#500ms" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="github-reposongnamejson">更新 自动从GitHub Repo获取&rdquo;./SongName.json&rdquo;文件<a class="headerlink" href="#github-reposongnamejson" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="fileexportpy">更新 自动从&rdquo;FileExport.py&rdquo;释放&rdquo;霞鹜文楷等宽&rdquo;字体和图标文件<a class="headerlink" href="#fileexportpy" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="200ms">优化 窗口宽高自动识别频率为200ms<a class="headerlink" href="#200ms" title="Permanent link"></a></h4>
-</li>
+<li>更新 新版本提示颜色闪烁，改变时间为500ms</li>
+<li>更新 自动从GitHub Repo获取&rdquo;./SongName.json&rdquo;文件</li>
+<li>更新 自动从&rdquo;FileExport.py&rdquo;释放&rdquo;霞鹜文楷等宽&rdquo;字体和图标文件</li>
+<li>优化 窗口宽高自动识别频率为200ms</li>
 </ol>
 <h3 id="version-101">Version 1.0.1<a class="headerlink" href="#version-101" title="Permanent link"></a></h3>
 <ol>
-<li>
-<h4 id="label_2">更新 开发者Label和更新获取通道<a class="headerlink" href="#label_2" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="githubbutton">更新 前往GitHub页面的Button<a class="headerlink" href="#githubbutton" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="savanalyzejson_1">更新 第二次及之后的分析会自动读取&rdquo;./SavAnalyze.json&rdquo;分析缓存<a class="headerlink" href="#savanalyzejson_1" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="songnamejsonsavanalyzejsonsongname">更新 通过读取&rdquo;./SongName.json&rdquo;来填充&rdquo;./SavAnalyze.json&rdquo;中<code>SongName</code>字段<a class="headerlink" href="#songnamejsonsavanalyzejsonsongname" title="Permanent link"></a></h4>
-</li>
+<li>更新 开发者Label和更新获取通道</li>
+<li>更新 前往GitHub页面的Button</li>
+<li>更新 第二次及之后的分析会自动读取&rdquo;./SavAnalyze.json&rdquo;分析缓存</li>
+<li>更新 通过读取&rdquo;./SongName.json&rdquo;来填充&rdquo;./SavAnalyze.json&rdquo;中<code>SongName</code>字段</li>
 </ol>
 <h3 id="version-100">Version 1.0.0<a class="headerlink" href="#version-100" title="Permanent link"></a></h3>
 <ol>
-<li>
-<h4 id="_36">更新 简易自动搜索存档文件<a class="headerlink" href="#_36" title="Permanent link"></a></h4>
-<p>首次运行时自动搜索每个磁盘的</p>
-<ol>
+<li>更新 简易自动搜索存档文件
+  首次运行时自动搜索每个磁盘的</li>
 <li><code>./Program Files/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav</code></li>
 <li><code>./SteamLibrary/steamapps/common/MUSYNX/SavesDir/savedata.sav</code></li>
 <li><code>./steam/steamapps/common/MUSYNX/SavesDir/savedata.sav</code>
-三个目录</li>
-</ol>
-</li>
-<li>
-<h4 id="_37">更新 可以按固定方式筛选谱面<a class="headerlink" href="#_37" title="Permanent link"></a></h4>
-<ol>
+  三个目录</li>
+<li>更新 可以按固定方式筛选谱面</li>
 <li><code>筛选出 已游玩</code></li>
 <li><code>筛选出 未游玩</code></li>
 <li><code>筛选出 已收藏</code></li>
 <li><code>筛选出 成绩大于122%(即黑EX)</code></li>
 <li><code>筛选出 成绩大于120%(即红EX)</code></li>
 <li><code>按Rank评级: EX、S、A、B、C筛选</code></li>
+<li>更新 允许使用&rdquo;打开存档&rdquo;按钮进行文件选择</li>
+<li>更新 显示当前已筛选出的谱面数量</li>
+<li>更新 使用红色&rdquo;重新分析&rdquo;按钮清除分析缓存并重新生成</li>
+<li>更新 窗口控件自动跟随窗口大小改变</li>
+<li>更新 在窗口标题栏显示最后一次游玩曲名</li>
 </ol>
-</li>
-<li>
-<h4 id="_38">更新 允许使用&rdquo;打开存档&rdquo;按钮进行文件选择<a class="headerlink" href="#_38" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_39">更新 显示当前已筛选出的谱面数量<a class="headerlink" href="#_39" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_40">更新 使用红色&rdquo;重新分析&rdquo;按钮清除分析缓存并重新生成<a class="headerlink" href="#_40" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_41">更新 窗口控件自动跟随窗口大小改变<a class="headerlink" href="#_41" title="Permanent link"></a></h4>
-</li>
-<li>
-<h4 id="_42">更新 在窗口标题栏显示最后一次游玩曲名<a class="headerlink" href="#_42" title="Permanent link"></a></h4>
-</li>
-</ol>
-<h3 id="_43">再次申明：妾身<code>不会</code>对存档文件进行<code>写</code>操作<a class="headerlink" href="#_43" title="Permanent link"></a></h3></article></body></html>
+<h3 id="_7">再次申明：妾身<code>不会</code>对存档文件进行<code>写</code>操作<a class="headerlink" href="#_7" title="Permanent link"></a></h3></article></body></html>

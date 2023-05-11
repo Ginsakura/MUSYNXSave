@@ -5,6 +5,7 @@
 /othersSavFile/*
 /.vs
 /venv
+!requirements.txt
 SavAnalyze.json
 LXGW.ttf
 UpdateDisable
@@ -13,7 +14,6 @@ HitDelayHistory.db
 Push.ps1
 ExtraFunction.cfg
 MUSYNCSavDecode.pyproj.user
-!requirements.txt
 *.bat
 *.b64
 *.spec

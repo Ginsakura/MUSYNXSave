@@ -4,7 +4,7 @@ import json
 import MusyncSavDecode
 import ctypes
 import webbrowser
-import urllib3
+import urllib.request
 import threading
 from PIL import Image as PILImage
 from PIL import ImageTk
@@ -69,8 +69,6 @@ class MusyncSavDecodeGUI(object):
 		self.difficute = 3
 		self.wh = [0,0]
 		self.vScrollpos = (0,1)
-		self.http = urllib3.PoolManager()
-
 
 		##Controls##
 		# self..place(x= ,y= ,width= ,height=)
@@ -258,16 +256,16 @@ class MusyncSavDecodeGUI(object):
 	def CheckJsonUpdate(self):
 		self.InitLabel(text="正在从GitHub拉取SongName.json的更新信息……")
 		try:
-			response = self.http.request('GET',"https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update",
-				headers={'User-Agent': 'Python Test Script'},timeout=5)
-			githubVersion = response.data.decode('utf8')
+			request = urllib.request.Request("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update",
+				headers={'User-Agent': 'Python Test Script'})
+			githubVersion = urllib.request.urlopen(request,timeout=5).read().decode('utf8')
 			with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
 				localVersion = snju.read()
 			if githubVersion>localVersion:
 				self.InitLabel('正在下载SongName.json中......')
-				response = self.http.request('GET',"https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/man/musync_data/songname.json",
-					headers={'User-Agent': 'Python Test Script'},timeout=5)
-				songNameJson = json.loads(response.data.decode('utf-8'))
+				response = urllib.request.Request("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/man/musync_data/songname.json",
+					headers={'User-Agent': 'Python Test Script'})
+				songNameJson = json.loads(urllib.request.urlopen(request,timeout=5).read().decode('utf8'))
 				with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
 					json.dump(songNameJson,snj,indent="",ensure_ascii=False)
 				with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
@@ -280,10 +278,11 @@ class MusyncSavDecodeGUI(object):
 		self.InitLabel(text="正在从Github拉取软件的更新信息……")
 		oldVersion,oldRC = int(f'{self.version[0]}{self.version[2]}{self.version[4]}'),int(self.version[7:])
 		try:
-			response = self.http.request('GET',"https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest",
-				headers={'User-Agent': 'Python Test Script'},timeout=5)
-			# print(response.data.decode('utf-8'))
-			version = json.loads(response.data.decode('utf-8'))["tag_name"]
+			request = urllib.request.Request("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest",
+				headers={'User-Agent': 'Python Test Script'})
+			response = json.loads(urllib.request.urlopen(request,timeout=5).read().decode('utf8'))
+			# print(response)
+			version = response["tag_name"]
 			# print(version)
 			newVersion,newRC = int(f'{version[0]}{version[2]}{version[4]}'),int(version[7:])
 		except Exception as e:

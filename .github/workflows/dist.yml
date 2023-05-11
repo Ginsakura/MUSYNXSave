@@ -26,10 +26,6 @@ jobs:
       run: |
         echo "Version="+(py -c "import MusyncSavDecodeGUI;print(MusyncSavDecodeGUI.version)") | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-  dist:
-    name: Dist
-    needs: init
-    steps:
     - name: Dist NoConsole $version
       run: |
         echo "Test Action"
@@ -48,10 +44,6 @@ jobs:
       #   pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py
       #   Rename-Item -Path ./MusyncSavDecodeGUI.exe -NewName ("MusyncSavDecodeGUI_WithConsole_"+$version+"_AllInOne.exe")
 
-  rc:
-    name: Release
-    needs: dist
-    steps:
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1

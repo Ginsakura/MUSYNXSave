@@ -1,4 +1,4 @@
-﻿$version = (py -c "import MusyncSavDecodeGUI;print(MusyncSavDecodeGUI.version)")
+﻿$version = Get-Content ./version
 Remove-Item -Path ./Release/* -Force -Recurse
 
 venv\Scripts\Activate.ps1

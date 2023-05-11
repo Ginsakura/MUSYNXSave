@@ -214,9 +214,9 @@ class HitDelayDraw(object):
 		fig.subplots_adjust(**{"left":0.04,"bottom":0.05,"right":1,"top":1})
 		# print(self.x_axis,self.y_axis)
 		print(f'AvgDelay: {self.avgDelay}\tAllKeys: {self.allKeys}\tAvgAcc: {self.avgAcc}')
-		plt.text(0,70,"Slower→", ha='right',fontsize=10,color='#c22472',rotation=90, 
+		plt.text(0,70,"Slower→", ha='right',color='#c22472',rotation=90, 
 			fontdict={'family':'LXGW WenKai Mono','weight':'normal','size':15})
-		plt.text(0,-70,"←Faster", ha='right',va='top',fontsize=10,color='#288328',rotation=90, 
+		plt.text(0,-70,"←Faster", ha='right',va='top',color='#288328',rotation=90, 
 			fontdict={'family':'LXGW WenKai Mono','weight':'normal','size':15})
 		
 		self.Label()

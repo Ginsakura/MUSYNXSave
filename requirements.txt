@@ -1,3 +1,5 @@
 Pillow
 pyinstaller
 requests
+matplotlib
+pywin32

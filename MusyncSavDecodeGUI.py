@@ -19,7 +19,7 @@ import Functions
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.9rc13'
+version = '1.1.9rc14'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -440,7 +440,7 @@ class MusyncSavDecodeGUI(object):
 				elif self.dataSelectMethod == "RankB":
 					if (float(saveLine["SyncNumber"][0:-1]) < 75) or (float(saveLine["SyncNumber"][0:-1]) >= 95):continue
 				elif self.dataSelectMethod == "RankC":
-					if float(saveLine["SyncNumber"][0:-1]) >= 75:continue
+					if (float(saveLine["SyncNumber"][0:-1]) >= 75) or (float(saveLine["SyncNumber"][0:-1]) == 0):continue
 				self.saveCount += 1
 				self.totalSync += float(saveLine["UploadScore"][0:-1])
 				self.saveData.insert('', END, values=(saveLine["SpeedStall"],

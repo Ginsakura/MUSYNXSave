@@ -1,12 +1,12 @@
-name: Auto Dist
+name: Auto Release Action
 on: [push, pull_request]
 
 env:
   Version: Init
 
 jobs:
-  init:
-    name: Set Env
+  AutoRelease:
+    name: AutoRelease
     runs-on: windows-2019
     steps:
     - name: Checkout

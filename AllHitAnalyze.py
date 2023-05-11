@@ -19,6 +19,7 @@ class HitAnalyze(object):
 		hitMapB = [0]*251 # +0~+250
 		self.sumYnum = 0 # with miss
 		self.sumYnumEx = 0 # only extra
+		self.sumYnumEX = 0 # only cyan extra
 		self.rate=[0,0,0,0,0] # EXTRA,Extra,Great,Right,Miss
 		self.accurateRate=[0,0,0,0,0,0,0,0] # ±5ms,±10ms,±20ms,±45ms,Extra,Great,Right,Miss
 		for ids in res:
@@ -42,6 +43,7 @@ class HitAnalyze(object):
 				else :self.accurateRate[7] += 1
 
 				if idxAbs<90:self.sumYnumEx += 1
+				if idxAbs<45:self.sumYnumEX += 1
 
 				if idx < 0:idx = int(idx)-1
 				else:idx = int(idx)
@@ -56,12 +58,20 @@ class HitAnalyze(object):
 		self.var = sum([(ids[1]/self.sumYnum)*((ids[0] - self.avg) ** 2) for ids in zip(self.xAxis,self.yAxis)])
 		self.std = self.var**0.5
 
-		self.avgEx = sum([ids[0]*ids[1]/self.sumYnumEx for ids in zip(self.xAxis[60:240],self.yAxis[60:240])])
-		self.varEx = sum([(ids[1]/self.sumYnumEx)*((ids[0] - self.avg) ** 2) for ids in zip(self.xAxis[60:240],self.yAxis[60:240])])
+		self.avgEx = sum([ids[0]*ids[1]/self.sumYnumEx for ids in zip(self.xAxis[61:240],self.yAxis[61:240])])
+		self.varEx = sum([(ids[1]/self.sumYnumEx)*((ids[0] - self.avgEx) ** 2) for ids in zip(self.xAxis[61:240],self.yAxis[61:240])])
 		self.stdEx = self.varEx**0.5
 		# del db,cur,hitMapA,hitMapB,res,idxAbs
-		print(self.avg,self.var,self.std,self.sumYnum)
-		print(self.avgEx,self.varEx,self.stdEx,self.sumYnumEx)
+		print('all data:  ',self.avg,self.var,self.std,self.sumYnum)
+		print('extra rate:',self.avgEx,self.varEx,self.stdEx,self.sumYnumEx)
+		if ('EnablePDFofCyanExtra' in config) and (config['EnablePDFofCyanExtra']):
+			self.avgEX = sum([ids[0]*ids[1]/self.sumYnumEX for ids in zip(self.xAxis[106:195],self.yAxis[106:195])])
+			self.varEX = sum([(ids[1]/self.sumYnumEX)*((ids[0] - self.avgEX) ** 2) for ids in zip(self.xAxis[106:195],self.yAxis[106:195])])
+			self.stdEX = self.varEX**0.5
+			self.enablePDFofCyanExtra = True
+			print('cyan extra:',self.avgEX,self.varEX,self.stdEX,self.sumYnumEX)
+		else:
+			self.enablePDFofCyanExtra = False
 		self.Analyze()
 		if ('EnableDonutChartinAllHitAnalyze' in config) and (config['EnableDonutChartinAllHitAnalyze']):
 			self.Pie()
@@ -78,10 +88,10 @@ class HitAnalyze(object):
 			# pdf = np.exp((x-self.avg)**2/(-2*self.var))/(np.sqrt(2*np.pi)*self.std)
 			pdf = (e**(-1*(((x-self.avgEx)**2))/(2*self.varEx))) / (((2*p)**0.5)*self.stdEx)
 			return pdf*self.sumYnumEx
-
-		##正态分布函数曲线
-		pdfAxis = [PDFx(i) for i in self.xAxis]
-		pdfExAxis = [PDFxEx(i) for i in self.xAxis]
+		def PDFxEX(x):
+			# pdf = np.exp((x-self.avg)**2/(-2*self.var))/(np.sqrt(2*np.pi)*self.std)
+			pdf = (e**(-1*(((x-self.avgEX)**2))/(2*self.varEX))) / (((2*p)**0.5)*self.stdEX)
+			return pdf*self.sumYnumEX
 
 		colors = ['red','orange','yellow','green','cyan','blue','purple']
 		yLine = []
@@ -133,10 +143,21 @@ class HitAnalyze(object):
 		for ids in yLine:
 			plt.plot(self.xAxis,ids,linestyle='--',alpha=1,linewidth=1,color=colors[x])
 			x = (x+1)%7
-		plt.plot(self.xAxis,pdfAxis,linestyle=':',alpha=1,linewidth=1,color='black',
+
+		##正态分布函数曲线
+		pdfAxis = [PDFx(i) for i in self.xAxis]
+		plt.plot(self.xAxis,pdfAxis,linestyle='-',alpha=1,linewidth=1,color='grey',
 			label=f'Fitting all data\n(μ={self.avg}\n σ={self.std})')
+
+		pdfExAxis = [PDFxEx(i) for i in self.xAxis]
 		plt.plot(self.xAxis,pdfExAxis,linestyle='-',alpha=1,linewidth=1,color='black',
 			label=f'Fitting only on Extra rate\n(μ={self.avgEx}\n σ={self.stdEx})')
+
+		if self.enablePDFofCyanExtra:
+			pdfEXAxis = [PDFxEX(i) for i in self.xAxis]
+			plt.plot(self.xAxis,pdfEXAxis,linestyle='-',alpha=1,linewidth=1,color='blue',
+				label=f'Fitting only on Cyan Extra rate\n(μ={self.avgEX}\n σ={self.stdEX})')
+
 
 		for i in range(len(self.xAxis)):
 			plt.bar(self.xAxis[i],self.yAxis[i])

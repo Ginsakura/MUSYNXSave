@@ -57,19 +57,24 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 2. 更新 于`AllHitAnalyze`模块处更新tap的Rate环形图
 3. 更新 于`HitDelay`模块处更新tap的Rate环形图，若CyanExtra比例大于60%，则使用精细分级，若小于60%，则使用普通分级。
 4. 更新 配置文件中增加更多的配置项：默认不开启上述两个环形图
-3. 修复 修复`songname.json`中`惊涛落日 IN`谱面难度评级未更新的bug
+5. 修复 修复`songname.json`中`惊涛落日 IN`谱面难度评级未更新的bug
 <del>这玩意儿算bug吗？</del>
 
-4. 修复 修复些许文案错误
-5. 修复 修复多次点击`HitDelay`模块中的`AllHit`按钮时AllHitAnalyze图表显示错误的bug
-3. 优化 修改图表字体为`霞鹜文楷等宽`
-2. 优化 优化部分按钮提示词
-3. 优化 对`AllHitAnalyze`模块中的环形图使用更加细化的Rate分级：将Cyan Extra分成`±5ms内、±6~10ms、±11~20ms、±21~45ms`四段
-3. 优化 将额外功能修改为配置文件形式，放置于`./musync_data/ExtraFunction.cfg`
-4. 优化 微调环形图
+6. 修复 修复些许文案错误
+7. 修复 修复多次点击`HitDelay`模块中的`AllHit`按钮时AllHitAnalyze图表显示错误的bug
+8. 修复 对`AllHitAnalyze`模块中的正态曲线拟合数据范围进行修改
+9. 修复 修复`HitDelay`模块中打开详细折线图时无法打开环形图的bug
+10. 修复 修复了大于rc9的版本被识别为小于rc9的bug
+11. 优化 修改图表字体为`霞鹜文楷等宽`
+12. 优化 优化部分按钮提示词
+13. 优化 对`AllHitAnalyze`模块中的环形图使用更加细化的Rate分级：将Cyan Extra分成`±5ms内、±6~10ms、±11~20ms、±21~45ms`四段
+14. 优化 将额外功能修改为配置文件形式，放置于`./musync_data/ExtraFunction.cfg`
+15. 优化 微调环形图
 10. 优化 对系统DPI非100%的情况进行兼容优化
 11. 优化 对`AllHitAnalyze`模块中的环形图计算流程进行优化，同时将优化应用于`HitDelay`模块中的环形图
 12. 优化 替换部分源码文件中的缩进符号
+13. 优化 对`AllHitAnalyze`模块中的正态曲线新增仅cyanExtra Rate拟合，须手动在配置文件中启用
+20. 优化 对Update组件使用多线程，减少程序启动时的更新卡顿
 
 ### Version 1.1.8
 1. 更新 适配本体*劳动节更新*

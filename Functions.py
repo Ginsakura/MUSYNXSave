@@ -36,22 +36,32 @@ def CheckFileBeforeStarting(fonts):
 def CheckConfig():
     with open('./musync_data/ExtraFunction.cfg','r') as cfg:
         cfg = json.load(cfg)
-        cfgOld = cfg
+        isChange = False
     if 'EnableAcc-Sync' not in cfg:
         cfg['EnableAcc-Sync'] = False
+        isChange = True
     if 'DisableCheckUpdate' not in cfg:
         cfg['DisableCheckUpdate'] = False
+        isChange = True
     if 'EnableAnalyzeWhenStarting' not in cfg:
         cfg['EnableAnalyzeWhenStarting'] = False
+        isChange = True
     if 'EnableDLLInjection' not in cfg:
         cfg['EnableDLLInjection'] = False
+        isChange = True
     if 'SystemDPI' not in cfg:
         cfg['SystemDPI'] = GetDpi()
+        isChange = True
     if 'EnableDonutChartinHitDelay' not in cfg:
         cfg['DonutChartinHitDelay'] = False
+        isChange = True
     if 'EnableDonutChartinAllHitAnalyze' not in cfg:
         cfg['EnableDonutChartinAllHitAnalyze'] = False
-    if cfg != cfgOld:
+        isChange = True
+    if 'EnablePDFofCyanExtra' not in cfg:
+        cfg['EnablePDFofCyanExtra'] = False
+        isChange = True
+    if isChange:
         json.dump(cfg,open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
 
 if __name__ == '__main__':

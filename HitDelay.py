@@ -40,7 +40,6 @@ class HitDelayCheck(object):
 class HitDelayText(object):
 	"""docstring for DrawHDLine"""
 	def __init__(self,subroot):
-		global config
 		if os.path.isfile('./musync_data/HitDelayHistory.db'):
 			self.db = sql.connect('./musync_data/HitDelayHistory.db')
 			self.cur = self.db.cursor()
@@ -222,7 +221,8 @@ class HitDelayDraw(object):
 		
 		self.Label()
 		self.Draw()
-		global config
+		with open('./musync_data/ExtraFunction.cfg', 'r') as confFile:
+			config = json.load(confFile)
 		if ('EnableDonutChartinHitDelay' in config) and (config['EnableDonutChartinHitDelay']):
 			self.Pie()
 		plt.show()

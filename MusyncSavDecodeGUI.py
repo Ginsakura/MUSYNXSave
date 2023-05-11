@@ -5,6 +5,9 @@ import MusyncSavDecode
 import ctypes
 import webbrowser
 import requests
+import threading
+from PIL import Image as PILImage
+from PIL import ImageTk
 from tkinter import *
 from tkinter import Tk,ttk,font
 from tkinter import messagebox
@@ -16,7 +19,7 @@ import Functions
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.9_rc10'
+version = '1.1.9 rc13'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -68,9 +71,10 @@ class MusyncSavDecodeGUI(object):
 		self.vScrollpos = (0,1)
 
 		##Controls##
-		#self..place(x= ,y= ,width= ,height=)
-		#self.saveFileDecodeButton = Button(self.root, text="存档解码及分析",command=self.DeleteAnalyzeFile, font=self.font)
-		self.saveFileDecodeButton = ttk.Button(self.root, text="存档解码及分析",command=self.DeleteAnalyzeFile, style='reload.TButton')
+		# self..place(x= ,y= ,width= ,height=)
+		# self.saveFileDecodeButton = Button(self.root, text="存档解码及分析",command=self.DeleteAnalyzeFile, font=self.font)
+		# self.saveFileDecodeButton = ttk.Button(self.root, text="存档解码及分析",command=self.DeleteAnalyzeFile, image=ImageTk.PhotoImage(PILImage.open("./skin/Decode.png")), style='reload.TButton')
+		self.saveFileDecodeButton = ttk.Button(self.root, text="存档解码及分析", command=self.DeleteAnalyzeFile, image=self.LoadImage('./skin/Decode.png',(150,30)), style='reload.TButton')
 		self.saveFileDecodeButton.place(x=10,y=10,width=150,height=30)
 
 		self.CountFrameLanel = Label(self.root,text="", relief="groove")
@@ -95,7 +99,7 @@ class MusyncSavDecodeGUI(object):
 		self.initLabel = Label(self.root, text='启动中......', anchor="center", font=self.font, relief="groove")
 		self.initLabel.place(x=250,y=300,width=500,height=30)
 
-		self.deleteAnalyzeFile = ttk.Button(self.root, text="刷新",command=self.DeleteAnalyzeFile,style='F5.TButton')
+		self.deleteAnalyzeFile = ttk.Button(self.root, text="刷新",command=self.DeleteAnalyzeFile,style='F5.TButton', image=self.LoadImage('./skin/F5.png',(90,30)))
 		self.deleteAnalyzeFile.place(x=10,y=88,width=90,height=30)
 
 		self.totalSyncFrameLabel = Label(self.root, text='', relief="groove")
@@ -153,8 +157,8 @@ class MusyncSavDecodeGUI(object):
 		if ('DisableCheckUpdate' in config) and (config['DisableCheckUpdate']):
 			self.gitHubLink.configure(text='更新已禁用    点击打开GitHub仓库页')
 		else:
-			self.CheckUpdate()
-			self.CheckJsonUpdate()
+			threading.Thread(target=self.CheckUpdate).start()
+			threading.Thread(target=self.CheckJsonUpdate).start()
 		if ('EnableAnalyzeWhenStarting' in config) and (config['EnableAnalyzeWhenStarting']):
 			self.DeleteAnalyzeFile()
 		self.CheckFile()
@@ -182,6 +186,11 @@ class MusyncSavDecodeGUI(object):
 			self.InitLabel('解码存档中......')
 			MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
 			self.DataLoad()
+
+	def LoadImage(self,imgPath,size):
+		img = PILImage.open(imgPath)
+		img = img.resize(size)
+		return ImageTk.PhotoImage(img)
 
 	def CheckFile(self):
 		saveData=None
@@ -261,24 +270,30 @@ class MusyncSavDecodeGUI(object):
 					snju.write(githubVersion)
 		except Exception as e:
 			messagebox.showerror("Error", f'发生错误: {e}')
+		self.InitLabel('',close=True)
 
 	def CheckUpdate(self):
 		self.InitLabel(text="正在从Github拉取软件的更新信息……")
-		oldVersion = int(f'{self.version[0]}{self.version[2]}{self.version[4]}{self.version[-1]}')
+		oldVersion,oldRC = int(f'{self.version[0]}{self.version[2]}{self.version[4]}'),int(self.version[8:])
 		try:
 			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
 			version = response.json()["tag_name"]
-			newVersion = int(f'{version[0]}{version[2]}{version[4]}{version[-1]}')
+			# print(version)
+			newVersion,newRC = int(f'{version[0]}{version[2]}{version[4]}'),int(version[7:])
 		except Exception as e:
 			messagebox.showerror("Error", f'发生错误: {e}')
-			newVersion = oldVersion
-		if (newVersion > oldVersion):
+			newVersion,newRC = oldVersion,oldRC
+		# print(newVersion)
+		print(f'terget: {newVersion}.{newRC}')
+		print(f'local: {oldVersion}.{oldRC}')
+		if (newVersion > oldVersion) or ((newVersion == oldVersion) and (newRC > oldRC)):
 			self.gitHubLink.configure(text=f'有新版本啦——点此打开下载页面    NewVersion: {version}', anchor="center")
 			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases"))
 			self.UpdateTip()
 		else:
 			self.gitHubLink.configure(text='点击打开GitHub仓库    点个Star吧，秋梨膏', anchor="center")
 			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"))
+		self.InitLabel('',close=True)
 
 	def InitLabel(self,text,close=False):
 		self.initLabel.place(x=250,y=300,width=500,height=30)

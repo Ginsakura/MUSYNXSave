@@ -19,7 +19,7 @@ import Functions
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.9 rc13'
+version = '1.1.9rc13'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -274,7 +274,7 @@ class MusyncSavDecodeGUI(object):
 
 	def CheckUpdate(self):
 		self.InitLabel(text="正在从Github拉取软件的更新信息……")
-		oldVersion,oldRC = int(f'{self.version[0]}{self.version[2]}{self.version[4]}'),int(self.version[8:])
+		oldVersion,oldRC = int(f'{self.version[0]}{self.version[2]}{self.version[4]}'),int(self.version[7:])
 		try:
 			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
 			version = response.json()["tag_name"]

@@ -1,11 +1,71 @@
 name: Auto Dist
-on: push
+on: [push, pull_request]
+
+env:
+  Version: Init
+
 jobs:
   init:
-    name: Env
+    name: Set Env
+    runs-on: windows-2019
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+
+    - name: Set up Python
+      uses: actions/setup-python@master
+      with:
+        python-version: '3.8.6'
+
+    - name: Install requests
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Get Version
+      run: |
+        echo "Version="+(py -c "import MusyncSavDecodeGUI;print(MusyncSavDecodeGUI.version)") | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
   dist:
     name: Dist
     needs: init
-    runs-on: windows-2019
-    
+    steps:
+    - name: Dist NoConsole $version
+      run: |
+        echo "Test Action"
+        New-Item ./test$env:Version.t
+      # run: |
+      #   $version = (py -c "import MusyncSavDecodeGUI;print(MusyncSavDecodeGUI.version)")
+      #   pyinstaller --distpath ./NoCLI/ -D -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py -w --clean
+      #   Compress-Archive -LiteralPath ./NoCLI/MusyncSavDecodeGUI/ -DestinationPath ("./MusyncSavDecodeGUI_NoConsole_"+$version+".zip")
+
+      #   pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py -w
+      #   Rename-Item -Path ./Release/MusyncSavDecodeGUI.exe -NewName ("MusyncSavDecodeGUI_NoConsole_"+$version+"_AllInOne.exe")
+
+      #   pyinstaller --distpath ./WithCLI/ -D -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py
+      #   Compress-Archive -LiteralPath ./WithCLI/MusyncSavDecodeGUI/ -DestinationPath ("./MusyncSavDecodeGUI_WithConsole_"+$version+".zip")
+
+      #   pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py
+      #   Rename-Item -Path ./MusyncSavDecodeGUI.exe -NewName ("MusyncSavDecodeGUI_WithConsole_"+$version+"_AllInOne.exe")
+
+  rc:
+    name: Release
+    needs: dist
+    steps:
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+      with:
+        name: ${{ env.Version }} Auto Release
+        tag_name: ${{ env.Version }}
+        draft: false
+        prerelease: true
+        files: |
+          ./test_${{ env.Version }}_test.t
+        # files: |
+        #   ./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}.zip
+        #   ./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}_AllInOne.exe
+        #   ./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}.zip
+        #   ./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}_AllInOne.exe

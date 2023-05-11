@@ -33,10 +33,10 @@ jobs:
         echo "Version=$ver" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       shell: powershell
 
-    - name: Dist NoConsole $version
+    - name: Dist NoConsole ${{ env.Version }}
       shell: powershell
       run: |
-        $version = (py -c "import MusyncSavDecodeGUI;print(MusyncSavDecodeGUI.version)")
+        $version = Get-Content ./version
         pyinstaller --distpath ./NoCLI/ -D -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py -w --clean
         Compress-Archive -LiteralPath ./NoCLI/MusyncSavDecodeGUI/ -DestinationPath ("./MusyncSavDecodeGUI_NoConsole_"+$version+".zip")
 

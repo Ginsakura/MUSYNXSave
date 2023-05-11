@@ -10,14 +10,15 @@ jobs:
     runs-on: windows-2019
     steps:
     - name: Checkout
-      uses: actions/checkout@master
+      uses: actions/checkout@v2
 
     - name: Set up Python
-      uses: actions/setup-python@master
+      uses: actions/setup-python@v2.2.2
       with:
         python-version: '3.8.6'
 
     - name: Install requests
+      uses: logikal-code/pip-install@v1.0.0
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt

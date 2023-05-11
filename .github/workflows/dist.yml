@@ -24,7 +24,8 @@ jobs:
 
     - name: Get Version
       run: |
-        echo "Version="+(py -c "import MusyncSavDecodeGUI;print(MusyncSavDecodeGUI.version)") | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        $ver = (py -c "import MusyncSavDecodeGUI;print(MusyncSavDecodeGUI.version)")
+        echo "Version=$ver" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Dist NoConsole $version
       run: |

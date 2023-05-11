@@ -63,7 +63,7 @@ jobs:
       id: create_release
       uses: softprops/action-gh-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       with:
         name: ${{ env.Version }} Auto Release
         tag_name: ${{ env.Version }}

@@ -17,6 +17,7 @@
 - [x] 隐藏cmd窗口
 - [x] 将像Windows资源管理器一样使用列标题栏进行排序
 - [x] 将高级功能整合为`ExtraFunction.cfg`配置文件
+- [x] 使用GitHub Action实现自动发布
 
 ## Release版本说明
 NoConsole版本为没有命令提示符界面，适合正常使用
@@ -76,7 +77,6 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 12. 优化 替换部分源码文件中的缩进符号
 13. 优化 对`AllHitAnalyze`模块中的正态曲线新增仅cyanExtra Rate拟合，须手动在配置文件中启用
 20. 优化 对Update组件使用多线程，减少程序启动时的更新卡顿
-21. 优化 使用`urllib`库进行更新检测,因为其他库无法通过GitHub Action的检查
 
 ### Version 1.1.8
 1. 更新 适配本体*劳动节更新*

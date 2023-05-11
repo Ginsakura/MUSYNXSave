@@ -4,7 +4,7 @@ import json
 import MusyncSavDecode
 import ctypes
 import webbrowser
-import urllib.request
+import requests
 import threading
 from PIL import Image as PILImage
 from PIL import ImageTk
@@ -19,7 +19,7 @@ import Functions
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.9rc15'
+version = '1.1.9_rc13'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -256,16 +256,14 @@ class MusyncSavDecodeGUI(object):
 	def CheckJsonUpdate(self):
 		self.InitLabel(text="正在从GitHub拉取SongName.json的更新信息……")
 		try:
-			request = urllib.request.Request("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update",
-				headers={'User-Agent': 'Python Test Script'})
-			githubVersion = urllib.request.urlopen(request,timeout=5).read().decode('utf8')
+			response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
+			githubVersion = response.content.decode('utf8')
 			with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
 				localVersion = snju.read()
 			if githubVersion>localVersion:
 				self.InitLabel('正在下载SongName.json中......')
-				response = urllib.request.Request("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/man/musync_data/songname.json",
-					headers={'User-Agent': 'Python Test Script'})
-				songNameJson = json.loads(urllib.request.urlopen(request,timeout=5).read().decode('utf8'))
+				response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.json")
+				songNameJson = response.json()
 				with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
 					json.dump(songNameJson,snj,indent="",ensure_ascii=False)
 				with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
@@ -276,13 +274,10 @@ class MusyncSavDecodeGUI(object):
 
 	def CheckUpdate(self):
 		self.InitLabel(text="正在从Github拉取软件的更新信息……")
-		oldVersion,oldRC = int(f'{self.version[0]}{self.version[2]}{self.version[4]}'),int(self.version[7:])
+		oldVersion,oldRC = int(f'{self.version[0]}{self.version[2]}{self.version[4]}'),int(self.version[8:])
 		try:
-			request = urllib.request.Request("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest",
-				headers={'User-Agent': 'Python Test Script'})
-			response = json.loads(urllib.request.urlopen(request,timeout=5).read().decode('utf8'))
-			# print(response)
-			version = response["tag_name"]
+			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
+			version = response.json()["tag_name"]
 			# print(version)
 			newVersion,newRC = int(f'{version[0]}{version[2]}{version[4]}'),int(version[7:])
 		except Exception as e:
@@ -445,7 +440,7 @@ class MusyncSavDecodeGUI(object):
 				elif self.dataSelectMethod == "RankB":
 					if (float(saveLine["SyncNumber"][0:-1]) < 75) or (float(saveLine["SyncNumber"][0:-1]) >= 95):continue
 				elif self.dataSelectMethod == "RankC":
-					if (float(saveLine["SyncNumber"][0:-1]) >= 75) or (float(saveLine["SyncNumber"][0:-1]) == 0):continue
+					if float(saveLine["SyncNumber"][0:-1]) >= 75:continue
 				self.saveCount += 1
 				self.totalSync += float(saveLine["UploadScore"][0:-1])
 				self.saveData.insert('', END, values=(saveLine["SpeedStall"],

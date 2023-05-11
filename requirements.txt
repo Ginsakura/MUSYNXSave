@@ -1,5 +1,5 @@
 Pillow
 pyinstaller
-requests
+urllib3
 matplotlib
 pywin32

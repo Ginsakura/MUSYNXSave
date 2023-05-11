@@ -3,6 +3,7 @@ on: [push, pull_request]
 
 env:
   Version: Init
+  isPreRelease: true
 
 jobs:
   AutoRelease:
@@ -28,11 +29,13 @@ jobs:
     #   shell: powershell
 
     - name: Get Version
+      shell: powershell
       run: |
         $ver = Get-Content ./version
         echo "Version=$ver" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         echo $ver
-      shell: powershell
+        $isRC = Get-Content ./release
+        if ($isRC == 'release'){echo 'isPreRelease=false' | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append}
 
     - name: Dist NoConsole ${{ env.Version }} Compress Version
       shell: powershell
@@ -68,7 +71,7 @@ jobs:
         name: ${{ env.Version }} Auto Release
         tag_name: ${{ env.Version }}
         draft: false
-        prerelease: true
+        prerelease: ${{ env.isPreRelease }}
         files: |
           ./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}.zip
           ./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}_AllInOne.exe

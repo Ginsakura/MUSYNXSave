@@ -5,7 +5,6 @@
 /othersSavFile/*
 /.vs
 /venv
-!requirements.txt
 SavAnalyze.json
 LXGW.ttf
 UpdateDisable
@@ -19,6 +18,7 @@ MUSYNCSavDecode.pyproj.user
 *.spec
 *.psd
 *.txt
+!requirements.txt
 *.analyze
 *.decode
 *.sfp

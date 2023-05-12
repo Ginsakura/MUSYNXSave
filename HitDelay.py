@@ -93,10 +93,9 @@ class HitDelayText(object):
 		self.UpdateWindowInfo()
 
 	def HistoryUpdate(self):
-		ids = self.delayHistory.get_children()
-		for idx in ids:
-			self.delayHistory.delete(idx)
-		data = self.cur.execute("select * from HitDelayHistory")
+		for ids in self.delayHistory.get_children():
+			self.delayHistory.delete(ids)
+		data = self.cur.execute("select SongMapName,AvgDelay,AllKeys,AvgAcc from HitDelayHistory")
 		data = data.fetchall()
 		for ids in data:
 			self.history = list()

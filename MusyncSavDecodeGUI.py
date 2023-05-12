@@ -19,7 +19,7 @@ import Functions
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.1.9rc18'
+version = '1.1.9rc19'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -96,7 +96,7 @@ class MusyncSavDecodeGUI(object):
 		# self.gitHubLink = Button(self.root, text='https://github.com/Ginsakura/MUSYNCSave    点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
 		self.gitHubLink = Button(self.root, text='点击打开下载链接    点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
 
-		self.initLabel = Label(self.root, text='启动中......', anchor="center", font=self.font, relief="groove")
+		self.initLabel = Label(self.root, text='启动中......', anchor="w", font=self.font, relief="groove")
 		self.initLabel.place(x=250,y=300,width=500,height=30)
 
 		self.deleteAnalyzeFile = ttk.Button(self.root, text="刷新",command=self.DeleteAnalyzeFile,style='F5.TButton', image=self.LoadImage('./skin/F5.png',(90,30)))
@@ -163,7 +163,7 @@ class MusyncSavDecodeGUI(object):
 			self.DeleteAnalyzeFile()
 		self.CheckFile()
 		if ('EnableDLLInjection' in config) and (config['EnableDLLInjection']):
-			self.hitDelay = Button(self.root, text="DLL注入\n分析\n游玩结果",command=self.HitDelay, font=self.font,bg='#FF0000')
+			self.hitDelay = Button(self.root, text="DLL注入\n分析\n游玩结果",command=self.HitDelay, font=self.font,bg='#FF5555')
 			self.hitDelay.place(x=776,y=48,width=90,height=74)
 		if not os.path.isfile('./musync_data/SaveFilePath.sfp'):
 			self.GetSaveFile()
@@ -254,14 +254,12 @@ class MusyncSavDecodeGUI(object):
 		elif method == "RankC":self.selectCRankButton.configure(bg='#F0F0F0')
 
 	def CheckJsonUpdate(self):
-		self.InitLabel(text="正在从GitHub拉取SongName.json的更新信息……")
 		try:
 			response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
 			githubVersion = response.content.decode('utf8')
 			with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
 				localVersion = snju.read()
 			if githubVersion>localVersion:
-				self.InitLabel('正在下载SongName.json中......')
 				response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.json")
 				songNameJson = response.json()
 				with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
@@ -272,7 +270,6 @@ class MusyncSavDecodeGUI(object):
 			messagebox.showerror("Error", f'发生错误: {e}')
 
 	def CheckUpdate(self):
-		self.InitLabel(text="正在从Github拉取软件的更新信息……")
 		oldVersion,oldRC = int(f'{self.version[0]}{self.version[2]}{self.version[4]}'),int(self.version[7:])
 		try:
 			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
@@ -292,7 +289,6 @@ class MusyncSavDecodeGUI(object):
 		else:
 			self.gitHubLink.configure(text='点击打开GitHub仓库    点个Star吧，秋梨膏', anchor="center")
 			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"))
-		self.InitLabel('',close=True)
 
 	def InitLabel(self,text,close=False):
 		self.initLabel.place(x=250,y=300,width=500,height=30)
@@ -392,12 +388,10 @@ class MusyncSavDecodeGUI(object):
 			elif sync < 122:return "红Ex"
 			else:return "黑Ex"
 
-		ids = self.saveData.get_children()
-		if not len(ids) == 0:
-			for idx in ids:
-				self.saveData.delete(idx)
-			self.saveCount = 0
-			self.totalSync = 0
+		for ids in self.saveData.get_children():
+			self.saveData.delete(ids)
+		self.saveCount = 0
+		self.totalSync = 0
 		if os.path.isfile('./musync_data/SavAnalyze.json'):pass
 		elif os.path.isfile('./musync_data/SavDecode.decode'):MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
 		else:
@@ -507,8 +501,8 @@ class MusyncSavDecodeGUI(object):
 		self.saveCountLabel.configure(text=self.saveCountVar.get())
 		self.avgSyncVar.set(f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount))}')
 		self.avgSyncLabel.configure(text=self.avgSyncVar.get()[0:10]+"%")
-		self.developer.place(x=0,y=self.windowInfo[3]-30,width=450,height=30)
-		self.gitHubLink.place(x=450,y=self.windowInfo[3]-30,width=self.windowInfo[2]-450,height=30)
+		self.developer.place(x=0,y=self.windowInfo[3]-30,width=420,height=30)
+		self.gitHubLink.place(x=420,y=self.windowInfo[3]-30,width=self.windowInfo[2]-420,height=30)
 
 		# self.saveData.bind("<Double-1>",self.DoubleClick)
 		self.saveData.bind("<ButtonRelease-1>",self.SortClick)

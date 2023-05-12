@@ -9,11 +9,11 @@ on:
 
 env:
   Version: Init
-  isPreRelease: true
+  Release: Init
 
 jobs:
-  AutoRelease:
-    name: AutoRelease
+  EnvInit: 
+    name: Environment Initialization
     runs-on: windows-2019
     steps:
     - name: Checkout
@@ -32,31 +32,40 @@ jobs:
         $ver = Get-Content ./version
         echo "Version=$ver" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         echo $ver
-        $isRC = Get-Content ./release
-        if ($isRC -eq 'release'){echo 'isPreRelease=false' | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append}
-        echo $isRC
+        $rc = Get-Content ./release
+        echo 'Release=$rc' | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo $rc
 
+  Dist: 
+    needs: EnvInit
+    name: Auto Dist
+    runs-on: windows-2019
+    steps:
     - name: Dist NoConsole ${{ env.Version }} Compress Version
       run: |
-        $version = Get-Content ./version
         pyinstaller --distpath ./NoCLI/ -D -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py -w --clean
-        Compress-Archive -LiteralPath ./NoCLI/MusyncSavDecodeGUI/ -DestinationPath ("./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}.zip")
+        Compress-Archive -LiteralPath ./NoCLI/MusyncSavDecodeGUI/ -DestinationPath ("./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}${{ env.Release }}.zip")
 
     - name: Dist NoConsole ${{ env.Version }} AllInOne Version
       run: |
         pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py -w
-        Rename-Item -Path ./MusyncSavDecodeGUI.exe -NewName ("MusyncSavDecodeGUI_NoConsole_${{ env.Version }}_AllInOne.exe")
+        Rename-Item -Path ./MusyncSavDecodeGUI.exe -NewName ("MusyncSavDecodeGUI_NoConsole_${{ env.Version }}${{ env.Release }}_AllInOne.exe")
 
     - name: Dist WithConsole ${{ env.Version }} Compress Version
       run: |
         pyinstaller --distpath ./WithCLI/ -D -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py
-        Compress-Archive -LiteralPath ./WithCLI/MusyncSavDecodeGUI/ -DestinationPath ("./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}.zip")
+        Compress-Archive -LiteralPath ./WithCLI/MusyncSavDecodeGUI/ -DestinationPath ("./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}${{ env.Release }}.zip")
 
     - name: Dist WithConsole ${{ env.Version }} AllInOne Version
       run: |
         pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py
-        Rename-Item -Path ./MusyncSavDecodeGUI.exe -NewName ("MusyncSavDecodeGUI_WithConsole_${{ env.Version }}_AllInOne.exe")
+        Rename-Item -Path ./MusyncSavDecodeGUI.exe -NewName ("MusyncSavDecodeGUI_WithConsole_${{ env.Version }}_${{ env.Release }}AllInOne.exe")
 
+  ACR:
+    needs: Dist
+    name: Auto Commit Release
+    runs-on: windows-2019
+    steps:
     - name: Create Release
       id: create_release
       uses: softprops/action-gh-release@v1

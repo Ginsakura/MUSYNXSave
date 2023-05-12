@@ -27,43 +27,32 @@ jobs:
     - name: Python Pip Install
       uses: logikal-code/pip-install@v1.0.0
 
-    # - name: Install requests
-    #   run: |
-    #     python -m pip install --upgrade pip
-    #     pip install -r requirements.txt
-    #     pip install -e ../p_name
-    #   shell: powershell
-
     - name: Get Version
-      shell: powershell
       run: |
         $ver = Get-Content ./version
         echo "Version=$ver" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         echo $ver
         $isRC = Get-Content ./release
         if ($isRC -eq 'release'){echo 'isPreRelease=false' | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append}
+        echo $isRC
 
     - name: Dist NoConsole ${{ env.Version }} Compress Version
-      shell: powershell
       run: |
         $version = Get-Content ./version
         pyinstaller --distpath ./NoCLI/ -D -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py -w --clean
         Compress-Archive -LiteralPath ./NoCLI/MusyncSavDecodeGUI/ -DestinationPath ("./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}.zip")
 
     - name: Dist NoConsole ${{ env.Version }} AllInOne Version
-      shell: powershell
       run: |
         pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py -w
         Rename-Item -Path ./MusyncSavDecodeGUI.exe -NewName ("MusyncSavDecodeGUI_NoConsole_${{ env.Version }}_AllInOne.exe")
 
     - name: Dist WithConsole ${{ env.Version }} Compress Version
-      shell: powershell
       run: |
         pyinstaller --distpath ./WithCLI/ -D -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py
         Compress-Archive -LiteralPath ./WithCLI/MusyncSavDecodeGUI/ -DestinationPath ("./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}.zip")
 
     - name: Dist WithConsole ${{ env.Version }} AllInOne Version
-      shell: powershell
       run: |
         pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py
         Rename-Item -Path ./MusyncSavDecodeGUI.exe -NewName ("MusyncSavDecodeGUI_WithConsole_${{ env.Version }}_AllInOne.exe")

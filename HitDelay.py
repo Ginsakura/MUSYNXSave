@@ -315,11 +315,11 @@ class HitDelayDraw(object):
 				textprops={'family':'LXGW WenKai Mono','weight':'normal','size':9})
 			plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':9},loc='center',
 				labels=[
-					f"EXTRA±45ms  {Count(self.sum[0], summ)}  {Percentage(self.sum[0], summ)}", 
-					f"Extra±90ms  {Count(self.sum[1], summ)}  {Percentage(self.sum[1], summ)}", 
-					f"Great±150ms {Count(self.sum[2], summ)}  {Percentage(self.sum[2], summ)}", 
-					f"Right＋250ms {Count(self.sum[3], summ)}  {Percentage(self.sum[3], summ)}", 
-					f"Miss > 250ms {Count(self.sum[4], summ)}  {Percentage(self.sum[4], summ)}"],
+					f"EXTRA±45ms  {Count(self.sum[0])}  {Percentage(self.sum[0], summ)}", 
+					f"Extra±90ms  {Count(self.sum[1])}  {Percentage(self.sum[1], summ)}", 
+					f"Great±150ms {Count(self.sum[2])}  {Percentage(self.sum[2], summ)}", 
+					f"Right＋250ms {Count(self.sum[3])}  {Percentage(self.sum[3], summ)}", 
+					f"Miss > 250ms {Count(self.sum[4])}  {Percentage(self.sum[4], summ)}"],
 				)
 
 

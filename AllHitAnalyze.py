@@ -22,6 +22,7 @@ class HitAnalyze(object):
 		self.sumYnumEX = 0 # only cyan extra
 		self.rate=[0,0,0,0,0] # EXTRA,Extra,Great,Right,Miss
 		self.accurateRate=[0,0,0,0,0,0,0,0] # ±5ms,±10ms,±20ms,±45ms,Extra,Great,Right,Miss
+		# plt.clf()
 		for ids in res:
 			for idx in ids[0].split("|"):
 				idx = float(idx)

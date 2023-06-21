@@ -87,6 +87,10 @@ class HitDelayText(object):
 		else:
 			self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
 			self.logButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
+		if ('EnableNarrowDelayInterval' in config) and (config['EnableNarrowDelayInterval']):
+			self.delayInterval = 45
+		else:
+			self.delayInterval = 90
 
 		self.history = list()
 		self.HistoryUpdate()
@@ -115,7 +119,7 @@ class HitDelayText(object):
 		allKeys = len(dataList)
 		sumNums,sumKeys = 0,0
 		for ids in dataList:
-			if (ids < 90) and (ids > -90):
+			if (ids < self.delayInterval) and (ids > -self.delayInterval):
 				sumNums += ids
 				sumKeys += 1
 		avgDelay = sumNums/sumKeys
@@ -295,7 +299,7 @@ class HitDelayDraw(object):
 					f"Extra±90ms  {Count(self.exCount[4])}  {Percentage(self.exCount[4], exCountSum)}", 
 					f"Great±150ms {Count(self.exCount[5])}  {Percentage(self.exCount[5], exCountSum)}", 
 					f"Right＋250ms {Count(self.exCount[6])}  {Percentage(self.exCount[6], exCountSum)}", 
-					f"Miss > 250ms {Count(self.exCount[7])}  {Percentage(self.exCount[7], exCountSum)}"],
+					f"Miss >=251ms {Count(self.exCount[7])}  {Percentage(self.exCount[7], exCountSum)}"],
 				)
 			plt.text(-0.41,0.48,f"EXTRA        {Count(sum(self.exCount[0:4]))}  {Percentage(sum(self.exCount[0:4]), exCountSum)}", 
 				ha='left',va='top',fontsize=9,color='#00B5B5', 

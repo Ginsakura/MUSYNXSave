@@ -61,6 +61,9 @@ def CheckConfig():
     if 'EnablePDFofCyanExtra' not in cfg:
         cfg['EnablePDFofCyanExtra'] = False
         isChange = True
+    if 'EnableNarrowDelayInterval' not in cfg:
+        cfg['EnableNarrowDelayInterval'] = False
+        isChange = True
     if isChange:
         json.dump(cfg,open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
 

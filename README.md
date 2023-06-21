@@ -53,6 +53,13 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
     该值越小,就说明您击打的越精准,(在该值小于45ms时，您的)分值就会越高.
 
 ## 更新日志
+### Version 1.2.0
+1. 更新 适配本体*端午节更新*
+2. #### 更新 更新本次喵赛克更新的新曲目
+    - BiBiC Heart
+    - Brain Crash
+    - Saintelmo
+
 ### Version 1.1.9
 1. 更新 于`HitDelay`模块处更新Acc-Sync分析功能
 2. 更新 于`AllHitAnalyze`模块处更新tap的Rate环形图
@@ -80,6 +87,7 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 13. 优化 对`AllHitAnalyze`模块中的正态曲线新增仅cyanExtra Rate拟合，须手动在配置文件中启用
 20. 优化 对Update组件使用多线程，减少程序启动时的更新卡顿
 21. 优化 优化布局
+22. 优化 提供两段Delay分析
 
 ### Version 1.1.8
 1. 更新 适配本体*劳动节更新*

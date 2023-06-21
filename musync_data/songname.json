@@ -1371,4 +1371,21 @@
  "00021729": ["Four leaf clover", 4, 0, 3],
  "0002172A": ["Four leaf clover", 4, 1, 3],
  "00021733": ["Four leaf clover", 6, 0, 7],
- "00021734": ["Four leaf clover", 6, 1, 7]}
+ "00021734": ["Four leaf clover", 6, 1, 7],
+ "0002178D": ["BiBiC Heart", 4, 0, 3],
+ "0002178E": ["BiBiC Heart", 4, 1, 9],
+ "00021797": ["BiBiC Heart", 6, 0, 3],
+ "00021798": ["BiBiC Heart", 6, 1, 9],
+ "000217F1": ["Brain Crash", 4, 0, 5],
+ "000217F2": ["Brain Crash", 4, 1, 9],
+ "000217F3": ["Brain Crash", 4, 2, 10],
+ "000217FB": ["Brain Crash", 6, 0, 5],
+ "000217FC": ["Brain Crash", 6, 1, 9],
+ "000217FD": ["Brain Crash", 6, 2, 12],
+ "00021855": ["Saintelmo", 4, 0, 6],
+ "00021856": ["Saintelmo", 4, 1, 11],
+ "00021857": ["Saintelmo", 4, 2, 15],
+ "0002185F": ["Saintelmo", 6, 0, 6],
+ "00021860": ["Saintelmo", 6, 1, 11],
+ "00021861": ["Saintelmo", 6, 2, 15]
+ }

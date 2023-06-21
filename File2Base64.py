@@ -23,7 +23,7 @@ def EncodeJson():
 			pyperclip.copy(b64e.decode('utf8'))
 
 def EncodeDLL():
-	with open('./HitDelayFix.dll','rb') as hdf:
+	with open('./musync_data/Assembly-CSharp.dll','rb') as hdf:
 		with open('./musync_data/HitDelayFix.b64','wb') as hdfE:
 			hdfD = hdf.read()
 			b64e = b64encode(hdfD)

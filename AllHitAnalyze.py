@@ -73,8 +73,10 @@ class HitAnalyze(object):
 			print('cyan extra:',self.avgEX,self.varEX,self.stdEX,self.sumYnumEX)
 		else:
 			self.enablePDFofCyanExtra = False
+		# plt.clf()
 		self.Analyze()
 		if ('EnableDonutChartinAllHitAnalyze' in config) and (config['EnableDonutChartinAllHitAnalyze']):
+			# plt.clf()
 			self.Pie()
 		plt.show()
 

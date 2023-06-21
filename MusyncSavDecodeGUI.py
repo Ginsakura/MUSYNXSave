@@ -19,7 +19,7 @@ import Functions
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.2.0rc1'
+version = '1.2.1rc1'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -93,8 +93,8 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.configure(yscrollcommand=self.VScroll1.set)
 
 		self.developer = Label(self.root, text=f'Version {self.version} | Develop By Ginsakura', font=self.font, relief="groove")
-		# self.gitHubLink = Button(self.root, text='https://github.com/Ginsakura/MUSYNCSave    点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
-		self.gitHubLink = Button(self.root, text='点击打开下载链接    点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
+		# self.gitHubLink = Button(self.root, text='https://github.com/Ginsakura/MUSYNCSave	点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
+		self.gitHubLink = Button(self.root, text='点击打开下载链接	点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
 
 		self.initLabel = Label(self.root, text='启动中......', anchor="w", font=self.font, relief="groove")
 		self.initLabel.place(x=250,y=300,width=500,height=30)
@@ -154,15 +154,15 @@ class MusyncSavDecodeGUI(object):
 		with open('./musync_data/ExtraFunction.cfg','r') as confFile:
 			config = json.load(confFile)
 
-		if ('DisableCheckUpdate' in config) and (config['DisableCheckUpdate']):
-			self.gitHubLink.configure(text='更新已禁用    点击打开GitHub仓库页')
+		if config['DisableCheckUpdate']:
+			self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页')
 		else:
 			threading.Thread(target=self.CheckUpdate).start()
 			threading.Thread(target=self.CheckJsonUpdate).start()
-		if ('EnableAnalyzeWhenStarting' in config) and (config['EnableAnalyzeWhenStarting']):
+		if config['EnableAnalyzeWhenStarting']:
 			self.DeleteAnalyzeFile()
 		self.CheckFile()
-		if ('EnableDLLInjection' in config) and (config['EnableDLLInjection']):
+		if config['EnableDLLInjection']:
 			self.hitDelay = Button(self.root, text="DLL注入\n分析\n游玩结果",command=self.HitDelay, font=self.font,bg='#FF5555')
 			self.hitDelay.place(x=776,y=48,width=90,height=74)
 		if not os.path.isfile('./musync_data/SaveFilePath.sfp'):
@@ -179,6 +179,11 @@ class MusyncSavDecodeGUI(object):
 				self.GetSaveFile()
 			else:
 				self.saveFilePathVar.set(sfpr)
+				execPath = sfpr[:-21]
+				# print(execPath)
+				if config['MainExecPath'] != execPath:
+					config['MainExecPath'] = execPath
+					json.dump(config,open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
 				self.DataLoad()
 		if os.path.isfile('./musync_data/SavAnalyze.json'):
 			self.DataLoad()
@@ -283,11 +288,11 @@ class MusyncSavDecodeGUI(object):
 		print(f'terget: {newVersion}.{newRC}')
 		print(f'local: {oldVersion}.{oldRC}')
 		if (newVersion > oldVersion) or ((newVersion == oldVersion) and (newRC > oldRC)):
-			self.gitHubLink.configure(text=f'有新版本啦——点此打开下载页面    NewVersion: {version}', anchor="center")
+			self.gitHubLink.configure(text=f'有新版本啦——点此打开下载页面	NewVersion: {version}', anchor="center")
 			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases"))
 			self.UpdateTip()
 		else:
-			self.gitHubLink.configure(text='点击打开GitHub仓库    点个Star吧，秋梨膏', anchor="center")
+			self.gitHubLink.configure(text='点击打开GitHub仓库	点个Star吧，秋梨膏', anchor="center")
 			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"))
 
 	def InitLabel(self,text,close=False):
@@ -369,11 +374,11 @@ class MusyncSavDecodeGUI(object):
 			os.remove("./musync_data/SavDecode.decode")
 		self.DataLoad()
 	def HitDelay(self):
-		nroot = Toplevel(self.root)
-		nroot.resizable(True, True)
 		if not HitDelayCheck().DLLCheck():
 			messagebox.showerror("Error", f'DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁')
 		else:
+			nroot = Toplevel(self.root)
+			nroot.resizable(True, True)
 			HitDelayText(nroot)
 	def DataLoad(self):
 		self.InitLabel(text="正在分析存档文件中……")
@@ -406,7 +411,7 @@ class MusyncSavDecodeGUI(object):
 		self.InitLabel('正在分析存档文件中……')
 		with open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8') as saveData:
 			saveDataJson = json.load(saveData)
-			self.root.title(f'同步音律喵赛克 Steam端 本地存档分析    LastPlay: {saveDataJson["LastPlay"]}')
+			self.root.title(f'同步音律喵赛克 Steam端 本地存档分析	LastPlay: {saveDataJson["LastPlay"]}')
 			for saveLine in saveDataJson['SaveData']:
 				if not saveLine['SongName'] is None:
 					if (self.keys==1) and (saveLine['SongName'][1]=='6Key'):continue
@@ -553,12 +558,30 @@ class SubWindow(object):
 		
 
 if __name__ == '__main__':
+	def is_admin():
+		try:
+			return ctypes.windll.shell32.IsUserAnAdmin()
+		except:
+			return False
 	ctypes.windll.shcore.SetProcessDpiAwareness(1)
 	root = Tk()
 	fonts = list(font.families())
 	Functions.CheckFileBeforeStarting(fonts)
 	del fonts
 	Functions.CheckConfig()
+	with open('./musync_data/ExtraFunction.cfg','r') as cfg:
+		cfg = json.load(cfg)
+	if cfg['ChangeConsoleStyle']:
+		Functions.ChangeConsoleStyle()
+		# if is_admin():
+		# 	try:
+		# 		Functions.ChangeConsoleStyle()
+		# 	except Exception as e:
+		# 		print(e)
+		# 		os.system('pause')
+		# else:
+		# 	ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
+	del cfg
 	#root.state('zoomed') #隐藏最小化、最大化按钮
 	#设置程序缩放
 	# root.tk.call('tk', 'scaling', (ctypes.windll.shcore.GetScaleFactorForDevice(0))/75)

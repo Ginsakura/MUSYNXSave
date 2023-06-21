@@ -13,11 +13,13 @@ from AllHitAnalyze import HitAnalyze
 class HitDelayCheck(object):
 	"""docstring for HitDelayWindow"""
 	def __init__(self):
-		self.md5l = '03CF2A2DCFE6572B26D08D94D3B581FE' # HitDelayFix.dll
+		self.md5l = 'C2FB65DBA57AC54CF24752D7EAA47757' # HitDelayFix.dll
 		self.md5o = '0722724F7D0AC74AD42F6FC648D81359' # Assembly-CSharp.dll
 
-		with open('./musync_data/SaveFilePath.sfp','r+',encoding='utf8') as sfp:
-			self.spfr = sfp.read()[:-21]+'MUSYNX_Data/Managed/Assembly-CSharp.dll'
+		with open('./musync_data/ExtraFunction.cfg','r') as confFile:
+			config = json.load(confFile)
+		self.spfr = config['MainExecPath']+'MUSYNX_Data/Managed/Assembly-CSharp.dll'
+		del config
 		self.DLLCheck()
 
 	def DLLCheck(self):
@@ -79,7 +81,7 @@ class HitDelayText(object):
 		self.delayHistory.configure(yscrollcommand=self.VScroll1.set)
 		self.VScroll1.place(relx=0.68,y=130,relheight=0.78,relwidth=0.02)
 		
-		if ('EnableAcc-Sync' in config) and (config['EnableAcc-Sync']):
+		if config['EnableAcc-Sync']:
 			self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
 			self.logButton.place(relx=0.7,y=40,height=30,relwidth=0.2)
 			self.txtButton = Button(self.subroot,text='Acc-Sync',command=self.OpenTxt,font=self.font)
@@ -87,7 +89,7 @@ class HitDelayText(object):
 		else:
 			self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
 			self.logButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
-		if ('EnableNarrowDelayInterval' in config) and (config['EnableNarrowDelayInterval']):
+		if config['EnableNarrowDelayInterval']:
 			self.delayInterval = 45
 		else:
 			self.delayInterval = 90
@@ -109,12 +111,11 @@ class HitDelayText(object):
 
 	def Draw(self):
 		data = self.logText.get("0.0", "end").split('\n')
-		dataIndex = self.GetIndex(data)
 		dataList=list()
 		name = self.nameDelayEntry.get()+f"-{dt.now()}"
 		if data[-1] == "":
 			data.pop(-1)
-		for ids in range(dataIndex,len(data)-1):
+		for ids in range(1,len(data)-1):
 			dataList.append(float(data[ids][13:-2]))
 		allKeys = len(dataList)
 		sumNums,sumKeys = 0,0
@@ -140,16 +141,6 @@ class HitDelayText(object):
 		# os.system(f'start explorer {os.getcwd()}')
 		import AvgAcc_SynxAnalyze
 		AvgAcc_SynxAnalyze.main()
-
-	def GetIndex(self,data):
-		b=list()
-		for index, value in enumerate(data):
-			if value == '> Game Start!':
-				b.append(index)
-		if len(b)==0:
-			return 0
-		else:
-			return (b[-1]+1)
 
 	def HistoryDraw(self,event):
 		e = event.widget									# 取得事件控件
@@ -213,6 +204,16 @@ class HitDelayDraw(object):
 			else: self.sum[4] += 1
 		self.exCount = self.exCount + self.sum
 		print(self.sum,self.exCount)
+
+		self.Draw()
+		with open('./musync_data/ExtraFunction.cfg', 'r') as confFile:
+			config = json.load(confFile)
+		if config['EnableDonutChartinHitDelay']:
+			self.Pie()
+		plt.show()
+		
+
+	def Draw(self):
 		fig = plt.figure(f'AvgDelay: {"%.4fms"%self.avgDelay}    AllKeys: {self.allKeys}    AvgAcc: {"%.4fms"%self.avgAcc}',figsize=(9, 4))
 		fig.subplots_adjust(**{"left":0.04,"bottom":0.05,"right":1,"top":1})
 		# print(self.x_axis,self.y_axis)
@@ -222,16 +223,6 @@ class HitDelayDraw(object):
 		plt.text(0,-70,"←Faster", ha='right',va='top',color='#288328',rotation=90, 
 			fontdict={'family':'LXGW WenKai Mono','weight':'normal','size':15})
 		
-		self.Label()
-		self.Draw()
-		with open('./musync_data/ExtraFunction.cfg', 'r') as confFile:
-			config = json.load(confFile)
-		if ('EnableDonutChartinHitDelay' in config) and (config['EnableDonutChartinHitDelay']):
-			self.Pie()
-		plt.show()
-
-
-	def Label(self):
 		for x,y in zip(self.x_axis,self.y_axis):
 			if y<0:
 				plt.text(x,y-3,'%dms'%y,ha='center',va='top',fontsize=7.5,alpha=0.7, 
@@ -240,8 +231,6 @@ class HitDelayDraw(object):
 				plt.text(x,y+3,'%dms'%y,ha='center',va='bottom',fontsize=7.5,alpha=0.7, 
 					fontdict={'family':'LXGW WenKai Mono','weight':'normal'})
 
-
-	def Draw(self):
 		plt.plot(self.x_axis,self.zero_axis,linestyle='-',alpha=1,linewidth=1,color='red',label='0ms')
 		plt.plot(self.x_axis,self.EXTRAa,linestyle='--',alpha=0.7,linewidth=1,color='cyan',
 			label='Cyan Extra(±45ms)    --%d'%self.sum[0])
@@ -261,6 +250,7 @@ class HitDelayDraw(object):
 		plt.ylabel('Delay')#y_label
 		plt.gca().yaxis.set_major_locator(MultipleLocator(20))
 		plt.xlim(-15,len(self.x_axis)+15)
+		# plt.show()
 
 	def Pie(self):
 		def Percentage(num, summ):
@@ -272,7 +262,8 @@ class HitDelayDraw(object):
 		def PercentageLabel(num, summ):
 			per = num/summ*100
 			return '%.1f%%'%(per)
-		fig = plt.figure(f'Pie', figsize=(5.5, 4.5))
+		import random
+		fig = plt.figure(f'Pie: {"%.4fms"%self.avgDelay}  AllKeys: {self.allKeys}  AvgAcc: {"%.4fms"%self.avgAcc}', figsize=(5.5, 4.5))
 		fig.subplots_adjust(**{"left":0,"bottom":0,"right":1,"top":1})
 		wedgeprops = {'width':0.15, 'edgecolor':'black', 'linewidth':0.2}
 		if self.sum[0]/sum(self.sum) > 0.6:
@@ -324,6 +315,7 @@ class HitDelayDraw(object):
 					f"Right＋250ms {Count(self.sum[3])}  {Percentage(self.sum[3], summ)}", 
 					f"Miss > 250ms {Count(self.sum[4])}  {Percentage(self.sum[4], summ)}"],
 				)
+		# plt.show()
 
 
 if __name__ == '__main__':

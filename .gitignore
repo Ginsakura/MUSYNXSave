@@ -19,6 +19,7 @@ MUSYNCSavDecode.pyproj.user
 *.psd
 *.txt
 !requirements.txt
+!changelog.txt
 *.analyze
 *.decode
 *.sfp

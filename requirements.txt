@@ -3,3 +3,4 @@ requests
 pyinstaller
 matplotlib
 pywin32
+uiautomation

@@ -69,7 +69,8 @@ class HitDelayText(object):
 		with open('./musync_data/ExtraFunction.cfg', 'r') as confFile:
 			config = json.load(confFile)
 
-		self.hitAnalyzeButton = Button(self.subroot,text='All\nHit',command=lambda : HitAnalyze(),font=self.font, relief="groove")
+		self.openHitAnalyze = False
+		self.hitAnalyzeButton = Button(self.subroot,text='All\nHit',command=self.OpenHitAnalyze,font=self.font, relief="groove")
 		self.hitAnalyzeButton.place(x=0,y=40,height=60,relwidth=0.05)
 		self.nameDelayLabel = Label(self.subroot,font=self.font, relief="groove",text='↓请在下面输入曲名与谱面难度↓这只是用来标记你玩的哪个谱面而已，\n只要你能分辨就行，没有格式要求。如"ニニ 4KEZ"、"二重4H"等')
 		self.nameDelayLabel.place(relx=0.05,y=40,height=60,relwidth=0.65)
@@ -141,6 +142,13 @@ class HitDelayText(object):
 		# os.system(f'start explorer {os.getcwd()}')
 		import AvgAcc_SynxAnalyze
 		AvgAcc_SynxAnalyze.main()
+
+	def OpenHitAnalyze(self):
+		hitAnalyze = HitAnalyze(isOpen=self.openHitAnalyze)
+		print(self.openHitAnalyze)
+		self.openHitAnalyze = True
+		hitAnalyze.Show()
+
 
 	def HistoryDraw(self,event):
 		e = event.widget									# 取得事件控件

@@ -7,10 +7,9 @@ import json
 
 class HitAnalyze(object):
 	"""docstring for HitAnalyze"""
-	def __init__(self):
+	def __init__(self,isOpen=False):
 		super(HitAnalyze, self).__init__()
-		with open('./musync_data/ExtraFunction.cfg', 'r') as confFile:
-			config = json.load(confFile)
+		self.isOpen = isOpen
 		db = sql.connect('./musync_data/HitDelayHistory.db')
 		cur = db.cursor()
 		res = cur.execute('select HitMap from HitDelayHistory')
@@ -22,7 +21,6 @@ class HitAnalyze(object):
 		self.sumYnumEX = 0 # only cyan extra
 		self.rate=[0,0,0,0,0] # EXTRA,Extra,Great,Right,Miss
 		self.accurateRate=[0,0,0,0,0,0,0,0] # ±5ms,±10ms,±20ms,±45ms,Extra,Great,Right,Miss
-		# plt.clf()
 		for ids in res:
 			for idx in ids[0].split("|"):
 				idx = float(idx)
@@ -65,7 +63,11 @@ class HitAnalyze(object):
 		# del db,cur,hitMapA,hitMapB,res,idxAbs
 		print('all data:  ',self.avg,self.var,self.std,self.sumYnum)
 		print('extra rate:',self.avgEx,self.varEx,self.stdEx,self.sumYnumEx)
-		if ('EnablePDFofCyanExtra' in config) and (config['EnablePDFofCyanExtra']):
+
+	def Show(self):
+		with open('./musync_data/ExtraFunction.cfg', 'r') as confFile:
+			config = json.load(confFile)
+		if config['EnablePDFofCyanExtra']:
 			self.avgEX = sum([ids[0]*ids[1]/self.sumYnumEX for ids in zip(self.xAxis[106:195],self.yAxis[106:195])])
 			self.varEX = sum([(ids[1]/self.sumYnumEX)*((ids[0] - self.avgEX) ** 2) for ids in zip(self.xAxis[106:195],self.yAxis[106:195])])
 			self.stdEX = self.varEX**0.5
@@ -73,10 +75,8 @@ class HitAnalyze(object):
 			print('cyan extra:',self.avgEX,self.varEX,self.stdEX,self.sumYnumEX)
 		else:
 			self.enablePDFofCyanExtra = False
-		# plt.clf()
 		self.Analyze()
-		if ('EnableDonutChartinAllHitAnalyze' in config) and (config['EnableDonutChartinAllHitAnalyze']):
-			# plt.clf()
+		if config['EnableDonutChartinAllHitAnalyze']:
 			self.Pie()
 		plt.show()
 
@@ -122,6 +122,7 @@ class HitAnalyze(object):
 
 		fig = plt.figure(f"HitAnalyze (total:{self.sumYnum},  CyanEx:{self.rate[0]},  BlueEx:{self.rate[1]},  Great:{self.rate[2]},  Right:{self.rate[3]},  Miss:{self.rate[4]})", figsize=(16, 8))
 		fig.subplots_adjust(**{"left":0.045,"bottom":0.06,"right":1,"top":1})
+		if self.isOpen: fig.clear()
 		plt.xlabel("Delay(ms)",fontproperties='LXGW WenKai Mono',fontsize=15)
 		plt.ylabel("HitCount",fontproperties='LXGW WenKai Mono',fontsize=15)
 		plt.xlim(-155,255)
@@ -180,6 +181,7 @@ class HitAnalyze(object):
 		accurateRateSum = sum(self.accurateRate)
 		fig = plt.figure(f'Pie', figsize=(7, 6))
 		fig.subplots_adjust(**{"left":0,"bottom":0,"right":1,"top":1})
+		if self.isOpen: fig.clear()
 		wedgeprops = {'width':0.15, 'edgecolor':'black', 'linewidth':0.2}
 		plt.pie(self.accurateRate, wedgeprops=wedgeprops, startangle=90,
 			colors=['#AAFFFF','#00B5B5','#78BEFF','cyan', 'blue', 'green', 'orange', 'red'],
@@ -210,4 +212,4 @@ class HitAnalyze(object):
 			fontdict={'family':'LXGW WenKai Mono','weight':'normal'})
 
 if __name__ == '__main__':
-	HitAnalyze()
+	HitAnalyze().Show()

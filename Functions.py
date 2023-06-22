@@ -17,7 +17,7 @@ def GetDpi():
 	return int(round(real_resolution[0] / screen_size[0], 2) * 100)
 
 def ChangeConsoleStyle():
-	print('Changing Console Style...')
+	# print('Changing Console Style...')
 	with open('./musync_data/ExtraFunction.cfg','r') as cfg:
 		cfg = json.load(cfg)
 	execPath = cfg['MainExecPath']

@@ -11,6 +11,8 @@ env:
   Version: Init
   Release: Init
   isPreRelease: true
+  VersionContent: Init
+  ChangeLog: Init
 
 jobs:
   AutoRelease: 
@@ -28,17 +30,23 @@ jobs:
     - name: Python Pip Install
       uses: logikal-code/pip-install@v1.0.0
 
-    - name: Get Version
+    - name: Get Version & Set GITHUB_ENV
       run: |
         $rc = Get-Content ./release
-        $ver = Get-Content ./version
         echo 'Release=$rc' | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         if ( $rc -eq 'Release' ){echo 'isPreRelease=false' | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append}else{$ver = $ver -replace "rc","pre"}
         echo $rc
+        $ver = Get-Content ./version
         echo "Version=$ver" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         if ( $rc -eq 'Release' ){$release = $ver -replace "rc"," Release "}else{$release = $ver -replace "pre"," PreRelease "}
         echo "Release=$release" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         echo $release
+        $vc = Get-Content ./versionContent
+        echo "VersionContent=$vc" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        $change = Get-Content ./changelog.txt
+        echo "ChangeLog=$change" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "${{ GITHUB_WORKSPACE }}"
+        echo "${{ github.workspace }}"
 
     - name: Dist NoConsole ${{ env.Version }} Compress Version
       run: |
@@ -63,9 +71,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       with:
-        name: ${{ env.Release }}   < Auto Release >
+        name: ${{ env.Release }}  ${{ env.VersionContent }}  < Auto Release >
         tag_name: ${{ env.Version }}
         draft: false
+        body: ${{ env.ChangeLog }}
         prerelease: ${{ env.isPreRelease }}
         files: |
           ./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}.zip

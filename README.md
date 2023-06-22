@@ -1,17 +1,20 @@
 ﻿# 同步音律喵赛克 Steam端 存档解析工具
+MUSYNX Steam Client Savefile Decode & Analyze Tool
 ## 界面展示
 
 ![主页面](./ReadmeResources/main.png "主页面")
 ![HitDelay页面](./ReadmeResources/HitDelay.png "HitDelay页面")
 ![HitAnalyze页面](./ReadmeResources/HitAnalyze.png "HitAnalyze页面")
-![HitAnalyzePie页面](./ReadmeResources/HitAnalyzePie.png "HitAnalyzePie页面")
+![AllHitAnalyze页面](./ReadmeResources/AllHitAnalyze.png "AllHitAnalyze页面")
+![AvgAcc-SYNC.Rate回归分析页面](./ReadmeResources/AvgAcc-SYNC.Rate.png "AvgAcc-SYNC.Rate回归分析")
 
 ## 未来的计划
 - [ ] 提供全球排行榜显示功能
 - [ ] 将提供一个文档来演示使用方法
 - [ ] 使用文件夹内指定文件名的方式自定义美化UI
-- [ ] 使用workflow功能实现自动生成分发版本
 ### 已完成的计划
+- [x] 一键获取上次铺面游玩结果
+- [x] 使用workflow功能实现自动生成分发版本
 - [x] 重排版SongName.json
 - [x] 滑动条在重加载后保持位置不变
 - [x] 隐藏cmd窗口
@@ -53,16 +56,24 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
     该值越小,就说明您击打的越精准,(在该值小于45ms时，您的)分值就会越高.
 
 ## 更新日志
+### Version 1.2.2
+1. 更新 通过使用UIAutoMation库实现一键自动从控制台获取游玩结果 <br><del>以后都不需要再Ctrl A+C+V了</del>
+    $\color{Red}{控制台只显示最近一次的游玩记录，请在下次铺面游玩开始前生成结果}$<br>
+    $\color{Red}{控制台只显示最近一次的游玩记录，请在关闭游戏前生成结果}$<br>
+    $\color{Red}{点击按钮后，在结果生成前请不要进行任何复制操作}$
+2. 优化 重新调整 `HitDelay` 窗口的布局
+3. 优化 铺面标识输入框新增提示，输入框获取焦点时自动删除提示词，键入标识后不会自动删除
+4. 优化 降低首页DLL注入按钮的饱和度，使其醒目但不那么刺眼
+
 ### Version 1.2.1
 1. 更新 针对喵赛克本体游玩时的Console进行优化，新增配置项
     - `ConsoleAlpha` : 控制台透明度,建议设置为65~75,取值范围[0,100],默认75
-    - `ConsoleFont` : 控制台字体,默认`霞鹜文楷等宽`  <del>这个字体明明挺好看的(逃)</del>
+    - `ConsoleFont` : 控制台字体,默认`霞鹜文楷等宽`  <br><del>这个字体明明挺好看的(逃)</del>
     - `ConsoleFontSize` : 控制台字号,取值一般为20,24,28,36, 默认36
     - `MainExecPath` : 喵赛克主程序所在路径,会由程序自动填写,可手动修改
     - `ChangeConsoleStyle` : 是否启用控制台样式修改,布尔类型,默认为false
-   本项更新涉及注册表操作,本人测试正常,使用时还请提前添加系统还原点,启动一次本程序确认不会造成损害后可删除还原点,<br>
-   第一次启动没有事之后就不会有事(除非你喵赛克换路径了)
-2. 更新 对DLL注入进行更新,本次更新后将支持铺面开始游玩时自动清空控制台  <br><del>放心大胆的Ctrl A吧!  ε=ε=ε=┏(゜ロ゜;)┛</del>
+   本项更新涉及注册表操作,本人测试正常,使用时还请提前添加系统还原点,启动一次本程序确认不会造成损害后可删除还原点,<br>第一次启动没有事之后就不会有事(除非你喵赛克换路径了)
+2. 更新 对DLL注入进行更新,本次更新后将支持铺面开始游玩时自动清空控制台 <br><del>放心大胆的Ctrl A吧!  ε=ε=ε=┏(゜ロ゜;)┛</del>
 4. 修复 多次重复打开`AllHitAnalyze` 图表时，在图表内重叠显示内容的bug，本版本之后会转变成刷新图表
 3. 优化 因为自动清空控制台,所以分割gamestart的函数被移除.
 4. 优化 GitHubAction中版本标识的传递方法

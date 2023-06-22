@@ -1,5 +1,5 @@
 ﻿from tkinter import *
-from tkinter import Tk,ttk,font,Text
+from tkinter import Tk,ttk,font,Text,messagebox
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import MultipleLocator
 from datetime import datetime as dt
@@ -9,6 +9,9 @@ import json
 import FileExport
 import sqlite3 as sql
 from AllHitAnalyze import HitAnalyze
+import uiautomation as uiauto
+uiauto.SetGlobalSearchTimeout(1)
+import pyperclip
 
 class HitDelayCheck(object):
 	"""docstring for HitDelayWindow"""
@@ -45,7 +48,6 @@ class HitDelayText(object):
 		if os.path.isfile('./musync_data/HitDelayHistory.db'):
 			self.db = sql.connect('./musync_data/HitDelayHistory.db')
 			self.cur = self.db.cursor()
-
 		else:
 			self.db = sql.connect('./musync_data/HitDelayHistory.db')
 			self.cur = self.db.cursor()
@@ -61,43 +63,49 @@ class HitDelayText(object):
 		self.subroot.geometry(f'1000x600+600+400')
 		self.subroot.title("高精度延迟分析")
 		self.subroot['background'] = '#efefef'
-		self.tipLabel = Label(self.subroot,font=self.font, relief="groove",text='↓将您用来辨识谱面的方式填入右侧文本框      请将控制台中的内容粘贴进右面的文本框，然后点击按钮↓')
+		self.tipLabel = Label(self.subroot,font=self.font, relief="groove",text='↓将您用来辨识谱面的方式填入右侧文本框，然后点击右侧红色按钮进行结果分析↓',fg='#F9245E')
 		self.tipLabel.place(x=0,y=0,height=40,relwidth=1)
-		self.logText = Text(self.subroot,font=self.font)
-		self.logText.place(relx=0.7,y=70,relheight=0.88,relwidth=0.3)
 
 		with open('./musync_data/ExtraFunction.cfg', 'r') as confFile:
 			config = json.load(confFile)
 
 		self.openHitAnalyze = False
 		self.hitAnalyzeButton = Button(self.subroot,text='All\nHit',command=self.OpenHitAnalyze,font=self.font, relief="groove")
-		self.hitAnalyzeButton.place(x=0,y=40,height=60,relwidth=0.05)
+		self.hitAnalyzeButton.place(x=0,y=40,height=90,relwidth=0.05)
 		self.nameDelayLabel = Label(self.subroot,font=self.font, relief="groove",text='↓请在下面输入曲名与谱面难度↓这只是用来标记你玩的哪个谱面而已，\n只要你能分辨就行，没有格式要求。如"ニニ 4KEZ"、"二重4H"等')
 		self.nameDelayLabel.place(relx=0.05,y=40,height=60,relwidth=0.65)
-		self.nameDelayEntry = Entry(self.subroot,font=self.font, relief="sunken")
-		self.nameDelayEntry.place(relx=0.01,y=100,height=30,relwidth=0.68)
+		self.nameDelayEntry = Entry(self.subroot,font=self.font, relief="sunken",validate='focus',validatecommand=self.TestEntryString)
+		self.nameDelayEntry.insert(0, "→→在这里输入铺面标识←←")
+		self.nameDelayEntry.place(relx=0.05,y=100,height=30,relwidth=0.65)
 		self.delayHistory = ttk.Treeview(self.subroot, show="headings", columns = ['name','AllKeys','AvgDelay','AvgAcc'])
-		self.delayHistory.place(x=0,y=130,relheight=0.78,relwidth=0.68)
+		self.delayHistory.place(x=0,y=130,relheight=0.78,relwidth=0.70)
 		self.VScroll1 = Scrollbar(self.subroot, orient='vertical', command=self.delayHistory.yview)
 		self.delayHistory.configure(yscrollcommand=self.VScroll1.set)
-		self.VScroll1.place(relx=0.68,y=130,relheight=0.78,relwidth=0.02)
+		self.VScroll1.place(relx=0.679,y=132,relheight=0.774,relwidth=0.02)
 		
+		self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
+		self.logButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
 		if config['EnableAcc-Sync']:
-			self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
-			self.logButton.place(relx=0.7,y=40,height=30,relwidth=0.2)
-			self.txtButton = Button(self.subroot,text='Acc-Sync',command=self.OpenTxt,font=self.font)
-			self.txtButton.place(relx=0.9,y=40,height=30,relwidth=0.1)
-		else:
-			self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
-			self.logButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
+			self.txtButton = Button(self.subroot,text='生成Acc-Sync图表',command=self.OpenTxt,font=self.font)
+			self.txtButton.place(relx=0.7,y=70,height=30,relwidth=0.3)
+
+		self.delayInterval = 90
 		if config['EnableNarrowDelayInterval']:
 			self.delayInterval = 45
-		else:
-			self.delayInterval = 90
+		del config
 
 		self.history = list()
 		self.HistoryUpdate()
 		self.UpdateWindowInfo()
+
+	def TestEntryString(self):
+		string = self.nameDelayEntry.get()
+		# print(type(string),string,reason)
+		if string == '':
+			self.nameDelayEntry.insert(0, "→→在这里输入铺面标识←←")
+		elif string == '→→在这里输入铺面标识←←':
+			self.nameDelayEntry.delete(0,'end')
+		return True
 
 	def HistoryUpdate(self):
 		for ids in self.delayHistory.get_children():
@@ -107,34 +115,49 @@ class HitDelayText(object):
 		for ids in data:
 			self.history = list()
 			self.history.append(ids[0])
-			self.delayHistory.insert('', END, values=(ids[0],ids[2],'%.6f ms'%ids[1],'%.6f ms'%ids[3]))
+			self.delayHistory.insert('', END, values=(ids[0],ids[2],'%.6f ms'%ids[1],'%.6f ms   '%ids[3]))
 		del data
 
 	def Draw(self):
-		data = self.logText.get("0.0", "end").split('\n')
-		dataList=list()
-		name = self.nameDelayEntry.get()+f"-{dt.now()}"
-		if data[-1] == "":
-			data.pop(-1)
-		for ids in range(1,len(data)-1):
-			dataList.append(float(data[ids][13:-2]))
-		allKeys = len(dataList)
-		sumNums,sumKeys = 0,0
-		for ids in dataList:
-			if (ids < self.delayInterval) and (ids > -self.delayInterval):
-				sumNums += ids
-				sumKeys += 1
-		avgDelay = sumNums/sumKeys
-		avgAcc = sum([abs(i) for i in dataList])/allKeys
-		self.delayHistory.insert('', END, values=(name,allKeys,'%.6f ms'%avgDelay,'%.6f ms'%avgAcc))
-		dataListStr = ""
-		for i in dataList:
-			dataListStr += f'{i}|'
-		self.cur.execute("insert into HitDelayHistory values(?,?,?,?,?)",(name,avgDelay,allKeys,avgAcc,dataListStr[:-1]))
-		self.db.commit()
-		self.HistoryUpdate()
-		dataList = [name,avgDelay,allKeys,avgAcc,dataList]
-		HitDelayDraw(dataList,isHistory=False)
+		consoleFind = False
+		try:
+			win = uiauto.WindowControl(searchDepth=1,Name='MUSYNX Delay',searchInterval=1).DocumentControl(serchDepth=1,Name='Text Area',searchInterval=1)
+			win.SendKeys('{Ctrl}A',waitTime=0.1)
+			win.SendKeys('{Ctrl}C',waitTime=0.1)
+			consoleFind = True
+		except Exception as e:
+			try:
+				win = uiauto.WindowControl(searchDepth=1,Name='选择 MUSYNX Delay',searchInterval=1).DocumentControl(serchDepth=1,Name='Text Area',searchInterval=1)
+				win.SendKeys('{Ctrl}A',waitTime=0.1)
+				win.SendKeys('{Ctrl}C',waitTime=0.1)
+				consoleFind = True
+			except Exception as e:
+				messagebox.showerror("Error", f'控制台窗口未找到\n请确认控制台窗口已开启\n{e}')
+		if consoleFind:
+			data = pyperclip.paste().split('\n')
+			dataList=list()
+			name = self.nameDelayEntry.get()+f"-{dt.now()}"
+			if data[-1] == "":
+				data.pop(-1)
+			for ids in range(1,len(data)-1):
+				dataList.append(float(data[ids][13:-3]))
+			allKeys = len(dataList)
+			sumNums,sumKeys = 0,0
+			for ids in dataList:
+				if (ids < self.delayInterval) and (ids > -self.delayInterval):
+					sumNums += ids
+					sumKeys += 1
+			avgDelay = sumNums/sumKeys
+			avgAcc = sum([abs(i) for i in dataList])/allKeys
+			self.delayHistory.insert('', END, values=(name,allKeys,'%.6f ms'%avgDelay,'%.6f ms   '%avgAcc))
+			dataListStr = ""
+			for i in dataList:
+				dataListStr += f'{i}|'
+			self.cur.execute("insert into HitDelayHistory values(?,?,?,?,?)",(name,avgDelay,allKeys,avgAcc,dataListStr[:-1]))
+			self.db.commit()
+			self.HistoryUpdate()
+			dataList = [name,avgDelay,allKeys,avgAcc,dataList]
+			HitDelayDraw(dataList,isHistory=False)
 
 	def OpenTxt(self):
 		os.system('start notepad ./musync_data/Acc-Sync.json')
@@ -170,7 +193,7 @@ class HitDelayText(object):
 		self.delayHistory.column("name",anchor="w",width=300)
 		self.delayHistory.column("AllKeys",anchor="e",width=60)
 		self.delayHistory.column("AvgDelay",anchor="e",width=150)
-		self.delayHistory.column("AvgAcc",anchor="e",width=150)
+		self.delayHistory.column("AvgAcc",anchor="e",width=100)
 		self.delayHistory.bind("<Double-1>",self.HistoryDraw)
 
 		self.subroot.update()

@@ -120,7 +120,7 @@ class HitAnalyze(object):
 			for ids in range(maxLen//10,maxY+maxLen//10,maxLen//10):
 				yLine.append([ids for i in range(-150,251)])
 
-		fig = plt.figure(f"HitAnalyze (total:{self.sumYnum},  CyanEx:{self.rate[0]},  BlueEx:{self.rate[1]},  Great:{self.rate[2]},  Right:{self.rate[3]},  Miss:{self.rate[4]})", figsize=(16, 8))
+		fig = plt.figure(f"HitAnalyze (Total:{self.sumYnum},  CyanEx:{self.rate[0]},  BlueEx:{self.rate[1]},  Great:{self.rate[2]},  Right:{self.rate[3]},  Miss:{self.rate[4]})", figsize=(16, 8))
 		fig.subplots_adjust(**{"left":0.045,"bottom":0.06,"right":1,"top":1})
 		if self.isOpen: fig.clear()
 		plt.xlabel("Delay(ms)",fontproperties='LXGW WenKai Mono',fontsize=15)

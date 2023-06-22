@@ -9,8 +9,7 @@ import threading
 from PIL import Image as PILImage
 from PIL import ImageTk
 from tkinter import *
-from tkinter import Tk,ttk,font
-from tkinter import messagebox
+from tkinter import Tk,ttk,font,messagebox
 from tkinter.filedialog import askopenfilename
 from HitDelay import HitDelayCheck,HitDelayText
 import Functions
@@ -19,7 +18,7 @@ import Functions
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.2.1rc4'
+version = '1.2.2rc1'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -163,7 +162,7 @@ class MusyncSavDecodeGUI(object):
 			self.DeleteAnalyzeFile()
 		self.CheckFile()
 		if config['EnableDLLInjection']:
-			self.hitDelay = Button(self.root, text="DLL注入\n分析\n游玩结果",command=self.HitDelay, font=self.font,bg='#FF5555')
+			self.hitDelay = Button(self.root, text="DLL注入\n分析\n游玩结果",command=self.HitDelay, font=self.font,bg='#FF5959')
 			self.hitDelay.place(x=776,y=48,width=90,height=74)
 		if not os.path.isfile('./musync_data/SaveFilePath.sfp'):
 			self.GetSaveFile()

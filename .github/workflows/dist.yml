@@ -11,7 +11,6 @@ env:
   Version: Init
   Release: Init
   isPreRelease: true
-  VersionContent: Init
   ChangeLog: Init
 
 jobs:
@@ -41,12 +40,12 @@ jobs:
         if ( $rc -eq 'Release' ){$release = $ver -replace "rc"," Release "}else{$release = $ver -replace "pre"," PreRelease "}
         echo "Release=$release" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         echo $release
-        $vc = Get-Content ./versionContent
-        echo "VersionContent=$vc" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         $change = Get-Content ./changelog.txt
         echo "ChangeLog=$change" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         echo "${{ GITHUB_WORKSPACE }}"
         echo "${{ github.workspace }}"
+        ls ${{ github.workspace }}
+        echo ${{ github.event.head_commit.message }}
 
     - name: Dist NoConsole ${{ env.Version }} Compress Version
       run: |
@@ -71,7 +70,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       with:
-        name: ${{ env.Release }}  ${{ env.VersionContent }}  < Auto Release >
+        name: ${{ env.Release }}  < Auto Release >
         tag_name: ${{ env.Version }}
         draft: false
         body: ${{ env.ChangeLog }}

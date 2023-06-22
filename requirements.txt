@@ -4,3 +4,4 @@ pyinstaller
 matplotlib
 pywin32
 uiautomation
+pyperclip

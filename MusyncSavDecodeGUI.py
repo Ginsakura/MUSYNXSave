@@ -18,7 +18,7 @@ import Functions
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.2.2rc6'
+version = '1.2.2rc7'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -158,12 +158,6 @@ class MusyncSavDecodeGUI(object):
 		else:
 			threading.Thread(target=self.CheckUpdate).start()
 			# threading.Thread(target=self.CheckJsonUpdate).start()
-		if self.config['EnableAnalyzeWhenStarting']:
-			self.DeleteAnalyzeFile()
-		self.CheckFile()
-		if self.config['EnableDLLInjection']:
-			self.hitDelay = Button(self.root, text="DLL注入\n分析\n游玩结果",command=self.HitDelay, font=self.font,bg='#FF5959')
-			self.hitDelay.place(x=776,y=48,width=90,height=74)
 		if not os.path.isfile('./musync_data/SaveFilePath.sfp'):
 			self.GetSaveFile()
 		else:
@@ -178,12 +172,19 @@ class MusyncSavDecodeGUI(object):
 				self.GetSaveFile()
 			else:
 				self.saveFilePathVar.set(sfpr)
-				self.DataLoad()
+		if self.config['EnableAnalyzeWhenStarting']:
+			self.DeleteAnalyzeFile()
+		self.CheckFile()
+		if self.config['EnableDLLInjection']:
+			self.hitDelay = Button(self.root, text="DLL注入\n分析\n游玩结果",command=self.HitDelay, font=self.font,bg='#FF5959')
+			self.hitDelay.place(x=776,y=48,width=90,height=74)
 		if os.path.isfile('./musync_data/SavAnalyze.json'):
 			self.DataLoad()
 		elif os.path.isfile('./musync_data/SavDecode.decode'):
 			self.InitLabel('解码存档中......')
 			MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
+			self.DataLoad()
+		else:
 			self.DataLoad()
 
 	# def LoadImage(self,imgPath,size):
@@ -344,23 +345,22 @@ class MusyncSavDecodeGUI(object):
 		saveFilePath = None
 		for ids in "DEFCGHIJKLMNOPQRSTUVWXYZAB":
 			if os.path.isfile(f'{ids}:/Program Files/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav'):
-				saveFilePath = f"{ids}:/Program Files/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav"
+				saveFilePath = f"{ids}:/Program Files/steam/steamapps/common/MUSYNX/"
 				break
 			elif os.path.isfile(f'{ids}:/SteamLibrary/steamapps/common/MUSYNX/SavesDir/savedata.sav'):
-				saveFilePath = f"{ids}:/SteamLibrary/steamapps/common/MUSYNX/SavesDir/savedata.sav"
+				saveFilePath = f"{ids}:/SteamLibrary/steamapps/common/MUSYNX/"
 				break
 			elif os.path.isfile(f'{ids}:/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav'):
-				saveFilePath = f"{ids}:/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav"
+				saveFilePath = f"{ids}:/steam/steamapps/common/MUSYNX/"
 				break
+		print("savefilepath:",saveFilePath)
 		if not saveFilePath == None:
-			execPath = saveFilePath[:-21]
-			if self.config['MainExecPath'] != execPath:
-				self.config['MainExecPath'] = execPath
-				json.dump(self.config,open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
 			with open('./musync_data/SaveFilePath.sfp','w',encoding="utf8") as sfp:
-				sfp.write(saveFilePath)
-			self.saveFilePathVar.set(saveFilePath)
-			self.DataLoad()
+				sfp.write(saveFilePath+'SavesDir/savedata.sav')
+			self.saveFilePathVar.set(saveFilePath+'SavesDir/savedata.sav')
+			if self.config['MainExecPath'] != saveFilePath:
+				self.config['MainExecPath'] = saveFilePath
+				json.dump(self.config,open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
 		else:
 			self.InitLabel("搜索不到存档文件.")
 
@@ -399,7 +399,7 @@ class MusyncSavDecodeGUI(object):
 		if os.path.isfile('./musync_data/SavAnalyze.json'):pass
 		elif os.path.isfile('./musync_data/SavDecode.decode'):MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
 		else:
-			if self.saveFilePathEntry.get() == 'Input SaveFile or AnalyzeFile Path (savedata.sav)or(SavAnalyze.json)':
+			if self.saveFilePathVar.get() == 'Input SaveFile or AnalyzeFile Path (savedata.sav)or(SavAnalyze.json)':
 				self.SelectPath()
 			MusyncSavDecode.MUSYNCSavProcess(self.saveFilePathVar.get()).Main()
 

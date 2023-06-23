@@ -18,7 +18,7 @@ import Functions
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.2.2rc5'
+version = '1.2.2rc6'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -151,17 +151,17 @@ class MusyncSavDecodeGUI(object):
 		self.TreeviewColumnUpdate()
 
 		with open('./musync_data/ExtraFunction.cfg','r') as confFile:
-			config = json.load(confFile)
+			self.config = json.load(confFile)
 
-		if config['DisableCheckUpdate']:
+		if self.config['DisableCheckUpdate']:
 			self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页')
 		else:
 			threading.Thread(target=self.CheckUpdate).start()
 			# threading.Thread(target=self.CheckJsonUpdate).start()
-		if config['EnableAnalyzeWhenStarting']:
+		if self.config['EnableAnalyzeWhenStarting']:
 			self.DeleteAnalyzeFile()
 		self.CheckFile()
-		if config['EnableDLLInjection']:
+		if self.config['EnableDLLInjection']:
 			self.hitDelay = Button(self.root, text="DLL注入\n分析\n游玩结果",command=self.HitDelay, font=self.font,bg='#FF5959')
 			self.hitDelay.place(x=776,y=48,width=90,height=74)
 		if not os.path.isfile('./musync_data/SaveFilePath.sfp'):
@@ -178,11 +178,6 @@ class MusyncSavDecodeGUI(object):
 				self.GetSaveFile()
 			else:
 				self.saveFilePathVar.set(sfpr)
-				execPath = sfpr[:-21]
-				# print(execPath)
-				if config['MainExecPath'] != execPath:
-					config['MainExecPath'] = execPath
-					json.dump(config,open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
 				self.DataLoad()
 		if os.path.isfile('./musync_data/SavAnalyze.json'):
 			self.DataLoad()
@@ -360,6 +355,10 @@ class MusyncSavDecodeGUI(object):
 		if not saveFilePath == None:
 			with open('./musync_data/SaveFilePath.sfp','w',encoding="utf8") as sfp:
 				sfp.write(saveFilePath)
+				execPath = saveFilePath[:-21]
+				if self.config['MainExecPath'] != execPath:
+					self.config['MainExecPath'] = execPath
+					json.dump(self.config,open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
 				self.saveFilePathVar.set(saveFilePath)
 			self.DataLoad()
 		else:
@@ -558,34 +557,25 @@ class SubWindow(object):
 		
 
 if __name__ == '__main__':
-	def is_admin():
-		try:
-			return ctypes.windll.shell32.IsUserAnAdmin()
-		except:
-			return False
-	ctypes.windll.shcore.SetProcessDpiAwareness(1)
-	root = Tk()
-	fonts = list(font.families())
-	Functions.CheckFileBeforeStarting(fonts)
-	del fonts
-	Functions.CheckConfig()
-	with open('./musync_data/ExtraFunction.cfg','r') as cfg:
-		cfg = json.load(cfg)
-	if cfg['ChangeConsoleStyle']:
-		Functions.ChangeConsoleStyle()
-		# if is_admin():
-		# 	try:
-		# 		Functions.ChangeConsoleStyle()
-		# 	except Exception as e:
-		# 		print(e)
-		# 		os.system('pause')
-		# else:
-		# 	ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
-	del cfg
-	#root.state('zoomed') #隐藏最小化、最大化按钮
-	#设置程序缩放
-	# root.tk.call('tk', 'scaling', (ctypes.windll.shcore.GetScaleFactorForDevice(0))/75)
-	root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
-	window = MusyncSavDecodeGUI(root=root, dpi=Functions.GetDpi())
-	root.update()
-	root.mainloop()
+	try:
+		ctypes.windll.shcore.SetProcessDpiAwareness(1)
+		root = Tk()
+		fonts = list(font.families())
+		Functions.CheckFileBeforeStarting(fonts)
+		del fonts
+		Functions.CheckConfig()
+		with open('./musync_data/ExtraFunction.cfg','r') as cfg:
+			cfg = json.load(cfg)
+		if cfg['ChangeConsoleStyle']:
+			Functions.ChangeConsoleStyle()
+		del cfg
+		#root.state('zoomed') #隐藏最小化、最大化按钮
+		#设置程序缩放
+		# root.tk.call('tk', 'scaling', (ctypes.windll.shcore.GetScaleFactorForDevice(0))/75)
+		root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
+		window = MusyncSavDecodeGUI(root=root, dpi=Functions.GetDpi())
+		root.update()
+		root.mainloop()
+	except Exception as e:
+		print(repr(e))
+		os.system("pause")

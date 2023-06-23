@@ -209,7 +209,7 @@ class HitDelayText(object):
 			print(historyItem)
 			data = self.cur.execute(f'select * from HitDelayHistory where SongMapName=\'{historyItem[0]}\'')
 			data = data.fetchone()
-			print(data[:4])
+			# print(data[:4])
 			self.cursorHistory = data[0]
 			self.historyNameEntry.delete(0, 'end')
 			self.historyNameEntry.insert(0, data[0])

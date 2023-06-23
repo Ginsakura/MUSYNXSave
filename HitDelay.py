@@ -112,7 +112,7 @@ class HitDelayText(object):
 		self.style.configure("update.TButton",font=self.font, relief="raised", background='#A6E22B')
 		self.historyDeleteButton = ttk.Button(self.historyFrame, text='更新记录', style="update.TButton",command=self.UpdateCursorHistory)
 		self.historyDeleteButton.place(x=0,y=150,height=30,relwidth=0.5)
-		self.style.configure("delete.TButton",font=self.font, relief="raised", foreground='#FF4040')
+		self.style.configure("delete.TButton",font=self.font, relief="raised", foreground='#FF4040', background='#FF2020')
 		self.historyDeleteButton = ttk.Button(self.historyFrame, text='删除记录', style="delete.TButton",command=self.DeleteCursorHistory)
 		self.historyDeleteButton.place(relx=0.5,y=150,height=30,relwidth=0.5)
 
@@ -252,9 +252,9 @@ class HitDelayText(object):
 		self.delayHistory.heading("AvgDelay",anchor="center",text="Delay")
 		self.delayHistory.heading("AvgAcc",anchor="center",text="AvgAcc")
 		self.delayHistory.column("name",anchor="w",width=300)
-		self.delayHistory.column("AllKeys",anchor="e",width=60)
-		self.delayHistory.column("AvgDelay",anchor="e",width=150)
-		self.delayHistory.column("AvgAcc",anchor="e",width=100)
+		self.delayHistory.column("AllKeys",anchor="e",width=50)
+		self.delayHistory.column("AvgDelay",anchor="e",width=90)
+		self.delayHistory.column("AvgAcc",anchor="e",width=90)
 		self.delayHistory.bind("<Double-1>",self.HistoryDraw)
 		self.delayHistory.bind("<ButtonPress-1>",self.ChangeHisotyInfo)
 

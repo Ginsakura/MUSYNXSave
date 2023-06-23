@@ -65,6 +65,7 @@ class HitDelayText(object):
 		self.subroot['background'] = '#efefef'
 		self.tipLabel = Label(self.subroot,font=self.font, relief="groove",text='↓将您用来辨识谱面的方式填入右侧文本框，然后点击右侧红色按钮进行结果分析↓',fg='#F9245E')
 		self.tipLabel.place(x=0,y=0,height=40,relwidth=1)
+		self.style = ttk.Style()
 
 		with open('./musync_data/ExtraFunction.cfg', 'r') as confFile:
 			config = json.load(confFile)
@@ -88,6 +89,30 @@ class HitDelayText(object):
 		if config['EnableAcc-Sync']:
 			self.txtButton = Button(self.subroot,text='生成Acc-Sync图表',command=self.OpenTxt,font=self.font)
 			self.txtButton.place(relx=0.7,y=70,height=30,relwidth=0.3)
+
+		self.historyFrame = Frame(self.subroot,relief="groove",bd=2)
+		self.historyFrame.place(relx=0.701,y=198,height=184,relwidth=0.298)
+		self.historyNameLabel = Label(self.historyFrame, text='铺面游玩标识',font=self.font, relief="groove")
+		self.historyNameLabel.place(x=0,y=0,height=30,relwidth=1)
+		self.historyNameEntry = Entry(self.historyFrame,font=self.font, relief="sunken")
+		self.historyNameEntry.place(x=0,y=30,height=30,relwidth=1)
+		self.historyKeysLabel = Label(self.historyFrame, text=f'按键数量: ',font=self.font, relief="groove", anchor="e")
+		self.historyKeysLabel.place(x=0,y=60,height=30,relwidth=0.4)
+		self.historyKeysValueLabel = Label(self.historyFrame, text="0  ",font=self.font, relief="groove", anchor="e") #"%*5d"%0 #{"    0"}
+		self.historyKeysValueLabel.place(relx=0.4,y=60,height=30,relwidth=0.6)
+		self.historyDelayLabel = Label(self.historyFrame, text='Delay: ',font=self.font, relief="groove", anchor="e")
+		self.historyDelayLabel.place(x=0,y=90,height=30,relwidth=0.4)
+		self.historyDelayValueLabel = Label(self.historyFrame, text="000.000000ms  ",font=self.font, relief="groove", anchor="e")
+		self.historyDelayValueLabel.place(relx=0.4,y=90,height=30,relwidth=0.6)
+		self.historyAccLabel = Label(self.historyFrame, text='AvgAcc: ',font=self.font, relief="groove", anchor="e")
+		self.historyAccLabel.place(x=0,y=120,height=30,relwidth=0.4)
+		self.historyAccValueLabel = Label(self.historyFrame, text='000.000000ms  ',font=self.font, relief="groove", anchor="e")
+		self.historyAccValueLabel.place(relx=0.4,y=120,height=30,relwidth=0.6)
+		self.style.configure("delete.TButton",font=self.font, relief="groove",
+			foreground=[('pressed', 'red'), ('active', 'yellow')],
+    		)
+		self.historyDeleteButton = ttk.Button(self.historyFrame, text='删除记录', style="delete.TButton")
+		self.historyDeleteButton.place(x=0,y=150,height=30,relwidth=1)
 
 		self.delayInterval = 90
 		if config['EnableNarrowDelayInterval']:
@@ -172,6 +197,21 @@ class HitDelayText(object):
 		self.openHitAnalyze = True
 		hitAnalyze.Show()
 
+	def ChangeHisotyInfo(self,event):
+		e = event.widget									# 取得事件控件
+		itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
+		# state = e.item(itemID,"text")						# 取得text参数
+		historyItem = e.item(itemID,"values")				# 取得values参数
+		if not self.history == []:
+			isChange = False
+			data = self.cur.execute(f'select * from HitDelayHistory where SongMapName=\'{historyItem[0]}\'')
+			data = data.fetchone()
+			self.historyNameEntry = data[0]
+
+	def HistoryInfo(self,data):
+		data,isChange = HistoryInfo(data)
+		if isChange:
+			self.cur.execute(f'update ')
 
 	def HistoryDraw(self,event):
 		e = event.widget									# 取得事件控件
@@ -195,6 +235,7 @@ class HitDelayText(object):
 		self.delayHistory.column("AvgDelay",anchor="e",width=150)
 		self.delayHistory.column("AvgAcc",anchor="e",width=100)
 		self.delayHistory.bind("<Double-1>",self.HistoryDraw)
+		self.delayHistory.bind("<ButtonPress-1>",self.ChangeHisotyInfo)
 
 		self.subroot.update()
 		# self.subroot.after(500,self.UpdateWindowInfo)

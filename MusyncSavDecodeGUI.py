@@ -73,7 +73,7 @@ class MusyncSavDecodeGUI(object):
 		# self..place(x= ,y= ,width= ,height=)
 		# self.saveFileDecodeButton = Button(self.root, text="存档解码及分析",command=self.DeleteAnalyzeFile, font=self.font)
 		# self.saveFileDecodeButton = ttk.Button(self.root, text="存档解码及分析",command=self.DeleteAnalyzeFile, image=ImageTk.PhotoImage(PILImage.open("./skin/Decode.png")), style='reload.TButton')
-		self.saveFileDecodeButton = ttk.Button(self.root, text="存档解码及分析", command=self.DeleteAnalyzeFile, image=self.LoadImage('./skin/Decode.png',(150,30)), style='reload.TButton')
+		self.saveFileDecodeButton = ttk.Button(self.root, text="存档解码及分析", command=self.DeleteAnalyzeFile, style='reload.TButton')
 		self.saveFileDecodeButton.place(x=10,y=10,width=150,height=30)
 
 		self.CountFrameLanel = Label(self.root,text="", relief="groove")
@@ -98,7 +98,7 @@ class MusyncSavDecodeGUI(object):
 		self.initLabel = Label(self.root, text='启动中......', anchor="w", font=self.font, relief="groove")
 		self.initLabel.place(x=250,y=300,width=500,height=30)
 
-		self.deleteAnalyzeFile = ttk.Button(self.root, text="刷新",command=self.DeleteAnalyzeFile,style='F5.TButton', image=self.LoadImage('./skin/F5.png',(90,30)))
+		self.deleteAnalyzeFile = ttk.Button(self.root, text="刷新",command=self.DeleteAnalyzeFile,style='F5.TButton')
 		self.deleteAnalyzeFile.place(x=10,y=88,width=90,height=30)
 
 		self.totalSyncFrameLabel = Label(self.root, text='', relief="groove")
@@ -310,6 +310,7 @@ class MusyncSavDecodeGUI(object):
 	# 	nroot = Toplevel(self.root)
 	# 	nroot.resizable(True, True)
 	# 	newWindow = SubWindow(nroot, songData[0], songData[1], songData[2])
+
 	def SortClick(self,event):
 		def TreeviewSortColumn(col):
 			# print(self.dataSortMethodsort, end=' /// ')

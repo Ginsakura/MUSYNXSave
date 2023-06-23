@@ -166,8 +166,8 @@ class HitDelayText(object):
 			name = self.nameDelayEntry.get()+f"-{dt.now()}"
 			if data[-1] == "":
 				data.pop(-1)
-			for ids in range(1,len(data)-1):
-				dataList.append(float(data[ids][13:-2]))
+			for ids in range(1,len(data)):
+				dataList.append(float(data[ids][13:-3]))
 			allKeys = len(dataList)
 			sumNums,sumKeys = 0,0
 			for ids in dataList:

@@ -39,7 +39,7 @@ WithConsole版本为带命令提示符界面，适合出现bug时快速定位错
 |`EnableDonutChartinHitDelay` |是否在单次游玩统计中显示击打延迟环形图|false|
 |`EnableDonutChartinAllHitAnalyze` |是否在全局统计中显示击打延迟环形图|false|
 |`EnablePDFofCyanExtra` |是否在全局统计中显示仅CyanExtra的正态分布拟合|false|
-|`EnableNarrowDelayInterval` |是否在单次游玩统计中使用更狭窄的击打区间来计算平均偏移值(Delay)|false|
+|`EnableNarrowDelayInterval` |是否在单次游玩统计中使用更狭窄的击打区间来计算平均偏移值(Delay)  [true=45ms,false=90ms]|false|
 |`ConsoleAlpha` |喵赛克游戏本体控制台窗口的不透明度(取值范围[0,100],100为完全不透明,不建议取值在30以下)|75|
 |`ConsoleFont` |喵赛克游戏本体控制台窗口的字体|霞鹜文楷等宽|
 |`ConsoleFontSize` |喵赛克游戏本体控制台窗口的字号|36|

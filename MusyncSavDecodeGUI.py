@@ -353,13 +353,13 @@ class MusyncSavDecodeGUI(object):
 				saveFilePath = f"{ids}:/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav"
 				break
 		if not saveFilePath == None:
+			execPath = saveFilePath[:-21]
+			if self.config['MainExecPath'] != execPath:
+				self.config['MainExecPath'] = execPath
+				json.dump(self.config,open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
 			with open('./musync_data/SaveFilePath.sfp','w',encoding="utf8") as sfp:
 				sfp.write(saveFilePath)
-				execPath = saveFilePath[:-21]
-				if self.config['MainExecPath'] != execPath:
-					self.config['MainExecPath'] = execPath
-					json.dump(self.config,open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
-				self.saveFilePathVar.set(saveFilePath)
+			self.saveFilePathVar.set(saveFilePath)
 			self.DataLoad()
 		else:
 			self.InitLabel("搜索不到存档文件.")

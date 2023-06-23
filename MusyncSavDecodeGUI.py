@@ -18,7 +18,7 @@ import Functions
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.2.2rc9'
+version = '1.2.2rc10'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -67,7 +67,7 @@ class MusyncSavDecodeGUI(object):
 		self.treeviewColumns = ["SpeedStall",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","IsFav"]
 		self.difficute = 3
 		self.wh = [0,0]
-		self.vScrollpos = (0,1)
+		# self.vScrollpos = (0,1)
 
 		##Controls##
 		# self..place(x= ,y= ,width= ,height=)
@@ -381,7 +381,7 @@ class MusyncSavDecodeGUI(object):
 			HitDelayText(nroot)
 	def DataLoad(self):
 		self.InitLabel(text="正在分析存档文件中……")
-		self.vScrollpos = self.VScroll1.get()
+		# self.vScrollpos = self.VScroll1.get()
 		def Rank(sync):
 			sync = float(sync[0:-1])
 			if sync < 75:return "C"
@@ -392,10 +392,6 @@ class MusyncSavDecodeGUI(object):
 			elif sync < 122:return "红Ex"
 			else:return "黑Ex"
 
-		for ids in self.saveData.get_children():
-			self.saveData.delete(ids)
-		self.saveCount = 0
-		self.totalSync = 0
 		if os.path.isfile('./musync_data/SavAnalyze.json'):pass
 		elif os.path.isfile('./musync_data/SavDecode.decode'):MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
 		else:
@@ -411,6 +407,10 @@ class MusyncSavDecodeGUI(object):
 		with open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8') as saveData:
 			saveDataJson = json.load(saveData)
 			self.root.title(f'同步音律喵赛克 Steam端 本地存档分析	LastPlay: {saveDataJson["LastPlay"]}')
+			for ids in self.saveData.get_children():
+				self.saveData.delete(ids)
+			self.saveCount = 0
+			self.totalSync = 0
 			for saveLine in saveDataJson['SaveData']:
 				if not saveLine['SongName'] is None:
 					if (self.keys==1) and (saveLine['SongName'][1]=='6Key'):continue
@@ -451,9 +451,9 @@ class MusyncSavDecodeGUI(object):
 		if not self.dataSortMethodsort[0] is None:
 			self.SortClick(self.dataSortMethodsort)
 		self.InitLabel('存档分析完成.',close=True)
-		if not (self.vScrollpos[0]==0 and self.vScrollpos[1]==1):
-			self.VScroll1.set(self.vScrollpos[0],self.vScrollpos[1])
-			self.saveData.yview_moveto(self.vScrollpos[0])
+		# if not (self.vScrollpos[0]==0 and self.vScrollpos[1]==1):
+		# 	self.VScroll1.set(self.vScrollpos[0],self.vScrollpos[1])
+		# 	self.saveData.yview_moveto(self.vScrollpos[0])
 
 	def SelectPath(self):
 		path_ = askopenfilename(title="打开存档文件", filetypes=(("Sav Files", "*.sav"),("All Files","*.*"),)) #使用askdirectory()方法返回文件夹的路径
@@ -464,18 +464,18 @@ class MusyncSavDecodeGUI(object):
 			self.saveFilePathVar.set(path_)
 		
 	def TreeviewColumnUpdate(self):
-		self.saveData.heading("SpeedStall",anchor="center",text="谱面号"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='SpeedStall' else ''))
-		self.saveData.heading("SongName",anchor="center",text="曲名"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='SongName' else ''))
-		self.saveData.heading("Keys",anchor="center",text="键数"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='Keys' else ''))
-		self.saveData.heading("Difficulty",anchor="center",text="难度"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='Difficulty' else ''))
-		self.saveData.heading("DifficultyNumber",anchor="center",text="等级"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='DifficultyNumber' else ''))
-		self.saveData.heading("SyncNumber",anchor="center",text="同步率"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='SyncNumber' else ''))
-		self.saveData.heading("Rank",anchor="center",text="Rank"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='Rank' else ''))
-		self.saveData.heading("UploadScore",anchor="center",text="云端同步率"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='UploadScore' else ''))
-		self.saveData.heading("PlayCount",anchor="center",text="游玩计数"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='PlayCount' else ''))
-		self.saveData.heading("IsFav",anchor="center",text="IsFav"+(('▼' if self.dataSortMethodsort[1] else '▲') if self.dataSortMethodsort[0]=='IsFav' else ''))
-		self.VScroll1.set(self.vScrollpos[0],self.vScrollpos[1])
-		self.saveData.yview_moveto(self.vScrollpos[0])
+		self.saveData.heading("SpeedStall",anchor="center",text="谱面号"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SpeedStall' else ''))
+		self.saveData.heading("SongName",anchor="center",text="曲名"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SongName' else ''))
+		self.saveData.heading("Keys",anchor="center",text="键数"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='Keys' else ''))
+		self.saveData.heading("Difficulty",anchor="center",text="难度"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='Difficulty' else ''))
+		self.saveData.heading("DifficultyNumber",anchor="center",text="等级"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='DifficultyNumber' else ''))
+		self.saveData.heading("SyncNumber",anchor="center",text="同步率"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SyncNumber' else ''))
+		self.saveData.heading("Rank",anchor="center",text="Rank"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='Rank' else ''))
+		self.saveData.heading("UploadScore",anchor="center",text="云端同步率"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='UploadScore' else ''))
+		self.saveData.heading("PlayCount",anchor="center",text="游玩计数"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='PlayCount' else ''))
+		self.saveData.heading("IsFav",anchor="center",text="IsFav"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='IsFav' else ''))
+		# self.VScroll1.set(self.vScrollpos[0],self.vScrollpos[1])
+		# self.saveData.yview_moveto(self.vScrollpos[0])
 		self.root.update()
 
 	def TreeviewWidthUptate(self):

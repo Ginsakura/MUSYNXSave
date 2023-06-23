@@ -220,11 +220,14 @@ class HitDelayText(object):
 
 	def DeleteCursorHistory(self):
 		print(f"delete history {self.cursorHistory}")
-		result = messagebox.askyesno('提示', f'是否删除该谱面游玩记录?\n{self.cursorHistory}')
-		if result:
-			self.cur.execute(f'delete from HitDelayHistory where SongMapName=\'{self.cursorHistory}\'')
-			self.db.commit()
-			self.HistoryUpdate()
+		if self.cursorHistory == '':
+			messagebox.showerror('Error','请输入谱面标识')
+		else:
+			result = messagebox.askyesno('提示', f'是否删除该谱面游玩记录?\n{self.cursorHistory}')
+			if result:
+				self.cur.execute(f'delete from HitDelayHistory where SongMapName=\'{self.cursorHistory}\'')
+				self.db.commit()
+				self.HistoryUpdate()
 
 	def UpdateCursorHistory(self):
 		nowHistoryName = self.historyNameEntry.get()

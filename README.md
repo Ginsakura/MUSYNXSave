@@ -39,7 +39,7 @@ WithConsole版本为带命令提示符界面，适合出现bug时快速定位错
 |`EnableDonutChartinHitDelay` |是否在单次游玩统计中显示击打延迟环形图|false|
 |`EnableDonutChartinAllHitAnalyze` |是否在全局统计中显示击打延迟环形图|false|
 |`EnablePDFofCyanExtra` |是否在全局统计中显示仅CyanExtra的正态分布拟合|false|
-|`EnableNarrowDelayInterval` |是否在单次游玩统计中使用更狭窄的击打区间|false|
+|`EnableNarrowDelayInterval` |是否在单次游玩统计中使用更狭窄的击打区间来计算平均偏移值(Delay)|false|
 |`ConsoleAlpha` |喵赛克游戏本体控制台窗口的不透明度(取值范围[0,100],100为完全不透明,不建议取值在30以下)|75|
 |`ConsoleFont` |喵赛克游戏本体控制台窗口的字体|霞鹜文楷等宽|
 |`ConsoleFontSize` |喵赛克游戏本体控制台窗口的字号|36|
@@ -82,6 +82,7 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 2. 修复 修复`./skin/`找不到的bug <del>历史遗留问题呜呜呜呜呜</del>
 3. 修复 修复首次启动时没有自动打开字体安装程序的bug
 4. 修复 修复当没有 `SaveFilePath.sfp` 文件，但是 `EnableAnalyzeWhenStarting` 配置项为 `true` 时引发报错的bug
+5. 修复 修复 `HitDelay` 中获取的游玩成绩最后一次击打被过滤的bug
 1. 优化 重新调整 `HitDelay` 窗口的布局
 2. 优化 谱面标识输入框新增提示，输入框获取焦点时自动删除提示词，键入标识后不会自动删除
 3. 优化 降低首页DLL注入按钮的饱和度，使其醒目但不那么刺眼

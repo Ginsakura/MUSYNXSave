@@ -13,7 +13,7 @@ MUSYNX Steam Client Savefile Decode & Analyze Tool
 - [ ] 将提供一个文档来演示使用方法 (在写了,咕咕咕)
 - [ ] 使用文件夹内指定文件名的方式自定义美化UI
 ### 已完成的计划
-- [x] 一键获取上次铺面游玩结果
+- [x] 一键获取上次谱面游玩结果
 - [x] 使用workflow功能实现自动生成分发版本
 - [x] 重排版SongName.json
 - [x] 滑动条在重加载后保持位置不变
@@ -29,12 +29,24 @@ WithConsole版本为带命令提示符界面，适合出现bug时快速定位错
 
 ### 功能控制模块
 于`./musync_data/ExtraFunction.cfg`文件中启用/禁用对应功能
-1. `DisableCheckUpdate` 禁用更新检测
-2. `EnableAnalyzeWhenStarting` 启用每次启动时强制重新扫描存档文件
-3. `EnableDLLInjection` 启用DLL注入以开启高级功能
-5. `EnableAcc-Sync` 启用Acc-Synx图表
+|配置项|配置说明|默认值|
+|------|--------|------|
+|`EnableAcc-Sync`|是否启用Acc-Synx图表|false|
+|`DisableCheckUpdate` |是否禁用更新检测|false|
+|`EnableAnalyzeWhenStarting` |是否启用每次启动时重新扫描存档文件|false|
+|`EnableDLLInjection` |是否启用DLL注入以开启高级功能|false|
+|`SystemDPI` |读取系统DPI, 提供DPI窗体修正(未实现)|`自动获取`|
+|`EnableDonutChartinHitDelay` |是否在单次游玩统计中显示击打延迟环形图|false|
+|`EnableDonutChartinAllHitAnalyze` |是否在全局统计中显示击打延迟环形图|false|
+|`EnablePDFofCyanExtra` |是否在全局统计中显示仅CyanExtra的正态分布拟合|false|
+|`EnableNarrowDelayInterval` |是否在单次游玩统计中使用更狭窄的击打区间|false|
+|`ConsoleAlpha` |喵赛克游戏本体控制台窗口的不透明度(取值范围[0,100],100为完全不透明,不建议取值在30以下)|75|
+|`ConsoleFont` |喵赛克游戏本体控制台窗口的字体|霞鹜文楷等宽|
+|`ConsoleFontSize` |喵赛克游戏本体控制台窗口的字号|36|
+|`MainExecPath` |喵赛克游戏本体主程序所在的路径|`自动获取`|
+|`ChangeConsoleStyle` |是否启用自定义喵赛克游戏本体控制台窗口样式|false|
 
- 其他功能组件
+### 高级功能简介
 下列组件对游戏客户端有修改,请谨慎使用
 
 *** $\color{Red}{ 注意备份 注意备份 注意备份 }$ ***
@@ -59,18 +71,21 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 ### Version 1.2.2
 1. 更新 通过使用UIAutoMation库实现一键自动从控制台获取游玩结果 
     <del>以后都不需要再Ctrl A+C+V了</del><br>
-    $\color{Red}{控制台只显示最近一次的游玩记录，请在下次铺面游玩开始前生成结果}$<br>
+    $\color{Red}{控制台只显示最近一次的游玩记录，请在下次谱面游玩开始前生成结果}$<br>
     $\color{Red}{控制台关闭后不会保存游玩记录，请在关闭游戏前生成结果}$<br>
     $\color{Red}{结果生成需要使用剪切板，点击按钮后，在结果生成前请不要进行任何复制操作}$
 2. 更新 `HitDelay` 窗口中新增详细游玩记录展示
 3. 更新 `HitDelay` 窗口中新增支持修改谱面游玩标识
-4. 更新 `HitDelay` 窗口中新增支持删除铺面游玩记录
+4. 更新 `HitDelay` 窗口中新增支持删除谱面游玩记录
+5. 更新 `HitDelay` 窗口中删除谱面前产生提示框
 1. 修复 修复编译环境缺少 `uiautomation` 库的bug
-2. 修复 修复`./skin/`找不到的bug
+2. 修复 修复`./skin/`找不到的bug <del>历史遗留问题呜呜呜呜呜</del>
+3. 修复 修复首次启动时没有自动打开字体安装程序的bug
 1. 优化 重新调整 `HitDelay` 窗口的布局
-2. 优化 铺面标识输入框新增提示，输入框获取焦点时自动删除提示词，键入标识后不会自动删除
+2. 优化 谱面标识输入框新增提示，输入框获取焦点时自动删除提示词，键入标识后不会自动删除
 3. 优化 降低首页DLL注入按钮的饱和度，使其醒目但不那么刺眼
 4. 优化 优化首页元素布局方式 <del>Frame，好用)</del>
+5. 优化 优化 `Readme.md` 中有关配置文件的布局 <del>表格,好看)</del>
 
 ### Version 1.2.1
 1. 更新 针对喵赛克本体游玩时的Console进行优化，新增配置项
@@ -80,7 +95,7 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
     - `MainExecPath` : 喵赛克主程序所在路径,会由程序自动填写,可手动修改
     - `ChangeConsoleStyle` : 是否启用控制台样式修改,布尔类型,默认为false
    本项更新涉及注册表操作,本人测试正常,使用时还请提前添加系统还原点,启动一次本程序确认不会造成损害后可删除还原点,<br>第一次启动没有事之后就不会有事(除非你喵赛克换路径了)
-2. 更新 对DLL注入进行更新,本次更新后将支持铺面开始游玩时自动清空控制台 <br><del>放心大胆的Ctrl A吧!  ε=ε=ε=┏(゜ロ゜;)┛</del>
+2. 更新 对DLL注入进行更新,本次更新后将支持谱面开始游玩时自动清空控制台 <br><del>放心大胆的Ctrl A吧!  ε=ε=ε=┏(゜ロ゜;)┛</del>
 4. 修复 多次重复打开`AllHitAnalyze` 图表时，在图表内重叠显示内容的bug，本版本之后会转变成刷新图表
 3. 优化 因为自动清空控制台,所以分割gamestart的函数被移除.
 4. 优化 GitHubAction中版本标识的传递方法
@@ -98,7 +113,7 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 3. 更新 于`HitDelay`模块处更新tap的Rate环形图，若CyanExtra比例大于60%，则使用精细分级，若小于60%，则使用普通分级。
 4. 更新 配置文件中增加更多的配置项：默认不开启上述两个环形图
 5. 修复 修复`songname.json`中`惊涛落日 IN`谱面难度评级未更新的bug
-<del>这玩意儿算bug吗？</del>
+    <del>这玩意儿算bug吗？</del>
 
 6. 修复 修复些许文案错误
 7. 修复 修复多次点击`HitDelay`模块中的`AllHit`按钮时AllHitAnalyze图表显示错误的bug

@@ -66,6 +66,7 @@ class HitDelayText(object):
 		self.tipLabel = Label(self.subroot,font=self.font, relief="groove",text='↓将您用来辨识谱面的方式填入右侧文本框，然后点击右侧红色按钮进行结果分析↓',fg='#F9245E')
 		self.tipLabel.place(x=0,y=0,height=40,relwidth=1)
 		self.style = ttk.Style()
+		self.cursorHistory = ''
 
 		with open('./musync_data/ExtraFunction.cfg', 'r') as confFile:
 			config = json.load(confFile)
@@ -76,7 +77,7 @@ class HitDelayText(object):
 		self.nameDelayLabel = Label(self.subroot,font=self.font, relief="groove",text='↓请在下面输入曲名与谱面难度↓这只是用来标记你玩的哪个谱面而已，\n只要你能分辨就行，没有格式要求。如"ニニ 4KEZ"、"二重4H"等')
 		self.nameDelayLabel.place(relx=0.05,y=40,height=60,relwidth=0.65)
 		self.nameDelayEntry = Entry(self.subroot,font=self.font, relief="sunken",validate='focus',validatecommand=self.TestEntryString)
-		self.nameDelayEntry.insert(0, "→→在这里输入铺面标识←←")
+		self.nameDelayEntry.insert(0, "→→在这里输入谱面标识←←")
 		self.nameDelayEntry.place(relx=0.05,y=100,height=30,relwidth=0.65)
 		self.delayHistory = ttk.Treeview(self.subroot, show="headings", columns = ['name','AllKeys','AvgDelay','AvgAcc'])
 		self.delayHistory.place(x=0,y=130,relheight=0.78,relwidth=0.70)
@@ -92,13 +93,13 @@ class HitDelayText(object):
 
 		self.historyFrame = Frame(self.subroot,relief="groove",bd=2)
 		self.historyFrame.place(relx=0.701,y=198,height=184,relwidth=0.298)
-		self.historyNameLabel = Label(self.historyFrame, text='铺面游玩标识',font=self.font, relief="groove")
+		self.historyNameLabel = Label(self.historyFrame, text='谱面游玩标识',font=self.font, relief="groove")
 		self.historyNameLabel.place(x=0,y=0,height=30,relwidth=1)
 		self.historyNameEntry = Entry(self.historyFrame,font=self.font, relief="sunken")
 		self.historyNameEntry.place(x=0,y=30,height=30,relwidth=1)
 		self.historyKeysLabel = Label(self.historyFrame, text=f'按键数量: ',font=self.font, relief="groove", anchor="e")
 		self.historyKeysLabel.place(x=0,y=60,height=30,relwidth=0.4)
-		self.historyKeysValueLabel = Label(self.historyFrame, text="0  ",font=self.font, relief="groove", anchor="e") #"%*5d"%0 #{"    0"}
+		self.historyKeysValueLabel = Label(self.historyFrame, text="0  ",font=self.font, relief="groove", anchor="e")
 		self.historyKeysValueLabel.place(relx=0.4,y=60,height=30,relwidth=0.6)
 		self.historyDelayLabel = Label(self.historyFrame, text='Delay: ',font=self.font, relief="groove", anchor="e")
 		self.historyDelayLabel.place(x=0,y=90,height=30,relwidth=0.4)
@@ -108,11 +109,12 @@ class HitDelayText(object):
 		self.historyAccLabel.place(x=0,y=120,height=30,relwidth=0.4)
 		self.historyAccValueLabel = Label(self.historyFrame, text='000.000000ms  ',font=self.font, relief="groove", anchor="e")
 		self.historyAccValueLabel.place(relx=0.4,y=120,height=30,relwidth=0.6)
-		self.style.configure("delete.TButton",font=self.font, relief="groove",
-			foreground=[('pressed', 'red'), ('active', 'yellow')],
-    		)
-		self.historyDeleteButton = ttk.Button(self.historyFrame, text='删除记录', style="delete.TButton")
-		self.historyDeleteButton.place(x=0,y=150,height=30,relwidth=1)
+		self.style.configure("update.TButton",font=self.font, relief="raised", background='#A6E22B')
+		self.historyDeleteButton = ttk.Button(self.historyFrame, text='更新记录', style="update.TButton",command=self.UpdateCursorHistory)
+		self.historyDeleteButton.place(x=0,y=150,height=30,relwidth=0.5)
+		self.style.configure("delete.TButton",font=self.font, relief="raised", foreground='#FF4040')
+		self.historyDeleteButton = ttk.Button(self.historyFrame, text='删除记录', style="delete.TButton",command=self.DeleteCursorHistory)
+		self.historyDeleteButton.place(relx=0.5,y=150,height=30,relwidth=0.5)
 
 		self.delayInterval = 90
 		if config['EnableNarrowDelayInterval']:
@@ -127,8 +129,8 @@ class HitDelayText(object):
 		string = self.nameDelayEntry.get()
 		# print(type(string),string,reason)
 		if string == '':
-			self.nameDelayEntry.insert(0, "→→在这里输入铺面标识←←")
-		elif string == '→→在这里输入铺面标识←←':
+			self.nameDelayEntry.insert(0, "→→在这里输入谱面标识←←")
+		elif string == '→→在这里输入谱面标识←←':
 			self.nameDelayEntry.delete(0,'end')
 		return True
 
@@ -204,14 +206,33 @@ class HitDelayText(object):
 		historyItem = e.item(itemID,"values")				# 取得values参数
 		if not self.history == []:
 			isChange = False
+			print(historyItem)
 			data = self.cur.execute(f'select * from HitDelayHistory where SongMapName=\'{historyItem[0]}\'')
 			data = data.fetchone()
-			self.historyNameEntry = data[0]
+			print(data[:4])
+			self.cursorHistory = data[0]
+			self.historyNameEntry.delete(0, 'end')
+			self.historyNameEntry.insert(0, data[0])
+			self.historyDelayValueLabel['text'] = '%.6fms  '%float(data[1])
+			self.historyKeysValueLabel['text'] = '% 5s  '%data[2]
+			self.historyAccValueLabel['text'] = '%.6fms  '%float(data[3])
+			del data
 
-	def HistoryInfo(self,data):
-		data,isChange = HistoryInfo(data)
-		if isChange:
-			self.cur.execute(f'update ')
+	def DeleteCursorHistory(self):
+		print(f"delete history {self.cursorHistory}")
+		result = messagebox.askyesno('提示', f'是否删除该谱面游玩记录?\n{self.cursorHistory}')
+		if result:
+			self.cur.execute(f'delete from HitDelayHistory where SongMapName=\'{self.cursorHistory}\'')
+			self.db.commit()
+			self.HistoryUpdate()
+
+	def UpdateCursorHistory(self):
+		nowHistoryName = self.historyNameEntry.get()
+		if self.cursorHistory != nowHistoryName:
+			print(f"change history name \nfrom {self.cursorHistory} \nto {nowHistoryName}")
+			self.cur.execute(f'update HitDelayHistory set SongMapName=\'{nowHistoryName}\' where SongMapName=\'{self.cursorHistory}\'')
+			self.db.commit()
+			self.HistoryUpdate()
 
 	def HistoryDraw(self,event):
 		e = event.widget									# 取得事件控件

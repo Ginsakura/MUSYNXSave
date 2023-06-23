@@ -6,8 +6,8 @@ import ctypes
 import webbrowser
 import requests
 import threading
-from PIL import Image as PILImage
-from PIL import ImageTk
+# from PIL import Image as PILImage
+# from PIL import ImageTk
 from tkinter import *
 from tkinter import Tk,ttk,font,messagebox
 from tkinter.filedialog import askopenfilename
@@ -18,7 +18,7 @@ import Functions
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.2.2rc3'
+version = '1.2.2rc4'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -109,40 +109,40 @@ class MusyncSavDecodeGUI(object):
 		self.avgSyncLabel.place(x=870,y=90,width=120,height=30)
 
 		#筛选控件
-		self.selectFrameLabel0 = Label(self.root, text="", relief="groove")
-		self.selectFrameLabel0.place(x=178,y=48,width=383,height=74)
-		self.selectLabel0 = Label(self.root, text="筛选\n控件", anchor="w", font=self.font, relief="flat")
-		self.selectLabel0.place(x=180,y=55,width=50,height=60)
-		self.selectPlayedButton = Button(self.root, text='已游玩', command=lambda:self.SelectMethod('Played'), anchor="w", font=self.font)
-		self.selectPlayedButton.place(x=230,y=50,width=75,height=30)
-		self.selectUnplayButton = Button(self.root, text='未游玩', command=lambda:self.SelectMethod('Unplay'), anchor="w", font=self.font)
-		self.selectUnplayButton.place(x=230,y=88,width=75,height=30)
-		self.selectIsFavButton = Button(self.root, text='已收藏', command=lambda:self.SelectMethod('IsFav'), anchor="w", font=self.font)
-		self.selectIsFavButton.place(x=305,y=50,width=75,height=30)
-		self.selectExRankButton = Button(self.root, text='RankEx', command=lambda:self.SelectMethod('RankEX'), anchor="w", font=self.font)
-		self.selectExRankButton.place(x=305,y=88,width=75,height=30)
-		self.selectSRankButton = Button(self.root, text='RankS', command=lambda:self.SelectMethod('RankS'), anchor="w", font=self.font)
-		self.selectSRankButton.place(x=380,y=50,width=62,height=30)
-		self.selectARankButton = Button(self.root, text='RankA', command=lambda:self.SelectMethod('RankA'), anchor="w", font=self.font)
-		self.selectARankButton.place(x=380,y=88,width=62,height=30)
-		self.selectBRankButton = Button(self.root, text='RankB', command=lambda:self.SelectMethod('RankB'), anchor="w", font=self.font)
-		self.selectBRankButton.place(x=442,y=50,width=62,height=30)
-		self.selectCRankButton = Button(self.root, text='RankC', command=lambda:self.SelectMethod('RankC'), anchor="w", font=self.font)
-		self.selectCRankButton.place(x=442,y=88,width=62,height=30)
-		self.select122Button = Button(self.root, text='黑Ex', command=lambda:self.SelectMethod('Sync122'), anchor="w", font=self.font)
-		self.select122Button.place(x=504,y=50,width=52,height=30)
-		self.select120Button = Button(self.root, text='红Ex', command=lambda:self.SelectMethod('Sync120'), anchor="w", font=self.font)
-		self.select120Button.place(x=504,y=88,width=52,height=30)
+		self.selectFrame = Frame(self.root, relief="groove",bd=2)
+		self.selectFrame.place(x=180,y=50,width=380,height=70)
+		self.selectLabel0 = Label(self.selectFrame, text="筛选\n控件", anchor="w", font=self.font, relief="flat")
+		self.selectLabel0.place(x=0,y=5,width=50,height=60)
+		self.selectPlayedButton = Button(self.selectFrame, text='已游玩', command=lambda:self.SelectMethod('Played'), anchor="w", font=self.font)
+		self.selectPlayedButton.place(x=50,y=0,width=75,height=30)
+		self.selectUnplayButton = Button(self.selectFrame, text='未游玩', command=lambda:self.SelectMethod('Unplay'), anchor="w", font=self.font)
+		self.selectUnplayButton.place(x=50,y=35,width=75,height=30)
+		self.selectIsFavButton = Button(self.selectFrame, text='已收藏', command=lambda:self.SelectMethod('IsFav'), anchor="w", font=self.font)
+		self.selectIsFavButton.place(x=125,y=0,width=75,height=30)
+		self.selectExRankButton = Button(self.selectFrame, text='RankEx', command=lambda:self.SelectMethod('RankEX'), anchor="w", font=self.font)
+		self.selectExRankButton.place(x=125,y=35,width=75,height=30)
+		self.selectSRankButton = Button(self.selectFrame, text='RankS', command=lambda:self.SelectMethod('RankS'), anchor="w", font=self.font)
+		self.selectSRankButton.place(x=200,y=0,width=62,height=30)
+		self.selectARankButton = Button(self.selectFrame, text='RankA', command=lambda:self.SelectMethod('RankA'), anchor="w", font=self.font)
+		self.selectARankButton.place(x=200,y=35,width=62,height=30)
+		self.selectBRankButton = Button(self.selectFrame, text='RankB', command=lambda:self.SelectMethod('RankB'), anchor="w", font=self.font)
+		self.selectBRankButton.place(x=262,y=0,width=62,height=30)
+		self.selectCRankButton = Button(self.selectFrame, text='RankC', command=lambda:self.SelectMethod('RankC'), anchor="w", font=self.font)
+		self.selectCRankButton.place(x=262,y=35,width=62,height=30)
+		self.select122Button = Button(self.selectFrame, text='黑Ex', command=lambda:self.SelectMethod('Sync122'), anchor="w", font=self.font)
+		self.select122Button.place(x=324,y=0,width=50,height=30)
+		self.select120Button = Button(self.selectFrame, text='红Ex', command=lambda:self.SelectMethod('Sync120'), anchor="w", font=self.font)
+		self.select120Button.place(x=324,y=35,width=50,height=30)
 
 		##额外筛选##
-		self.selectFrameLabel1 = Label(self.root, text="", relief="groove")
-		self.selectFrameLabel1.place(x=568,y=48,width=169,height=74)
-		self.selectLabel1 = Label(self.root, text="额外\n筛选", anchor="w", font=self.font, relief="flat")
-		self.selectLabel1.place(x=570,y=55,width=50,height=60)
-		self.selectKeys = Button(self.root, text=['4 & 6 Keys','4 Keys','6 Keys'][self.keys], command=lambda:self.SelectKeys(), anchor='w', font=self.font)
-		self.selectKeys.place(x=620,y=50,width=[112,72,72][self.keys],height=30)
-		self.selectDifficute = Button(self.root, text=['Easy','Hard',"Inferno",'所有难度'][self.difficute], command=lambda:self.SelectDifficute(), anchor='w', font=self.font)
-		self.selectDifficute.place(x=620,y=88,width=[52,52,82,92][self.difficute],height=30)
+		self.selectExFrame = Frame(self.root, bd=2, relief="groove")
+		self.selectExFrame.place(x=570,y=50,width=170,height=70)
+		self.selectLabel1 = Label(self.selectExFrame, text="额外\n筛选", anchor="w", font=self.font, relief="flat")
+		self.selectLabel1.place(x=0,y=5,width=50,height=60)
+		self.selectKeys = Button(self.selectExFrame, text=['4 & 6 Keys','4 Keys','6 Keys'][self.keys], command=lambda:self.SelectKeys(), anchor='w', font=self.font)
+		self.selectKeys.place(x=50,y=0,width=[112,72,72][self.keys],height=30)
+		self.selectDifficute = Button(self.selectExFrame, text=['Easy','Hard',"Inferno",'所有难度'][self.difficute], command=lambda:self.SelectDifficute(), anchor='w', font=self.font)
+		self.selectDifficute.place(x=50,y=35,width=[52,52,82,92][self.difficute],height=30)
 
 		##AutoRun##
 		self.InitLabel('初始化函数执行中......')
@@ -157,7 +157,7 @@ class MusyncSavDecodeGUI(object):
 			self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页')
 		else:
 			threading.Thread(target=self.CheckUpdate).start()
-			threading.Thread(target=self.CheckJsonUpdate).start()
+			# threading.Thread(target=self.CheckJsonUpdate).start()
 		if config['EnableAnalyzeWhenStarting']:
 			self.DeleteAnalyzeFile()
 		self.CheckFile()
@@ -191,10 +191,10 @@ class MusyncSavDecodeGUI(object):
 			MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
 			self.DataLoad()
 
-	def LoadImage(self,imgPath,size):
-		img = PILImage.open(imgPath)
-		img = img.resize(size)
-		return ImageTk.PhotoImage(img)
+	# def LoadImage(self,imgPath,size):
+	# 	img = PILImage.open(imgPath)
+	# 	img = img.resize(size)
+	# 	return ImageTk.PhotoImage(img)
 
 	def CheckFile(self):
 		saveData=None

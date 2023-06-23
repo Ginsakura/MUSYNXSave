@@ -48,9 +48,10 @@ def CheckFileBeforeStarting(fonts):
 			"EnableDLLInjection": False,"SystemDPI": GetDpi()},open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
 	if not '霞鹜文楷等宽' in fonts:
 		if os.path.isfile('./musync_data/LXGW.ttf'):
-			os.system('./musync_data/LXGW.ttf')
+			os.system(f'{os.getcwd()}/musync_data/LXGW.ttf')
 		else:
 			FileExport.WriteTTF()
+			os.system(f'{os.getcwd()}/musync_data/LXGW.ttf')
 
 def CheckConfig():
 	with open('./musync_data/ExtraFunction.cfg','r') as cfg:

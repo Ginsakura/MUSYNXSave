@@ -18,8 +18,8 @@ def GetDpi():
 
 def ChangeConsoleStyle():
 	# print('Changing Console Style...')
-	with open('./musync_data/ExtraFunction.cfg','r') as cfg:
-		cfg = json.load(cfg)
+	with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
+		cfg = json.load(cfg,encoding='utf8')
 	execPath = cfg['MainExecPath']
 	execPath = execPath.replace('/','_')+'musynx.exe'
 	# print(execPath)
@@ -54,7 +54,15 @@ def CheckFileBeforeStarting(fonts):
 			os.system(f'{os.getcwd()}/musync_data/LXGW.ttf')
 
 def CheckConfig():
-	with open('./musync_data/ExtraFunction.cfg','r') as cfg:
+	try:
+		with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
+			cfg = json.load(cfg)
+	except Exception as e:
+		if type(e).__name__ == 'UnicodeDecodeError':
+			with open('./musync_data/ExtraFunction.cfg','r',encoding='gbk') as cfg:
+				cfg = json.load(cfg)
+			json.dump(cfg,open('./musync_data/ExtraFunction.cfg','w',encoding='utf8'),indent="",ensure_ascii=False)
+	with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
 		cfg = json.load(cfg)
 		isChange = False
 	if 'EnableAcc-Sync' not in cfg:
@@ -99,8 +107,14 @@ def CheckConfig():
 	if 'ChangeConsoleStyle' not in cfg:
 		cfg['ChangeConsoleStyle'] = False
 		isChange = True
+	if 'EnableFramelessWindow' not in cfg:
+		cfg['EnableFramelessWindow'] = False
+		isChange = True
+	if 'TransparentColor' not in cfg:
+		cfg['TransparentColor'] = "#FFFFFF"
+		isChange = True
 	if isChange:
-		json.dump(cfg,open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
+		json.dump(cfg,open('./musync_data/ExtraFunction.cfg','w',encoding='utf8'),indent="",ensure_ascii=False)
 
 if __name__ == '__main__':
 	print(GetDpi())

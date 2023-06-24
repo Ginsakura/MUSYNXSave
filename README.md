@@ -29,22 +29,24 @@ WithConsole版本为带命令提示符界面，适合出现bug时快速定位错
 
 ### 功能控制模块
 于`./musync_data/ExtraFunction.cfg`文件中启用/禁用对应功能
-|配置项|配置说明|默认值|
-|------|--------|------|
-|`EnableAcc-Sync`|是否启用Acc-Synx图表|false|
-|`DisableCheckUpdate` |是否禁用更新检测|false|
-|`EnableAnalyzeWhenStarting` |是否启用每次启动时重新扫描存档文件|false|
-|`EnableDLLInjection` |是否启用DLL注入以开启高级功能|false|
-|`SystemDPI` |读取系统DPI, 提供DPI窗体修正(未实现)|`自动获取`|
-|`EnableDonutChartinHitDelay` |是否在单次游玩统计中显示击打延迟环形图|false|
-|`EnableDonutChartinAllHitAnalyze` |是否在全局统计中显示击打延迟环形图|false|
-|`EnablePDFofCyanExtra` |是否在全局统计中显示仅CyanExtra的正态分布拟合|false|
-|`EnableNarrowDelayInterval` |是否在单次游玩统计中使用更狭窄的击打区间来计算平均偏移值(Delay)  [true=45ms,false=90ms]|false|
-|`ConsoleAlpha` |喵赛克游戏本体控制台窗口的不透明度(取值范围[0,100],100为完全不透明,不建议取值在30以下)|75|
-|`ConsoleFont` |喵赛克游戏本体控制台窗口的字体|霞鹜文楷等宽|
-|`ConsoleFontSize` |喵赛克游戏本体控制台窗口的字号|36|
-|`MainExecPath` |喵赛克游戏本体主程序所在的路径|`自动获取`|
-|`ChangeConsoleStyle` |是否启用自定义喵赛克游戏本体控制台窗口样式|false|
+|               配置项              |     默认值    | 值类型 |                                配置说明                                |
+|-----------------------------------|---------------|--------|------------------------------------------------------------------------|
+| `EnableAcc-Sync`                  |false          |boolean |是否启用Acc-Synx图表|
+| `DisableCheckUpdate`              |false          |boolean |是否禁用更新检测|
+| `EnableAnalyzeWhenStarting`       |false          |boolean |是否启用每次启动时重新扫描存档文件|
+| `EnableDLLInjection`              |false          |boolean |是否启用DLL注入以开启高级功能|
+| `SystemDPI`                       |`自动获取`     |string  |读取系统DPI, 提供DPI窗体修正(未实现)|
+| `EnableDonutChartinHitDelay`      |false          |boolean |是否在单次游玩统计中显示击打延迟环形图|
+| `EnableDonutChartinAllHitAnalyze` |false          |boolean |是否在全局统计中显示击打延迟环形图|
+| `EnablePDFofCyanExtra`            |false          |boolean |是否在全局统计中显示仅CyanExtra的正态分布拟合|
+| `EnableNarrowDelayInterval`       |false          |boolean |是否在单次游玩统计中使用更狭窄的击打区间来计算平均偏移值(Delay)<br>[true=45ms,false=90ms]|
+| `ConsoleAlpha`                    |75             |int     |喵赛克游戏本体控制台窗口的不透明度<br>(取值范围[0,100],100为完全不透明,不建议取值在30以下)|
+| `ConsoleFont`                     |'霞鹜文楷等宽' |string  |喵赛克游戏本体控制台窗口的字体|
+| `ConsoleFontSize`                 |36             |int     |喵赛克游戏本体控制台窗口的字号|
+| `MainExecPath`                    |`自动获取`     |string  |喵赛克游戏本体主程序所在的路径|
+| `ChangeConsoleStyle`              |false          |boolean |是否启用自定义喵赛克游戏本体控制台窗口样式|
+| `EnableFramelessWindow`           |false          |boolean |是否启用无边框窗口样式(未完成)|
+| `TransparentColor`                |'#FFFFFF'      |string<br>boolean  |设置透明色(仅限新样式)<br>设置为false即为关闭透明色|
 
 ### 高级功能简介
 下列组件对游戏客户端有修改,请谨慎使用
@@ -78,6 +80,8 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 3. 更新 `HitDelay` 窗口中新增支持修改谱面游玩标识
 4. 更新 `HitDelay` 窗口中新增支持删除谱面游玩记录
 5. 更新 `HitDelay` 窗口中删除谱面前产生提示框
+6. 更新 提供无边框窗口样式
+7. 更新 新增配置项: `EnableFramelessWindow`,`TransparentColor`
 1. 修复 修复编译环境缺少 `uiautomation` 库的bug
 2. 修复 修复`./skin/`找不到的bug <del>历史遗留问题呜呜呜呜呜</del>
 3. 修复 修复首次启动时没有自动打开字体安装程序的bug
@@ -92,6 +96,8 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 7. 优化 当程序报错时，不会直接退出控制台，而是保留控制台显示报错信息
 8. 优化 `HitDelay` 窗口中当Entry控件中的值为空时，弹出提示框
 9. 优化 表格刷新时滚动条的状态改变更平滑
+10. 优化 优化readme中的表格
+11. 优化 自动将`GBK`编码的配置文件更新为`UTF-8`编码
 
 ### Version 1.2.1
 1. 更新 针对喵赛克本体游玩时的Console进行优化，新增配置项

@@ -19,7 +19,7 @@ class HitDelayCheck(object):
 		self.md5l = 'C2FB65DBA57AC54CF24752D7EAA47757' # HitDelayFix.dll
 		self.md5o = '0722724F7D0AC74AD42F6FC648D81359' # Assembly-CSharp.dll
 
-		with open('./musync_data/ExtraFunction.cfg','r') as confFile:
+		with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as confFile:
 			config = json.load(confFile)
 		self.spfr = config['MainExecPath']+'MUSYNX_Data/Managed/Assembly-CSharp.dll'
 		del config
@@ -68,7 +68,7 @@ class HitDelayText(object):
 		self.style = ttk.Style()
 		self.cursorHistory = ''
 
-		with open('./musync_data/ExtraFunction.cfg', 'r') as confFile:
+		with open('./musync_data/ExtraFunction.cfg', 'r',encoding='utf8') as confFile:
 			config = json.load(confFile)
 
 		self.openHitAnalyze = False
@@ -302,7 +302,7 @@ class HitDelayDraw(object):
 		print(self.sum,self.exCount)
 
 		self.Draw()
-		with open('./musync_data/ExtraFunction.cfg', 'r') as confFile:
+		with open('./musync_data/ExtraFunction.cfg', 'r',encoding='utf8') as confFile:
 			config = json.load(confFile)
 		if config['EnableDonutChartinHitDelay']:
 			self.Pie()

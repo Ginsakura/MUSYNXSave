@@ -65,7 +65,7 @@ class HitAnalyze(object):
 		print('extra rate:',self.avgEx,self.varEx,self.stdEx,self.sumYnumEx)
 
 	def Show(self):
-		with open('./musync_data/ExtraFunction.cfg', 'r') as confFile:
+		with open('./musync_data/ExtraFunction.cfg', 'r',encoding='utf8') as confFile:
 			config = json.load(confFile)
 		if config['EnablePDFofCyanExtra']:
 			self.avgEX = sum([ids[0]*ids[1]/self.sumYnumEX for ids in zip(self.xAxis[106:195],self.yAxis[106:195])])

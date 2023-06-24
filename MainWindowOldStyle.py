@@ -302,6 +302,8 @@ class MusyncSavDecodeGUI(object):
 				l = [(float((self.saveData.set(k, col))[:-1]), k) for k in self.saveData.get_children('')]
 			elif col == 'PlayCount':
 				l = [(int(self.saveData.set(k, col)), k) for k in self.saveData.get_children('')]
+			elif col == 'SongName':
+				l = [((self.saveData.set(k, col)).lower(), k) for k in self.saveData.get_children('')]
 			else:
 				l = [(self.saveData.set(k, col), k) for k in self.saveData.get_children('')]
 			l.sort(reverse=self.dataSortMethodsort[1])
@@ -357,9 +359,7 @@ class MusyncSavDecodeGUI(object):
 		if not HitDelayCheck().DLLCheck():
 			messagebox.showerror("Error", f'DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁')
 		else:
-			nroot = Toplevel(self.root)
-			nroot.resizable(True, True)
-			HitDelayText(nroot)
+			HitDelayText(self.root)
 	def DataLoad(self):
 		self.InitLabel(text="正在分析存档文件中……")
 		def Rank(sync):

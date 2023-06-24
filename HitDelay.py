@@ -163,7 +163,7 @@ class HitDelayText(object):
 		if consoleFind:
 			data = pyperclip.paste().split('\n')
 			dataList=list()
-			name = self.nameDelayEntry.get()+f"-{dt.now()}"
+			name = self.nameDelayEntry.get().replace("\'","’")+f"-{dt.now()}"
 			if data[-1] == "":
 				data.pop(-1)
 			for ids in range(1,len(data)):
@@ -199,15 +199,16 @@ class HitDelayText(object):
 		self.openHitAnalyze = True
 		hitAnalyze.Show()
 
-	def ChangeHisotyInfo(self,event):
+	def ShowHistoryInfo(self,event):
 		e = event.widget									# 取得事件控件
 		itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
 		# state = e.item(itemID,"text")						# 取得text参数
 		historyItem = e.item(itemID,"values")				# 取得values参数
 		if not self.history == []:
 			isChange = False
+			historyName = historyItem[0].replace("\'",'’')
 			print(historyItem)
-			data = self.cur.execute(f'select * from HitDelayHistory where SongMapName=\'{historyItem[0]}\'')
+			data = self.cur.execute(f"select * from HitDelayHistory where SongMapName=\'{historyName}\'")
 			data = data.fetchone()
 			# print(data[:4])
 			self.cursorHistory = data[0]
@@ -230,7 +231,7 @@ class HitDelayText(object):
 				self.HistoryUpdate()
 
 	def UpdateCursorHistory(self):
-		nowHistoryName = self.historyNameEntry.get()
+		nowHistoryName = self.historyNameEntry.get().replace("\'","’")
 		if self.cursorHistory != nowHistoryName:
 			print(f"change history name \nfrom {self.cursorHistory} \nto {nowHistoryName}")
 			self.cur.execute(f'update HitDelayHistory set SongMapName=\'{nowHistoryName}\' where SongMapName=\'{self.cursorHistory}\'')
@@ -259,7 +260,7 @@ class HitDelayText(object):
 		self.delayHistory.column("AvgDelay",anchor="e",width=90)
 		self.delayHistory.column("AvgAcc",anchor="e",width=90)
 		self.delayHistory.bind("<Double-1>",self.HistoryDraw)
-		self.delayHistory.bind("<ButtonPress-1>",self.ChangeHisotyInfo)
+		self.delayHistory.bind("<Button-3>",self.ShowHistoryInfo)
 
 		self.subroot.update()
 		# self.subroot.after(500,self.UpdateWindowInfo)

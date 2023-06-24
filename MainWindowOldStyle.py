@@ -302,6 +302,8 @@ class MusyncSavDecodeGUI(object):
 				l = [(float((self.saveData.set(k, col))[:-1]), k) for k in self.saveData.get_children('')]
 			elif col == 'PlayCount':
 				l = [(int(self.saveData.set(k, col)), k) for k in self.saveData.get_children('')]
+			elif col == 'SongName':
+				l = [((self.saveData.set(k, col)).lower(), k) for k in self.saveData.get_children('')]
 			else:
 				l = [(self.saveData.set(k, col), k) for k in self.saveData.get_children('')]
 			l.sort(reverse=self.dataSortMethodsort[1])

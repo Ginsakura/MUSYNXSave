@@ -19,7 +19,7 @@ import Functions
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.2.2rc12'
+version = '1.2.2rc14'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -316,6 +316,8 @@ class MusyncSavDecodeGUI(object):
 				l = [(float((self.saveData.set(k, col))[:-1]), k) for k in self.saveData.get_children('')]
 			elif col == 'PlayCount':
 				l = [(int(self.saveData.set(k, col)), k) for k in self.saveData.get_children('')]
+			elif col == 'SongName':
+				l = [((self.saveData.set(k, col)).lower(), k) for k in self.saveData.get_children('')]
 			else:
 				l = [(self.saveData.set(k, col), k) for k in self.saveData.get_children('')]
 			l.sort(reverse=self.dataSortMethodsort[1])

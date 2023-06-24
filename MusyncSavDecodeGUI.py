@@ -19,7 +19,7 @@ import Functions
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.2.2rc11'
+version = '1.2.2rc12'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -727,7 +727,6 @@ if __name__ == '__main__':
 			window = MusyncSavDecodeGUI(root=root)
 		else:
 			window = OldStyle.MusyncSavDecodeGUI(root=root,version=version)
-		window = MusyncSavDecodeGUI(root=root)
 		root.update()
 		root.mainloop()
 	except Exception as e:

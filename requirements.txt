@@ -1,3 +1,4 @@
+Pillow
 requests
 pyinstaller
 matplotlib

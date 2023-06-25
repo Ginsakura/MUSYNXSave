@@ -359,7 +359,9 @@ class MusyncSavDecodeGUI(object):
 		if not HitDelayCheck().DLLCheck():
 			messagebox.showerror("Error", f'DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁')
 		else:
-			HitDelayText(self.root)
+			nroot = Toplevel(self.root)
+			nroot.resizable(True, True)
+			HitDelayText(nroot)
 	def DataLoad(self):
 		self.InitLabel(text="正在分析存档文件中……")
 		def Rank(sync):

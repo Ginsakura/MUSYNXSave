@@ -260,7 +260,7 @@ class HitDelayText(object):
 		self.delayHistory.column("AvgDelay",anchor="e",width=90)
 		self.delayHistory.column("AvgAcc",anchor="e",width=90)
 		self.delayHistory.bind("<Double-1>",self.HistoryDraw)
-		self.delayHistory.bind("<Button-3>",self.ShowHistoryInfo)
+		self.delayHistory.bind("<ButtonPress-1>",self.ShowHistoryInfo)
 
 		self.subroot.update()
 		# self.subroot.after(500,self.UpdateWindowInfo)

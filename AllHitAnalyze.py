@@ -27,25 +27,38 @@ class HitAnalyze(object):
 				self.sumYnum += 1
 
 				idxAbs = abs(idx)
-				if idxAbs<45:self.rate[0] += 1
-				elif idxAbs<90:self.rate[1] += 1
-				elif idxAbs<150:self.rate[2] += 1
-				elif idxAbs<250:self.rate[3] += 1
-				else :self.rate[4] += 1
-				if idxAbs<5:self.accurateRate[0] += 1
-				elif idxAbs<10:self.accurateRate[1] += 1
-				elif idxAbs<20:self.accurateRate[2] += 1
-				elif idxAbs<45:self.accurateRate[3] += 1
-				elif idxAbs<90:self.accurateRate[4] += 1
-				elif idxAbs<150:self.accurateRate[5] += 1
-				elif idxAbs<250:self.accurateRate[6] += 1
-				else :self.accurateRate[7] += 1
+				if idxAbs<5:
+					self.accurateRate[0] += 1
+				elif idxAbs<10:
+					self.accurateRate[1] += 1
+				elif idxAbs<20:
+					self.accurateRate[2] += 1
+				elif idxAbs<45:
+					self.rate[0] += 1
+					self.accurateRate[3] += 1
+				elif idxAbs<90:
+					self.rate[1] += 1
+					self.accurateRate[4] += 1
+				elif idxAbs<150:
+					self.rate[2] += 1
+					self.accurateRate[5] += 1
+				elif idxAbs<250:
+					self.rate[3] += 1
+					self.accurateRate[6] += 1
+				else :
+					self.rate[4] += 1
+					self.accurateRate[7] += 1
 
-				if idxAbs<90:self.sumYnumEx += 1
-				if idxAbs<45:self.sumYnumEX += 1
+				if idxAbs<45:
+					self.sumYnumEX += 1
+					self.sumYnumEx += 1
+				elif idxAbs<90:
+					self.sumYnumEx += 1
 
-				if idx < 0:idx = int(idx)-1
-				else:idx = int(idx)
+				if idx < 0:
+					idx = int(idx)-1
+				else:
+					idx = int(idx)
 
 				if (idx >= 0) and (idx < 250):hitMapB[idx] += 1
 				elif (idx >= 250):hitMapB[250] += 1

@@ -294,10 +294,11 @@ class HitDelayDraw(object):
 		self.exCount = [0,0,0]
 		for ids in dataList:
 			ids = abs(ids)
-			if ids < 5:self.exCount[0] += 1
-			elif ids < 10:self.exCount[1] += 1
-			elif ids < 20:self.exCount[2] += 1
-			if ids < 45: self.sum[0] += 1
+			if ids < 45: 
+				if ids < 5:self.exCount[0] += 1
+				elif ids < 10:self.exCount[1] += 1
+				elif ids < 20:self.exCount[2] += 1
+				self.sum[0] += 1
 			elif ids < 90: self.sum[1] += 1
 			elif ids < 150: self.sum[2] += 1
 			elif ids < 250: self.sum[3] += 1

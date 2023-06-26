@@ -142,8 +142,9 @@ class HitDelayText(object):
 		for ids in data:
 			self.history = list()
 			self.history.append(ids[0])
-			self.delayHistory.insert('', END, values=(ids[0],ids[2],'%.6f ms'%ids[1],'%.6f ms   '%ids[3]))
+			self.delayHistory.insert('', END, values=(ids[0],ids[2],'%.6f ms'%ids[1],'%.6f ms'%ids[3]))
 		del data
+		self.UpdateWindowInfo()
 
 	def Draw(self):
 		consoleFind = False
@@ -176,7 +177,7 @@ class HitDelayText(object):
 					sumKeys += 1
 			avgDelay = sumNums/sumKeys
 			avgAcc = sum([abs(i) for i in dataList])/allKeys
-			self.delayHistory.insert('', END, values=(name,allKeys,'%.6f ms'%avgDelay,'%.6f ms   '%avgAcc))
+			self.delayHistory.insert('', END, values=(name,allKeys,'%.6f ms'%avgDelay,'%.6f ms'%avgAcc))
 			dataListStr = ""
 			for i in dataList:
 				dataListStr += f'{i}|'
@@ -195,7 +196,7 @@ class HitDelayText(object):
 
 	def OpenHitAnalyze(self):
 		hitAnalyze = HitAnalyze(isOpen=self.openHitAnalyze)
-		print(self.openHitAnalyze)
+		print("OpenHitAnalyze:",self.openHitAnalyze)
 		self.openHitAnalyze = True
 		hitAnalyze.Show()
 
@@ -207,7 +208,7 @@ class HitDelayText(object):
 		if not self.history == []:
 			isChange = False
 			historyName = historyItem[0].replace("\'",'’')
-			print(historyItem)
+			print("ShowHistoryInfo:",historyItem)
 			data = self.cur.execute(f"select * from HitDelayHistory where SongMapName=\'{historyName}\'")
 			data = data.fetchone()
 			# print(data[:4])
@@ -255,14 +256,16 @@ class HitDelayText(object):
 		self.delayHistory.heading("AllKeys",anchor="center",text="Keys")
 		self.delayHistory.heading("AvgDelay",anchor="center",text="Delay")
 		self.delayHistory.heading("AvgAcc",anchor="center",text="AvgAcc")
-		self.delayHistory.column("name",anchor="w",width=300)
-		self.delayHistory.column("AllKeys",anchor="e",width=50)
-		self.delayHistory.column("AvgDelay",anchor="e",width=90)
-		self.delayHistory.column("AvgAcc",anchor="e",width=90)
+		self.delayHistory.column("name",anchor="w",width=380)
+		self.delayHistory.column("AllKeys",anchor="e",width=60)
+		self.delayHistory.column("AvgDelay",anchor="e",width=120)
+		self.delayHistory.column("AvgAcc",anchor="e",width=120)
 		self.delayHistory.bind("<Double-1>",self.HistoryDraw)
 		self.delayHistory.bind("<ButtonPress-1>",self.ShowHistoryInfo)
 
+		print("VScroll1.get",self.VScroll1.get())
 		self.subroot.update()
+		self.delayHistory.yview_moveto(1.0)
 		# self.subroot.after(500,self.UpdateWindowInfo)
 
 class HitDelayDraw(object):
@@ -300,7 +303,7 @@ class HitDelayDraw(object):
 			elif ids < 250: self.sum[3] += 1
 			else: self.sum[4] += 1
 		self.exCount = self.exCount + self.sum
-		print(self.sum,self.exCount)
+		print("HitDelayDraw:",self.sum,self.exCount)
 
 		self.Draw()
 		with open('./musync_data/ExtraFunction.cfg', 'r',encoding='utf8') as confFile:

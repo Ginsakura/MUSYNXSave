@@ -49,6 +49,14 @@ def main():
 				songName[speedStall] = songName.pop(songid)
 	with open("./musync_data/SongName.json",'w',encoding='utf8') as jsonFile:
 		json.dump(songName,jsonFile,ensure_ascii=False)
+
+def FormatSongName20230626(): #2023年6月26日
+	with open("./musync_data/songname.json",'r',encoding='utf8') as f:
+		data = json.load(f)
+	for ids in data:
+		data[ids] = data[ids]+[0]
+	json.dump(data,open("./musync_data/SongName.json",'w',encoding='utf8'),ensure_ascii=False)
 		
 if __name__ == '__main__':
 	# Sort()
+	# FormatSongName20230626()

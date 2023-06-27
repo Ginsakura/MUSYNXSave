@@ -32,6 +32,8 @@ class MusyncSavDecodeGUI(object):
 		root.geometry(f'1000x670+500+300')
 		self.root = root
 		self.root.minsize(500, 460)
+		# def fixed_map(option):
+		# 	return [elm for elm in style.map("Treeview", query_opt=option) if elm[:2] != ("!disabled", "!selected")]
 		style = ttk.Style()
 		if self.config['SystemDPI'] == 100:
 			style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',13))
@@ -43,6 +45,8 @@ class MusyncSavDecodeGUI(object):
 			self.font=('霞鹜文楷等宽',16)
 		# elif self.config['SystemDPI'] == 125:
 		else:
+			# style.configure("Treeview", foreground=fixed_map("foreground"), background=fixed_map("background"))
+			# style.configure("Treeview", background="#383838", foreground="white", fieldbackground="red")
 			style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',11))
 			style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
 			style.configure("reload.TButton", font=('霞鹜文楷等宽',13.5))
@@ -65,9 +69,10 @@ class MusyncSavDecodeGUI(object):
 		self.avgSyncVar.set(f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount))}')
 		self.dataSortMethodsort = [None,False]
 		self.dataSelectMethod = None
-		self.keys = 0
 		self.treeviewColumns = ["SpeedStall",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","IsFav"]
 		self.difficute = 3
+		self.keys = 0
+		self.isDLC = 0
 		self.wh = [0,0]
 
 		##Controls##
@@ -87,6 +92,9 @@ class MusyncSavDecodeGUI(object):
 		self.saveData = ttk.Treeview(self.root, show="headings", columns = self.treeviewColumns)
 		self.VScroll1 = Scrollbar(self.saveData, orient='vertical', command=self.saveData.yview)
 		self.saveData.configure(yscrollcommand=self.VScroll1.set)
+		# self.saveData.tag_configure("NotDLCSong",background='#BBDDFF')
+		# self.saveData.tag_configure("NotDLCSong",background='#FF0000',foreground='blue')
+		# self.saveData.tag_configure("IsDLCSong",background='#FDFFAE',foreground='blue')
 
 		self.developer = Label(self.root, text=f'Version {self.version} | Develop By Ginsakura', font=self.font, relief="groove")
 		self.gitHubLink = Button(self.root, text='点击打开下载链接	点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
@@ -134,13 +142,15 @@ class MusyncSavDecodeGUI(object):
 
 		##额外筛选##
 		self.selectExFrame = Frame(self.root, bd=2, relief="groove")
-		self.selectExFrame.place(x=570,y=50,width=170,height=70)
+		self.selectExFrame.place(x=570,y=50,width=200,height=70)
 		self.selectLabel1 = Label(self.selectExFrame, text="额外\n筛选", anchor="w", font=self.font, relief="flat")
 		self.selectLabel1.place(x=0,y=5,width=50,height=60)
+		self.selectDLCSong = Button(self.selectExFrame, text=['所\n有','本\n体','扩\n展'][self.isDLC], command=lambda:self.SelectDLCSong(), anchor='w', font=self.font)
+		self.selectDLCSong.place(x=50,y=0,width=30,height=65)
 		self.selectKeys = Button(self.selectExFrame, text=['4 & 6 Keys','4 Keys','6 Keys'][self.keys], command=lambda:self.SelectKeys(), anchor='w', font=self.font)
-		self.selectKeys.place(x=50,y=0,width=[112,72,72][self.keys],height=30)
+		self.selectKeys.place(x=82,y=0,width=[112,72,72][self.keys],height=30)
 		self.selectDifficute = Button(self.selectExFrame, text=['Easy','Hard',"Inferno",'所有难度'][self.difficute], command=lambda:self.SelectDifficute(), anchor='w', font=self.font)
-		self.selectDifficute.place(x=50,y=35,width=[52,52,82,92][self.difficute],height=30)
+		self.selectDifficute.place(x=82,y=35,width=[52,52,82,92][self.difficute],height=30)
 
 		##AutoRun##
 		self.InitLabel('初始化函数执行中......')
@@ -199,14 +209,20 @@ class MusyncSavDecodeGUI(object):
 		self.keys = (self.keys+1)%3
 		self.selectKeys.configure(text=['4 & 6Keys','4 Keys','6 Keys'][self.keys])
 		self.selectKeys.place(width=[102,72,72][self.keys])
-		self.root.update()
 		self.DataLoad()
+		self.root.update()
 	def SelectDifficute(self):
 		self.difficute = (self.difficute+1)%4
 		self.selectDifficute.configure(text=['Easy','Hard',"Inferno",'所有难度'][self.difficute])
 		self.selectDifficute.place(width=[52,52,82,92][self.difficute])
-		self.root.update()
 		self.DataLoad()
+		self.root.update()
+	def SelectDLCSong(self):
+		self.isDLC = (self.isDLC+1)%3
+		self.selectDLCSong.configure(text=['所\n有','本\n体','扩\n展'][self.isDLC])
+		self.selectDLCSong.configure(bg=['#F0F0F0','#FF9B9B','#98E22B'][self.isDLC])
+		self.DataLoad()
+		self.root.update()
 	def SelectMethod(self,method):
 		if self.dataSelectMethod == method:
 			self.dataSelectMethod = None
@@ -214,8 +230,9 @@ class MusyncSavDecodeGUI(object):
 		else:
 			self.SelectButtonGrey(self.dataSelectMethod)
 			self.dataSelectMethod = method
-			self.SelectButtonGreen(method)
+			self.SelectButtonGreen(self.dataSelectMethod)
 		self.DataLoad()
+		self.root.update()
 	def SelectButtonGreen(self,method):
 		if method == "Played":self.selectPlayedButton.configure(bg='#98E22B')
 		elif method == "Unplay":self.selectUnplayButton.configure(bg='#98E22B')
@@ -386,11 +403,12 @@ class MusyncSavDecodeGUI(object):
 		saveData.close()
 
 		self.InitLabel('正在分析存档文件中……')
-		with open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8') as saveData:
+		with open(f'./musync_data/SavAnalyze.json','r',encoding='utf8') as saveData:
 			saveDataJson = json.load(saveData)
+			with open("./musync_data/SongName.json",'r',encoding='utf8') as snj:
+				songNameJson = json.load(snj)
 			self.root.title(f'同步音律喵赛克 Steam端 本地存档分析	LastPlay: {saveDataJson["LastPlay"]}')
-			for ids in self.saveData.get_children():
-				self.saveData.delete(ids)
+			[self.saveData.delete(ids) for ids in self.saveData.get_children()]
 			self.saveCount = 0
 			self.totalSync = 0
 			for saveLine in saveDataJson['SaveData']:
@@ -400,6 +418,8 @@ class MusyncSavDecodeGUI(object):
 					if (self.difficute==0) and (not saveLine['SongName'][2]=='Easy'):continue
 					elif (self.difficute==1) and (not saveLine['SongName'][2]=='Hard'):continue
 					elif (self.difficute==2) and (not saveLine['SongName'][2]=='Inferno'):continue
+					if (self.isDLC==1) and (not saveLine['SongName'][0] in songNameJson["NotDLCSong"]):continue
+					elif (self.isDLC==2) and (saveLine['SongName'][0] in songNameJson["NotDLCSong"]):continue
 				if self.dataSelectMethod == "Played":
 					if (saveLine["PlayCount"] == 0) and (float(saveLine["SyncNumber"][0:-1]) == 0):continue
 				elif self.dataSelectMethod == "Unplay":
@@ -422,17 +442,18 @@ class MusyncSavDecodeGUI(object):
 					if float(saveLine["SyncNumber"][0:-1]) >= 75:continue
 				self.saveCount += 1
 				self.totalSync += float(saveLine["UploadScore"][0:-1])
-				self.saveData.insert('', END, values=(saveLine["SpeedStall"],
-					("" if saveLine["SongName"] is None else saveLine["SongName"][0]), 
-					("" if saveLine["SongName"] is None else saveLine["SongName"][1]), 
-					("" if saveLine["SongName"] is None else saveLine["SongName"][2]), 
-					("" if saveLine["SongName"] is None else ("" if saveLine["SongName"][3]=="00" else saveLine["SongName"][3])), 
-					 saveLine["SyncNumber"], 
-					("" if ((saveLine["PlayCount"] == 0) and (saveLine["UploadScore"] == "0.00000000000000%")) else Rank(saveLine["SyncNumber"])), 
+				self.saveData.insert('', END, values=(saveLine["SpeedStall"], #谱面号
+					("" if saveLine["SongName"] is None else saveLine["SongName"][0]), #曲名
+					("" if saveLine["SongName"] is None else saveLine["SongName"][1]), #键数
+					("" if saveLine["SongName"] is None else saveLine["SongName"][2]), #难度
+					("" if saveLine["SongName"] is None else ("" if saveLine["SongName"][3]=="00" else saveLine["SongName"][3])), #等级
+					saveLine["SyncNumber"], #本地同步率
+					("" if ((saveLine["PlayCount"] == 0) and (saveLine["UploadScore"] == "0.00000000000000%")) else Rank(saveLine["SyncNumber"])), #Rank
 					saveLine["UploadScore"], saveLine["PlayCount"], saveLine["IsFav"]))
+			# print(songNameJson["NotDLCSong"])
 		if not self.dataSortMethodsort[0] is None:
 			self.SortClick(self.dataSortMethodsort)
-		self.InitLabel('存档分析完成.',close=True)
+		self.InitLabel('数据展示生成完成.',close=True)
 
 	def SelectPath(self):
 		# 使用askdirectory()方法返回文件夹的路径

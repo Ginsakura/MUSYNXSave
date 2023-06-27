@@ -15,6 +15,7 @@ class MUSYNCSavProcess():
 		self.charDict = dict()
 		self.saveData = ''
 		self.lastPlaySong = list()
+		self.FavSong = list()
 		
 	def Main(self,fileExtension=''):
 		if fileExtension == 'decode':
@@ -44,6 +45,7 @@ class MUSYNCSavProcess():
 		return ''.join(['%02X' % b for b in Bytes])
 	
 	def SaveFileAnalyze(self):
+		print("SaveFileAnalyze Start.")
 		self.savBinFile = open(f'./musync_data/SavDecode.decode','rb+')
 		self.savAnalyzeFile = open(f'./musync_data/SavAnalyze.analyze','w+')
 		self.SaveBinFileRead(887)
@@ -89,10 +91,13 @@ class MUSYNCSavProcess():
 		self.Analyze2Json()
 		self.savBinFile.close()
 		self.savAnalyzeFile.close()
+		print("SaveFileAnalyze End.")
 
 
 	def Analyze2Json(self):
+		print("Analyze2Json Start.")
 		saveDataAnalyze = open(f'./musync_data/SavAnalyze.json','w+',encoding='utf8')
+		# FavSong = open(f'./musync_data/FavSong.tmp','w',encoding='utf8')
 		saveDataAnalyzeJson = dict()
 		saveDataAnalyzeJson["LastPlay"] = "".join(self.lastPlaySong)
 		saveDataAnalyzeJson["SaveData"] = list()
@@ -141,18 +146,23 @@ class MUSYNCSavProcess():
 			UploadScore = self.Hex2Float_LittleEndian(self.Bytes2HexString(self.saveData[20:24]))
 			PlayCount = self.Hex2Int_LittleEndian(self.Bytes2HexString(self.saveData[24:28]))
 
-			songName = GetSongName(SpeedStall)
-			if songName is None:
-				self.SaveAnalyzeFileWrite(SpeedStall+' ,No Name')
-				continue
 			if NoCopyright(SpeedStall):
 				print(SpeedStall,"NoCopyright")
 				continue
 			if OldAprilFoolsDay(SpeedStall):
 				print(SpeedStall,'OldAprilFoolsDay')
 				continue
+			songName = GetSongName(SpeedStall)
+			if songName is None:
+				self.SaveAnalyzeFileWrite(SpeedStall+' ,No Name')
+				continue
 
-			IsFav = '0x01' if self.saveData[28]==1 else '0x00'
+			if self.saveData[28]==1:
+				IsFav = '0x01'
+				# FavSong.write(songName[0]+"\n")
+				self.FavSong.append(songName[0])
+			else:
+				IsFav = '0x00'
 			if len(SyncNumber) == 5:SyncNumber = f'{SyncNumber[0:3]}.{SyncNumber[3:]}%'
 			elif len(SyncNumber) == 4:SyncNumber = f'{SyncNumber[0:2]}.{SyncNumber[2:]}%'
 			elif len(SyncNumber) == 3:SyncNumber = f'{SyncNumber[0]}.{SyncNumber[1:]}%'
@@ -167,6 +177,8 @@ class MUSYNCSavProcess():
 			saveDataAnalyzeJson["SaveData"].append(dict(SpeedStall=SpeedStall,SongName=songName,SyncNumber=SyncNumber,UploadScore=UploadScore,PlayCount=PlayCount,IsFav=IsFav))
 		json.dump(saveDataAnalyzeJson,saveDataAnalyze,indent="",ensure_ascii=False)
 		saveDataAnalyze.close()
+		# FavSong.close()
+		print("Analyze2Json End.")
 
 	def SaveBinFileRead(self,lenth):
 		print(self.savBinFile.read(lenth))
@@ -176,17 +188,13 @@ class MUSYNCSavProcess():
 
 	def FavFix(self):
 		with open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8') as saveJsonFile:
-			saveJson = json.load(saveJsonFile)
-			saveJsonFavFix = saveJson
+			saveJsonFavFix = json.load(saveJsonFile)
 		saveJsonFile = open(f'./musync_data/SavAnalyze.json','w+',encoding='utf8')
-		for ids in range(len(saveJson["SaveData"])):
-			if saveJson["SaveData"][ids]["IsFav"] == "0x01":
-				for idx in range(ids+1,len(saveJson["SaveData"])):
-					oldName = ("" if saveJson["SaveData"][ids]["SongName"] is None else saveJson["SaveData"][ids]["SongName"][0])
-					newName = ("" if saveJson["SaveData"][idx]["SongName"] is None else saveJson["SaveData"][idx]["SongName"][0])
-					if (not oldName == "") and (oldName[:4] == newName[:4]) and (not newName == ""):
-						saveJsonFavFix["SaveData"][idx]["IsFav"] = "0x01"
-		json.dump(saveJsonFavFix,saveJsonFile,indent="")
+		print(self.FavSong)
+		for ids in range(len(saveJsonFavFix["SaveData"])):
+			if saveJsonFavFix["SaveData"][ids]["SongName"][0] in self.FavSong:
+				saveJsonFavFix["SaveData"][ids]["IsFav"] = "0x01"
+		json.dump(saveJsonFavFix,saveJsonFile,indent="",ensure_ascii=False)
 		saveJsonFile.close()
 
 if __name__ == '__main__':

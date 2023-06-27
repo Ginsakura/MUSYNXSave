@@ -41,17 +41,19 @@ def CheckFileBeforeStarting(fonts):
 		os.makedirs('./musync_data/')
 	if not os.path.isfile('./musync_data/MUSYNC.ico'):
 		FileExport.WriteIcon()
-	if not os.path.isfile('./musync_data/SongName.json'):
+	if (not os.path.isfile('./musync_data/SongName.json')) or (FileExport.snjU != open('./musync_data/songname.update','r').read()):
 		FileExport.WriteSongNameJson()
 	if not os.path.isfile('./musync_data/ExtraFunction.cfg'):
-		json.dump({"EnableAcc-Sync": False,"DisableCheckUpdate": False,"EnableAnalyzeWhenStarting": False,
-			"EnableDLLInjection": False,"SystemDPI": GetDpi()},open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
+		json.dump({"DisableCheckUpdate": False,"EnableDLLInjection": False},
+			open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
 	if not '霞鹜文楷等宽' in fonts:
 		if os.path.isfile('./musync_data/LXGW.ttf'):
 			os.system(f'{os.getcwd()}/musync_data/LXGW.ttf')
 		else:
 			FileExport.WriteTTF()
 			os.system(f'{os.getcwd()}/musync_data/LXGW.ttf')
+	if not os.path.exists("./skin/"):
+		os.makedirs('./skin/')
 
 def CheckConfig():
 	try:

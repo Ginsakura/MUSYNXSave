@@ -468,12 +468,12 @@
  "0001B45F": ["Platina", 6, 0, 5],
  "0001B460": ["Platina", 6, 1, 8],
  "0001B461": ["Platina", 6, 2, 11],
- "0001B4B9": ["Sliver Town", 4, 0, 5],
- "0001B4BA": ["Sliver Town", 4, 1, 10],
- "0001B4BB": ["Sliver Town", 4, 2, 15],
- "0001B4C3": ["Sliver Town", 6, 0, 5],
- "0001B4C4": ["Sliver Town", 6, 1, 10],
- "0001B4C5": ["Sliver Town", 6, 2, 15],
+ "0001B4B9": ["Silver Town", 4, 0, 5],
+ "0001B4BA": ["Silver Town", 4, 1, 10],
+ "0001B4BB": ["Silver Town", 4, 2, 15],
+ "0001B4C3": ["Silver Town", 6, 0, 5],
+ "0001B4C4": ["Silver Town", 6, 1, 10],
+ "0001B4C5": ["Silver Town", 6, 2, 15],
  "0001B51D": ["三千世界鸦杀尽", 4, 0, 3],
  "0001B51E": ["三千世界鸦杀尽", 4, 1, 6],
  "0001B527": ["三千世界鸦杀尽", 6, 0, 3],
@@ -1387,5 +1387,6 @@
  "00021857": ["Saintelmo", 4, 2, 15],
  "0002185F": ["Saintelmo", 6, 0, 6],
  "00021860": ["Saintelmo", 6, 1, 11],
- "00021861": ["Saintelmo", 6, 2, 15]
+ "00021861": ["Saintelmo", 6, 2, 15],
+ "NotDLCSong": ["8bit Adventurer", "8th Planet", "Africa", "ANGER FORCE - STAGE 4 -", "Annihilator", "Bass telekinesis", "Beyond The Horizon", "BiBiC Heart", "Brain Crash", "Burn", "Butterfly Dance", "八秒之语", "Call me baby", "Canon in D", "Confession", "独角", "Four leaf clover", "GAMEBOY", "Gothique Resonance", "高考恋爱100天[未来的志愿书]", "HATEN CODE 583", "海棠仙", "欢迎光临", "绘卷里的星球[三色绘恋 ED]", "ICEY", "JOURNEY", "节奏快打", "LALALA Refrain", "Lost Memories[WILL:美好世界]", "luxianuz", "蜡烛人[摇曳]", "鲤[一河上下两世界]", "恋时雨[三色绘恋S ED]", "流光织雨[三色绘恋S OP]", "落尘寰", "moon light", "MUSE DASH[Pancake Is Love]", "末日Disco", "Nick of Time", "那片小小的星空", "逆浪千秋", "你真的好弔", "OPUS地球计划[Hope]", "Platina", "蹒行手记", "骑上我心爱的小摩托", "Saintelmo", "Silver Town", "Solar Wind", "三人合奏歌", "三色绘恋[三色绘恋 OP]", "神州电音[惊涛落日]", "圣女战旗[La Bannière]", "松鼠魔法祭", "苏三起解", "The Day We Become Family", "The Mountain Eater", "tracing shadow", "兔子罗比", "兔子先生", "When You're Away", "万神纪", "我要挂科了", "无限剧场", "小红帽的一天", "眼泪", "一天一炮的愉悦 RPG小剧场", "月圆之夜[月下狂想曲]", "中国式家长[高考前夕]", "做个好梦", "εν άστει Διονύσια", "ネコぱら[タイヨウパラダイス]", "東風稻荷", "遠い日々", "黄老饼梦游惊奇"]
  }

@@ -19,7 +19,7 @@ import Functions
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.2.2rc19'
+version = '1.2.3rc1'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -644,8 +644,8 @@ class Entry_Canvas:
 		self.d_outline = d_outline#默认外框颜色
 		self.d_fill = d_fill#默认文字颜色
  
-		self.rec = self.canvas.create_rectangle(x-r_width,y-r_height,x+r_width,y+r_height,width=2,outline=d_outline)
-		self.tex = self.canvas.create_text(x,y,text=self.info1,font=font,fill=d_fill)
+		self.rec = self.canvas.create_rectangle(pos[0]-size[0],pos[1]-size[1],pos[0]+size[0],pos[1]+size[1],width=2,outline=d_outline)
+		self.tex = self.canvas.create_text(pos[0],pos[1],text=self.info1,font=font,fill=d_fill)
  
 	def focus_on(self,color:str):
 		## ------ 焦点已获取状态 ------ ##

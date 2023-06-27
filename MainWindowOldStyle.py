@@ -146,11 +146,11 @@ class MusyncSavDecodeGUI(object):
 		self.selectLabel1 = Label(self.selectExFrame, text="额外\n筛选", anchor="w", font=self.font, relief="flat")
 		self.selectLabel1.place(x=0,y=5,width=50,height=60)
 		self.selectDLCSong = Button(self.selectExFrame, text=['所\n有','本\n体','扩\n展'][self.isDLC], command=lambda:self.SelectDLCSong(), anchor='w', font=self.font)
-		self.selectDLCSong.place(x=50,y=0,width=30,height=65)
+		self.selectDLCSong.place(x=48,y=0,width=30,height=65)
 		self.selectKeys = Button(self.selectExFrame, text=['4 & 6 Keys','4 Keys','6 Keys'][self.keys], command=lambda:self.SelectKeys(), anchor='w', font=self.font)
-		self.selectKeys.place(x=82,y=0,width=[112,72,72][self.keys],height=30)
+		self.selectKeys.place(x=80,y=0,width=[112,72,72][self.keys],height=30)
 		self.selectDifficute = Button(self.selectExFrame, text=['Easy','Hard',"Inferno",'所有难度'][self.difficute], command=lambda:self.SelectDifficute(), anchor='w', font=self.font)
-		self.selectDifficute.place(x=82,y=35,width=[52,52,82,92][self.difficute],height=30)
+		self.selectDifficute.place(x=80,y=35,width=[52,52,82,92][self.difficute],height=30)
 
 		##AutoRun##
 		self.InitLabel('初始化函数执行中......')

@@ -28,10 +28,13 @@ class HitAnalyze(object):
 
 				idxAbs = abs(idx)
 				if idxAbs<5:
+					self.rate[0] += 1
 					self.accurateRate[0] += 1
 				elif idxAbs<10:
+					self.rate[0] += 1
 					self.accurateRate[1] += 1
 				elif idxAbs<20:
+					self.rate[0] += 1
 					self.accurateRate[2] += 1
 				elif idxAbs<45:
 					self.rate[0] += 1
@@ -179,7 +182,7 @@ class HitAnalyze(object):
 		for i in range(len(self.xAxis)):
 			plt.bar(self.xAxis[i],self.yAxis[i])
 
-		plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':15})  #显示上面的label
+		plt.legend(loc='upper left',prop={'family':'LXGW WenKai Mono','weight':'normal','size':15})  #显示上面的label
 
 	def Pie(self):
 		def Percentage(num, summ):

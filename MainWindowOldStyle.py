@@ -285,7 +285,7 @@ class MusyncSavDecodeGUI(object):
 		print(f'local: {oldVersion}.{oldRC}')
 		if (newVersion > oldVersion) or ((newVersion == oldVersion) and (newRC > oldRC)):
 			self.gitHubLink.configure(text=f'有新版本啦——点此打开下载页面	NewVersion: {version}', anchor="center")
-			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases"))
+			self.gitHubLink.configure(command=lambda:webbrowser.open(f"https://github.com/Ginsakura/MUSYNCSave/releases/tag/{version}"))
 			self.UpdateTip()
 		else:
 			self.gitHubLink.configure(text='点击打开GitHub仓库	点个Star吧，秋梨膏', anchor="center")
@@ -338,7 +338,7 @@ class MusyncSavDecodeGUI(object):
 			self.gitHubLink.configure(fg='#4BB1DA')
 		else:
 			self.gitHubLink.configure(fg='#C4245C')
-		root.after(500,self.UpdateTip)
+		self.root.after(500,self.UpdateTip)
 
 	def GetSaveFile(self):
 		self.InitLabel("正在搜索存档文件中……")

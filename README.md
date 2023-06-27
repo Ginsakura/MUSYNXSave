@@ -31,22 +31,22 @@ WithConsole版本为带命令提示符界面，适合出现bug时快速定位错
 于`./musync_data/ExtraFunction.cfg`文件中启用/禁用对应功能
 |               配置项              |     默认值    | 值类型 |                                配置说明                                |
 |-----------------------------------|---------------|--------|------------------------------------------------------------------------|
-| `EnableAcc-Sync`                  |false          |boolean |是否启用Acc-Synx图表|
-| `DisableCheckUpdate`              |false          |boolean |是否禁用更新检测|
-| `EnableAnalyzeWhenStarting`       |false          |boolean |是否启用每次启动时重新扫描存档文件|
-| `EnableDLLInjection`              |false          |boolean |是否启用DLL注入以开启高级功能|
-| `SystemDPI`                       |`自动获取`     |string  |读取系统DPI, 提供DPI窗体修正(未实现)|
-| `EnableDonutChartinHitDelay`      |false          |boolean |是否在单次游玩统计中显示击打延迟环形图|
-| `EnableDonutChartinAllHitAnalyze` |false          |boolean |是否在全局统计中显示击打延迟环形图|
-| `EnablePDFofCyanExtra`            |false          |boolean |是否在全局统计中显示仅CyanExtra的正态分布拟合|
-| `EnableNarrowDelayInterval`       |false          |boolean |是否在单次游玩统计中使用更狭窄的击打区间来计算平均偏移值(Delay)<br>[true=45ms,false=90ms]|
+| `EnableAcc-Sync`                  |false          |boolean |是否启用Acc-Synx图表                                                    |
+| `DisableCheckUpdate`              |false          |boolean |是否禁用更新检测                                                        |
+| `EnableAnalyzeWhenStarting`       |false          |boolean |是否启用每次启动时重新扫描存档文件                                      |
+| `EnableDLLInjection`              |false          |boolean |是否启用DLL注入以开启高级功能                                           |
+| `SystemDPI`                       |`自动获取`     |string  |读取系统DPI, 提供DPI窗体修正(未实现)                                    |
+| `EnableDonutChartinHitDelay`      |false          |boolean |是否在单次游玩统计中显示击打延迟环形图                                  |
+| `EnableDonutChartinAllHitAnalyze` |false          |boolean |是否在全局统计中显示击打延迟环形图                                      |
+| `EnablePDFofCyanExtra`            |false          |boolean |是否在全局统计中显示仅CyanExtra的正态分布拟合                           |
+| `EnableNarrowDelayInterval`       |true           |boolean |是否在单次游玩统计中使用更狭窄的击打区间来计算平均偏移值(Delay)<br>[true=45ms,false=90ms]|
 | `ConsoleAlpha`                    |75             |int     |喵赛克游戏本体控制台窗口的不透明度<br>(取值范围[0,100],100为完全不透明,不建议取值在30以下)|
-| `ConsoleFont`                     |'霞鹜文楷等宽' |string  |喵赛克游戏本体控制台窗口的字体|
-| `ConsoleFontSize`                 |36             |int     |喵赛克游戏本体控制台窗口的字号|
-| `MainExecPath`                    |`自动获取`     |string  |喵赛克游戏本体主程序所在的路径|
-| `ChangeConsoleStyle`              |false          |boolean |是否启用自定义喵赛克游戏本体控制台窗口样式|
-| `EnableFramelessWindow`           |false          |boolean |是否启用无边框窗口样式(未完成)|
-| `TransparentColor`                |'#FFFFFF'      |string<br>boolean  |设置透明色(仅限新样式)<br>设置为false即为关闭透明色|
+| `ConsoleFont`                     |'霞鹜文楷等宽' |string  |喵赛克游戏本体控制台窗口的字体                                          |
+| `ConsoleFontSize`                 |36             |int     |喵赛克游戏本体控制台窗口的字号                                          |
+| `MainExecPath`                    |`自动获取`     |string  |喵赛克游戏本体主程序所在的路径                                          |
+| `ChangeConsoleStyle`              |false          |boolean |是否启用自定义喵赛克游戏本体控制台窗口样式                              |
+| `EnableFramelessWindow`           |false          |boolean |是否启用无边框窗口样式(未完成)                                          |
+| `TransparentColor`                |'#FFFFFF'      |string<br>boolean  |设置透明色(仅限新样式)<br>设置为false即为关闭透明色          |
 
 ### 高级功能简介
 下列组件对游戏客户端有修改,请谨慎使用
@@ -73,13 +73,17 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 ### Version 1.2.3
 1. 更新 对曲目新增DLC标记，用以标记曲目是否是DLC曲目
 2. 更新 新增本体/DLC曲目筛选
-3. 优化 优化曲目收藏修复函数的执行方式
+1. 修复 修复更新提示报错的bug
+2. 修复 修复 `SongName.json` 资源未被封装进程序的bug
+1. 优化 优化曲目收藏修复函数的执行方式
+2. 优化 将 `EnableNarrowDelayInterval` 配置项默认值修改为 `true`
+3. 优化 点击更新提示时将会直接跳转到最新版的单独tag release页面
 
 ### Version 1.2.2
 1. 更新 通过使用UIAutoMation库实现一键自动从控制台获取游玩结果 
-    <del>以后都不需要再Ctrl A+C+V了</del><br>
-    $\color{Red}{控制台只显示最近一次的游玩记录，请在下次谱面游玩开始前生成结果}$<br>
-    $\color{Red}{控制台关闭后不会保存游玩记录，请在关闭游戏前生成结果}$<br>
+    <del>以后都不需要再Ctrl A+C+V了</del>
+    $\color{Red}{控制台只显示最近一次的游玩记录，请在下次谱面游玩开始前生成结果}$
+    $\color{Red}{控制台关闭后不会保存游玩记录，请在关闭游戏前生成结果}$
     $\color{Red}{结果生成需要使用剪切板，点击按钮后，在结果生成前请不要进行任何复制操作}$
 2. 更新 `HitDelay` 窗口中新增详细游玩记录展示
 3. 更新 `HitDelay` 窗口中新增支持修改谱面游玩标识

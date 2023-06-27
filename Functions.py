@@ -92,7 +92,7 @@ def CheckConfig():
 		cfg['EnablePDFofCyanExtra'] = False
 		isChange = True
 	if 'EnableNarrowDelayInterval' not in cfg:
-		cfg['EnableNarrowDelayInterval'] = False
+		cfg['EnableNarrowDelayInterval'] = True
 		isChange = True
 	if 'ConsoleAlpha' not in cfg:
 		cfg['ConsoleAlpha'] = 75

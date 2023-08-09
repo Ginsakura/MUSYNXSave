@@ -8,7 +8,8 @@ MUSYNX Steam Client Savefile Decode & Analyze Tool
 ![AllHitAnalyze页面](./ReadmeResources/AllHitAnalyze.png "AllHitAnalyze页面")
 ![AvgAcc-SYNC.Rate回归分析页面](./ReadmeResources/AvgAcc-SYNC.Rate.png "AvgAcc-SYNC.Rate回归分析")
 
-## 未来的计划
+## 计划
+### 未来的计划
 - [ ] 提供全球排行榜显示功能 (需要调用SteamAPI)
 - [ ] 将提供一个文档来演示使用方法 (在写了,咕咕咕)
 - [ ] 使用文件夹内指定文件名的方式自定义美化UI
@@ -27,7 +28,7 @@ NoConsole版本为没有命令提示符界面，适合正常使用
 
 WithConsole版本为带命令提示符界面，适合出现bug时快速定位错误发生地点以及原因
 
-### 功能控制模块
+## 功能控制模块
 于`./musync_data/ExtraFunction.cfg`文件中启用/禁用对应功能
 |               配置项              |     默认值    | 值类型 |                                配置说明                                |
 |-----------------------------------|---------------|--------|------------------------------------------------------------------------|

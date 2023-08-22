@@ -7,10 +7,14 @@
     $\color{Red}{控制台关闭后不会保存游玩记录，请在关闭游戏前生成结果}$
     $\color{Red}{结果生成需要使用剪切板，点击按钮后，在结果生成前请不要进行任何复制操作}$
 4. 1.2.3 DLC曲目标记
+5. 1.2.3 适配本体*八月更新*
 
 ### Version 1.2.3
 1. 更新 对曲目新增DLC标记，用以标记曲目是否是DLC曲目
 2. 更新 新增本体/DLC曲目筛选
+3. #### 更新 更新本次喵赛克更新的新曲目
+    - 日本式硬核 -Oukaranman-(EZ HD)
+    - Euphoria(MUSYNX EDIT.)(EZ HD)
 1. 修复 修复更新提示报错的bug
 2. 修复 修复 `SongName.json` 资源未被封装进程序的bug
 3. 修复 修复 `AllHitAnalyze` 图表中对CyanExtra统计错误的bug

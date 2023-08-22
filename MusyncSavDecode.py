@@ -190,7 +190,7 @@ class MUSYNCSavProcess():
 		with open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8') as saveJsonFile:
 			saveJsonFavFix = json.load(saveJsonFile)
 		saveJsonFile = open(f'./musync_data/SavAnalyze.json','w+',encoding='utf8')
-		print(self.FavSong)
+		print("Favorites List：" + self.FavSong)
 		for ids in range(len(saveJsonFavFix["SaveData"])):
 			if saveJsonFavFix["SaveData"][ids]["SongName"][0] in self.FavSong:
 				saveJsonFavFix["SaveData"][ids]["IsFav"] = "0x01"

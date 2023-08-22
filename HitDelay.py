@@ -16,8 +16,8 @@ import pyperclip
 class HitDelayCheck(object):
 	"""docstring for HitDelayWindow"""
 	def __init__(self):
-		self.md5l = 'C2FB65DBA57AC54CF24752D7EAA47757' # HitDelayFix.dll
-		self.md5o = '0722724F7D0AC74AD42F6FC648D81359' # Assembly-CSharp.dll
+		self.md5l = '88DAA74EDF3510D3A3ADFF30D60C3CAA' # HitDelayFix.dll
+		self.md5o = 'C09382FC2E5EFF237874A2B49B4AA520' # Assembly-CSharp.dll
 
 		with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as confFile:
 			config = json.load(confFile)

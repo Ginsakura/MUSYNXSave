@@ -5,6 +5,7 @@ import os
 import json
 import FileExport
 import winreg
+import sqlite3 as sql
 
 def GetDpi():
 	hDC = win32gui.GetDC(0)
@@ -54,6 +55,40 @@ def CheckFileBeforeStarting(fonts):
 			os.system(f'{os.getcwd()}/musync_data/LXGW.ttf')
 	if not os.path.exists("./skin/"):
 		os.makedirs('./skin/')
+	if os.path.isfile('./musync_data/HitDelayHistory.db'):
+		print("记录数据迁移中...")
+		db = sql.connect('./musync_data/HitDelayHistory.db')
+		cur = db.cursor()
+		testData = cur.execute("SELECT * from HitDelayHistory limit 1")
+		testData = testData.fetchone()
+		# print(len(testData))
+		if len(testData) != 6:
+			ndb = sql.connect('./musync_data/HitDelayHistorytemp.db')
+			ncur = ndb.cursor()
+			ncur.execute("""CREATE table HitDelayHistory (
+				SongMapName text Not Null,
+				RecordTime text Not Null,
+				AvgDelay float,
+				AllKeys int,
+				AvgAcc float,
+				HitMap text,
+				PRIMARY KEY ("SongMapName", "RecordTime"))""")
+			for ids in cur.execute("SELECT * from HitDelayHistory").fetchall():
+				nameAndTime = ids[0].split("-202")
+				name = nameAndTime[0]
+				recordTime = "202%s"%nameAndTime[1]
+				avgDelay = ids[1]
+				allKeys = ids[2]
+				avgAcc = ids[3]
+				dataList = ids[4]
+				print("正在迁移%s  %s"%(name,recordTime))
+				ncur.execute("INSERT into HitDelayHistory values(?,?,?,?,?,?)",(name,recordTime,avgDelay,allKeys,avgAcc,dataList))
+			ndb.commit()
+			ndb.close()
+			db.close()
+			os.system("del HitDelayHistory.db")
+			os.system("move HitDelayHistorytemp.db HitDelayHistory.db")
+			
 
 def CheckConfig():
 	try:

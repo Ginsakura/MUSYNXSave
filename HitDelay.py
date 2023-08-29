@@ -51,12 +51,14 @@ class HitDelayText(object):
 		else:
 			self.db = sql.connect('./musync_data/HitDelayHistory.db')
 			self.cur = self.db.cursor()
-			self.cur.execute('''create table HitDelayHistory (
-				SongMapName text Primary Key,
+			self.cur.execute("""CREATE table HitDelayHistory (
+				SongMapName text Not Null,
+				RecordTime text Not Null,
 				AvgDelay float,
 				AllKeys int,
 				AvgAcc float,
-				HitMap text);''')
+				HitMap text,
+				PRIMARY KEY ("SongMapName", "RecordTime"))""")
 		self.subroot = subroot
 		self.font=('霞鹜文楷等宽',16)
 		self.subroot.iconbitmap('./musync_data/Musync.ico')
@@ -79,7 +81,7 @@ class HitDelayText(object):
 		self.nameDelayEntry = Entry(self.subroot,font=self.font, relief="sunken",validate='focus',validatecommand=self.TestEntryString)
 		self.nameDelayEntry.insert(0, "→→在这里输入谱面标识←←")
 		self.nameDelayEntry.place(relx=0.05,y=100,height=30,relwidth=0.65)
-		self.delayHistory = ttk.Treeview(self.subroot, show="headings", columns = ['name','AllKeys','AvgDelay','AvgAcc'])
+		self.delayHistory = ttk.Treeview(self.subroot, show="headings", columns = ['Name','RecordTime','AllKeys','AvgDelay','AvgAcc'])
 		self.delayHistory.place(x=0,y=130,relheight=0.78,relwidth=0.70)
 		self.VScroll1 = Scrollbar(self.subroot, orient='vertical', command=self.delayHistory.yview)
 		self.delayHistory.configure(yscrollcommand=self.VScroll1.set)
@@ -92,29 +94,33 @@ class HitDelayText(object):
 			self.txtButton.place(relx=0.7,y=70,height=30,relwidth=0.3)
 
 		self.historyFrame = Frame(self.subroot,relief="groove",bd=2)
-		self.historyFrame.place(relx=0.701,y=198,height=184,relwidth=0.298)
+		self.historyFrame.place(relx=0.701,y=198,height=244,relwidth=0.298)
 		self.historyNameLabel = Label(self.historyFrame, text='谱面游玩标识',font=self.font, relief="groove")
 		self.historyNameLabel.place(x=0,y=0,height=30,relwidth=1)
 		self.historyNameEntry = Entry(self.historyFrame,font=self.font, relief="sunken")
 		self.historyNameEntry.place(x=0,y=30,height=30,relwidth=1)
+		self.historyRecordTimeLabel = Label(self.historyFrame, text='记录时间',font=self.font, relief="groove")
+		self.historyRecordTimeLabel.place(x=0,y=60,height=30,relwidth=1)
+		self.historyRecordTimeValueLabel = Label(self.historyFrame, text=dt.now(),font=self.font, relief="groove")
+		self.historyRecordTimeValueLabel.place(x=0,y=90,height=30,relwidth=1)
 		self.historyKeysLabel = Label(self.historyFrame, text=f'按键数量: ',font=self.font, relief="groove", anchor="e")
-		self.historyKeysLabel.place(x=0,y=60,height=30,relwidth=0.4)
-		self.historyKeysValueLabel = Label(self.historyFrame, text="0  ",font=self.font, relief="groove", anchor="e")
-		self.historyKeysValueLabel.place(relx=0.4,y=60,height=30,relwidth=0.6)
+		self.historyKeysLabel.place(x=0,y=120,height=30,relwidth=0.4)
+		self.historyKeysValueLabel = Label(self.historyFrame, text="0    ",font=self.font, relief="groove", anchor="e")
+		self.historyKeysValueLabel.place(relx=0.4,y=120,height=30,relwidth=0.6)
 		self.historyDelayLabel = Label(self.historyFrame, text='Delay: ',font=self.font, relief="groove", anchor="e")
-		self.historyDelayLabel.place(x=0,y=90,height=30,relwidth=0.4)
+		self.historyDelayLabel.place(x=0,y=150,height=30,relwidth=0.4)
 		self.historyDelayValueLabel = Label(self.historyFrame, text="000.000000ms  ",font=self.font, relief="groove", anchor="e")
-		self.historyDelayValueLabel.place(relx=0.4,y=90,height=30,relwidth=0.6)
+		self.historyDelayValueLabel.place(relx=0.4,y=150,height=30,relwidth=0.6)
 		self.historyAccLabel = Label(self.historyFrame, text='AvgAcc: ',font=self.font, relief="groove", anchor="e")
-		self.historyAccLabel.place(x=0,y=120,height=30,relwidth=0.4)
+		self.historyAccLabel.place(x=0,y=180,height=30,relwidth=0.4)
 		self.historyAccValueLabel = Label(self.historyFrame, text='000.000000ms  ',font=self.font, relief="groove", anchor="e")
-		self.historyAccValueLabel.place(relx=0.4,y=120,height=30,relwidth=0.6)
+		self.historyAccValueLabel.place(relx=0.4,y=180,height=30,relwidth=0.6)
 		self.style.configure("update.TButton",font=self.font, relief="raised", background='#A6E22B')
 		self.historyDeleteButton = ttk.Button(self.historyFrame, text='更新记录', style="update.TButton",command=self.UpdateCursorHistory)
-		self.historyDeleteButton.place(x=0,y=150,height=30,relwidth=0.5)
+		self.historyDeleteButton.place(x=0,y=210,height=30,relwidth=0.5)
 		self.style.configure("delete.TButton",font=self.font, relief="raised", foreground='#FF4040', background='#FF2020')
 		self.historyDeleteButton = ttk.Button(self.historyFrame, text='删除记录', style="delete.TButton",command=self.DeleteCursorHistory)
-		self.historyDeleteButton.place(relx=0.5,y=150,height=30,relwidth=0.5)
+		self.historyDeleteButton.place(relx=0.5,y=210,height=30,relwidth=0.5)
 
 		self.delayInterval = 90
 		if config['EnableNarrowDelayInterval']:
@@ -137,12 +143,12 @@ class HitDelayText(object):
 	def HistoryUpdate(self):
 		for ids in self.delayHistory.get_children():
 			self.delayHistory.delete(ids)
-		data = self.cur.execute("select SongMapName,AvgDelay,AllKeys,AvgAcc from HitDelayHistory")
+		data = self.cur.execute("SELECT SongMapName,RecordTime,AvgDelay,AllKeys,AvgAcc from HitDelayHistory")
 		data = data.fetchall()
+		self.history = list()
 		for ids in data:
-			self.history = list()
 			self.history.append(ids[0])
-			self.delayHistory.insert('', END, values=(ids[0],ids[2],'%.6f ms'%ids[1],'%.6f ms'%ids[3]))
+			self.delayHistory.insert('', END, values=(ids[0],ids[1],ids[3],'%.6f ms'%ids[2],'%.6f ms'%ids[4]))
 		del data
 		self.UpdateWindowInfo()
 
@@ -164,7 +170,8 @@ class HitDelayText(object):
 		if consoleFind:
 			data = pyperclip.paste().split('\n')
 			dataList=list()
-			name = self.nameDelayEntry.get().replace("\'","’")+f"-{dt.now()}"
+			name = self.nameDelayEntry.get().replace("\'","’")
+			time = f"{dt.now()}"
 			if data[-1] == "":
 				data.pop(-1)
 			for ids in range(1,len(data)):
@@ -181,10 +188,10 @@ class HitDelayText(object):
 			dataListStr = ""
 			for i in dataList:
 				dataListStr += f'{i}|'
-			self.cur.execute("insert into HitDelayHistory values(?,?,?,?,?)",(name,avgDelay,allKeys,avgAcc,dataListStr[:-1]))
+			self.cur.execute("INSERT into HitDelayHistory values(?,?,?,?,?,?)",(name,time,avgDelay,allKeys,avgAcc,dataListStr[:-1]))
 			self.db.commit()
 			self.HistoryUpdate()
-			dataList = [name,avgDelay,allKeys,avgAcc,dataList]
+			dataList = [name,time,avgDelay,allKeys,avgAcc,dataList]
 			HitDelayDraw(dataList,isHistory=False)
 
 	def OpenTxt(self):
@@ -215,9 +222,10 @@ class HitDelayText(object):
 			self.cursorHistory = data[0]
 			self.historyNameEntry.delete(0, 'end')
 			self.historyNameEntry.insert(0, data[0])
-			self.historyDelayValueLabel['text'] = '%.6fms  '%float(data[1])
-			self.historyKeysValueLabel['text'] = '% 5s  '%data[2]
-			self.historyAccValueLabel['text'] = '%.6fms  '%float(data[3])
+			self.historyRecordTimeValueLabel['text'] = data[1]
+			self.historyKeysValueLabel['text'] = '% 5s    '%data[3]
+			self.historyDelayValueLabel['text'] = '%.6fms  '%float(data[2])
+			self.historyAccValueLabel['text'] = '%.6fms  '%float(data[4])
 			del data
 
 	def DeleteCursorHistory(self):
@@ -252,16 +260,19 @@ class HitDelayText(object):
 			# print(self.history[historyItem[0]])
 
 	def UpdateWindowInfo(self):
-		self.delayHistory.heading("name",anchor="center",text="曲名/时间")
+		self.delayHistory.heading("Name",anchor="center",text="曲名")
+		self.delayHistory.heading("RecordTime",anchor="center",text="记录时间")
 		self.delayHistory.heading("AllKeys",anchor="center",text="Keys")
 		self.delayHistory.heading("AvgDelay",anchor="center",text="Delay")
 		self.delayHistory.heading("AvgAcc",anchor="center",text="AvgAcc")
-		self.delayHistory.column("name",anchor="w",width=380)
+		self.delayHistory.column("Name",anchor="w",width=180)
+		self.delayHistory.column("RecordTime",anchor="w",width=200)
 		self.delayHistory.column("AllKeys",anchor="e",width=60)
 		self.delayHistory.column("AvgDelay",anchor="e",width=120)
 		self.delayHistory.column("AvgAcc",anchor="e",width=120)
 		self.delayHistory.bind("<Double-1>",self.HistoryDraw)
 		self.delayHistory.bind("<ButtonPress-1>",self.ShowHistoryInfo)
+		self.historyRecordTimeValueLabel['text'] = dt.now()
 
 		print("VScroll1.get",self.VScroll1.get())
 		self.subroot.update()
@@ -271,13 +282,14 @@ class HitDelayText(object):
 class HitDelayDraw(object):
 	"""docstring for ClassName"""
 	def __init__(self, dataList,isHistory=False):
-		self.avgDelay = dataList[1]
-		self.allKeys = dataList[2]
-		self.avgAcc = dataList[3]
+		print('Name:%s\nRecordTime:%s'%(dataList[0],dataList[1]))
+		self.avgDelay = dataList[2]
+		self.allKeys = dataList[3]
+		self.avgAcc = dataList[4]
 		if isHistory:
-			dataList = [float(i) for i in dataList[4].split("|")]
+			dataList = [float(i) for i in dataList[5].split("|")]
 		else:
-			dataList = dataList[4]
+			dataList = dataList[5]
 
 		self.x_axis = [i for i in range(0,len(dataList))]
 		self.zero_axis = [0 for i in range(0,len(dataList))]

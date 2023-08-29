@@ -13,6 +13,7 @@ from tkinter import Tk,ttk,font,messagebox
 from tkinter.filedialog import askopenfilename
 from HitDelay import HitDelayCheck,HitDelayText
 import Functions
+import psutil
 #import win32api
 #import win32con
 #import win32gui_struct
@@ -54,7 +55,7 @@ class MusyncSavDecodeGUI(object):
 			style.configure("F5.TButton", font=('霞鹜文楷等宽',13.5), bg="#EEBBBB")
 			self.font=('霞鹜文楷等宽',13.5)
 		if isTKroot == True:
-			root.title("同步音律喵赛克 Steam端 本地存档分析")
+			root.title("同步音律喵赛克Steam端本地存档分析")
 			root['background'] = '#efefef'
 		self.saveFilePathVar = StringVar()
 		self.saveFilePathVar.set('Input SaveFile or AnalyzeFile Path (savedata.sav)or(SavAnalyze.json)')
@@ -75,7 +76,7 @@ class MusyncSavDecodeGUI(object):
 		self.isDLC = 0
 		self.wh = [0,0]
 
-		##Controls##
+		##Controller##
 		self.saveFileDecodeButton = ttk.Button(self.root, text="存档解码及分析", command=self.DeleteAnalyzeFile, style='reload.TButton')
 		self.saveFileDecodeButton.place(x=10,y=10,width=150,height=30)
 
@@ -152,6 +153,9 @@ class MusyncSavDecodeGUI(object):
 		self.selectDifficute = Button(self.selectExFrame, text=['Easy','Hard',"Inferno",'所有难度'][self.difficute], command=lambda:self.SelectDifficute(), anchor='w', font=self.font)
 		self.selectDifficute.place(x=80,y=35,width=[52,52,82,92][self.difficute],height=30)
 
+		self.isGameRunning = Label(self.root, text="游戏未启动", font=self.font,bg='#FF8080')
+		self.isGameRunning.place(x=755,y=86,width=110,height=30)
+
 		##AutoRun##
 		self.InitLabel('初始化函数执行中......')
 		self.UpdateWindowInfo()
@@ -181,8 +185,8 @@ class MusyncSavDecodeGUI(object):
 			self.DeleteAnalyzeFile()
 		self.CheckFile()
 		if self.config['EnableDLLInjection']:
-			self.hitDelay = Button(self.root, text="DLL注入\n分析\n游玩结果",command=self.HitDelay, font=self.font,bg='#FF5959')
-			self.hitDelay.place(x=776,y=48,width=90,height=74)
+			self.hitDelay = Button(self.root, text="结果分析",command=self.HitDelay, font=self.font,bg='#FF5959')
+			self.hitDelay.place(x=775,y=50,width=90,height=30)
 		if os.path.isfile('./musync_data/SavAnalyze.json'):
 			self.DataLoad()
 		elif os.path.isfile('./musync_data/SavDecode.decode'):
@@ -407,7 +411,7 @@ class MusyncSavDecodeGUI(object):
 			saveDataJson = json.load(saveData)
 			with open("./musync_data/SongName.json",'r',encoding='utf8') as snj:
 				songNameJson = json.load(snj)
-			self.root.title(f'同步音律喵赛克 Steam端 本地存档分析	LastPlay: {saveDataJson["LastPlay"]}')
+			self.root.title(f'同步音律喵赛克Steam端本地存档分析   LastPlay: {saveDataJson["LastPlay"]}')
 			[self.saveData.delete(ids) for ids in self.saveData.get_children()]
 			self.saveCount = 0
 			self.totalSync = 0
@@ -507,6 +511,19 @@ class MusyncSavDecodeGUI(object):
 		self.avgSyncLabel.configure(text=self.avgSyncVar.get()[0:10]+"%")
 		self.developer.place(x=0,y=self.windowInfo[3]-30,width=420,height=30)
 		self.gitHubLink.place(x=420,y=self.windowInfo[3]-30,width=self.windowInfo[2]-420,height=30)
+		for ids in psutil.pids():
+			try:
+				if psutil.Process(pid=ids).name() == "MUSYNX.exe":
+					# self.config["MainExecPath"]
+					self.isGameRunning["text"] = "游戏已启动"
+					self.isGameRunning["bg"] = "#98E22B"
+					break
+			except Exception as e:
+				print(repr(e))
+			
+		else:
+			self.isGameRunning["text"] = "游戏未启动"
+			self.isGameRunning["bg"] = "#FF8080"
 
 		self.saveData.bind("<Double-1>",self.DoubleClick)
 		self.saveData.bind("<ButtonRelease-1>",self.SortClick)

@@ -15,13 +15,12 @@ MUSYNX Steam Client Savefile Decode & Analyze Tool
 - [ ] 使用文件夹内指定文件名的方式自定义美化UI
 ### 已完成的计划
 - [x] 一键获取上次谱面游玩结果
-- [x] 使用workflow功能实现自动生成分发版本
+- [x] 使用GitHub Action workflow实现自动分发
 - [x] 重排版SongName.json
 - [x] 滑动条在重加载后保持位置不变
 - [x] 隐藏cmd窗口
 - [x] 将像Windows资源管理器一样使用列标题栏进行排序
 - [x] 将高级功能整合为`ExtraFunction.cfg`配置文件
-- [x] 使用GitHub Action实现自动发布
 
 ## Release版本说明
 NoConsole版本为没有命令提示符界面，适合正常使用
@@ -72,12 +71,19 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 ### Version 1.2.3
 1. 更新 对曲目新增DLC标记，用以标记曲目是否是DLC曲目
 2. 更新 新增本体/DLC曲目筛选
+3. #### 更新 更新本次喵赛克更新的新曲目
+    - 日本式硬核 -Oukaranman-(EZ HD)
+    - Euphoria(MUSYNX EDIT.)(EZ HD)
+4. 更新 新增检测游戏是否启动
+5. 更新 提供自动更新游玩记录数据库的功能，在程序启动时自动执行
+***更新后的数据库不向下兼容***
 1. 修复 修复更新提示报错的bug
 2. 修复 修复 `SongName.json` 资源未被封装进程序的bug
 3. 修复 修复 `AllHitAnalyze` 图表中对CyanExtra统计错误的bug
 1. 优化 优化曲目收藏修复函数的执行方式
 2. 优化 将 `EnableNarrowDelayInterval` 配置项默认值修改为 `true`
 3. 优化 点击更新提示时将会直接跳转到最新版的单独tag release页面
+4. 优化 将游玩记录数据库中，名称列中的记录时间拆分为单独的列，并单独显示
 
 ### Version 1.2.2
 1. 更新 通过使用UIAutoMation库实现一键自动从控制台获取游玩结果 

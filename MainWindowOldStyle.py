@@ -33,27 +33,27 @@ class MusyncSavDecodeGUI(object):
 		root.geometry(f'1000x670+500+300')
 		self.root = root
 		self.root.minsize(500, 460)
-		# def fixed_map(option):
-		# 	return [elm for elm in style.map("Treeview", query_opt=option) if elm[:2] != ("!disabled", "!selected")]
+		def fixed_map(option):
+			return [elm for elm in style.map("Treeview", query_opt=option) if elm[:2] != ("!disabled", "!selected")]
 		style = ttk.Style()
 		if self.config['SystemDPI'] == 100:
 			style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',13))
 			style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
 			style.configure("reload.TButton", font=('霞鹜文楷等宽',16))
-			#, background='#EEBBBB', foreground='#00CCFF',relief='ridge')
+			# , background='#EEBBBB', foreground='#00CCFF',relief='ridge')
 			style.configure("F5.TButton", font=('霞鹜文楷等宽',16), bg="#EEBBBB")
 			style.configure("close.TButton", font=('霞鹜文楷等宽',16), bg="#EEBBBB")
 			self.font=('霞鹜文楷等宽',16)
 		# elif self.config['SystemDPI'] == 125:
 		else:
-			# style.configure("Treeview", foreground=fixed_map("foreground"), background=fixed_map("background"))
-			# style.configure("Treeview", background="#383838", foreground="white", fieldbackground="red")
 			style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',11))
 			style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
 			style.configure("reload.TButton", font=('霞鹜文楷等宽',13.5))
-			#, background='#EEBBBB', foreground='#00CCFF',relief='ridge')
+			# , background='#EEBBBB', foreground='#00CCFF',relief='ridge')
 			style.configure("F5.TButton", font=('霞鹜文楷等宽',13.5), bg="#EEBBBB")
 			self.font=('霞鹜文楷等宽',13.5)
+		# style.configure("Treeview", foreground=fixed_map("foreground"), background=fixed_map("background"))
+		# style.configure("Treeview", background="#EFEFEF", foreground="#050505", fieldbackground="red")
 		if isTKroot == True:
 			root.title("同步音律喵赛克Steam端本地存档分析")
 			root['background'] = '#efefef'
@@ -480,23 +480,38 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.heading("Rank",anchor="center",text="Rank"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='Rank' else ''))
 		self.saveData.heading("UploadScore",anchor="center",text="云端同步率"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='UploadScore' else ''))
 		self.saveData.heading("PlayCount",anchor="center",text="游玩计数"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='PlayCount' else ''))
-		self.saveData.heading("IsFav",anchor="center",text="IsFav"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='IsFav' else ''))
+		self.saveData.heading("IsFav",anchor="center",text="IsFav"+(('⇓   ' if self.dataSortMethodsort[1] else '⇑   ') if self.dataSortMethodsort[0]=='IsFav' else '   '))
 		self.root.update()
 
 	def TreeviewWidthUptate(self):
 		self.saveData.column("SpeedStall",anchor="e",width=90)
-		self.saveData.column("SongName",anchor="w",width=self.windowInfo[2]-761)
+		self.saveData.column("SongName",anchor="w",width=self.windowInfo[2]-771)
 		self.saveData.column("Keys",anchor="center",width=60)
 		self.saveData.column("Difficulty",anchor="w",width=65)
 		self.saveData.column("DifficultyNumber",anchor="center",width=60)
 		self.saveData.column("SyncNumber",anchor="e",width=80)
-		self.saveData.column("Rank",anchor="center",width=70)
+		self.saveData.column("Rank",anchor="center",width=55)
 		self.saveData.column("UploadScore",anchor="e",width=160)
 		self.saveData.column("PlayCount",anchor="e",width=90)
-		self.saveData.column("IsFav",anchor="center",width=70)
-		self.root.update()
+		self.saveData.column("IsFav",anchor="w",width=80)
 
 	def UpdateWindowInfo(self):
+		def CheckGameIsStart():
+			# print("Checking Game Is Start?")
+			for ids in psutil.pids():
+				try:
+					if psutil.Process(pid=ids).name() == "MUSYNX.exe":
+						# self.config["MainExecPath"]
+						self.isGameRunning["text"] = "游戏已启动"
+						self.isGameRunning["bg"] = "#98E22B"
+						break
+				except Exception as e:
+					print(repr(e))
+				
+			else:
+				self.isGameRunning["text"] = "游戏未启动"
+				self.isGameRunning["bg"] = "#FF8080"
+
 		self.windowInfo = ['root.winfo_x()','root.winfo_y()',self.root.winfo_width(),self.root.winfo_height()]
 
 		self.saveFilePathEntry.place(x=170,y=10,width=(self.windowInfo[2]-260),height=30)
@@ -511,25 +526,13 @@ class MusyncSavDecodeGUI(object):
 		self.avgSyncLabel.configure(text=self.avgSyncVar.get()[0:10]+"%")
 		self.developer.place(x=0,y=self.windowInfo[3]-30,width=420,height=30)
 		self.gitHubLink.place(x=420,y=self.windowInfo[3]-30,width=self.windowInfo[2]-420,height=30)
-		for ids in psutil.pids():
-			try:
-				if psutil.Process(pid=ids).name() == "MUSYNX.exe":
-					# self.config["MainExecPath"]
-					self.isGameRunning["text"] = "游戏已启动"
-					self.isGameRunning["bg"] = "#98E22B"
-					break
-			except Exception as e:
-				print(repr(e))
-			
-		else:
-			self.isGameRunning["text"] = "游戏未启动"
-			self.isGameRunning["bg"] = "#FF8080"
+		threading.Thread(target=CheckGameIsStart).start()
 
 		self.saveData.bind("<Double-1>",self.DoubleClick)
 		self.saveData.bind("<ButtonRelease-1>",self.SortClick)
 		self.wh = self.windowInfo[2:]
 		self.root.update()
-		self.root.after(1000,self.UpdateWindowInfo)
+		self.root.after(2000,self.UpdateWindowInfo)
 
 class SubWindow(object):
 	def __init__(self, nroot, songID, songName, songDifficute):

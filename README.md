@@ -53,9 +53,10 @@ WithConsole版本为带命令提示符界面，适合出现bug时快速定位错
 
 *** $\color{Red}{ 注意备份 注意备份 注意备份 }$ ***
 
-$\color{Red}{请自行决定是否使用,使用过程中出现任何意外}$ *** $\color{Red}{ 后果自负,开发者概不负责 }$ ***
+$\color{Red}{请自行决定是否使用,使用过程中出现任何意外}$
+$\color{Red}{后果自负,开发者概不负责}$
 
-HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩时会打开一个cmd窗口 *** $\color{Red}{请勿关闭该窗口}$ ***
+HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩时会打开一个cmd窗口 $\color{Red}{请勿关闭该窗口}$
 
 - `HitDelayFix.dll` 被精心修改过的客户端文件,原始文件为`./MUSYNX_Data/Managed/Assembly-CSharp.dll`.
 - `HitDelayLine.py` 用于读取`./musync_data/HitDelay.log`中的击打信息生成可视化数据表,标题栏提供三个统计信息.
@@ -68,6 +69,11 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
     该值越小,就说明您击打的越精准,(在该值小于45ms时，您的)分值就会越高.
 
 ## 更新日志
+### Version 1.2.4
+1. 更新 提供一个快速启动Python源码的C++文件，并且提供作为编译示例的batch文件
+1. 修复 将Python环境提升到3.11.5，修复了Python3.8.6中TreeView无法设置背景色、前景色的bug
+1. 优化 将检测游戏是否启动的功能`多线程化`
+
 ### Version 1.2.3
 1. 更新 对曲目新增DLC标记，用以标记曲目是否是DLC曲目
 2. 更新 新增本体/DLC曲目筛选
@@ -76,7 +82,7 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
     - Euphoria(MUSYNX EDIT.)(EZ HD)
 4. 更新 新增检测游戏是否启动
 5. 更新 提供自动更新游玩记录数据库的功能，在程序启动时自动执行
-***更新后的数据库不向下兼容***
+$\color{Red}{更新后的数据库不向下兼容}$
 1. 修复 修复更新提示报错的bug
 2. 修复 修复 `SongName.json` 资源未被封装进程序的bug
 3. 修复 修复 `AllHitAnalyze` 图表中对CyanExtra统计错误的bug

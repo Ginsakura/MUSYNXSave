@@ -20,7 +20,7 @@ def GetDpi():
 def ChangeConsoleStyle():
 	# print('Changing Console Style...')
 	with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
-		cfg = json.load(cfg,encoding='utf8')
+		cfg = json.load(cfg)
 	execPath = cfg['MainExecPath']
 	execPath = execPath.replace('/','_')+'musynx.exe'
 	# print(execPath)
@@ -56,13 +56,13 @@ def CheckFileBeforeStarting(fonts):
 	if not os.path.exists("./skin/"):
 		os.makedirs('./skin/')
 	if os.path.isfile('./musync_data/HitDelayHistory.db'):
-		print("记录数据迁移中...")
 		db = sql.connect('./musync_data/HitDelayHistory.db')
 		cur = db.cursor()
 		testData = cur.execute("SELECT * from HitDelayHistory limit 1")
 		testData = testData.fetchone()
 		# print(len(testData))
 		if len(testData) != 6:
+			print("记录数据迁移中...")
 			ndb = sql.connect('./musync_data/HitDelayHistorytemp.db')
 			ncur = ndb.cursor()
 			ncur.execute("""CREATE table HitDelayHistory (
@@ -88,6 +88,8 @@ def CheckFileBeforeStarting(fonts):
 			db.close()
 			os.system("del HitDelayHistory.db")
 			os.system("move HitDelayHistorytemp.db HitDelayHistory.db")
+		else:
+			print("记录数据无需迁移.")
 			
 
 def CheckConfig():

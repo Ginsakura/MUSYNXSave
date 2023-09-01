@@ -19,7 +19,7 @@ import Functions
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.2.3rc6'
+version = '1.2.4rc1'
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -738,7 +738,7 @@ if __name__ == '__main__':
 	# root = Tk()
 	# fonts = list(font.families())
 	# Functions.CheckFileBeforeStarting(fonts)
-	# del fonts
+	# # del fonts
 	# with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
 	# 	cfg = json.load(cfg)
 	# if cfg['ChangeConsoleStyle']:

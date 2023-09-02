@@ -303,19 +303,20 @@ class HitDelayDraw(object):
 		self.y_axis = [int(i) for i in dataList]
 
 		self.sum = [0,0,0,0,0]
-		self.exCount = [0,0,0]
+		self.exCount = [0,0,0,0]
 		for ids in dataList:
 			ids = abs(ids)
 			if ids < 45: 
 				if ids < 5:self.exCount[0] += 1
 				elif ids < 10:self.exCount[1] += 1
 				elif ids < 20:self.exCount[2] += 1
-				self.sum[0] += 1
+				else:self.exCount[3] += 1
 			elif ids < 90: self.sum[1] += 1
 			elif ids < 150: self.sum[2] += 1
 			elif ids < 250: self.sum[3] += 1
 			else: self.sum[4] += 1
-		self.exCount = self.exCount + self.sum
+		self.sum[0] = sum(self.exCount)
+		self.exCount = self.exCount + self.sum[1:]
 		print("HitDelayDraw:",self.sum,self.exCount)
 
 		self.Draw()
@@ -376,7 +377,7 @@ class HitDelayDraw(object):
 			per = num/summ*100
 			return '%.1f%%'%(per)
 		import random
-		fig = plt.figure(f'Pie: {"%.4fms"%self.avgDelay}  AllKeys: {self.allKeys}  AvgAcc: {"%.4fms"%self.avgAcc}', figsize=(5.5, 4.5))
+		fig = plt.figure(f'Pie AvgDelay: {"%.4fms"%self.avgDelay}  AllKeys: {self.allKeys}  AvgAcc: {"%.4fms"%self.avgAcc}', figsize=(5.5, 4.5))
 		fig.subplots_adjust(**{"left":0,"bottom":0,"right":1,"top":1})
 		wedgeprops = {'width':0.15, 'edgecolor':'black', 'linewidth':0.2}
 		if self.sum[0]/sum(self.sum) > 0.6:

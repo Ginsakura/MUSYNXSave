@@ -23,7 +23,7 @@ import psutil
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
 	def __init__(self, version, root=None, isTKroot=True):
-		##Init##
+	##Init##
 		self.version = version
 		with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as confFile:
 			self.config = json.load(confFile)
@@ -75,8 +75,7 @@ class MusyncSavDecodeGUI(object):
 		self.keys = 0
 		self.isDLC = 0
 		self.wh = [0,0]
-
-		##Controller##
+	##Controller##
 		self.saveFileDecodeButton = ttk.Button(self.root, text="存档解码及分析", command=self.DeleteAnalyzeFile, style='reload.TButton')
 		self.saveFileDecodeButton.place(x=10,y=10,width=150,height=30)
 
@@ -114,8 +113,7 @@ class MusyncSavDecodeGUI(object):
 		self.totalSyncTextLabel.place(x=870,y=50,width=120,height=30)
 		self.avgSyncLabel = Label(self.root, text=self.avgSyncVar.get()+'%', anchor="w", font=self.font, relief="flat")
 		self.avgSyncLabel.place(x=870,y=90,width=120,height=30)
-
-		#筛选控件
+	#筛选控件
 		self.selectFrame = Frame(self.root, relief="groove",bd=2)
 		self.selectFrame.place(x=180,y=50,width=380,height=70)
 		self.selectLabel0 = Label(self.selectFrame, text="筛选\n控件", anchor="w", font=self.font, relief="flat")
@@ -140,8 +138,7 @@ class MusyncSavDecodeGUI(object):
 		self.select122Button.place(x=324,y=0,width=50,height=30)
 		self.select120Button = Button(self.selectFrame, text='红Ex', command=lambda:self.SelectMethod('Sync120'), anchor="w", font=self.font)
 		self.select120Button.place(x=324,y=35,width=50,height=30)
-
-		##额外筛选##
+	##额外筛选##
 		self.selectExFrame = Frame(self.root, bd=2, relief="groove")
 		self.selectExFrame.place(x=570,y=50,width=200,height=70)
 		self.selectLabel1 = Label(self.selectExFrame, text="额外\n筛选", anchor="w", font=self.font, relief="flat")
@@ -155,8 +152,7 @@ class MusyncSavDecodeGUI(object):
 
 		self.isGameRunning = Label(self.root, text="游戏未启动", font=self.font,bg='#FF8080')
 		self.isGameRunning.place(x=755,y=86,width=110,height=30)
-
-		##AutoRun##
+	##AutoRun##
 		self.InitLabel('初始化函数执行中......')
 		self.UpdateWindowInfo()
 		self.TreeviewWidthUptate()
@@ -196,6 +192,7 @@ class MusyncSavDecodeGUI(object):
 		else:
 			self.DataLoad()
 
+# json文件检查
 	def CheckFile(self):
 		saveData=None
 		if os.path.isfile('./musync_data/SavAnalyze.json'):
@@ -209,6 +206,7 @@ class MusyncSavDecodeGUI(object):
 				if len(saveDataJson['SaveData']) == 0:
 					os.remove("./musync_data/SavAnalyze.json")
 
+# select功能组
 	def SelectKeys(self):
 		self.keys = (self.keys+1)%3
 		self.selectKeys.configure(text=['4 & 6Keys','4 Keys','6 Keys'][self.keys])
@@ -260,48 +258,18 @@ class MusyncSavDecodeGUI(object):
 		elif method == "RankB":self.selectBRankButton.configure(bg='#F0F0F0')
 		elif method == "RankC":self.selectCRankButton.configure(bg='#F0F0F0')
 
-	def CheckJsonUpdate(self):
-		try:
-			response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
-			githubVersion = response.content.decode('utf8')
-			with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
-				localVersion = snju.read()
-			if githubVersion>localVersion:
-				response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.json")
-				songNameJson = response.json()
-				with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
-					json.dump(songNameJson,snj,indent="",ensure_ascii=False)
-				with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
-					snju.write(githubVersion)
-		except Exception as e:
-			messagebox.showerror("Error", f'发生错误: {e}')
-
-	def CheckUpdate(self):
-		oldVersion,oldRC = int(f'{self.version[0]}{self.version[2]}{self.version[4]}'),int(self.version[7:])
-		try:
-			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
-			version = response.json()["tag_name"]
-			newVersion,newRC = int(f'{version[0]}{version[2]}{version[4]}'),int(version[7:])
-		except Exception as e:
-			messagebox.showerror("Error", f'发生错误: {e}')
-			newVersion,newRC = oldVersion,oldRC
-		print(f'terget: {newVersion}.{newRC}')
-		print(f'local: {oldVersion}.{oldRC}')
-		if (newVersion > oldVersion) or ((newVersion == oldVersion) and (newRC > oldRC)):
-			self.gitHubLink.configure(text=f'有新版本啦——点此打开下载页面	NewVersion: {version}', anchor="center")
-			self.gitHubLink.configure(command=lambda:webbrowser.open(f"https://github.com/Ginsakura/MUSYNCSave/releases/tag/{version}"))
-			self.UpdateTip()
+	def SelectPath(self):
+		# 使用askdirectory()方法返回文件夹的路径
+		path_ = askopenfilename(title="打开存档文件", filetypes=(("Sav Files", "*.sav"),("All Files","*.*"),))
+		if path_ == "":
+			# 当打开文件路径选择框后点击"取消" 输入框会清空路径，所以使用get()方法再获取一次路径
+			self.saveFilePathVar.get() 
 		else:
-			self.gitHubLink.configure(text='点击打开GitHub仓库	点个Star吧，秋梨膏', anchor="center")
-			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"))
+			# 实际在代码中执行的路径为“\“ 所以替换一下
+			path_ = path_.replace("/", "\\")
+			self.saveFilePathVar.set(path_)
 
-	def InitLabel(self,text,close=False):
-		self.initLabel.place(x=250,y=300,width=500,height=30)
-		self.initLabel.configure(text=text, anchor="w")
-		self.root.update()
-		if close:
-			self.initLabel.place(x=-1,width=0)
-
+# bind功能组
 	def DoubleClick(self,event):
 		e = event.widget									# 取得事件控件
 		itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
@@ -337,6 +305,49 @@ class MusyncSavDecodeGUI(object):
 		for col in self.treeviewColumns:
 			self.saveData.heading(col, command=lambda _col=col:TreeviewSortColumn(_col))
 
+	def StartGame(self,event):
+		os.system('start steam://rungameid/952040')
+		# if self.config['MainExecPath'] == '':
+		# 	os.system('start steam://rungameid/952040')
+		# else:
+		# 	os.system('start \"'+self.config['MainExecPath']+'MUSYNX.exe\"')
+
+# update功能组
+	def CheckJsonUpdate(self):
+		try:
+			response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
+			githubVersion = response.content.decode('utf8')
+			with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
+				localVersion = snju.read()
+			if githubVersion>localVersion:
+				response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.json")
+				songNameJson = response.json()
+				with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
+					json.dump(songNameJson,snj,indent="",ensure_ascii=False)
+				with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
+					snju.write(githubVersion)
+		except Exception as e:
+			messagebox.showerror("Error", f'发生错误: {e}')
+
+	def CheckUpdate(self):
+		oldVersion,oldRC = int(f'{self.version[0]}{self.version[2]}{self.version[4]}'),int(self.version[7:])
+		try:
+			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
+			version = response.json()["tag_name"]
+			newVersion,newRC = int(f'{version[0]}{version[2]}{version[4]}'),int(version[7:])
+		except Exception as e:
+			messagebox.showerror("Error", f'发生错误: {e}')
+			newVersion,newRC = oldVersion,oldRC
+		print(f'terget: {newVersion}.{newRC}')
+		print(f'local: {oldVersion}.{oldRC}')
+		if (newVersion > oldVersion) or ((newVersion == oldVersion) and (newRC > oldRC)):
+			self.gitHubLink.configure(text=f'有新版本啦——点此打开下载页面	NewVersion: {version}', anchor="center")
+			self.gitHubLink.configure(command=lambda:webbrowser.open(f"https://github.com/Ginsakura/MUSYNCSave/releases/tag/{version}"))
+			self.UpdateTip()
+		else:
+			self.gitHubLink.configure(text='点击打开GitHub仓库	点个Star吧，秋梨膏', anchor="center")
+			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"))
+
 	def UpdateTip(self):
 		if self.gitHubLink.cget('fg') == '#C4245C':
 			self.gitHubLink.configure(fg='#4BB1DA')
@@ -344,6 +355,15 @@ class MusyncSavDecodeGUI(object):
 			self.gitHubLink.configure(fg='#C4245C')
 		self.root.after(500,self.UpdateTip)
 
+# 初始化提示框
+	def InitLabel(self,text,close=False):
+		self.initLabel.place(x=250,y=300,width=500,height=30)
+		self.initLabel.configure(text=text, anchor="w")
+		self.root.update()
+		if close:
+			self.initLabel.place(x=-1,width=0)
+
+# 数据分析功能组
 	def GetSaveFile(self):
 		self.InitLabel("正在搜索存档文件中……")
 		saveFilePath = None
@@ -443,7 +463,7 @@ class MusyncSavDecodeGUI(object):
 				elif self.dataSelectMethod == "RankB":
 					if (float(saveLine["SyncNumber"][0:-1]) < 75) or (float(saveLine["SyncNumber"][0:-1]) >= 95):continue
 				elif self.dataSelectMethod == "RankC":
-					if float(saveLine["SyncNumber"][0:-1]) >= 75:continue
+					if (float(saveLine["SyncNumber"][0:-1]) == 0) or (float(saveLine["SyncNumber"][0:-1]) >= 75):continue
 				self.saveCount += 1
 				self.totalSync += float(saveLine["UploadScore"][0:-1])
 				self.saveData.insert('', END, values=(saveLine["SpeedStall"], #谱面号
@@ -459,17 +479,7 @@ class MusyncSavDecodeGUI(object):
 			self.SortClick(self.dataSortMethodsort)
 		self.InitLabel('数据展示生成完成.',close=True)
 
-	def SelectPath(self):
-		# 使用askdirectory()方法返回文件夹的路径
-		path_ = askopenfilename(title="打开存档文件", filetypes=(("Sav Files", "*.sav"),("All Files","*.*"),))
-		if path_ == "":
-			# 当打开文件路径选择框后点击"取消" 输入框会清空路径，所以使用get()方法再获取一次路径
-			self.saveFilePathVar.get() 
-		else:
-			# 实际在代码中执行的路径为“\“ 所以替换一下
-			path_ = path_.replace("/", "\\")
-			self.saveFilePathVar.set(path_)
-		
+# 控件更新功能组
 	def TreeviewColumnUpdate(self):
 		self.saveData.heading("SpeedStall",anchor="center",text="谱面号"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SpeedStall' else ''))
 		self.saveData.heading("SongName",anchor="center",text="曲名"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SongName' else ''))
@@ -528,6 +538,7 @@ class MusyncSavDecodeGUI(object):
 		self.gitHubLink.place(x=420,y=self.windowInfo[3]-30,width=self.windowInfo[2]-420,height=30)
 		threading.Thread(target=CheckGameIsStart).start()
 
+		self.isGameRunning.bind('<Button-1>', self.StartGame)
 		self.saveData.bind("<Double-1>",self.DoubleClick)
 		self.saveData.bind("<ButtonRelease-1>",self.SortClick)
 		self.wh = self.windowInfo[2:]

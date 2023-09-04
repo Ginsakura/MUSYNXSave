@@ -119,6 +119,7 @@ class MUSYNCSavProcess():
 				return f'{score}{"0"*(lenth-len(str(score)))}%'
 			def NoCopyright(ss):
 				NCR = [
+				'00019191','00019192','0001919B','0001919C', #粉色柠檬
 				'000199C5','000199C6','000199CF','000199D0', #TWINKLE STAR
 				'0001AC21','0001AC22','0001AC2B','0001AC2C', #为你而来
 				'0001AC85','0001AC86','0001AC8F','0001AC90', #星之伊始
@@ -127,7 +128,6 @@ class MUSYNCSavProcess():
 				'0001F8B1','0001F8B2','0001F8BB','0001F8BC', #404 Not Found
 				'0001F915','0001F916','0001F91F','0001F920', #ArroganT
 				'0001F979','0001F97A','0001F983','0001F984', #樂園 - Atlantis
-				#海棠仙
 				]
 				if ss in NCR:return True
 				else:return False

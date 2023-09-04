@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import MultipleLocator
 
-def main():
+def Analyze():
 	acc=list()
 	sync=list()
 	with open('./musync_data/Acc-Sync.json') as f:
@@ -12,7 +12,7 @@ def main():
 		acc.append(float(ids[0]))
 		sync.append(float(ids[1]))
 	
-	fig = plt.figure('AvgAcc与SYNC.Rate之间的回归分析', figsize=(10, 10))
+	fig = plt.figure('AvgAcc与SYNC.Rate散点图', figsize=(10, 10))
 	# print(acc,sync)
 	
 	fig.subplots_adjust(**{"left":0.06,"bottom":0.05,"right":0.998,"top":0.994})
@@ -42,4 +42,4 @@ def main():
 	plt.show()
 
 if __name__ == '__main__':
-	main()
+	Analyze()

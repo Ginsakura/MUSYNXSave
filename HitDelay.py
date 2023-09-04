@@ -1,4 +1,4 @@
-﻿from tkinter import *
+from tkinter import *
 from tkinter import Tk,ttk,font,Text,messagebox
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import MultipleLocator
@@ -172,9 +172,9 @@ class HitDelayText(object):
 			dataList=list()
 			name = self.nameDelayEntry.get().replace("\'","’")
 			time = f"{dt.now()}"
-			if data[-1] == "":
+			if data[-1] == "": #如果最后一行是空行，则去除
 				data.pop(-1)
-			for ids in range(1,len(data)):
+			for ids in range(1,len(data)): # 去除第一行
 				dataList.append(float(data[ids][13:-3]))
 			allKeys = len(dataList)
 			sumNums,sumKeys = 0,0
@@ -199,7 +199,7 @@ class HitDelayText(object):
 		# print(os.getcwd())
 		# os.system(f'start explorer {os.getcwd()}')
 		import AvgAcc_SynxAnalyze
-		AvgAcc_SynxAnalyze.main()
+		AvgAcc_SynxAnalyze.Analyze()
 
 	def OpenHitAnalyze(self):
 		hitAnalyze = HitAnalyze(isOpen=self.openHitAnalyze)
@@ -254,7 +254,7 @@ class HitDelayText(object):
 		historyItem = e.item(itemID,"values")				# 取得values参数
 		# print(e.item(itemID))
 		if not self.history == []:
-			data = self.cur.execute(f'select * from HitDelayHistory where SongMapName=\'{historyItem[0]}\'')
+			data = self.cur.execute(f'select * from HitDelayHistory where SongMapName=\'{historyItem[0]}\' and RecordTime=\'{historyItem[1]}\'')
 			data = data.fetchone()
 			HitDelayDraw(data,isHistory=True)
 			# print(self.history[historyItem[0]])

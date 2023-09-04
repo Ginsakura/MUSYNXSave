@@ -12,6 +12,7 @@ from tkinter import *
 from tkinter import Tk,ttk,font,messagebox
 from tkinter.filedialog import askopenfilename
 from HitDelay import HitDelayCheck,HitDelayText
+import Difficulty_ScoreAnalyze as dsa
 import Functions
 import psutil
 #import win32api
@@ -76,8 +77,12 @@ class MusyncSavDecodeGUI(object):
 		self.isDLC = 0
 		self.wh = [0,0]
 	##Controller##
-		self.saveFileDecodeButton = ttk.Button(self.root, text="存档解码及分析", command=self.DeleteAnalyzeFile, style='reload.TButton')
-		self.saveFileDecodeButton.place(x=10,y=10,width=150,height=30)
+		self.deleteAnalyzeFile = ttk.Button(self.root, text="刷新",command=self.DeleteAnalyzeFile,style='F5.TButton')
+		self.deleteAnalyzeFile.place(x=10,y=10,width=90,height=30)
+		self.saveFileDecodeButton = ttk.Button(self.root, text="解码", command=self.DeleteAnalyzeFile, style='reload.TButton')
+		self.saveFileDecodeButton.place(x=100,y=10,width=60,height=30)
+		self.isGameRunning = Label(self.root, text="游戏未启动", font=self.font,bg='#FF8080')
+		self.isGameRunning.place(x=30,y=85,width=110,height=30)
 
 		self.CountFrameLanel = Label(self.root,text="", relief="groove")
 		self.CountFrameLanel.place(x=8,y=48,width=164,height=34)
@@ -102,10 +107,10 @@ class MusyncSavDecodeGUI(object):
 		self.initLabel = Label(self.root, text='启动中......', anchor="w", font=self.font, relief="groove")
 		self.initLabel.place(x=250,y=300,width=500,height=30)
 
-		self.deleteAnalyzeFile = ttk.Button(self.root, text="刷新",command=self.DeleteAnalyzeFile,style='F5.TButton')
-		self.deleteAnalyzeFile.place(x=10,y=88,width=90,height=30)
-		self.closeWindow = ttk.Button(self.root, text="关闭",command=lambda : self.root.destroy(),style='close.TButton')
-		self.closeWindow.place(x=100,y=88,width=90,height=30)
+		# self.closeWindow = ttk.Button(self.root, text="关闭",command=lambda : self.root.destroy(),style='close.TButton')
+		# self.closeWindow.place(x=100,y=88,width=90,height=30)
+		self.difficuteScoreAnalyze = Button(self.root, text="成绩分布",command=lambda:dsa.Analyze(), font=self.font)
+		self.difficuteScoreAnalyze.place(x=775,y=88,width=90,height=30)
 
 		self.totalSyncFrameLabel = Label(self.root, text='', relief="groove")
 		self.totalSyncFrameLabel.place(x=868,y=48,width=124,height=74)
@@ -113,6 +118,7 @@ class MusyncSavDecodeGUI(object):
 		self.totalSyncTextLabel.place(x=870,y=50,width=120,height=30)
 		self.avgSyncLabel = Label(self.root, text=self.avgSyncVar.get()+'%', anchor="w", font=self.font, relief="flat")
 		self.avgSyncLabel.place(x=870,y=90,width=120,height=30)
+
 	#筛选控件
 		self.selectFrame = Frame(self.root, relief="groove",bd=2)
 		self.selectFrame.place(x=180,y=50,width=380,height=70)
@@ -150,8 +156,6 @@ class MusyncSavDecodeGUI(object):
 		self.selectDifficute = Button(self.selectExFrame, text=['Easy','Hard',"Inferno",'所有难度'][self.difficute], command=lambda:self.SelectDifficute(), anchor='w', font=self.font)
 		self.selectDifficute.place(x=80,y=35,width=[52,52,82,92][self.difficute],height=30)
 
-		self.isGameRunning = Label(self.root, text="游戏未启动", font=self.font,bg='#FF8080')
-		self.isGameRunning.place(x=755,y=86,width=110,height=30)
 	##AutoRun##
 		self.InitLabel('初始化函数执行中......')
 		self.UpdateWindowInfo()
@@ -181,7 +185,7 @@ class MusyncSavDecodeGUI(object):
 			self.DeleteAnalyzeFile()
 		self.CheckFile()
 		if self.config['EnableDLLInjection']:
-			self.hitDelay = Button(self.root, text="结果分析",command=self.HitDelay, font=self.font,bg='#FF5959')
+			self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelay, font=self.font,bg='#FF5959')
 			self.hitDelay.place(x=775,y=50,width=90,height=30)
 		if os.path.isfile('./musync_data/SavAnalyze.json'):
 			self.DataLoad()
@@ -306,11 +310,10 @@ class MusyncSavDecodeGUI(object):
 			self.saveData.heading(col, command=lambda _col=col:TreeviewSortColumn(_col))
 
 	def StartGame(self,event):
-		os.system('start steam://rungameid/952040')
-		# if self.config['MainExecPath'] == '':
-		# 	os.system('start steam://rungameid/952040')
-		# else:
-		# 	os.system('start \"'+self.config['MainExecPath']+'MUSYNX.exe\"')
+		if self.isGameRunning["text"] == '游戏未启动':
+			os.system('start steam://rungameid/952040')
+		else:
+			messagebox.showinfo("Info", '游戏已启动')
 
 # update功能组
 	def CheckJsonUpdate(self):

@@ -125,8 +125,8 @@ def CheckConfig():
 	if 'EnableDonutChartinAllHitAnalyze' not in cfg:
 		cfg['EnableDonutChartinAllHitAnalyze'] = False
 		isChange = True
-	if 'EnablePDFofCyanExtra' not in cfg:
-		cfg['EnablePDFofCyanExtra'] = False
+	if 'EnablePDFofCyanExact' not in cfg:
+		cfg['EnablePDFofCyanExact'] = False
 		isChange = True
 	if 'EnableNarrowDelayInterval' not in cfg:
 		cfg['EnableNarrowDelayInterval'] = True

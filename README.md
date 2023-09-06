@@ -38,7 +38,7 @@ WithConsole版本为带命令提示符界面，适合出现bug时快速定位错
 | `SystemDPI`                       |`自动获取`     |string  |读取系统DPI, 提供DPI窗体修正(未实现)                                    |
 | `EnableDonutChartinHitDelay`      |false          |boolean |是否在单次游玩统计中显示击打延迟环形图                                  |
 | `EnableDonutChartinAllHitAnalyze` |false          |boolean |是否在全局统计中显示击打延迟环形图                                      |
-| `EnablePDFofCyanExtra`            |false          |boolean |是否在全局统计中显示仅CyanExtra的正态分布拟合                           |
+| `EnablePDFofCyanExact`            |false          |boolean |是否在全局统计中显示仅CyanExact的正态分布拟合                           |
 | `EnableNarrowDelayInterval`       |true           |boolean |是否在单次游玩统计中使用更狭窄的击打区间来计算平均偏移值(Delay)<br>[true=45ms,false=90ms]|
 | `ConsoleAlpha`                    |75             |int     |喵赛克游戏本体控制台窗口的不透明度<br>(取值范围[0,100],100为完全不透明,不建议取值在30以下)|
 | `ConsoleFont`                     |'霞鹜文楷等宽' |string  |喵赛克游戏本体控制台窗口的字体                                          |
@@ -70,6 +70,11 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 
 ## 更新日志
 ### Version 1.2.4
+#### Release 5
+1. 优化 `难度与成绩的散点分布图`中增加`难度-平均成绩`<ruby>线<rp>(</rp><rt>Plot</rt><rp>)</rp></ruby>
+2. 优化 主界面对**`刷新`按钮**绑定**`F5`按键**
+3. 优化 将修改客户端用的C#代码放于`CSharp Code`文件夹中
+1. 修复 将所有文档中的`Extra`替换为`Exact`
 #### Release 4
 1. 优化 将License从GPLv3切换为MIT
 1. 修复 修复移除曲目未被排除的bug
@@ -90,7 +95,7 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
     - 将原`结果分析`按钮的文本改为`游玩结算`
 3. 优化 将散点图函数重命名
 #### Release 2
-1. 修复 修复游玩结算时对CyanExtra数量计算错误的bug
+1. 修复 修复游玩结算时对CyanExact数量计算错误的bug
 2. 修复 修复筛选Rank C时未游玩谱面未被排除的bug
 3. 修复 修复未提交C++编译脚本的bug
 #### Release 1
@@ -110,7 +115,7 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 $\color{Red}{更新后的数据库不向下兼容}$
 1. 修复 修复更新提示报错的bug
 2. 修复 修复 `SongName.json` 资源未被封装进程序的bug
-3. 修复 修复 `AllHitAnalyze` 图表中对CyanExtra统计错误的bug
+3. 修复 修复 `AllHitAnalyze` 图表中对CyanExact统计错误的bug
 1. 优化 优化曲目收藏修复函数的执行方式
 2. 优化 将 `EnableNarrowDelayInterval` 配置项默认值修改为 `true`
 3. 优化 点击更新提示时将会直接跳转到最新版的单独tag release页面
@@ -174,7 +179,7 @@ $\color{Red}{更新后的数据库不向下兼容}$
 ### Version 1.1.9
 1. 更新 于`HitDelay`模块处更新Acc-Sync分析功能
 2. 更新 于`AllHitAnalyze`模块处更新tap的Rate环形图
-3. 更新 于`HitDelay`模块处更新tap的Rate环形图，若CyanExtra比例大于60%，则使用精细分级，若小于60%，则使用普通分级。
+3. 更新 于`HitDelay`模块处更新tap的Rate环形图，若CyanExact比例大于60%，则使用精细分级，若小于60%，则使用普通分级。
 4. 更新 配置文件中增加更多的配置项：默认不开启上述两个环形图
 5. 修复 修复`songname.json`中`惊涛落日 IN`谱面难度评级未更新的bug
     <del>这玩意儿算bug吗？</del>
@@ -186,16 +191,16 @@ $\color{Red}{更新后的数据库不向下兼容}$
 10. 修复 修复了大于rc9的版本被识别为小于rc9的bug
 11. 修复 修复了RankC评级筛选包含成绩为0%的谱面的bug
 12. 修复 修复了版本识别错误的bug(再次)
-13. 修复 修复了`HitDelay`模块中CyanExtra评级少于50%时引发报错的bug
+13. 修复 修复了`HitDelay`模块中CyanExact评级少于50%时引发报错的bug
 11. 优化 修改图表字体为`霞鹜文楷等宽`
 12. 优化 优化部分按钮提示词
-13. 优化 对`AllHitAnalyze`模块中的环形图使用更加细化的Rate分级：将Cyan Extra分成`±5ms内、±6~10ms、±11~20ms、±21~45ms`四段
+13. 优化 对`AllHitAnalyze`模块中的环形图使用更加细化的Rate分级：将Cyan Exact分成`±5ms内、±6~10ms、±11~20ms、±21~45ms`四段
 14. 优化 将额外功能修改为配置文件形式，放置于`./musync_data/ExtraFunction.cfg`
 15. 优化 微调环形图
 10. 优化 对系统DPI非100%的情况进行兼容优化
 11. 优化 对`AllHitAnalyze`模块中的环形图计算流程进行优化，同时将优化应用于`HitDelay`模块中的环形图
 12. 优化 替换部分源码文件中的缩进符号
-13. 优化 对`AllHitAnalyze`模块中的正态曲线新增仅cyanExtra Rate拟合，须手动在配置文件中启用
+13. 优化 对`AllHitAnalyze`模块中的正态曲线新增仅cyanExact Rate拟合，须手动在配置文件中启用
 20. 优化 对Update组件使用多线程，减少程序启动时的更新卡顿
 21. 优化 优化布局
 22. 优化 提供两段Delay分析
@@ -214,7 +219,7 @@ $\color{Red}{更新后的数据库不向下兼容}$
     - when you are away(IN)
     - 人里に下ったアタイがいつの間にか社畜にな(IN)
 1. 优化 在`AllHitAnalyze`的标题栏中,新增各个评级的统计数字.
-1. 优化 在`AllHitAnalyze`中,新增仅对Extra评级进行拟合曲线(黑色实线),原对所有数据进行拟合的曲线变更为黑色虚线
+1. 优化 在`AllHitAnalyze`中,新增仅对Exact评级进行拟合曲线(黑色实线),原对所有数据进行拟合的曲线变更为黑色虚线
 2. 优化 在`AllHitAnalyze`中,标签栏新增正态分布的方差与标准差的数值显示
 2. 优化 优化`Readme.md`排版.
 3. 优化 更详细的控制台输出

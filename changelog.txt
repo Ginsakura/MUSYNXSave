@@ -11,6 +11,12 @@
 8. 1.2.4 提供以C++编译的Python源码启动器(需要Python环境及三方库)
 9. 1.2.4 将License从GPLv3切换为MIT
 
+#### Release 5
+1. 优化 `难度与成绩的散点分布图`中增加`难度-平均成绩`<ruby>线<rp>(</rp><rt>Plot</rt><rp>)</rp></ruby>
+2. 优化 主界面对**`刷新`按钮**绑定**`F5`按键**
+3. 优化 将修改客户端用的C#代码放于`CSharp Code`文件夹中
+1. 修复 将所有文档中的`Extra`替换为`Exact`
+
 #### Release 4
 1. 优化 将License从GPLv3切换为MIT
 1. 修复 修复移除曲目未被排除的bug
@@ -33,7 +39,7 @@
 3. 优化 将散点图函数重命名
 
 ### Version 1.2.4 Release 2
-1. 修复 修复游玩结算时对CyanExtra数量计算错误的bug
+1. 修复 修复游玩结算时对CyanExact数量计算错误的bug
 2. 修复 修复筛选Rank C时未游玩谱面未被排除的bug
 3. 修复 修复未提交C++编译脚本的bug
 

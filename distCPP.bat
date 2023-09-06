@@ -1,4 +1,6 @@
 cd ./musync_data
-windres .\ico.rc -O coff -o ico.res
+if not exist ico.res (
+  windres ico.rc -O coff -o ico.res
+)
 cd ..
-g++ -o .\MusyncSavDecodeLuncher.exe .\MusyncSavDecodeLuncher.cpp .\musync_data\ico.res
+g++ -o MusyncSavDecodeLuncher.exe MusyncSavDecodeLuncher.cpp .\musync_data\ico.res

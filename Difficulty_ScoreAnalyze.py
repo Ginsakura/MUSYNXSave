@@ -52,6 +52,8 @@ def Analyze():
 	plt.text(14.5,95.5,'A',ha='center',va='top',fontsize=7.5,alpha=0.7)
 	plt.plot([i for i in range(17)],[75]*17,linestyle='-',alpha=0.7,linewidth=1,color='orange')
 	plt.text(14.5,75.5,'B',ha='center',va='top',fontsize=7.5,alpha=0.7)
+	# supported values are '-', '--', '-.', ':', 'None', ' ', '', 'solid', 'dashed', 'dashdot', 'dotted'
+	plt.plot([i for i in range(1,16)],[diff_score[ids][0] for ids in diff_score.keys()],linestyle='-',color='orange',marker="D",markerfacecolor="Blue",alpha=0.7,linewidth=2)
 
 	plt.scatter(diff,score,alpha=0.7,color='#8a68d0',s=5)
 	# plt.plot(diff,score,'o')

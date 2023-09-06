@@ -315,6 +315,9 @@ class MusyncSavDecodeGUI(object):
 		else:
 			messagebox.showinfo("Info", '游戏已启动')
 
+	def F5Key(self,event):
+		self.DeleteAnalyzeFile()
+
 # update功能组
 	def CheckJsonUpdate(self):
 		try:
@@ -544,6 +547,7 @@ class MusyncSavDecodeGUI(object):
 		self.isGameRunning.bind('<Button-1>', self.StartGame)
 		self.saveData.bind("<Double-1>",self.DoubleClick)
 		self.saveData.bind("<ButtonRelease-1>",self.SortClick)
+		self.root.bind("<F5>", self.F5Key)
 		self.wh = self.windowInfo[2:]
 		self.root.update()
 		self.root.after(2000,self.UpdateWindowInfo)

@@ -293,10 +293,10 @@ class HitDelayDraw(object):
 
 		self.x_axis = [i for i in range(0,len(dataList))]
 		self.zero_axis = [0 for i in range(0,len(dataList))]
-		self.EXTRAa = [45 for i in range(0,len(dataList))]
-		self.EXTRAb = [-45 for i in range(0,len(dataList))]
-		self.Extraa = [90 for i in range(0,len(dataList))]
-		self.Extrab = [-90 for i in range(0,len(dataList))]
+		self.EXACTa = [45 for i in range(0,len(dataList))]
+		self.EXACTb = [-45 for i in range(0,len(dataList))]
+		self.Exacta = [90 for i in range(0,len(dataList))]
+		self.Exactb = [-90 for i in range(0,len(dataList))]
 		self.Greata = [150 for i in range(0,len(dataList))]
 		self.Greatb = [-150 for i in range(0,len(dataList))]
 		self.Right = [250 for i in range(0,len(dataList))]
@@ -346,12 +346,12 @@ class HitDelayDraw(object):
 					fontdict={'family':'LXGW WenKai Mono','weight':'normal'})
 
 		plt.plot(self.x_axis,self.zero_axis,linestyle='-',alpha=1,linewidth=1,color='red',label='0ms')
-		plt.plot(self.x_axis,self.EXTRAa,linestyle='--',alpha=0.7,linewidth=1,color='cyan',
-			label='Cyan Extra(±45ms)    --%d'%self.sum[0])
-		plt.plot(self.x_axis,self.EXTRAb,linestyle='--',alpha=0.7,linewidth=1,color='cyan')
-		plt.plot(self.x_axis,self.Extraa,linestyle='--',alpha=0.7,linewidth=1,color='blue',
-			label='Blue Extra(±90ms)    --%d'%self.sum[1])
-		plt.plot(self.x_axis,self.Extrab,linestyle='--',alpha=0.7,linewidth=1,color='blue')
+		plt.plot(self.x_axis,self.EXACTa,linestyle='--',alpha=0.7,linewidth=1,color='cyan',
+			label='Cyan Exact(±45ms)    --%d'%self.sum[0])
+		plt.plot(self.x_axis,self.EXACTb,linestyle='--',alpha=0.7,linewidth=1,color='cyan')
+		plt.plot(self.x_axis,self.Exacta,linestyle='--',alpha=0.7,linewidth=1,color='blue',
+			label='Blue Exact(±90ms)    --%d'%self.sum[1])
+		plt.plot(self.x_axis,self.Exactb,linestyle='--',alpha=0.7,linewidth=1,color='blue')
 		plt.plot(self.x_axis,self.Greata,linestyle='--',alpha=0.7,linewidth=1,color='green',
 			label='Great(±150ms)        --%d'%self.sum[2])
 		plt.plot(self.x_axis,self.Greatb,linestyle='--',alpha=0.7,linewidth=1,color='green')
@@ -386,27 +386,27 @@ class HitDelayDraw(object):
 				colors=['#AAFFFF','#00B5B5','#78BEFF','cyan', 'blue', 'green', 'orange', 'red'],
 				# autopct=lambda x:'%.3f%%'%(x*sum(self.exCount)/100+0.5),
 				labels=[
-					f"EXTRA±5ms {PercentageLabel(self.exCount[0], exCountSum)}", 
-					f"EXTRA±10ms {PercentageLabel(self.exCount[1], exCountSum)}", 
-					f"EXTRA±20ms {PercentageLabel(self.exCount[2], exCountSum)}", 
-					f"EXTRA±45ms {PercentageLabel(self.exCount[3], exCountSum)}", 
-					f"Extra {PercentageLabel(self.exCount[4], exCountSum)}", 
+					f"EXACT±5ms {PercentageLabel(self.exCount[0], exCountSum)}", 
+					f"EXACT±10ms {PercentageLabel(self.exCount[1], exCountSum)}", 
+					f"EXACT±20ms {PercentageLabel(self.exCount[2], exCountSum)}", 
+					f"EXACT±45ms {PercentageLabel(self.exCount[3], exCountSum)}", 
+					f"Exact {PercentageLabel(self.exCount[4], exCountSum)}", 
 					f"Great {PercentageLabel(self.exCount[5], exCountSum)}", 
 					f"Right {PercentageLabel(self.exCount[6], exCountSum)}", 
 					f"Miss {PercentageLabel(self.exCount[7], exCountSum)}"],
 				textprops={'family':'LXGW WenKai Mono','weight':'normal','size':9})
 			plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':9},loc='center',
 				labels=[
-					f"EXTRA± 5ms  {Count(self.exCount[0])}  {Percentage(self.exCount[0], exCountSum)}", 
-					f"EXTRA±10ms  {Count(self.exCount[1])}  {Percentage(self.exCount[1], exCountSum)}", 
-					f"EXTRA±20ms  {Count(self.exCount[2])}  {Percentage(self.exCount[2], exCountSum)}", 
-					f"EXTRA±45ms  {Count(self.exCount[3])}  {Percentage(self.exCount[3], exCountSum)}", 
-					f"Extra±90ms  {Count(self.exCount[4])}  {Percentage(self.exCount[4], exCountSum)}", 
+					f"EXACT± 5ms  {Count(self.exCount[0])}  {Percentage(self.exCount[0], exCountSum)}", 
+					f"EXACT±10ms  {Count(self.exCount[1])}  {Percentage(self.exCount[1], exCountSum)}", 
+					f"EXACT±20ms  {Count(self.exCount[2])}  {Percentage(self.exCount[2], exCountSum)}", 
+					f"EXACT±45ms  {Count(self.exCount[3])}  {Percentage(self.exCount[3], exCountSum)}", 
+					f"Exact±90ms  {Count(self.exCount[4])}  {Percentage(self.exCount[4], exCountSum)}", 
 					f"Great±150ms {Count(self.exCount[5])}  {Percentage(self.exCount[5], exCountSum)}", 
 					f"Right＋250ms {Count(self.exCount[6])}  {Percentage(self.exCount[6], exCountSum)}", 
 					f"Miss >=251ms {Count(self.exCount[7])}  {Percentage(self.exCount[7], exCountSum)}"],
 				)
-			plt.text(-0.41,0.48,f"EXTRA        {Count(sum(self.exCount[0:4]))}  {Percentage(sum(self.exCount[0:4]), exCountSum)}", 
+			plt.text(-0.41,0.48,f"EXACT        {Count(sum(self.exCount[0:4]))}  {Percentage(sum(self.exCount[0:4]), exCountSum)}", 
 				ha='left',va='top',fontsize=9,color='#00B5B5', 
 				fontdict={'family':'LXGW WenKai Mono','weight':'normal'})
 		else:
@@ -415,16 +415,16 @@ class HitDelayDraw(object):
 				colors=['cyan', 'blue', 'green', 'orange', 'red'],
 				# autopct=lambda x:'%.3f%%'%(x*sum(self.exCount)/100+0.5),
 				labels=[
-					f"EXTRA {PercentageLabel(self.sum[0], summ)}", 
-					f"Extra {PercentageLabel(self.sum[1], summ)}", 
+					f"EXACT {PercentageLabel(self.sum[0], summ)}", 
+					f"Exact {PercentageLabel(self.sum[1], summ)}", 
 					f"Great {PercentageLabel(self.sum[2], summ)}", 
 					f"Right {PercentageLabel(self.sum[3], summ)}", 
 					f"Miss  {PercentageLabel(self.sum[4], summ)}"],
 				textprops={'family':'LXGW WenKai Mono','weight':'normal','size':9})
 			plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':9},loc='center',
 				labels=[
-					f"EXTRA±45ms  {Count(self.sum[0])}  {Percentage(self.sum[0], summ)}", 
-					f"Extra±90ms  {Count(self.sum[1])}  {Percentage(self.sum[1], summ)}", 
+					f"EXACT±45ms  {Count(self.sum[0])}  {Percentage(self.sum[0], summ)}", 
+					f"Exact±90ms  {Count(self.sum[1])}  {Percentage(self.sum[1], summ)}", 
 					f"Great±150ms {Count(self.sum[2])}  {Percentage(self.sum[2], summ)}", 
 					f"Right＋250ms {Count(self.sum[3])}  {Percentage(self.sum[3], summ)}", 
 					f"Miss > 250ms {Count(self.sum[4])}  {Percentage(self.sum[4], summ)}"],

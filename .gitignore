@@ -29,3 +29,5 @@ MUSYNCSavDecode.pyproj.user
 *.sln
 *.log
 *.tmp
+*.sublime*
+

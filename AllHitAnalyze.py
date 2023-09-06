@@ -17,10 +17,10 @@ class HitAnalyze(object):
 		hitMapA = [0]*150 # -149~-0
 		hitMapB = [0]*251 # +0~+250
 		self.sumYnum = 0 # with miss
-		self.sumYnumEx = 0 # only extra
-		self.sumYnumEX = 0 # only cyan extra
-		self.rate=[0,0,0,0,0] # EXTRA,Extra,Great,Right,Miss
-		self.accurateRate=[0,0,0,0,0,0,0,0] # ±5ms,±10ms,±20ms,±45ms,Extra,Great,Right,Miss
+		self.sumYnumEx = 0 # only Exact
+		self.sumYnumEX = 0 # only cyan Exact
+		self.rate=[0,0,0,0,0] # EXACT,Exact,Great,Right,Miss
+		self.accurateRate=[0,0,0,0,0,0,0,0] # ±5ms,±10ms,±20ms,±45ms,Exact,Great,Right,Miss
 		for ids in res:
 			for idx in ids[0].split("|"):
 				idx = float(idx)
@@ -77,20 +77,20 @@ class HitAnalyze(object):
 		self.varEx = sum([(ids[1]/self.sumYnumEx)*((ids[0] - self.avgEx) ** 2) for ids in zip(self.xAxis[61:240],self.yAxis[61:240])])
 		self.stdEx = self.varEx**0.5
 		# del db,cur,hitMapA,hitMapB,res,idxAbs
-		print('all data:  ',self.avg,self.var,self.std,self.sumYnum)
-		print('extra rate:',self.avgEx,self.varEx,self.stdEx,self.sumYnumEx)
+		print('All data:  ',self.avg,self.var,self.std,self.sumYnum)
+		print('Exact rate:',self.avgEx,self.varEx,self.stdEx,self.sumYnumEx)
 
 	def Show(self):
 		with open('./musync_data/ExtraFunction.cfg', 'r',encoding='utf8') as confFile:
 			config = json.load(confFile)
-		if config['EnablePDFofCyanExtra']:
+		if config['EnablePDFofCyanExact']:
 			self.avgEX = sum([ids[0]*ids[1]/self.sumYnumEX for ids in zip(self.xAxis[106:195],self.yAxis[106:195])])
 			self.varEX = sum([(ids[1]/self.sumYnumEX)*((ids[0] - self.avgEX) ** 2) for ids in zip(self.xAxis[106:195],self.yAxis[106:195])])
 			self.stdEX = self.varEX**0.5
-			self.enablePDFofCyanExtra = True
-			print('cyan extra:',self.avgEX,self.varEX,self.stdEX,self.sumYnumEX)
+			self.enablePDFofCyanExact = True
+			print('cyan Exact:',self.avgEX,self.varEX,self.stdEX,self.sumYnumEX)
 		else:
-			self.enablePDFofCyanExtra = False
+			self.enablePDFofCyanExact = False
 		self.Analyze()
 		if config['EnableDonutChartinAllHitAnalyze']:
 			self.Pie()
@@ -171,12 +171,12 @@ class HitAnalyze(object):
 
 		pdfExAxis = [PDFxEx(i) for i in self.xAxis]
 		plt.plot(self.xAxis,pdfExAxis,linestyle='-',alpha=1,linewidth=1,color='black',
-			label=f'Fitting only on Extra rate\n(μ={self.avgEx}\n σ={self.stdEx})')
+			label=f'Fitting only on Exact rate\n(μ={self.avgEx}\n σ={self.stdEx})')
 
-		if self.enablePDFofCyanExtra:
+		if self.enablePDFofCyanExact:
 			pdfEXAxis = [PDFxEX(i) for i in self.xAxis]
 			plt.plot(self.xAxis,pdfEXAxis,linestyle='-',alpha=1,linewidth=1,color='blue',
-				label=f'Fitting only on Cyan Extra rate\n(μ={self.avgEX}\n σ={self.stdEX})')
+				label=f'Fitting only on Cyan Exact rate\n(μ={self.avgEX}\n σ={self.stdEX})')
 
 
 		for i in range(len(self.xAxis)):
@@ -203,27 +203,27 @@ class HitAnalyze(object):
 			colors=['#AAFFFF','#00B5B5','#78BEFF','cyan', 'blue', 'green', 'orange', 'red'],
 			# autopct=lambda x:'%.3f%%'%(x*sum(self.accurateRate)/100+0.5),
 			labels=[
-				f"EXTRA±5ms {PercentageLabel(self.accurateRate[0], accurateRateSum)}", 
-				f"EXTRA±10ms {PercentageLabel(self.accurateRate[1], accurateRateSum)}", 
-				f"EXTRA±20ms {PercentageLabel(self.accurateRate[2], accurateRateSum)}", 
-				f"EXTRA±45ms {PercentageLabel(self.accurateRate[3], accurateRateSum)}", 
-				f"Extra {PercentageLabel(self.accurateRate[4], accurateRateSum)}", 
+				f"EXACT±5ms {PercentageLabel(self.accurateRate[0], accurateRateSum)}", 
+				f"EXACT±10ms {PercentageLabel(self.accurateRate[1], accurateRateSum)}", 
+				f"EXACT±20ms {PercentageLabel(self.accurateRate[2], accurateRateSum)}", 
+				f"EXACT±45ms {PercentageLabel(self.accurateRate[3], accurateRateSum)}", 
+				f"Exact {PercentageLabel(self.accurateRate[4], accurateRateSum)}", 
 				f"Great {PercentageLabel(self.accurateRate[5], accurateRateSum)}", 
 				f"Right {PercentageLabel(self.accurateRate[6], accurateRateSum)}", 
 				f"Miss {PercentageLabel(self.accurateRate[7], accurateRateSum)}"],
 			textprops={'family':'LXGW WenKai Mono','weight':'normal','size':12})
 		plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':12},loc='center',
 			labels=[
-				f"EXTRA± 5ms  {Count(self.accurateRate[0])}  {Percentage(self.accurateRate[0], accurateRateSum)}", 
-				f"EXTRA±10ms  {Count(self.accurateRate[1])}  {Percentage(self.accurateRate[1], accurateRateSum)}", 
-				f"EXTRA±20ms  {Count(self.accurateRate[2])}  {Percentage(self.accurateRate[2], accurateRateSum)}", 
-				f"EXTRA±45ms  {Count(self.accurateRate[3])}  {Percentage(self.accurateRate[3], accurateRateSum)}", 
-				f"Extra±90ms  {Count(self.accurateRate[4])}  {Percentage(self.accurateRate[4], accurateRateSum)}", 
+				f"EXACT± 5ms  {Count(self.accurateRate[0])}  {Percentage(self.accurateRate[0], accurateRateSum)}", 
+				f"EXACT±10ms  {Count(self.accurateRate[1])}  {Percentage(self.accurateRate[1], accurateRateSum)}", 
+				f"EXACT±20ms  {Count(self.accurateRate[2])}  {Percentage(self.accurateRate[2], accurateRateSum)}", 
+				f"EXACT±45ms  {Count(self.accurateRate[3])}  {Percentage(self.accurateRate[3], accurateRateSum)}", 
+				f"Exact±90ms  {Count(self.accurateRate[4])}  {Percentage(self.accurateRate[4], accurateRateSum)}", 
 				f"Great±150ms {Count(self.accurateRate[5])}  {Percentage(self.accurateRate[5], accurateRateSum)}", 
 				f"Right＋250ms {Count(self.accurateRate[6])}  {Percentage(self.accurateRate[6], accurateRateSum)}", 
 				f"Miss > 250ms {Count(self.accurateRate[7])}  {Percentage(self.accurateRate[7], accurateRateSum)}"],
 			)
-		plt.text(-0.41,0.48,f"EXTRA        {Count(sum(self.accurateRate[0:4]))}  {Percentage(sum(self.accurateRate[0:4]), accurateRateSum)}", 
+		plt.text(-0.41,0.48,f"EXACT        {Count(sum(self.accurateRate[0:4]))}  {Percentage(sum(self.accurateRate[0:4]), accurateRateSum)}", 
 			ha='left',va='top',fontsize=12,color='#00B5B5', 
 			fontdict={'family':'LXGW WenKai Mono','weight':'normal'})
 

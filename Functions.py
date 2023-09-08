@@ -96,11 +96,15 @@ def CheckConfig():
 	try:
 		with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
 			cfg = json.load(cfg)
-	except Exception as e:
-		if type(e).__name__ == 'UnicodeDecodeError':
-			with open('./musync_data/ExtraFunction.cfg','r',encoding='gbk') as cfg:
-				cfg = json.load(cfg)
-			json.dump(cfg,open('./musync_data/ExtraFunction.cfg','w',encoding='utf8'),indent="",ensure_ascii=False)
+	except UnicodeDecodeError:
+		with open('./musync_data/ExtraFunction.cfg','r',encoding='gbk') as cfg:
+			cfg = json.load(cfg)
+		json.dump(cfg,open('./musync_data/ExtraFunction.cfg','w',encoding='utf8'),indent="",ensure_ascii=False)
+	except FileNotFoundError:
+		cfgData = "{\n\"EnableAcc-Sync\": true,\n\"DisableCheckUpdate\": false,\n\"EnableAnalyzeWhenStarting\": false,\n\"EnableDLLInjection\": true,\n\"SystemDPI\": 100,\n\"EnableDonutChartinHitDelay\": true,\n\"EnableDonutChartinAllHitAnalyze\": true,\n\"EnablePDFofCyanExact\": true,\n\"EnableNarrowDelayInterval\": true,\n\"ConsoleAlpha\": 75,\n\"ConsoleFont\": \"霞鹜文楷等宽\",\n\"ConsoleFontSize\": 36,\n\"MainExecPath\": \"\",\n\"ChangeConsoleStyle\": true,\n\"EnableFramelessWindow\": false,\n\"TransparentColor\": \"#FFFFFF\"\n}"
+		with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
+			cfg.write(cfgData)
+		del cfgData
 	with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
 		cfg = json.load(cfg)
 		isChange = False

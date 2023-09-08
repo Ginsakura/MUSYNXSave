@@ -42,6 +42,11 @@ def CheckFileBeforeStarting(fonts):
 		os.makedirs('./musync_data/')
 	if not os.path.isfile('./musync_data/MUSYNC.ico'):
 		FileExport.WriteIcon()
+	if not os.path.isfile('./musync_data/ExtraFunction.cfg'):
+		cfgData = "{\n\"EnableAcc-Sync\": true,\n\"DisableCheckUpdate\": false,\n\"EnableAnalyzeWhenStarting\": false,\n\"EnableDLLInjection\": true,\n\"SystemDPI\": 100,\n\"EnableDonutChartinHitDelay\": true,\n\"EnableDonutChartinAllHitAnalyze\": true,\n\"EnablePDFofCyanExact\": true,\n\"EnableNarrowDelayInterval\": true,\n\"ConsoleAlpha\": 75,\n\"ConsoleFont\": \"霞鹜文楷等宽\",\n\"ConsoleFontSize\": 36,\n\"MainExecPath\": \"\",\n\"ChangeConsoleStyle\": true,\n\"EnableFramelessWindow\": false,\n\"TransparentColor\": \"#FFFFFF\"\n}"
+		with open('./musync_data/ExtraFunction.cfg','w',encoding='utf8') as cfg:
+			cfg.write(cfgData)
+		del cfgData
 	if (not os.path.isfile('./musync_data/SongName.json')) or (not os.path.isfile('./musync_data/SongName.update')) or (FileExport.snjU > int(open('./musync_data/songname.update','r').read())):
 		FileExport.WriteSongNameJson()
 	if not os.path.isfile('./musync_data/ExtraFunction.cfg'):
@@ -100,11 +105,8 @@ def CheckConfig():
 		with open('./musync_data/ExtraFunction.cfg','r',encoding='gbk') as cfg:
 			cfg = json.load(cfg)
 		json.dump(cfg,open('./musync_data/ExtraFunction.cfg','w',encoding='utf8'),indent="",ensure_ascii=False)
-	except FileNotFoundError:
-		cfgData = "{\n\"EnableAcc-Sync\": true,\n\"DisableCheckUpdate\": false,\n\"EnableAnalyzeWhenStarting\": false,\n\"EnableDLLInjection\": true,\n\"SystemDPI\": 100,\n\"EnableDonutChartinHitDelay\": true,\n\"EnableDonutChartinAllHitAnalyze\": true,\n\"EnablePDFofCyanExact\": true,\n\"EnableNarrowDelayInterval\": true,\n\"ConsoleAlpha\": 75,\n\"ConsoleFont\": \"霞鹜文楷等宽\",\n\"ConsoleFontSize\": 36,\n\"MainExecPath\": \"\",\n\"ChangeConsoleStyle\": true,\n\"EnableFramelessWindow\": false,\n\"TransparentColor\": \"#FFFFFF\"\n}"
-		with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
-			cfg.write(cfgData)
-		del cfgData
+	except Exception as e:
+		raise e
 	with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
 		cfg = json.load(cfg)
 		isChange = False

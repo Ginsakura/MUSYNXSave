@@ -19,7 +19,8 @@ import Functions
 #import win32gui_struct
 #import win32gui
 #from threading import Thread
-version = '1.2.4rc7'
+version = '1.2.4rc6'
+preVersion = "1.2.4pre7"
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -712,13 +713,13 @@ class Entry_Canvas:
 			self.canvas.itemconfig(self.tex,text=self.info+'|')
 
 if __name__ == '__main__':
-	Functions.CheckConfig()
 	try:
 		ctypes.windll.shcore.SetProcessDpiAwareness(1)
 		root = Tk()
 		fonts = list(font.families())
 		Functions.CheckFileBeforeStarting(fonts)
 		del fonts
+		Functions.CheckConfig()
 		with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
 			cfg = json.load(cfg)
 		if cfg['ChangeConsoleStyle']:
@@ -739,6 +740,7 @@ if __name__ == '__main__':
 	# fonts = list(font.families())
 	# Functions.CheckFileBeforeStarting(fonts)
 	# # del fonts
+	# Functions.CheckConfig()
 	# with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
 	# 	cfg = json.load(cfg)
 	# if cfg['ChangeConsoleStyle']:

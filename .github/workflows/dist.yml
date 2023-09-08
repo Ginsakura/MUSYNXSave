@@ -30,6 +30,17 @@ jobs:
     - name: Python Pip Install
       uses: logikal-code/pip-install@v1.0.0
 
+    # - name: Clean up PATH
+    #   uses: egor-tensin/cleanup-path@v3
+    # - name: Set up MinGW
+    #   id: setup
+    #   uses: egor-tensin/setup-mingw@v2
+    #   with:
+    #     version: '12.2.0'
+    # - name: Build SavDecode.dll
+    #   run: |
+    #     & '${{ steps.setup.outputs.gxx }}' --version
+
     - name: Get Version & Set GITHUB_ENV
       run: |
         $vc = "${{ github.event.head_commit.message }}" -split "  "

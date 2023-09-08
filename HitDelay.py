@@ -16,8 +16,8 @@ import pyperclip
 class HitDelayCheck(object):
 	"""docstring for HitDelayWindow"""
 	def __init__(self):
-		self.md5l = '88DAA74EDF3510D3A3ADFF30D60C3CAA' # HitDelayFix.dll
-		self.md5o = 'C09382FC2E5EFF237874A2B49B4AA520' # Assembly-CSharp.dll
+		self.md5l = '770991561B262955F078C415BC627693' # Changed Assembly-CSharp.dll
+		self.md5o = 'A17A130F19185E6D0CDE5A90F7C46566' # Source  Assembly-CSharp.dll
 
 		with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as confFile:
 			config = json.load(confFile)
@@ -28,13 +28,16 @@ class HitDelayCheck(object):
 	def DLLCheck(self):
 		with open(self.spfr,'rb') as spfrb:
 			md5o = md5(spfrb.read()).hexdigest().upper()
-		if (md5o == self.md5o) and (not md5o == self.md5l):
+		if (md5o != "D41D8CD98F00B204E9800998ECF8427E") and (md5o == self.md5o) and (not md5o == self.md5l):
 			self.DLLInjection()
-			return True
+			return 1
 		elif (md5o == self.md5l):
-			return True
+			return 1
+		elif (md5o == "D41D8CD98F00B204E9800998ECF8427E"):
+			self.DLLInjection()
+			return 1
 		else:
-			return False
+			return 0
 
 	def DLLInjection(self):
 		if os.path.isfile(self.spfr+'.old'):

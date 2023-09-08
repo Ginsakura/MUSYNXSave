@@ -42,7 +42,7 @@ def CheckFileBeforeStarting(fonts):
 		os.makedirs('./musync_data/')
 	if not os.path.isfile('./musync_data/MUSYNC.ico'):
 		FileExport.WriteIcon()
-	if (not os.path.isfile('./musync_data/SongName.json')) or (FileExport.snjU < int(open('./musync_data/songname.update','r').read())):
+	if (not os.path.isfile('./musync_data/SongName.json')) or (not os.path.isfile('./musync_data/SongName.update')) or (FileExport.snjU > int(open('./musync_data/songname.update','r').read())):
 		FileExport.WriteSongNameJson()
 	if not os.path.isfile('./musync_data/ExtraFunction.cfg'):
 		json.dump({"DisableCheckUpdate": False,"EnableDLLInjection": False},

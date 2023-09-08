@@ -21,7 +21,7 @@ def EncodeJson():
 
 def EncodeDLL():
 	with open('./musync_data/Assembly-CSharp.dll','rb') as hdf:
-		with open('./musync_data/HitDelayFix.b64','wb') as hdfE:
+		with open('./musync_data/Assembly-CSharp.b64','wb') as hdfE:
 			hdfE.write(b64encode(hdf.read()))
 
 def EncodeLicense():
@@ -35,7 +35,7 @@ if __name__ == '__main__':
 	if not os.path.isfile('./musync_data/icon.b64'):
 		EncodeIcon()
 	EncodeJson()
-	if not os.path.isfile('./musync_data/HitDelayFix.b64'):
+	if not os.path.isfile('./musync_data/Assembly-CSharp.b64'):
 		EncodeDLL()
 	if not os.path.isfile('./musync_data/LICENSE.b64'):
 		EncodeLicense()

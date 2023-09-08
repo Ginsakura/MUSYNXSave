@@ -5,6 +5,11 @@
 /othersSavFile/*
 /.vs
 /venv
+
+SavDecode/.vs
+SavDecode/gcm.cache
+SavDecode/x64
+
 SavAnalyze.json
 LXGW.ttf
 UpdateDisable
@@ -13,13 +18,14 @@ HitDelayHistory.db
 Push.ps1
 ExtraFunction.cfg
 MUSYNCSavDecode.pyproj.user
-*.bat
+
 *.b64
 *.spec
 *.psd
 *.txt
 !requirements.txt
 !changelog.txt
+*.bat
 !distCPP.bat
 *.analyze
 *.decode
@@ -30,4 +36,5 @@ MUSYNCSavDecode.pyproj.user
 *.log
 *.tmp
 *.sublime*
-
+*.vc*
+*.dll

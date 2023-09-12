@@ -28,7 +28,9 @@ def Analyze():
 	plt.gca().yaxis.set_major_locator(MultipleLocator(1))
 	plt.gca().xaxis.set_major_locator(MultipleLocator(1))
 	plt.xlim(0,16)
-	plt.ylim(int(min(score))-1,125)
+	minScore = int(min(score))
+	plt.ylim(minScore-1,125)
+	print(minScore)
 
 	colors = ['#880000','#008800','#000088','#888800','#880088','#008888','#888888',
 		'#FF8888','#88FF88','#8888FF','#CCCC44','#FF88FF','#88FFFF','#000000','#444444']
@@ -39,19 +41,24 @@ def Analyze():
 	for ids in diff_score:
 		print('难度: %s\t平均值:%.3f%%\t计数:%d'%(ids,diff_score[ids][0],diff_score[ids][1]))
 
-
-	plt.plot([i for i in range(17)],[122]*17,linestyle='-',alpha=0.7,linewidth=1,color='black')
-	plt.text(14.5,122.5,'BlackEx',ha='center',va='top',fontsize=7.5,alpha=0.7)
-	plt.plot([i for i in range(17)],[120]*17,linestyle='-',alpha=0.7,linewidth=1,color='red')
-	plt.text(14.5,120.5,'RedEx',ha='center',va='top',fontsize=7.5,alpha=0.7)
-	plt.plot([i for i in range(17)],[117]*17,linestyle='-',alpha=0.7,linewidth=1,color='cyan')
-	plt.text(14.5,117.5,'CyanEx',ha='center',va='top',fontsize=7.5,alpha=0.7)
-	plt.plot([i for i in range(17)],[110]*17,linestyle='-',alpha=0.7,linewidth=1,color='blue')
-	plt.text(14.5,110.5,'S',ha='center',va='top',fontsize=7.5,alpha=0.7)
-	plt.plot([i for i in range(17)],[95]*17,linestyle='-',alpha=0.7,linewidth=1,color='green')
-	plt.text(14.5,95.5,'A',ha='center',va='top',fontsize=7.5,alpha=0.7)
-	plt.plot([i for i in range(17)],[75]*17,linestyle='-',alpha=0.7,linewidth=1,color='orange')
-	plt.text(14.5,75.5,'B',ha='center',va='top',fontsize=7.5,alpha=0.7)
+	if minScore < 122:
+		plt.plot([i for i in range(17)],[122]*17,linestyle='-',alpha=0.7,linewidth=1,color='black')
+		plt.text(14.5,122.5,'BlackEx',ha='center',va='top',fontsize=7.5,alpha=0.7)
+	if minScore < 120:
+		plt.plot([i for i in range(17)],[120]*17,linestyle='-',alpha=0.7,linewidth=1,color='red')
+		plt.text(14.5,120.5,'RedEx',ha='center',va='top',fontsize=7.5,alpha=0.7)
+	if minScore < 117:
+		plt.plot([i for i in range(17)],[117]*17,linestyle='-',alpha=0.7,linewidth=1,color='cyan')
+		plt.text(14.5,117.5,'CyanEx',ha='center',va='top',fontsize=7.5,alpha=0.7)
+	if minScore < 110:
+		plt.plot([i for i in range(17)],[110]*17,linestyle='-',alpha=0.7,linewidth=1,color='blue')
+		plt.text(14.5,110.5,'S',ha='center',va='top',fontsize=7.5,alpha=0.7)
+	if minScore < 95:
+		plt.plot([i for i in range(17)],[95]*17,linestyle='-',alpha=0.7,linewidth=1,color='green')
+		plt.text(14.5,95.5,'A',ha='center',va='top',fontsize=7.5,alpha=0.7)
+	if minScore < 75:
+		plt.plot([i for i in range(17)],[75]*17,linestyle='-',alpha=0.7,linewidth=1,color='orange')
+		plt.text(14.5,75.5,'B',ha='center',va='top',fontsize=7.5,alpha=0.7)
 	# supported values are '-', '--', '-.', ':', 'None', ' ', '', 'solid', 'dashed', 'dashdot', 'dotted'
 	plt.plot([i for i in range(1,16)],[diff_score[ids][0] for ids in diff_score.keys()],linestyle='-',color='orange',marker="D",markerfacecolor="Blue",alpha=0.7,linewidth=2)
 

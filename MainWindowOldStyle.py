@@ -23,9 +23,10 @@ import psutil
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
-	def __init__(self, version, root=None, isTKroot=True):
+	def __init__(self, version,preVersion, root=None, isTKroot=True):
 	##Init##
 		self.version = version
+		self.preVersion = preVersion
 		with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as confFile:
 			self.config = json.load(confFile)
 		root.iconbitmap('./musync_data/Musync.ico')
@@ -336,17 +337,18 @@ class MusyncSavDecodeGUI(object):
 			messagebox.showerror("Error", f'发生错误: {e}')
 
 	def CheckUpdate(self):
-		oldVersion,oldRC = int(f'{self.version[0]}{self.version[2]}{self.version[4]}'),int(self.version[7:])
+		localVersion = int(self.version.replace(".","").replace("rc",""))
 		try:
 			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
 			version = response.json()["tag_name"]
-			newVersion,newRC = int(f'{version[0]}{version[2]}{version[4]}'),int(version[7:])
+			tergetVersion = int(version.replace(".","").replace("rc",""))
 		except Exception as e:
 			messagebox.showerror("Error", f'发生错误: {e}')
-			newVersion,newRC = oldVersion,oldRC
-		print(f'terget: {newVersion}.{newRC}')
-		print(f'local: {oldVersion}.{oldRC}')
-		if (newVersion > oldVersion) or ((newVersion == oldVersion) and (newRC > oldRC)):
+			tergetVersion = localVersion
+		print('  Terget Version : %s'%version.replace("rc","."))
+		print('   Local Version : %s'%self.version.replace("rc","."))
+		print("Local PreVersion : %s"%self.preVersion.replace("pre","."))
+		if (tergetVersion > localVersion):
 			self.gitHubLink.configure(text=f'有新版本啦——点此打开下载页面	NewVersion: {version}', anchor="center")
 			self.gitHubLink.configure(command=lambda:webbrowser.open(f"https://github.com/Ginsakura/MUSYNCSave/releases/tag/{version}"))
 			self.UpdateTip()

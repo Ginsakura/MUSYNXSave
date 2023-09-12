@@ -38,3 +38,4 @@ MUSYNCSavDecode.pyproj.user
 *.sublime*
 *.vc*
 *.dll
+*.pyd

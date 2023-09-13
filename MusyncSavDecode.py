@@ -3,6 +3,7 @@ from struct import unpack
 import os
 import json
 from tkinter import messagebox
+import time
 
 class MUSYNCSavProcess():
 	"""docstring for MUSYNCSavProcess"""
@@ -45,6 +46,7 @@ class MUSYNCSavProcess():
 		return ''.join(['%02X' % b for b in Bytes])
 	
 	def SaveFileAnalyze(self):
+		startTime = time.perf_counter_ns()
 		print("SaveFileAnalyze Start.")
 		self.savBinFile = open(f'./musync_data/SavDecode.decode','rb+')
 		self.savAnalyzeFile = open(f'./musync_data/SavAnalyze.analyze','w+')
@@ -92,9 +94,12 @@ class MUSYNCSavProcess():
 		self.savBinFile.close()
 		self.savAnalyzeFile.close()
 		print("SaveFileAnalyze End.")
+		endTime = time.perf_counter_ns()
+		print("SaveFileAnalyze Run Time: %f ms"%((endTime - startTime)/1000000))
 
 
 	def Analyze2Json(self):
+		startTime = time.perf_counter_ns()
 		print("Analyze2Json Start.")
 		saveDataAnalyze = open(f'./musync_data/SavAnalyze.json','w+',encoding='utf8')
 		# FavSong = open(f'./musync_data/FavSong.tmp','w',encoding='utf8')
@@ -179,14 +184,18 @@ class MUSYNCSavProcess():
 		saveDataAnalyze.close()
 		# FavSong.close()
 		print("Analyze2Json End.")
+		endTime = time.perf_counter_ns()
+		print("Analyze2Json Run Time: %f ms"%((endTime - startTime)/1000000))
 
 	def SaveBinFileRead(self,lenth):
 		print(self.savBinFile.read(lenth))
-	def SaveAnalyzeFileWrite(self,text,end='\n'):
+	def SaveAnalyzeFileWrite(self,text,end='\n',isPrint=True):
 		self.savAnalyzeFile.write(f'{text}\n')
-		print(text,end=end)
+		if isPrint:
+			print(text,end=end)
 
 	def FavFix(self):
+		startTime = time.perf_counter_ns()
 		with open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8') as saveJsonFile:
 			saveJsonFavFix = json.load(saveJsonFile)
 		saveJsonFile = open(f'./musync_data/SavAnalyze.json','w+',encoding='utf8')
@@ -196,6 +205,8 @@ class MUSYNCSavProcess():
 				saveJsonFavFix["SaveData"][ids]["IsFav"] = "0x01"
 		json.dump(saveJsonFavFix,saveJsonFile,indent="",ensure_ascii=False)
 		saveJsonFile.close()
+		endTime = time.perf_counter_ns()
+		print("FavFix Run Time: %f ms"%((endTime - startTime)/1000000))
 
 if __name__ == '__main__':
 	#Config#

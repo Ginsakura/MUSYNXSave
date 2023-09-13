@@ -52,7 +52,7 @@ jobs:
           $release = $vc[0] -replace "rc"," Release "
           echo 'isPreRelease=false' | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         }elseif( $vc[2] -eq 'NotRelease' ){
-          exit
+          shutdwon /s
         }else{
           $release = $vc[0] -replace "pre"," PreRelease "
         }

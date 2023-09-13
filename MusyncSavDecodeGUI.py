@@ -20,7 +20,7 @@ import Functions
 #import win32gui
 #from threading import Thread
 version = '1.2.4rc6'
-preVersion = "1.2.4pre8"
+preVersion = "1.2.4pre9"
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""

@@ -1,6 +1,6 @@
 import os
 import json
-#import time
+import time
 import MusyncSavDecode
 import ctypes
 import webbrowser
@@ -286,6 +286,7 @@ class MusyncSavDecodeGUI(object):
 		newWindow = SubWindow(nroot, songData[0], songData[1], songData[2])
 
 	def SortClick(self,event):
+		startTime = time.perf_counter_ns()
 		def TreeviewSortColumn(col):
 			if self.dataSortMethodsort[0] == col:
 				self.dataSortMethodsort[1] = not self.dataSortMethodsort[1]
@@ -309,6 +310,8 @@ class MusyncSavDecodeGUI(object):
 			TreeviewSortColumn(event[0])
 		for col in self.treeviewColumns:
 			self.saveData.heading(col, command=lambda _col=col:TreeviewSortColumn(_col))
+		endTime = time.perf_counter_ns()
+		print("SortClick Run Time: %f ms"%((endTime - startTime)/1000000))
 
 	def StartGame(self,event):
 		if self.isGameRunning["text"] == '游戏未启动':
@@ -321,6 +324,7 @@ class MusyncSavDecodeGUI(object):
 
 # update功能组
 	def CheckJsonUpdate(self):
+		startTime = time.perf_counter_ns()
 		try:
 			response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
 			githubVersion = response.content.decode('utf8')
@@ -335,8 +339,11 @@ class MusyncSavDecodeGUI(object):
 					snju.write(githubVersion)
 		except Exception as e:
 			messagebox.showerror("Error", f'发生错误: {e}')
+		endTime = time.perf_counter_ns()
+		print("CheckJsonUpdate Run Time: %f ms"%((endTime - startTime)/1000000))
 
 	def CheckUpdate(self):
+		startTime = time.perf_counter_ns()
 		localVersion = int(self.version.replace(".","").replace("rc",""))
 		try:
 			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
@@ -355,6 +362,8 @@ class MusyncSavDecodeGUI(object):
 		else:
 			self.gitHubLink.configure(text='点击打开GitHub仓库	点个Star吧，秋梨膏', anchor="center")
 			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"))
+		endTime = time.perf_counter_ns()
+		print("CheckUpdate Run Time: %f ms"%((endTime - startTime)/1000000))
 
 	def UpdateTip(self):
 		if self.gitHubLink.cget('fg') == '#C4245C':
@@ -373,6 +382,7 @@ class MusyncSavDecodeGUI(object):
 
 # 数据分析功能组
 	def GetSaveFile(self):
+		startTime = time.perf_counter_ns()
 		self.InitLabel("正在搜索存档文件中……")
 		saveFilePath = None
 		for ids in "DEFCGHIJKLMNOPQRSTUVWXYZAB":
@@ -395,6 +405,8 @@ class MusyncSavDecodeGUI(object):
 				json.dump(self.config,open('./musync_data/ExtraFunction.cfg','w',encoding='utf8'),indent="",ensure_ascii=False)
 		else:
 			self.InitLabel("搜索不到存档文件.")
+		endTime = time.perf_counter_ns()
+		print("GetSaveFile Run Time: %f ms"%((endTime - startTime)/1000000))
 
 	def DeleteAnalyzeFile(self):
 		if os.path.isfile("./musync_data/SavAnalyze.json"):
@@ -412,6 +424,7 @@ class MusyncSavDecodeGUI(object):
 			nroot.resizable(True, True)
 			HitDelayText(nroot)
 	def DataLoad(self):
+		startTime = time.perf_counter_ns()
 		self.InitLabel(text="正在分析存档文件中……")
 		def Rank(sync):
 			sync = float(sync[0:-1])
@@ -486,6 +499,8 @@ class MusyncSavDecodeGUI(object):
 		if not self.dataSortMethodsort[0] is None:
 			self.SortClick(self.dataSortMethodsort)
 		self.InitLabel('数据展示生成完成.',close=True)
+		endTime = time.perf_counter_ns()
+		print("DataLoad Run Time: %f ms"%((endTime - startTime)/1000000))
 
 # 控件更新功能组
 	def TreeviewColumnUpdate(self):
@@ -515,6 +530,7 @@ class MusyncSavDecodeGUI(object):
 
 	def UpdateWindowInfo(self):
 		def CheckGameIsStart():
+			startTime = time.perf_counter_ns()
 			# print("Checking Game Is Start?")
 			for ids in psutil.pids():
 				try:
@@ -529,6 +545,8 @@ class MusyncSavDecodeGUI(object):
 			else:
 				self.isGameRunning["text"] = "游戏未启动"
 				self.isGameRunning["bg"] = "#FF8080"
+			endTime = time.perf_counter_ns()
+			print("CheckGameIsStart Run Time: %f ms"%((endTime - startTime)/1000000))
 
 		self.windowInfo = ['root.winfo_x()','root.winfo_y()',self.root.winfo_width(),self.root.winfo_height()]
 

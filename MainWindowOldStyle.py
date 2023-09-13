@@ -163,6 +163,28 @@ class MusyncSavDecodeGUI(object):
 		self.TreeviewWidthUptate()
 		self.TreeviewColumnUpdate()
 
+		def CheckGameIsStart():
+			while True:
+				startTime = time.perf_counter_ns()
+				# print("Checking Game Is Start?")
+				for ids in psutil.pids():
+					try:
+						if psutil.Process(pid=ids).name() == "MUSYNX.exe":
+							# self.config["MainExecPath"]
+							self.isGameRunning["text"] = "游戏已启动"
+							self.isGameRunning["bg"] = "#98E22B"
+							break
+					except Exception as e:
+						print(repr(e))
+					
+				else:
+					self.isGameRunning["text"] = "游戏未启动"
+					self.isGameRunning["bg"] = "#FF8080"
+				endTime = time.perf_counter_ns()
+				print("CheckGameIsStart Run Time: %f ms"%((endTime - startTime)/1000000))
+				time.sleep(5)
+		threading.Thread(target=CheckGameIsStart).start()
+
 		if self.config['DisableCheckUpdate']:
 			self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页')
 		else:
@@ -501,6 +523,7 @@ class MusyncSavDecodeGUI(object):
 		self.InitLabel('数据展示生成完成.',close=True)
 		endTime = time.perf_counter_ns()
 		print("DataLoad Run Time: %f ms"%((endTime - startTime)/1000000))
+		self.UpdateWindowInfo()
 
 # 控件更新功能组
 	def TreeviewColumnUpdate(self):
@@ -529,24 +552,6 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.column("IsFav",anchor="w",width=80)
 
 	def UpdateWindowInfo(self):
-		def CheckGameIsStart():
-			startTime = time.perf_counter_ns()
-			# print("Checking Game Is Start?")
-			for ids in psutil.pids():
-				try:
-					if psutil.Process(pid=ids).name() == "MUSYNX.exe":
-						# self.config["MainExecPath"]
-						self.isGameRunning["text"] = "游戏已启动"
-						self.isGameRunning["bg"] = "#98E22B"
-						break
-				except Exception as e:
-					print(repr(e))
-				
-			else:
-				self.isGameRunning["text"] = "游戏未启动"
-				self.isGameRunning["bg"] = "#FF8080"
-			endTime = time.perf_counter_ns()
-			print("CheckGameIsStart Run Time: %f ms"%((endTime - startTime)/1000000))
 
 		self.windowInfo = ['root.winfo_x()','root.winfo_y()',self.root.winfo_width(),self.root.winfo_height()]
 
@@ -562,10 +567,9 @@ class MusyncSavDecodeGUI(object):
 		self.avgSyncLabel.configure(text=self.avgSyncVar.get()[0:10]+"%")
 		self.developer.place(x=0,y=self.windowInfo[3]-30,width=420,height=30)
 		self.gitHubLink.place(x=420,y=self.windowInfo[3]-30,width=self.windowInfo[2]-420,height=30)
-		threading.Thread(target=CheckGameIsStart).start()
 
 		self.isGameRunning.bind('<Button-1>', self.StartGame)
-		self.saveData.bind("<Double-1>",self.DoubleClick)
+		# self.saveData.bind("<Double-1>",self.DoubleClick)
 		self.saveData.bind("<ButtonRelease-1>",self.SortClick)
 		self.root.bind("<F5>", self.F5Key)
 		self.wh = self.windowInfo[2:]

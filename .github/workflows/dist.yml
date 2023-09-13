@@ -13,10 +13,36 @@ env:
   isPreRelease: true
   ChangeLog: Init
   CommitMessage: Init
+  skip: false
 
 jobs:
+  CheckVersion:
+    name: Check Version
+    runs-on: windows-2019
+    steps:
+    - name: Get Version & Set GITHUB_ENV
+      run: |
+        $vc = "${{ github.event.head_commit.message }}" -split "  "
+        echo "$vc"
+        echo "Version=$($vc[0])" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "CommitMessage=$($vc[1])" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+        if ( $vc[2] -eq 'Release' ){
+          $release = $vc[0] -replace "rc"," Release "
+          echo 'isPreRelease=false' | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        }elseif( $vc[2] -eq 'NotRelease' ){
+          echo "skip=true" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        }else{
+          $release = $vc[0] -replace "pre"," PreRelease "
+        }
+        echo "Release=$release" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo $release
+
+        echo (Get-Content ./changelog.txt)
+
   AutoRelease: 
     name: Auto Release
+    if: ${{ env.skip }} == false
     runs-on: windows-2019
     steps:
     - name: Checkout
@@ -40,26 +66,6 @@ jobs:
     # - name: Build SavDecode.dll
     #   run: |
     #     & '${{ steps.setup.outputs.gxx }}' --version
-
-    - name: Get Version & Set GITHUB_ENV
-      run: |
-        $vc = "${{ github.event.head_commit.message }}" -split "  "
-        echo "$vc"
-        echo "Version=$($vc[0])" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        echo "CommitMessage=$($vc[1])" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-        if ( $vc[2] -eq 'Release' ){
-          $release = $vc[0] -replace "rc"," Release "
-          echo 'isPreRelease=false' | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        }elseif( $vc[2] -eq 'NotRelease' ){
-          shutdwon /s
-        }else{
-          $release = $vc[0] -replace "pre"," PreRelease "
-        }
-        echo "Release=$release" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        echo $release
-
-        echo (Get-Content ./changelog.txt)
 
     - name: Dist NoConsole ${{ env.Version }} Compress Version
       run: |

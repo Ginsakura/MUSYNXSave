@@ -42,17 +42,17 @@ jobs:
         echo $release
 
     - name: Checkout
-      if: ${{ env.NotSkip }}
+      if: ${{ env.NotSkip == true}}
       uses: actions/checkout@v3
 
     - name: Set up Python
-      if: ${{ env.NotSkip }}
+      if: ${{ env.NotSkip == true}}
       uses: actions/setup-python@v4
       with:
         python-version: '3.11.5'
 
     - name: Python Pip Install
-      if: ${{ env.NotSkip }}
+      if: ${{ env.NotSkip == true}}
       uses: logikal-code/pip-install@v1.0.0
 
     # - name: Clean up PATH
@@ -67,28 +67,28 @@ jobs:
     #     & '${{ steps.setup.outputs.gxx }}' --version
 
     - name: Dist NoConsole ${{ env.Version }} Compress Version
-      if: ${{ env.NotSkip }}
+      if: ${{ env.NotSkip == true}}
       run: |
         pyinstaller --distpath ./NoCLI/ -D -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py -w --clean
         Compress-Archive -LiteralPath ./NoCLI/MusyncSavDecodeGUI/ -DestinationPath ("./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}.zip")
     - name: Dist NoConsole ${{ env.Version }} AllInOne Version
-      if: ${{ env.NotSkip }}
+      if: ${{ env.NotSkip == true}}
       run: |
         pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py -w
         Rename-Item -Path ./MusyncSavDecodeGUI.exe -NewName ("MusyncSavDecodeGUI_NoConsole_${{ env.Version }}_AllInOne.exe")
     - name: Dist WithConsole ${{ env.Version }} Compress Version
-      if: ${{ env.NotSkip }}
+      if: ${{ env.NotSkip == true}}
       run: |
         pyinstaller --distpath ./WithCLI/ -D -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py
         Compress-Archive -LiteralPath ./WithCLI/MusyncSavDecodeGUI/ -DestinationPath ("./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}.zip")
     - name: Dist WithConsole ${{ env.Version }} AllInOne Version
-      if: ${{ env.NotSkip }}
+      if: ${{ env.NotSkip == true}}
       run: |
         pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py
         Rename-Item -Path ./MusyncSavDecodeGUI.exe -NewName ("MusyncSavDecodeGUI_WithConsole_${{ env.Version }}_AllInOne.exe")
 
     - name: Commit Release
-      if: ${{ env.NotSkip }}
+      if: ${{ env.NotSkip == true}}
       id: create_release
       uses: softprops/action-gh-release@v1
       env:

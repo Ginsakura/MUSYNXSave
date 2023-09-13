@@ -32,6 +32,7 @@ jobs:
           echo 'isPreRelease=false' | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo (Get-Content ./changelog.txt)
         }elseif( $vc[2] -eq 'NotRelease' ){
+          $release = $vc[0] -replace "pre"," PreRelease "
           echo "NotSkip=false" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         }else{
           $release = $vc[0] -replace "pre"," PreRelease "

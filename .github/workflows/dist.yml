@@ -20,6 +20,9 @@ jobs:
     name: Auto Release
     runs-on: windows-2019
     steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
     - name: Get Version & Set GITHUB_ENV
       run: |
         $vc = "${{ github.event.head_commit.message }}" -split "  "
@@ -40,10 +43,6 @@ jobs:
         }
         echo "Release=$release" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         echo $release
-
-    - name: Checkout
-      if: ${{ env.NotSkip == true}}
-      uses: actions/checkout@v3
 
     - name: Set up Python
       if: ${{ env.NotSkip == true}}

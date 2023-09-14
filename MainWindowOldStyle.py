@@ -308,8 +308,8 @@ class MusyncSavDecodeGUI(object):
 		newWindow = SubWindow(nroot, songData[0], songData[1], songData[2])
 
 	def SortClick(self,event):
-		startTime = time.perf_counter_ns()
 		def TreeviewSortColumn(col):
+			startTime = time.perf_counter_ns()
 			if self.dataSortMethodsort[0] == col:
 				self.dataSortMethodsort[1] = not self.dataSortMethodsort[1]
 			else:
@@ -326,14 +326,14 @@ class MusyncSavDecodeGUI(object):
 			l.sort(reverse=self.dataSortMethodsort[1])
 			for index, (val, k) in enumerate(l):
 				self.saveData.move(k, '', index)
+			endTime = time.perf_counter_ns()
+			print("SortClick Run Time: %f ms"%((endTime - startTime)/1000000))
 			self.TreeviewColumnUpdate()
 		if isinstance(event, list):
 			self.dataSortMethodsort[1] = not self.dataSortMethodsort[1]
 			TreeviewSortColumn(event[0])
 		for col in self.treeviewColumns:
 			self.saveData.heading(col, command=lambda _col=col:TreeviewSortColumn(_col))
-		endTime = time.perf_counter_ns()
-		print("SortClick Run Time: %f ms"%((endTime - startTime)/1000000))
 
 	def StartGame(self,event):
 		if self.isGameRunning["text"] == '游戏未启动':
@@ -574,7 +574,9 @@ class MusyncSavDecodeGUI(object):
 		self.root.bind("<F5>", self.F5Key)
 		self.wh = self.windowInfo[2:]
 		self.root.update()
-		self.root.after(2000,self.UpdateWindowInfo)
+		# if self.after == False:
+		# 	self.after = True
+		# 	self.root.after(100,self.UpdateWindowInfo)
 
 class SubWindow(object):
 	def __init__(self, nroot, songID, songName, songDifficute):

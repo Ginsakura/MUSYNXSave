@@ -70,7 +70,9 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 
 ## 更新日志
 ### Version 1.2.4
-#### Release 6 :: PreRelease 11
+#### Release 7 :: PreRelease 13
+1. 修复 修复主窗口频繁卡顿的bug
+#### Release 6 :: PreRelease 12
 1. 新增 新增关键函数执行CPU时长的控制台输出
 1. 修复 修复无法释放资源的bug
 2. 修复 修复`成绩分布散点图`中最低成绩大于某值后仍然显示该行的bug

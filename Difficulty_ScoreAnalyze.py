@@ -54,16 +54,22 @@ def Analyze():
 	# print(hards)
 	for ids in diffSocreTrim[0].keys():
 		# labels.append("4K %s Avg:%03.3f%% %03d"%(ids, diffSocreTrim[0][ids][0], diffSocreTrim[0][ids][1]))
-		labels.append(f"难度: 4K {ids} Avg:{diffSocreTrim[0][ids][0]:.3f}% 计数:{diffSocreTrim[0][ids][1]:0=3d}")
+		labels.append(f"难度: 4K {ids} Avg:{'%.3f'%diffSocreTrim[0][ids][0]:0>7s}% 计数:{diffSocreTrim[0][ids][1]:0=2d}")
 	labels.append("")
 	for ids in diffSocreTrim[1].keys():
-		labels.append(f"难度: 6K {ids} Avg:{diffSocreTrim[1][ids][0]:.3f}% 计数:{diffSocreTrim[1][ids][1]:0=3d}")
-	# print("\n".join(labels))
+		labels.append(f"难度: 6K {ids} Avg:{'%.3f'%diffSocreTrim[1][ids][0]:0>7s}% 计数:{diffSocreTrim[1][ids][1]:0=2d}")
+	print("\n".join(labels))
 
+	# for ids in range(0,2):
+	# 	for idx in diffSocreTrim[ids].keys():
+	# 		print('难度: %s %s\t平均值:%.3f%%\t计数:%d' % (("4K" if ids==0 else "6K"),
+	# 			idx,diffSocreTrim[ids][idx][0],diffSocreTrim[ids][idx][1]))
+
+	for ids in range(1,16):
+		plt.plot([ids+0.15]*(125-minScore),[ids for ids in range(minScore,125)],linestyle='--',alpha=0.6,linewidth=1)
 	for ids in range(0,2):
 		for idx in diffSocreTrim[ids].keys():
-			print('难度: %s %s\t平均值:%.3f%%\t计数:%d' % (("4K" if ids==0 else "6K"),
-				idx,diffSocreTrim[ids][idx][0],diffSocreTrim[ids][idx][1]))
+			plt.plot([i for i in range(int(idx)+1)],[diffSocreTrim[ids][idx][0]]*(int(idx)+1),linestyle='--',alpha=1,linewidth=1)
 
 	if minScore < 122:
 		plt.plot([i for i in range(17)],[122]*17,linestyle='-',alpha=0.7,linewidth=1,color='black')
@@ -83,6 +89,7 @@ def Analyze():
 	if minScore < 75:
 		plt.plot([i for i in range(17)],[75]*17,linestyle='-',alpha=0.7,linewidth=1,color='orange')
 		plt.text(14.5,75.5,'B',ha='center',va='top',fontsize=7.5,alpha=0.7)
+
 	# supported values are '-', '--', '-.', ':', 'None', ' ', '', 'solid', 'dashed', 'dashdot', 'dotted'
 	plt.plot([int(i) for i in diffSocreTrim[0].keys()],[diffSocreTrim[0][ids][0] for ids in diffSocreTrim[0].keys()],
 		linestyle='-',color='orange',marker="D",markerfacecolor="Blue",alpha=0.7,linewidth=2, 
@@ -95,7 +102,6 @@ def Analyze():
 	plt.scatter(diff[1],score[1],alpha=0.7,color='#F83535',s=5)
 	plt.text(16.5,123,"\n".join(labels),ha="left",va="top",alpha=1,
 		fontdict={'family':'LXGW WenKai Mono','weight':'normal','size':10})
-	# plt.plot(diff,score,'o')
 	plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':10},framealpha=0.4)  #显示上面的label
 	plt.xlabel('Difficulty') #x_label
 	plt.ylabel('SYNC.Rate')#y_label

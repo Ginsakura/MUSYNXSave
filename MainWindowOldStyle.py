@@ -103,7 +103,7 @@ class MusyncSavDecodeGUI(object):
 		# self.saveData.tag_configure("IsDLCSong",background='#FDFFAE',foreground='blue')
 
 		self.developer = Label(self.root, text=f'Version {self.version} | Develop By Ginsakura', font=self.font, relief="groove")
-		self.gitHubLink = Button(self.root, text='点击打开下载链接	点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
+		self.gitHubLink = Button(self.root, text='点击打开GitHub仓库	点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
 
 		self.initLabel = Label(self.root, text='启动中......', anchor="w", font=self.font, relief="groove")
 		self.initLabel.place(x=250,y=300,width=500,height=30)

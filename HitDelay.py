@@ -48,11 +48,11 @@ class HitDelayCheck(object):
 class HitDelayText(object):
 	"""docstring for DrawHDLine"""
 	def __init__(self,subroot):
-		if os.path.isfile('./musync_data/HitDelayHistory.db'):
-			self.db = sql.connect('./musync_data/HitDelayHistory.db')
+		if os.path.isfile('./musync_data/HitDelayHistory_v2.db'):
+			self.db = sql.connect('./musync_data/HitDelayHistory_v2.db')
 			self.cur = self.db.cursor()
 		else:
-			self.db = sql.connect('./musync_data/HitDelayHistory.db')
+			self.db = sql.connect('./musync_data/HitDelayHistory_v2.db')
 			self.cur = self.db.cursor()
 			self.cur.execute("""CREATE table HitDelayHistory (
 				SongMapName text Not Null,

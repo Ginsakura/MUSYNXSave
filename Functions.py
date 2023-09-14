@@ -60,7 +60,7 @@ def CheckFileBeforeStarting(fonts):
 			os.system(f'{os.getcwd()}/musync_data/LXGW.ttf')
 	if not os.path.exists("./skin/"):
 		os.makedirs('./skin/')
-	if os.path.isfile('./musync_data/HitDelayHistory.db'):
+	if (not os.path.isfile('./musync_data/HitDelayHistory_v2.db')) and os.path.isfile('./musync_data/HitDelayHistory.db'):
 		db = sql.connect('./musync_data/HitDelayHistory.db')
 		cur = db.cursor()
 		testData = cur.execute("SELECT * from HitDelayHistory limit 1")
@@ -91,9 +91,12 @@ def CheckFileBeforeStarting(fonts):
 			ndb.commit()
 			ndb.close()
 			db.close()
-			os.system("del HitDelayHistory.db")
-			os.system("move HitDelayHistorytemp.db HitDelayHistory.db")
+			# os.chdir()
+			os.remove("./musync_data/HitDelayHistory.db")
+			os.rename("./musync_data/HitDelayHistorytemp.db", "./musync_data/HitDelayHistory_v2.db")
 		else:
+			db.close()
+			os.rename("./musync_data/HitDelayHistory.db", "./musync_data/HitDelayHistory_v2.db")
 			print("记录数据无需迁移.")
 			
 

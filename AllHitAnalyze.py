@@ -10,7 +10,7 @@ class HitAnalyze(object):
 	def __init__(self,isOpen=False):
 		super(HitAnalyze, self).__init__()
 		self.isOpen = isOpen
-		db = sql.connect('./musync_data/HitDelayHistory.db')
+		db = sql.connect('./musync_data/HitDelayHistory_v2.db')
 		cur = db.cursor()
 		res = cur.execute('select HitMap from HitDelayHistory')
 		res = res.fetchall()

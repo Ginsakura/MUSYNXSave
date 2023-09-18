@@ -43,7 +43,12 @@ class MusyncSavDecodeGUI(object):
 			style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
 			style.configure("reload.TButton", font=('霞鹜文楷等宽',16))
 			# , background='#EEBBBB', foreground='#00CCFF',relief='ridge')
-			style.configure("F5.TButton", font=('霞鹜文楷等宽',16), bg="#EEBBBB")
+			photo = PhotoImage(file="./skin/F5.png").subsample(5, 4)
+			style.configure("F5.TButton", font=('霞鹜文楷等宽',16),# background='#EEBBBB')
+				image=[photo,style.map("F5.TButton",
+					foreground=[('pressed', 'red'), ('active', 'blue')],
+					background=[('pressed', '!disabled', 'black'), ('active', 'white')])
+				])
 			style.configure("close.TButton", font=('霞鹜文楷等宽',16), bg="#EEBBBB")
 			self.font=('霞鹜文楷等宽',16)
 		# elif self.config['SystemDPI'] == 125:

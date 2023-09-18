@@ -1,5 +1,11 @@
 ﻿# 同步音律喵赛克 Steam端 存档解析工具
 MUSYNX Steam Client Savefile Decode & Analyze Tool
+[![All releases](https://img.shields.io/github/downloads/ginsakura/MUSYNCSave/total)](https://github.com/Ginsakura/MUSYNCSave/releases)
+[![All commit activity (branch)](https://img.shields.io/github/commit-activity/t/ginsakura/MUSYNCSave)](https://github.com/Ginsakura/MUSYNCSave/commits)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/ginsakura/MUSYNCSave?display_name=release&label=latest%20release&style=flat-square)](https://github.com/ginsakura/MUSYNCSave/releases/latest)
+[![License](https://img.shields.io/github/license/ginsakura/MUSYNCSave)](https://github.com/Ginsakura/MUSYNCSave/blob/main/LICENSE)
+
+
 ## 界面展示
 
 ![主页面](./ReadmeResources/main.png "主页面")

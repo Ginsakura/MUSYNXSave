@@ -36,8 +36,8 @@ def Analyze():
 	
 	plt.scatter(acc,sync,alpha=0.7,color='#8a68d0',s=5)
 	# plt.plot(acc,sync,'o')
-	plt.xlabel('AvgAcc') #x_label
-	plt.ylabel('SYNC.Rate')#y_label
+	plt.xlabel('AvgAcc (ms)') #x_label
+	plt.ylabel('SYNC.Rate (%)')#y_label
 	
 	plt.show()
 

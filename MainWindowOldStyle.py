@@ -1,25 +1,28 @@
+import ctypes
 import os
 import json
-import time
-import MusyncSavDecode
-import ctypes
-import webbrowser
+import psutil
 import requests
 import threading
-from PIL import Image as PILImage
-from PIL import ImageTk
-from tkinter import *
-from tkinter import Tk,ttk,font,messagebox
-from tkinter.filedialog import askopenfilename
-from HitDelay import HitDelayCheck,HitDelayText
-import Difficulty_ScoreAnalyze as dsa
-import Functions
-import psutil
+import time
+import webbrowser
 #import win32api
 #import win32con
 #import win32gui_struct
 #import win32gui
+
+from PIL import Image as PILImage
+from PIL import ImageTk
 #from threading import Thread
+from tkinter import *
+from tkinter import Tk,ttk,font,messagebox
+from tkinter.filedialog import askopenfilename
+
+import Difficulty_ScoreAnalyze as dsa
+import Functions
+import MusyncSavDecode
+from HitDelay import HitDelayCheck,HitDelayText
+
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -371,20 +374,21 @@ class MusyncSavDecodeGUI(object):
 
 	def CheckUpdate(self):
 		startTime = time.perf_counter_ns()
-		localVersion = int(self.version.replace(".","").replace("rc",""))
+		localVersion = float(self.version.replace(".","").replace("rc","."))
 		try:
 			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
-			version = response.json()["tag_name"]
-			tergetVersion = int(version.replace(".","").replace("rc",""))
+			tagVersion = response.json()["tag_name"]
+			tergetVersion = float(tagVersion.replace(".","").replace("rc","."))
 		except Exception as e:
 			messagebox.showerror("Error", f'发生错误: {e}')
 			tergetVersion = localVersion
-		print('  Terget Version : %s'%version.replace("rc","."))
+		# print(localVersion,tergetVersion)
+		print('  Terget Version : %s'%tagVersion.replace("rc","."))
 		print('   Local Version : %s'%self.version.replace("rc","."))
 		print("Local PreVersion : %s"%self.preVersion.replace("pre","."))
 		if (tergetVersion > localVersion):
-			self.gitHubLink.configure(text=f'有新版本啦——点此打开下载页面	NewVersion: {version}', anchor="center")
-			self.gitHubLink.configure(command=lambda:webbrowser.open(f"https://github.com/Ginsakura/MUSYNCSave/releases/tag/{version}"))
+			self.gitHubLink.configure(text=f'有新版本啦——点此打开下载页面	NewVersion: {tagVersion}', anchor="center")
+			self.gitHubLink.configure(command=lambda:webbrowser.open(f"https://github.com/Ginsakura/MUSYNCSave/releases/tag/{tagVersion}"))
 			self.UpdateTip()
 		else:
 			self.gitHubLink.configure(text='点击打开GitHub仓库	点个Star吧，秋梨膏', anchor="center")

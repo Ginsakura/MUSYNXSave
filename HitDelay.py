@@ -1,17 +1,20 @@
+import json
+import os
+import pyperclip
+import sqlite3 as sql
+import uiautomation as uiauto
+
 from tkinter import *
 from tkinter import Tk,ttk,font,Text,messagebox
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import MultipleLocator
 from datetime import datetime as dt
 from hashlib import md5
-import os
-import json
+
 import FileExport
-import sqlite3 as sql
 from AllHitAnalyze import HitAnalyze
-import uiautomation as uiauto
+
 uiauto.SetGlobalSearchTimeout(1)
-import pyperclip
 
 class HitDelayCheck(object):
 	"""docstring for HitDelayWindow"""

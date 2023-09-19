@@ -1,6 +1,7 @@
+import json
+
 from matplotlib import pyplot as plt
 from matplotlib.pyplot import MultipleLocator
-import json
 
 def Analyze():
 	diff = [[],[]]

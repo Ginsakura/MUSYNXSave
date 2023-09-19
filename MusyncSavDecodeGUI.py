@@ -1,24 +1,27 @@
-﻿import os
+﻿import ctypes
 import json
-#import time
-import MusyncSavDecode
-import ctypes
-import webbrowser
+import os
 import requests
 import threading
-from PIL import Image as PILImage
-from PIL import ImageTk
-from tkinter import *
-from tkinter import Tk,ttk,font,messagebox
-from tkinter.filedialog import askopenfilename
-from HitDelay import HitDelayCheck,HitDelayText
-import MainWindowOldStyle as OldStyle
-import Functions
+#import time
+import webbrowser
 #import win32api
 #import win32con
 #import win32gui_struct
 #import win32gui
+
+from PIL import Image as PILImage
+from PIL import ImageTk
 #from threading import Thread
+from tkinter import *
+from tkinter import Tk,ttk,font,messagebox
+from tkinter.filedialog import askopenfilename
+
+import MainWindowOldStyle as OldStyle
+import Functions
+from HitDelay import HitDelayCheck,HitDelayText
+import MusyncSavDecode
+
 version = '1.2.4rc7'
 preVersion = "1.2.4pre14"
 

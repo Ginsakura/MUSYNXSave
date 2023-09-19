@@ -1,11 +1,13 @@
-﻿from win32 import win32gui, win32print
+﻿import json
+import os
+import sqlite3 as sql
+import winreg
+
+from win32 import win32gui, win32print
 from win32.lib import win32con
 from win32.win32api import GetSystemMetrics
-import os
-import json
+
 import FileExport
-import winreg
-import sqlite3 as sql
 
 def GetDpi():
 	hDC = win32gui.GetDC(0)

@@ -1,21 +1,22 @@
 ## 更新日志
 ### 近期重要更新速览
-2. 1.2.1 Console界面优化
-3. 1.2.2 通过使用UIAutoMation库实现一键自动从控制台获取游玩结果
+1. 1.2.1 Console界面优化
+2. 1.2.2 通过使用UIAutoMation库实现一键自动从控制台获取游玩结果
     $\color{Red}{控制台只显示最近一次的游玩记录，请在下次谱面游玩开始前生成结果}$
     $\color{Red}{控制台关闭后不会保存游玩记录，请在关闭游戏前生成结果}$
-    $\color{Red}{结果生成需要使用剪切板，点击按钮后，在结果生成前请不要进行任何复制操作}$
-4. 1.2.3 DLC曲目标记
-6. 1.2.3 更新游玩记录的存储结构，且 $\color{Red}{不向下兼容}$
-7. 1.2.4 Python环境从3.8.6更新到3.11.5
-8. 1.2.4 提供以C++编译的Python源码启动器(需要Python环境及三方库)
-9. 1.2.4 将License从GPLv3切换为MIT
-10. 1.2.4 新增`成绩分布散点图`
+    $\color{Red}{结果生成需要使用剪切板，点击按钮后，在结果生成前请不要进行}$ ** $\color{Red}{任何}$ ** $\color{Red}{操作}$
+3. 1.2.3 DLC曲目标记
+4. 1.2.3 更新游玩记录的存储结构，且 $\color{Red}{不向下兼容}$ ，将`HitDelayHistory.db`修改为`HitDelayHistory_v2.db`
+5. 1.2.4 Python环境从3.8.6更新到3.11.5
+6. 1.2.4 提供以C++编译的Python源码启动器(需要Python环境及三方库)
+7. 1.2.4 将License从GPLv3切换为MIT
+8. 1.2.4 新增`成绩分布散点图`
 
 #### Release 7 :: PreRelease 14
 1. 修复 修复主窗口频繁卡顿的bug
 2. 修复 修复`songname.json`中的错误
 1. 优化 将`HitDelayHistory.db`修改为`HitDelayHistory_v2.db`以易于判断存档版本
+2. 优化 格式化导入库，格式化内链接
 
 #### Release 6 :: PreRelease 12
 1. 新增 新增关键函数执行CPU时长的控制台输出

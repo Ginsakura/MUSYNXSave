@@ -1,9 +1,11 @@
-﻿from base64 import b64decode,b64encode
-from struct import unpack
+﻿import json
 import os
-import json
-from tkinter import messagebox
 import time
+
+from struct import unpack
+from tkinter import messagebox
+
+from base64 import b64decode,b64encode
 
 class MUSYNCSavProcess():
 	"""docstring for MUSYNCSavProcess"""

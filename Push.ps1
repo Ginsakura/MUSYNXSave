@@ -1,17 +1,22 @@
-if ($args[1] -eq 'rc'){
+$message = Read-Host -Prompt "Input Commit Message"
+$message = $message.Split(" ")
+if ($message[1] -eq 'rc'){
   $version = (py -c "import MusyncSavDecodeGUI;print(MusyncSavDecodeGUI.version)")
   $release = 'Release'
-}elseif($args[1] -eq 'pre'){
+}elseif($message[1] -eq 'pre'){
   $version = (py -c "import MusyncSavDecodeGUI;print(MusyncSavDecodeGUI.preVersion)")
   $release = 'PreRelease'
 }else{
   $version = (py -c "import MusyncSavDecodeGUI;print(MusyncSavDecodeGUI.preVersion)")
   $release = 'NotRelease'
 }
-$str = $version+'  '+$args[0]+'  '+$release
+if ($message[0] -eq ""){
+  $message[0] = "null"
+}
+$str = $version+'  '+$message[0]+'  '+$release
 
-git add .
 echo $str
+git add .
 git commit -m $str
 git push
 git pull

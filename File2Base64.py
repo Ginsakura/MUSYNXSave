@@ -1,6 +1,7 @@
-from base64 import b64encode,b64decode
 import os
 import pyperclip
+
+from base64 import b64encode,b64decode
 
 def EncodeIcon():
 	with open("./musync_data/MUSYNC.ico", 'rb+') as icon:

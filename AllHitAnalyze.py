@@ -1,9 +1,9 @@
-#-*- coding: utf-8 -*-
-from matplotlib import pyplot as plt
-from matplotlib.pyplot import MultipleLocator
+import json
 # import numpy as np
 import sqlite3 as sql
-import json
+
+from matplotlib import pyplot as plt
+from matplotlib.pyplot import MultipleLocator
 
 class HitAnalyze(object):
 	"""docstring for HitAnalyze"""

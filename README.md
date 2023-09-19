@@ -1,9 +1,11 @@
 ﻿# 同步音律喵赛克 Steam端 存档解析工具
 MUSYNX Steam Client Savefile Decode & Analyze Tool
-[![All releases](https://img.shields.io/github/downloads/ginsakura/MUSYNCSave/total)](https://github.com/Ginsakura/MUSYNCSave/releases)
-[![All commit activity (branch)](https://img.shields.io/github/commit-activity/t/ginsakura/MUSYNCSave)](https://github.com/Ginsakura/MUSYNCSave/commits)
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/ginsakura/MUSYNCSave?display_name=release&label=latest%20release&style=flat-square)](https://github.com/ginsakura/MUSYNCSave/releases/latest)
-[![License](https://img.shields.io/github/license/ginsakura/MUSYNCSave)](https://github.com/Ginsakura/MUSYNCSave/blob/main/LICENSE)
+
+[![All releases](https://img.shields.io/github/downloads/ginsakura/MUSYNCSave/total)](./releases)
+[![All commit activity (branch)](https://img.shields.io/github/commit-activity/t/ginsakura/MUSYNCSave)](./commits)
+[![License](https://img.shields.io/github/license/ginsakura/MUSYNCSave)](./LICENSE)
+
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/ginsakura/MUSYNCSave?display_name=release&label=latest%20release&style=flat-square)](./releases/latest)
 
 
 ## 界面展示
@@ -80,6 +82,7 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 1. 修复 修复主窗口频繁卡顿的bug
 2. 修复 修复`songname.json`中的错误
 1. 优化 将`HitDelayHistory.db`修改为`HitDelayHistory_v2.db`以易于判断存档版本
+2. 优化 格式化导入库，格式化内链接
 #### Release 6 :: PreRelease 12
 1. 新增 新增关键函数执行CPU时长的控制台输出
 1. 修复 修复无法释放资源的bug

@@ -88,10 +88,8 @@ class HitDelayText(object):
 		self.nameDelayEntry.insert(0, "→→在这里输入谱面标识←←")
 		self.nameDelayEntry.place(relx=0.05,y=100,height=30,relwidth=0.65)
 		self.delayHistory = ttk.Treeview(self.subroot, show="headings", columns = ['Name','RecordTime','AllKeys','AvgDelay','AvgAcc'])
-		self.delayHistory.place(x=0,y=130,relheight=0.78,relwidth=0.70)
 		self.VScroll1 = Scrollbar(self.subroot, orient='vertical', command=self.delayHistory.yview)
 		self.delayHistory.configure(yscrollcommand=self.VScroll1.set)
-		self.VScroll1.place(relx=0.679,y=132,relheight=0.774,relwidth=0.02)
 		
 		self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
 		self.logButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
@@ -221,8 +219,9 @@ class HitDelayText(object):
 		if not self.history == []:
 			isChange = False
 			historyName = historyItem[0].replace("\'",'’')
+			recordTime = historyItem[1]
 			print("ShowHistoryInfo:",historyItem)
-			data = self.cur.execute(f"select * from HitDelayHistory where SongMapName=\'{historyName}\'")
+			data = self.cur.execute(f"select * from HitDelayHistory where SongMapName=\'{historyName}\'  and RecordTime=\'{recordTime}\'")
 			data = data.fetchone()
 			# print(data[:4])
 			self.cursorHistory = data[0]
@@ -241,15 +240,15 @@ class HitDelayText(object):
 		else:
 			result = messagebox.askyesno('提示', f'是否删除该谱面游玩记录?\n{self.cursorHistory}')
 			if result:
-				self.cur.execute(f'delete from HitDelayHistory where SongMapName=\'{self.cursorHistory}\'')
+				self.cur.execute(f'delete from HitDelayHistory where SongMapName=\'{self.cursorHistory}\' and RecordTime=\'{self.historyRecordTimeValueLabel["text"]}\'')
 				self.db.commit()
 				self.HistoryUpdate()
 
 	def UpdateCursorHistory(self):
 		nowHistoryName = self.historyNameEntry.get().replace("\'","’")
 		if self.cursorHistory != nowHistoryName:
-			print(f"change history name \nfrom {self.cursorHistory} \nto {nowHistoryName}")
-			self.cur.execute(f'update HitDelayHistory set SongMapName=\'{nowHistoryName}\' where SongMapName=\'{self.cursorHistory}\'')
+			print(f"change history name \nfrom {self.cursorHistory} \nto {nowHistoryName} \nwhen time is {self.historyRecordTimeValueLabel['text']}")
+			self.cur.execute(f'update HitDelayHistory set SongMapName=\'{nowHistoryName}\' where SongMapName=\'{self.cursorHistory}\' and RecordTime=\'{self.historyRecordTimeValueLabel["text"]}\'')
 			self.db.commit()
 			self.HistoryUpdate()
 
@@ -281,6 +280,8 @@ class HitDelayText(object):
 		self.historyRecordTimeValueLabel['text'] = dt.now()
 
 		print("VScroll1.get",self.VScroll1.get())
+		self.delayHistory.place(x=0,y=130,height=self.subroot.winfo_height()-130,relwidth=0.70)
+		self.VScroll1.place(relx=0.679,y=132,height=self.subroot.winfo_height()-133,relwidth=0.02)
 		self.subroot.update()
 		self.delayHistory.yview_moveto(1.0)
 		# self.subroot.after(500,self.UpdateWindowInfo)
@@ -382,7 +383,7 @@ class HitDelayDraw(object):
 			per = num/summ*100
 			return '%.1f%%'%(per)
 		# import random
-		fig = plt.figure(f'Pie AvgDelay: {"%.4fms"%self.avgDelay}  AllKeys: {self.allKeys}  AvgAcc: {"%.4fms"%self.avgAcc}', figsize=(5.5, 6.5))
+		fig = plt.figure(f'Pie&Bar AvgDelay: {"%.4fms"%self.avgDelay}  AllKeys: {self.allKeys}  AvgAcc: {"%.4fms"%self.avgAcc}', figsize=(5.5, 6.5))
 		grid = plt.GridSpec(4, 1, left=0.05, right=1, top=1, bottom=0.035, wspace=0, hspace=0)
 		plt.subplot(grid[0:3,0])
 		wedgeprops = {'width':0.15, 'edgecolor':'black', 'linewidth':0.2}

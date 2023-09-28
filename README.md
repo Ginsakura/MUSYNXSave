@@ -83,6 +83,7 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 ### Version 1.2.5
 #### Release 2 :: PreRelease 2
 1. 更新 `HitDelay`模块中`tap的Rate环形图`中新增柱状图子图
+2. 修复 修复`HitDelay`模块中更改、删除记录时删除所有同名记录的bug
 #### Release 1 :: PreRelease 1
 1. #### 更新 更新9月28日喵赛克新增曲目
     - 中华少女·终 (EZ HD)

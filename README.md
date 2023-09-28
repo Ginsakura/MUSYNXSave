@@ -11,9 +11,12 @@ MUSYNX Steam Client Savefile Decode & Analyze Tool
 ## 界面展示
 
 ![主页面](./ReadmeResources/main.png "主页面")
+![score-diff页面](./ReadmeResources/score-diff.png "score-diff页面")
 ![HitDelay页面](./ReadmeResources/HitDelay.png "HitDelay页面")
-![HitAnalyze页面](./ReadmeResources/HitAnalyze.png "HitAnalyze页面")
-![AllHitAnalyze页面](./ReadmeResources/AllHitAnalyze.png "AllHitAnalyze页面")
+![HitAnalyze-Pie&Bar页面](./ReadmeResources/HitAnalyze-Pie&Bar.png "HitAnalyze-Pie&Bar页面")
+![HitAnalyze-Line页面](./ReadmeResources/HitAnalyze-Line.png "HitAnalyze-Line页面")
+![AllHitAnalyze-Pie页面](./ReadmeResources/AllHitAnalyze-Pie.png "AllHitAnalyze-Pie页面")
+![AllHitAnalyze-Bar页面](./ReadmeResources/AllHitAnalyze-Bar.png "AllHitAnalyze-Bar页面")
 ![AvgAcc-SYNC.Rate回归分析页面](./ReadmeResources/AvgAcc-SYNC.Rate.png "AvgAcc-SYNC.Rate回归分析")
 
 ## 计划
@@ -78,6 +81,8 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 
 ## 更新日志
 ### Version 1.2.5
+#### Release 2 :: PreRelease 2
+1. 更新 `HitDelay`模块中`tap的Rate环形图`中新增柱状图子图
 #### Release 1 :: PreRelease 1
 1. #### 更新 更新9月28日喵赛克新增曲目
     - 中华少女·终 (EZ HD)

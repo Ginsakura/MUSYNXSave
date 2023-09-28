@@ -10,9 +10,13 @@
 5. 1.2.4 Python环境从3.8.6更新到3.11.5
 7. 1.2.4 将License从GPLv3切换为MIT
 8. 1.2.4 新增`成绩分布散点图`
+9. 1.2.5 `HitDelay`模块中`tap的Rate环形图`中新增柱状图子图
 
 ### Version 1.2.5
-#### Release 1 :: PreRelease 1
+#### PreRelease 2
+1. 更新 `HitDelay`模块中`tap的Rate环形图`中新增柱状图子图
+
+#### Release 1
 1. #### 更新 更新9月28日喵赛克新增曲目
     - 中华少女·终 (EZ HD)
     - 夜月花 (EZ HD)

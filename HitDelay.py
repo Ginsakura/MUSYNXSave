@@ -293,24 +293,24 @@ class HitDelayDraw(object):
 		self.allKeys = dataList[3]
 		self.avgAcc = dataList[4]
 		if isHistory:
-			dataList = [float(i) for i in dataList[5].split("|")]
+			self.dataList = [float(i) for i in dataList[5].split("|")]
 		else:
-			dataList = dataList[5]
+			self.dataList = dataList[5]
 
-		self.x_axis = [i for i in range(0,len(dataList))]
-		self.zero_axis = [0 for i in range(0,len(dataList))]
-		self.EXACTa = [45 for i in range(0,len(dataList))]
-		self.EXACTb = [-45 for i in range(0,len(dataList))]
-		self.Exacta = [90 for i in range(0,len(dataList))]
-		self.Exactb = [-90 for i in range(0,len(dataList))]
-		self.Greata = [150 for i in range(0,len(dataList))]
-		self.Greatb = [-150 for i in range(0,len(dataList))]
-		self.Right = [250 for i in range(0,len(dataList))]
-		self.y_axis = [int(i) for i in dataList]
+		self.x_axis = [i for i in range(0,len(self.dataList))]
+		self.zero_axis = [0 for i in range(0,len(self.dataList))]
+		self.EXACTa = [45 for i in range(0,len(self.dataList))]
+		self.EXACTb = [-45 for i in range(0,len(self.dataList))]
+		self.Exacta = [90 for i in range(0,len(self.dataList))]
+		self.Exactb = [-90 for i in range(0,len(self.dataList))]
+		self.Greata = [150 for i in range(0,len(self.dataList))]
+		self.Greatb = [-150 for i in range(0,len(self.dataList))]
+		self.Right = [250 for i in range(0,len(self.dataList))]
+		self.y_axis = [int(i) for i in self.dataList]
 
 		self.sum = [0,0,0,0,0]
 		self.exCount = [0,0,0,0]
-		for ids in dataList:
+		for ids in self.dataList:
 			ids = abs(ids)
 			if ids < 45: 
 				if ids < 5:self.exCount[0] += 1
@@ -325,15 +325,14 @@ class HitDelayDraw(object):
 		self.exCount = self.exCount + self.sum[1:]
 		print("HitDelayDraw:",self.sum,self.exCount)
 
-		self.Draw()
+		self.DrawLine()
 		with open('./musync_data/ExtraFunction.cfg', 'r',encoding='utf8') as confFile:
 			config = json.load(confFile)
 		if config['EnableDonutChartinHitDelay']:
-			self.Pie()
+			self.DrawBarPie()
 		plt.show()
-		
 
-	def Draw(self):
+	def DrawLine(self):
 		fig = plt.figure(f'AvgDelay: {"%.4fms"%self.avgDelay}    AllKeys: {self.allKeys}    AvgAcc: {"%.4fms"%self.avgAcc}',figsize=(9, 4))
 		fig.subplots_adjust(**{"left":0.04,"bottom":0.05,"right":1,"top":1})
 		# print(self.x_axis,self.y_axis)
@@ -372,7 +371,7 @@ class HitDelayDraw(object):
 		plt.xlim(-15,len(self.x_axis)+15)
 		# plt.show()
 
-	def Pie(self):
+	def DrawBarPie(self):
 		def Percentage(num, summ):
 			per = num/summ*100
 			return ' '*(3-len(str(int((per)))))+'%.3f%%'%(per)
@@ -382,9 +381,10 @@ class HitDelayDraw(object):
 		def PercentageLabel(num, summ):
 			per = num/summ*100
 			return '%.1f%%'%(per)
-		import random
-		fig = plt.figure(f'Pie AvgDelay: {"%.4fms"%self.avgDelay}  AllKeys: {self.allKeys}  AvgAcc: {"%.4fms"%self.avgAcc}', figsize=(5.5, 4.5))
-		fig.subplots_adjust(**{"left":0,"bottom":0,"right":1,"top":1})
+		# import random
+		fig = plt.figure(f'Pie AvgDelay: {"%.4fms"%self.avgDelay}  AllKeys: {self.allKeys}  AvgAcc: {"%.4fms"%self.avgAcc}', figsize=(5.5, 6.5))
+		grid = plt.GridSpec(4, 1, left=0.05, right=1, top=1, bottom=0.035, wspace=0, hspace=0)
+		plt.subplot(grid[0:3,0])
 		wedgeprops = {'width':0.15, 'edgecolor':'black', 'linewidth':0.2}
 		if self.sum[0]/sum(self.sum) > 0.6:
 			exCountSum = sum(self.exCount)
@@ -435,6 +435,31 @@ class HitDelayDraw(object):
 					f"Right＋250ms {Count(self.sum[3])}  {Percentage(self.sum[3], summ)}", 
 					f"Miss > 250ms {Count(self.sum[4])}  {Percentage(self.sum[4], summ)}"],
 				)
+		plt.subplot(grid[3,0])
+		hitMapA = [0]*150 # -149~-0
+		hitMapB = [0]*251 # +0~+250
+		for idx in self.dataList:
+			if idx < 0:
+				idx = int(idx)-1
+			else:
+				idx = int(idx)
+			if (idx >= 0) and (idx < 250):
+				hitMapB[idx] += 1
+			elif (idx >= 250):
+				hitMapB[250] += 1
+			else:
+				hitMapA[idx] += 1
+		leftBorder,rightBorder = 0,0
+		while (hitMapA[0] == 0):
+			hitMapA.pop(0)
+			leftBorder += 1
+		while (hitMapB[-1] == 0):
+			hitMapB.pop(-1)
+			rightBorder += 1
+		self.xAxis = [i for i in range(-len(hitMapA),251-rightBorder)]
+		self.yAxis = hitMapA + hitMapB
+		for i in range(len(self.xAxis)):
+			plt.bar(self.xAxis[i],self.yAxis[i])
 		# plt.show()
 
 

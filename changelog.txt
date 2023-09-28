@@ -8,21 +8,14 @@
 3. 1.2.3 DLC曲目标记
 4. 1.2.3 更新游玩记录的存储结构，且 $\color{Red}{不向下兼容}$ ，将`HitDelayHistory.db`修改为`HitDelayHistory_v2.db`
 5. 1.2.4 Python环境从3.8.6更新到3.11.5
-6. 1.2.4 提供以C++编译的Python源码启动器(需要Python环境及三方库)
 7. 1.2.4 将License从GPLv3切换为MIT
 8. 1.2.4 新增`成绩分布散点图`
 
-#### Release 7 :: PreRelease 14
-1. 修复 修复主窗口频繁卡顿的bug
-2. 修复 修复`songname.json`中的错误
-1. 优化 将`HitDelayHistory.db`修改为`HitDelayHistory_v2.db`以易于判断存档版本
-2. 优化 格式化导入库，格式化内链接
-
-#### Release 6 :: PreRelease 12
-1. 新增 新增关键函数执行CPU时长的控制台输出
-1. 修复 修复无法释放资源的bug
-2. 修复 修复`成绩分布散点图`中最低成绩大于某值后仍然显示该行的bug
-3. 修复 修复游戏运行检测高频次执行的bug
-1. 优化 优化版本更新判定
-2. 优化 提供`Push但不构建`的Push参数
-3. 优化 优化`成绩分布散点图`显示
+### Version 1.2.5
+#### Release 1 :: PreRelease 1
+1. #### 更新 更新9月28日喵赛克新增曲目
+    - 中华少女·终 (EZ HD)
+    - 夜月花 (EZ HD)
+    - KiNG FORM -XIII- (2023 Update) (EZ HD IN)
+    - Binary Star (EZ HD)
+    - wish upon the polar star (EZ HD)

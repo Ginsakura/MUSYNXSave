@@ -77,6 +77,15 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
     该值越小,就说明您击打的越精准,(在该值小于45ms时，您的)分值就会越高.
 
 ## 更新日志
+### Version 1.2.5
+#### Release 1 :: PreRelease 1
+1. #### 更新 更新9月28日喵赛克新增曲目
+    - 中华少女·终 (EZ HD)
+    - 夜月花 (EZ HD)
+    - KiNG FORM -XIII- (2023 Update) (EZ HD IN)
+    - Binary Star (EZ HD)
+    - wish upon the polar star (EZ HD)
+
 ### Version 1.2.4
 #### Release 7 :: PreRelease 14
 1. 修复 修复主窗口频繁卡顿的bug
@@ -193,9 +202,9 @@ $\color{Red}{更新后的数据库不向下兼容}$
 ### Version 1.2.0
 1. 更新 适配本体*端午节更新*
 2. #### 更新 更新本次喵赛克更新的新曲目
-    - BiBiC Heart
-    - Brain Crash
-    - Saintelmo
+    - BiBiC Heart(EZ HD)
+    - Brain Crash(EZ HD IN)
+    - Saintelmo(EZ HD IN)
 
 ### Version 1.1.9
 1. 更新 于`HitDelay`模块处更新Acc-Sync分析功能

@@ -22,8 +22,10 @@ import Functions
 from HitDelay import HitDelayCheck,HitDelayText
 import MusyncSavDecode
 
-version = '1.2.4rc7'
-preVersion = "1.2.4pre14"
+version = '1.2.5rc1'
+preVersion = "1.2.5pre1"
+isPreRelease = True
+# isPreRelease = False
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -732,7 +734,7 @@ if __name__ == '__main__':
 			root.overrideredirect(1)
 			window = MusyncSavDecodeGUI(root=root)
 		else:
-			window = OldStyle.MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion)
+			window = OldStyle.MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease)
 		root.update()
 		root.mainloop()
 	except Exception as e:

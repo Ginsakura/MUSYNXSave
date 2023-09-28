@@ -1,5 +1,5 @@
 $message = Read-Host -Prompt "Input Commit Message"
-$message = $message.Split(" ")
+$message = $message.Split("  ")
 if ($message[1] -eq 'rc'){
   $version = (py -c "import MusyncSavDecodeGUI;print(MusyncSavDecodeGUI.version)")
   $release = 'Release'
@@ -19,4 +19,6 @@ echo $str
 git add .
 git commit -m $str
 git push
+# git tag -a $version -m $message[0]
 git pull
+Read-Host -Prompt "Press Enter to exit"

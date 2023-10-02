@@ -92,10 +92,10 @@ def Analyze():
 		plt.text(14.5,75.5,'B',ha='center',va='top',fontsize=7.5,alpha=0.7)
 
 	# supported values are '-', '--', '-.', ':', 'None', ' ', '', 'solid', 'dashed', 'dashdot', 'dotted'
-	plt.plot([int(i) for i in diffSocreTrim[0].keys()],[diffSocreTrim[0][ids][0] for ids in diffSocreTrim[0].keys()],
+	plt.plot([int(i)+0.15 for i in diffSocreTrim[0].keys()],[diffSocreTrim[0][ids][0] for ids in diffSocreTrim[0].keys()],
 		linestyle='-',color='orange',marker="D",markerfacecolor="Blue",alpha=0.7,linewidth=2, 
 		label="4Key Mode")
-	plt.plot([int(i)+0.3 for i in diffSocreTrim[1].keys()],[diffSocreTrim[1][ids][0] for ids in diffSocreTrim[1].keys()],
+	plt.plot([int(i)+0.15 for i in diffSocreTrim[1].keys()],[diffSocreTrim[1][ids][0] for ids in diffSocreTrim[1].keys()],
 		linestyle='-',color='orange',marker="D",markerfacecolor="Red",alpha=0.7,linewidth=2, 
 		label="6Key Mode")
 

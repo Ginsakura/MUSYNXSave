@@ -298,15 +298,8 @@ class HitDelayDraw(object):
 		else:
 			self.dataList = dataList[5]
 
-		self.x_axis = [i for i in range(0,len(self.dataList))]
-		self.zero_axis = [0 for i in range(0,len(self.dataList))]
-		self.EXACTa = [45 for i in range(0,len(self.dataList))]
-		self.EXACTb = [-45 for i in range(0,len(self.dataList))]
-		self.Exacta = [90 for i in range(0,len(self.dataList))]
-		self.Exactb = [-90 for i in range(0,len(self.dataList))]
-		self.Greata = [150 for i in range(0,len(self.dataList))]
-		self.Greatb = [-150 for i in range(0,len(self.dataList))]
-		self.Right = [250 for i in range(0,len(self.dataList))]
+		self.dataListLenth = len(self.dataList)
+		self.x_axis = [i for i in range(self.dataListLenth)]
 		self.y_axis = [int(i) for i in self.dataList]
 
 		self.sum = [0,0,0,0,0]
@@ -338,9 +331,9 @@ class HitDelayDraw(object):
 		fig.subplots_adjust(**{"left":0.04,"bottom":0.05,"right":1,"top":1})
 		# print(self.x_axis,self.y_axis)
 		print(f'AvgDelay: {self.avgDelay}\tAllKeys: {self.allKeys}\tAvgAcc: {self.avgAcc}')
-		plt.text(0,70,"Slower→", ha='right',color='#c22472',rotation=90, 
+		plt.text(0,5,"Slower→", ha='right',color='#c22472',rotation=90, 
 			fontdict={'family':'LXGW WenKai Mono','weight':'normal','size':15})
-		plt.text(0,-70,"←Faster", ha='right',va='top',color='#288328',rotation=90, 
+		plt.text(0,-5,"←Faster", ha='right',va='top',color='#288328',rotation=90, 
 			fontdict={'family':'LXGW WenKai Mono','weight':'normal','size':15})
 		
 		for x,y in zip(self.x_axis,self.y_axis):
@@ -351,18 +344,23 @@ class HitDelayDraw(object):
 				plt.text(x,y+3,'%dms'%y,ha='center',va='bottom',fontsize=7.5,alpha=0.7, 
 					fontdict={'family':'LXGW WenKai Mono','weight':'normal'})
 
-		plt.plot(self.x_axis,self.zero_axis,linestyle='-',alpha=1,linewidth=1,color='red',label='0ms')
-		plt.plot(self.x_axis,self.EXACTa,linestyle='--',alpha=0.7,linewidth=1,color='cyan',
+		maxAbsYAxis = max(max(self.y_axis),abs(min(self.y_axis)))
+		if maxAbsYAxis >= 150:
+			plt.plot(self.x_axis,[250 for i in range(self.dataListLenth)],linestyle='--',alpha=0.7,linewidth=1,color='red',
+				label='Right(+250ms)         --%d'%self.sum[3])
+		if maxAbsYAxis >= 90:
+			plt.plot(self.x_axis,[150 for i in range(self.dataListLenth)],linestyle='--',alpha=0.7,linewidth=1,color='green',
+				label='Great(±150ms)        --%d'%self.sum[2])
+			plt.plot(self.x_axis,[-150 for i in range(self.dataListLenth)],linestyle='--',alpha=0.7,linewidth=1,color='green')
+		if maxAbsYAxis >= 45:
+			plt.plot(self.x_axis,[90 for i in range(self.dataListLenth)],linestyle='--',alpha=0.7,linewidth=1,color='blue',
+				label='Blue Exact(±90ms)    --%d'%self.sum[1])
+			plt.plot(self.x_axis,[-90 for i in range(self.dataListLenth)],linestyle='--',alpha=0.7,linewidth=1,color='blue')
+
+		plt.plot(self.x_axis,[45 for i in range(self.dataListLenth)],linestyle='--',alpha=0.7,linewidth=1,color='cyan',
 			label='Cyan Exact(±45ms)    --%d'%self.sum[0])
-		plt.plot(self.x_axis,self.EXACTb,linestyle='--',alpha=0.7,linewidth=1,color='cyan')
-		plt.plot(self.x_axis,self.Exacta,linestyle='--',alpha=0.7,linewidth=1,color='blue',
-			label='Blue Exact(±90ms)    --%d'%self.sum[1])
-		plt.plot(self.x_axis,self.Exactb,linestyle='--',alpha=0.7,linewidth=1,color='blue')
-		plt.plot(self.x_axis,self.Greata,linestyle='--',alpha=0.7,linewidth=1,color='green',
-			label='Great(±150ms)        --%d'%self.sum[2])
-		plt.plot(self.x_axis,self.Greatb,linestyle='--',alpha=0.7,linewidth=1,color='green')
-		plt.plot(self.x_axis,self.Right,linestyle='--',alpha=0.7,linewidth=1,color='red',
-			label='Right(+250ms)         --%d'%self.sum[3])
+		plt.plot(self.x_axis,[-45 for i in range(self.dataListLenth)],linestyle='--',alpha=0.7,linewidth=1,color='cyan')
+		plt.plot(self.x_axis,[0 for i in range(self.dataListLenth)],linestyle='-',alpha=1,linewidth=1,color='red',label='0ms')
 		plt.plot(self.x_axis,self.y_axis,linestyle='-',alpha=0.7,linewidth=1,color='#8a68d0',
 			label='HitDelay(ms)      miss--%d'%self.sum[4],marker='.',markeredgecolor='#c4245c',markersize='3')
 		plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':12},framealpha=0.5)  #显示上面的label
@@ -384,7 +382,7 @@ class HitDelayDraw(object):
 			return '%.1f%%'%(per)
 		# import random
 		fig = plt.figure(f'Pie&Bar AvgDelay: {"%.4fms"%self.avgDelay}  AllKeys: {self.allKeys}  AvgAcc: {"%.4fms"%self.avgAcc}', figsize=(5.5, 6.5))
-		grid = plt.GridSpec(4, 1, left=0.05, right=1, top=1, bottom=0.035, wspace=0, hspace=0)
+		grid = plt.GridSpec(4, 1, left=0, right=1, top=1, bottom=0.035, wspace=0, hspace=0)
 		plt.subplot(grid[0:3,0])
 		wedgeprops = {'width':0.15, 'edgecolor':'black', 'linewidth':0.2}
 		if self.sum[0]/sum(self.sum) > 0.6:

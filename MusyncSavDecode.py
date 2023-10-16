@@ -144,14 +144,14 @@ class MUSYNCSavProcess():
 				else:return False
 
 			self.saveData = self.savBinFile.read(29)
-			SongID = self.Hex2Int_LittleEndian(self.Bytes2HexString(self.saveData[0:4]))
-			Unknown0 = self.Bytes2HexString(self.saveData[4:8])
-			temp = self.Bytes2HexString(self.saveData[8:12])
+			SongID = int.from_bytes(self.saveData[0:4], 'little')
+			Unknown0 = ''.join(['%02X' % b for b in self.saveData[4:8]])
+			temp = ''.join(['%02X' % b for b in self.saveData[8:12]])
 			SpeedStall = temp[6:]+temp[4:6]+temp[2:4]+temp[0:2]
-			Unknown1 = self.Bytes2HexString(self.saveData[12:16])
-			SyncNumber = str(self.Hex2Int_LittleEndian(self.Bytes2HexString(self.saveData[16:20])))
-			UploadScore = self.Hex2Float_LittleEndian(self.Bytes2HexString(self.saveData[20:24]))
-			PlayCount = self.Hex2Int_LittleEndian(self.Bytes2HexString(self.saveData[24:28]))
+			Unknown1 = ''.join(['%02X' % b for b in self.saveData[12:16]])
+			SyncNumber = str(int.from_bytes(self.saveData[16:20], 'little'))
+			UploadScore = unpack('<f',bytes.fromhex(self.Bytes2HexString(self.saveData[20:24])))[0]
+			PlayCount = int.from_bytes(self.saveData[24:28], 'little')
 
 			if NoCopyright(SpeedStall):
 				print(SpeedStall,"NoCopyright")

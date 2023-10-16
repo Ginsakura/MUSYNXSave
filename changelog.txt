@@ -13,6 +13,8 @@
 9. 1.2.5 `HitDelay`模块中`tap的Rate环形图`中新增柱状图子图
 
 ### Version 1.2.5
+#### PreRelease 4
+1. 优化 优化字节读取
 #### Release 2
 1. 优化 优化`HitDelay`中的折线图使其自适应显示记录中的最大值
 #### PreRelease 2

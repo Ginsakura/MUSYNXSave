@@ -81,6 +81,8 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 
 ## 更新日志
 ### Version 1.2.5
+#### Release 3 :: PreRelease 4
+1. 优化 优化字节读取
 #### Release 2 :: PreRelease 3
 1. 更新 `HitDelay`模块中`tap的Rate环形图`中新增柱状图子图
 1. 修复 修复`HitDelay`模块中更改、删除记录时删除所有同名记录的bug

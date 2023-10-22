@@ -1,5 +1,9 @@
 $message = Read-Host -Prompt "Input Commit Message"
-$message = $message.Split("  ")
+$message = $message.Split("//")
+echo $message[0]
+echo ===========
+echo $message[-1]
+echo ===========
 if ($message[1] -eq 'rc'){
   $version = (py -c "import MusyncSavDecodeGUI;print(MusyncSavDecodeGUI.version)")
   $release = 'Release'

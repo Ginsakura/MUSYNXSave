@@ -4,10 +4,10 @@ echo $message[0]
 echo ===========
 echo $message[-1]
 echo ===========
-if ($message[1] -eq 'rc'){
+if ($message[-1] -eq 'rc'){
   $version = (py -c "import MusyncSavDecodeGUI;print(MusyncSavDecodeGUI.version)")
   $release = 'Release'
-}elseif($message[1] -eq 'pre'){
+}elseif($message[-1] -eq 'pre'){
   $version = (py -c "import MusyncSavDecodeGUI;print(MusyncSavDecodeGUI.preVersion)")
   $release = 'PreRelease'
 }else{

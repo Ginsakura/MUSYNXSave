@@ -13,6 +13,8 @@
 9. 1.2.5 `HitDelay`模块中`tap的Rate环形图`中新增柱状图子图
 
 ### Version 1.2.5
+#### Release 3
+1. 修复 修复图片资源缺失的bug
 #### PreRelease 4
 1. 优化 优化字节读取
 #### Release 2

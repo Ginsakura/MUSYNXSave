@@ -1,4 +1,5 @@
-﻿import json
+﻿import ctypes
+import json
 import os
 import sqlite3 as sql
 import winreg
@@ -127,9 +128,6 @@ def CheckConfig():
 	if 'EnableDLLInjection' not in cfg:
 		cfg['EnableDLLInjection'] = False
 		isChange = True
-	if 'SystemDPI' not in cfg:
-		cfg['SystemDPI'] = GetDpi()
-		isChange = True
 	if 'EnableDonutChartinHitDelay' not in cfg:
 		cfg['DonutChartinHitDelay'] = False
 		isChange = True
@@ -137,7 +135,7 @@ def CheckConfig():
 		cfg['EnableDonutChartinAllHitAnalyze'] = False
 		isChange = True
 	if 'EnablePDFofCyanExact' not in cfg:
-		cfg['EnablePDFofCyanExact'] = False
+		cfg['EnablePDFofCyanExact'] = True
 		isChange = True
 	if 'EnableNarrowDelayInterval' not in cfg:
 		cfg['EnableNarrowDelayInterval'] = True
@@ -162,6 +160,13 @@ def CheckConfig():
 		isChange = True
 	if 'TransparentColor' not in cfg:
 		cfg['TransparentColor'] = "#FFFFFF"
+		isChange = True
+	dpi = ctypes.windll.shcore.GetScaleFactorForDevice(0) # GetDpi()
+	if 'SystemDPI' not in cfg:
+		cfg['SystemDPI'] = dpi
+		isChange = True
+	elif dpi != cfg['SystemDPI']:
+		cfg['SystemDPI'] = dpi
 		isChange = True
 	if isChange:
 		json.dump(cfg,open('./musync_data/ExtraFunction.cfg','w',encoding='utf8'),indent="",ensure_ascii=False)

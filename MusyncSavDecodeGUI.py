@@ -22,10 +22,10 @@ import Functions
 from HitDelay import HitDelayCheck,HitDelayText
 import MusyncSavDecode
 
-version = '1.2.5rc3'
-preVersion = "1.2.5pre4"
+version = '1.2.5rc4'
+preVersion = "1.2.5pre5"
 isPreRelease = True
-isPreRelease = False
+# isPreRelease = False
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
@@ -718,43 +718,45 @@ class Entry_Canvas:
 			self.canvas.itemconfig(self.tex,text=self.info+'|')
 
 if __name__ == '__main__':
-	try:
-		ctypes.windll.shcore.SetProcessDpiAwareness(1)
-		root = Tk()
-		fonts = list(font.families())
-		Functions.CheckFileBeforeStarting(fonts)
-		del fonts
-		Functions.CheckConfig()
-		with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
-			cfg = json.load(cfg)
-		if cfg['ChangeConsoleStyle']:
-			Functions.ChangeConsoleStyle()
-		root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
-		if cfg['EnableFramelessWindow']:
-			root.overrideredirect(1)
-			window = MusyncSavDecodeGUI(root=root)
-		else:
-			window = OldStyle.MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease)
-		root.update()
-		root.mainloop()
-	except Exception as e:
-		print(repr(e))
-		os.system("pause")
-	# ctypes.windll.shcore.SetProcessDpiAwareness(1)
-	# root = Tk()
-	# fonts = list(font.families())
-	# Functions.CheckFileBeforeStarting(fonts)
-	# # del fonts
-	# Functions.CheckConfig()
-	# with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
-	# 	cfg = json.load(cfg)
-	# if cfg['ChangeConsoleStyle']:
-	# 	Functions.ChangeConsoleStyle()
-	# root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
-	# if cfg['EnableFramelessWindow']:
-	# 	root.overrideredirect(1)
-	# 	window = MusyncSavDecodeGUI(root=root)
-	# else:
-	# 	window = OldStyle.MusyncSavDecodeGUI(root=root,version=version)
-	# root.update()
-	# root.mainloop()
+	# try:
+	# 	root = Tk()
+	# 	ctypes.windll.shcore.SetProcessDpiAwareness(1)
+	# 	fonts = list(font.families())
+	# 	Functions.CheckFileBeforeStarting(fonts)
+	# 	del fonts
+	# 	Functions.CheckConfig()
+	# 	with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
+	# 		cfg = json.load(cfg)
+	# 	if cfg['ChangeConsoleStyle']:
+	# 		Functions.ChangeConsoleStyle()
+	# 	root.tk.call('tk', 'scaling', cfg['SystemDPI']/75)
+	# 	root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
+	# 	if cfg['EnableFramelessWindow']:
+	# 		root.overrideredirect(1)
+	# 		window = MusyncSavDecodeGUI(root=root)
+	# 	else:
+	# 		window = OldStyle.MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease)
+	# 	root.update()
+	# 	root.mainloop()
+	# except Exception as e:
+	# 	print(repr(e))
+	# 	os.system("pause")
+	root = Tk()
+	ctypes.windll.shcore.SetProcessDpiAwareness(1)
+	fonts = list(font.families())
+	Functions.CheckFileBeforeStarting(fonts)
+	# del fonts
+	Functions.CheckConfig()
+	with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
+		cfg = json.load(cfg)
+	if cfg['ChangeConsoleStyle']:
+		Functions.ChangeConsoleStyle()
+	root.tk.call('tk', 'scaling', 1.25)
+	root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
+	if cfg['EnableFramelessWindow']:
+		root.overrideredirect(1)
+		window = MusyncSavDecodeGUI(root=root)
+	else:
+		window = OldStyle.MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease)
+	root.update()
+	root.mainloop()

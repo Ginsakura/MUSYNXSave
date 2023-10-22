@@ -41,7 +41,7 @@ class MusyncSavDecodeGUI(object):
 		def fixed_map(option):
 			return [elm for elm in style.map("Treeview", query_opt=option) if elm[:2] != ("!disabled", "!selected")]
 		style = ttk.Style()
-		if self.config['SystemDPI'] == 100:
+		if 1 :# self.config['SystemDPI'] == 100:
 			style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',13))
 			style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
 			style.configure("reload.TButton", font=('霞鹜文楷等宽',16))
@@ -56,13 +56,13 @@ class MusyncSavDecodeGUI(object):
 			style.configure("close.TButton", font=('霞鹜文楷等宽',16), bg="#EEBBBB")
 			self.font=('霞鹜文楷等宽',16)
 		# elif self.config['SystemDPI'] == 125:
-		else:
-			style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',11))
-			style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
-			style.configure("reload.TButton", font=('霞鹜文楷等宽',13.5))
-			# , background='#EEBBBB', foreground='#00CCFF',relief='ridge')
-			style.configure("F5.TButton", font=('霞鹜文楷等宽',13.5), bg="#EEBBBB")
-			self.font=('霞鹜文楷等宽',13.5)
+		# else:
+		# 	style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',11))
+		# 	style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
+		# 	style.configure("reload.TButton", font=('霞鹜文楷等宽',13.5))
+		# 	# , background='#EEBBBB', foreground='#00CCFF',relief='ridge')
+		# 	style.configure("F5.TButton", font=('霞鹜文楷等宽',13.5), bg="#EEBBBB")
+		# 	self.font=('霞鹜文楷等宽',13.5)
 		# style.configure("Treeview", foreground=fixed_map("foreground"), background=fixed_map("background"))
 		# style.configure("Treeview", background="#EFEFEF", foreground="#050505", fieldbackground="red")
 		if isTKroot == True:

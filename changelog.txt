@@ -1,18 +1,21 @@
 ## 更新日志
 ### 近期重要更新速览
-1. 1.2.1 Console界面优化
-2. 1.2.2 通过使用UIAutoMation库实现一键自动从控制台获取游玩结果
+1. 1.2.2 通过使用UIAutoMation库实现一键自动从控制台获取游玩结果
     $\color{Red}{控制台只显示最近一次的游玩记录，请在下次谱面游玩开始前生成结果}$
     $\color{Red}{控制台关闭后不会保存游玩记录，请在关闭游戏前生成结果}$
     $\color{Red}{结果生成需要使用剪切板，点击按钮后，在结果生成前请不要进行}$ ** $\color{Red}{任何}$ ** $\color{Red}{操作}$
-3. 1.2.3 DLC曲目标记
-4. 1.2.3 更新游玩记录的存储结构，且 $\color{Red}{不向下兼容}$ ，将`HitDelayHistory.db`修改为`HitDelayHistory_v2.db`
-5. 1.2.4 Python环境从3.8.6更新到3.11.5
-7. 1.2.4 将License从GPLv3切换为MIT
-8. 1.2.4 新增`成绩分布散点图`
-9. 1.2.5 `HitDelay`模块中`tap的Rate环形图`中新增柱状图子图
+2. 1.2.3 DLC曲目标记
+3. 1.2.3 更新游玩记录的存储结构，且 $\color{Red}{不向下兼容}$ ，将`HitDelayHistory.db`修改为`HitDelayHistory_v2.db`
+4. 1.2.4 Python环境从3.8.6更新到3.11.5
+5. 1.2.4 将License从GPLv3切换为MIT
+6. 1.2.5 `HitDelay`模块中`tap的Rate环形图`中新增柱状图子图
+7. 1.2.5 提供DPI锁定功能
 
 ### Version 1.2.5
+#### PreRelease 5
+1. 更新 提供DPI锁定，使得界面不会随着系统DPI设置而导致UI显示错误
+1. 修复 修复`Readme`中的链接错误
+2. 修复 修复配置项中的SystemDPI无法正确更新的bug
 #### Release 3
 1. 修复 修复图片资源缺失的bug
 #### PreRelease 4

@@ -1,11 +1,11 @@
 ﻿# 同步音律喵赛克 Steam端 存档解析工具
 MUSYNX Steam Client Savefile Decode & Analyze Tool
 
-[![All releases](https://img.shields.io/github/downloads/ginsakura/MUSYNCSave/total)](./releases)
-[![All commit activity (branch)](https://img.shields.io/github/commit-activity/t/ginsakura/MUSYNCSave)](./commits)
+[![All releases](https://img.shields.io/github/downloads/ginsakura/MUSYNCSave/total)](https://github.com/Ginsakura/MUSYNCSave/releases)
+[![All commit activity (branch)](https://img.shields.io/github/commit-activity/t/ginsakura/MUSYNCSave)](https://github.com/Ginsakura/MUSYNCSave/commits)
 [![License](https://img.shields.io/github/license/ginsakura/MUSYNCSave)](./LICENSE)
 
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/ginsakura/MUSYNCSave?display_name=release&label=latest%20release&style=flat-square)](./releases/latest)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/ginsakura/MUSYNCSave?display_name=release&label=latest%20release&style=flat-square)](https://github.com/Ginsakura/MUSYNCSave/releases/latest)
 
 
 ## 界面展示
@@ -81,6 +81,10 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 
 ## 更新日志
 ### Version 1.2.5
+#### Release 4 :: PreRelease 5
+1. 更新 提供DPI锁定，使得界面不会随着系统DPI设置而导致UI显示错误
+1. 修复 修复`Readme`中的链接错误
+2. 修复 修复配置项中的SystemDPI无法正确更新的bug
 #### Release 3 :: PreRelease 4
 1. 修复 修复图片资源缺失的bug
 1. 优化 优化字节读取

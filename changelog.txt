@@ -12,6 +12,9 @@
 7. 1.2.5 提供DPI锁定功能
 
 ### Version 1.2.5
+#### Release 4
+1. #### 更新 更新11月01日喵赛克新增曲目
+    - spooky mummy party (EZ HD)
 #### PreRelease 5
 1. 更新 提供DPI锁定，使得界面不会随着系统DPI设置而导致UI显示错误
 1. 修复 修复`Readme`中的链接错误

@@ -83,6 +83,8 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 ### Version 1.2.5
 #### Release 4 :: PreRelease 5
 1. 更新 提供DPI锁定，使得界面不会随着系统DPI设置而导致UI显示错误
+2. #### 更新 更新11月01日喵赛克新增曲目
+    - spooky mummy party (EZ HD)
 1. 修复 修复`Readme`中的链接错误
 2. 修复 修复配置项中的SystemDPI无法正确更新的bug
 #### Release 3 :: PreRelease 4

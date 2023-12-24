@@ -81,20 +81,28 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 
 ## 更新日志
 ### Version 1.2.5
-#### Release 4 :: PreRelease 5
+#### Release 5
+1. #### 更新 更新12月22日喵赛克新增曲目
+    - fallin' fallin' (EZ HD)
+    - Cross†Destination (EZ HD)
+    - Don't Never Around (EZ HD IN)
+    - Eschatology (EZ HD IN)
+    - Revival of Kalpa (EZ HD IN)
+1. 优化 优化`HitDelay`中柱状图x轴间隔
+#### Release 4
 1. 更新 提供DPI锁定，使得界面不会随着系统DPI设置而导致UI显示错误
 2. #### 更新 更新11月01日喵赛克新增曲目
     - spooky mummy party (EZ HD)
 1. 修复 修复`Readme`中的链接错误
 2. 修复 修复配置项中的SystemDPI无法正确更新的bug
-#### Release 3 :: PreRelease 4
+#### Release 3
 1. 修复 修复图片资源缺失的bug
 1. 优化 优化字节读取
-#### Release 2 :: PreRelease 3
+#### Release 2
 1. 更新 `HitDelay`模块中`tap的Rate环形图`中新增柱状图子图
 1. 修复 修复`HitDelay`模块中更改、删除记录时删除所有同名记录的bug
 1. 优化 优化`HitDelay`中的折线图使其自适应显示记录中的最大值
-#### Release 1 :: PreRelease 1
+#### Release 1
 1. #### 更新 更新9月28日喵赛克新增曲目
     - 中华少女·终 (EZ HD)
     - 夜月花 (EZ HD)
@@ -103,12 +111,12 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
     - wish upon the polar star (EZ HD)
 
 ### Version 1.2.4
-#### Release 7 :: PreRelease 14
+#### Release 7
 1. 修复 修复主窗口频繁卡顿的bug
 2. 修复 修复`songname.json`中的错误
 1. 优化 将`HitDelayHistory.db`修改为`HitDelayHistory_v2.db`以易于判断存档版本
 2. 优化 格式化导入库，格式化内链接
-#### Release 6 :: PreRelease 12
+#### Release 6
 1. 新增 新增关键函数执行CPU时长的控制台输出
 1. 修复 修复无法释放资源的bug
 2. 修复 修复`成绩分布散点图`中最低成绩大于某值后仍然显示该行的bug

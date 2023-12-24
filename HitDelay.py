@@ -346,21 +346,22 @@ class HitDelayDraw(object):
 
 		maxAbsYAxis = max(max(self.y_axis),abs(min(self.y_axis)))
 		if maxAbsYAxis >= 150:
-			plt.plot(self.x_axis,[250 for i in range(self.dataListLenth)],linestyle='--',alpha=0.7,linewidth=1,color='red',
+			plt.plot(self.x_axis,[250]*self.dataListLenth,linestyle='--',alpha=0.7,linewidth=1,color='red',
 				label='Right(+250ms)         --%d'%self.sum[3])
 		if maxAbsYAxis >= 90:
-			plt.plot(self.x_axis,[150 for i in range(self.dataListLenth)],linestyle='--',alpha=0.7,linewidth=1,color='green',
+			plt.plot(self.x_axis,[150]*self.dataListLenth,linestyle='--',alpha=0.7,linewidth=1,color='green',
 				label='Great(±150ms)        --%d'%self.sum[2])
-			plt.plot(self.x_axis,[-150 for i in range(self.dataListLenth)],linestyle='--',alpha=0.7,linewidth=1,color='green')
+			plt.plot(self.x_axis,[-150]*self.dataListLenth,linestyle='--',alpha=0.7,linewidth=1,color='green')
 		if maxAbsYAxis >= 45:
-			plt.plot(self.x_axis,[90 for i in range(self.dataListLenth)],linestyle='--',alpha=0.7,linewidth=1,color='blue',
+			plt.plot(self.x_axis,[90]*self.dataListLenth,linestyle='--',alpha=0.7,linewidth=1,color='blue',
 				label='Blue Exact(±90ms)    --%d'%self.sum[1])
-			plt.plot(self.x_axis,[-90 for i in range(self.dataListLenth)],linestyle='--',alpha=0.7,linewidth=1,color='blue')
+			plt.plot(self.x_axis,[-90]*self.dataListLenth,linestyle='--',alpha=0.7,linewidth=1,color='blue')
 
-		plt.plot(self.x_axis,[45 for i in range(self.dataListLenth)],linestyle='--',alpha=0.7,linewidth=1,color='cyan',
+		plt.plot(self.x_axis,[45]*self.dataListLenth,linestyle='--',alpha=0.7,linewidth=1,color='cyan',
 			label='Cyan Exact(±45ms)    --%d'%self.sum[0])
-		plt.plot(self.x_axis,[-45 for i in range(self.dataListLenth)],linestyle='--',alpha=0.7,linewidth=1,color='cyan')
-		plt.plot(self.x_axis,[0 for i in range(self.dataListLenth)],linestyle='-',alpha=1,linewidth=1,color='red',label='0ms')
+		plt.plot(self.x_axis,[-45]*self.dataListLenth,linestyle='--',alpha=0.7,linewidth=1,color='cyan')
+		plt.plot(self.x_axis,[0]*self.dataListLenth,linestyle='-',alpha=1,linewidth=1,color='red',label='0ms')
+		plt.plot(self.x_axis,[self.avgDelay]*self.dataListLenth,linestyle='--',alpha=1,linewidth=1,color='red',label="AvgDelay")
 		plt.plot(self.x_axis,self.y_axis,linestyle='-',alpha=0.7,linewidth=1,color='#8a68d0',
 			label='HitDelay(ms)      miss--%d'%self.sum[4],marker='.',markeredgecolor='#c4245c',markersize='3')
 		plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':12},framealpha=0.5)  #显示上面的label
@@ -459,6 +460,7 @@ class HitDelayDraw(object):
 		self.yAxis = hitMapA + hitMapB
 		for i in range(len(self.xAxis)):
 			plt.bar(self.xAxis[i],self.yAxis[i])
+		plt.gca().xaxis.set_major_locator(MultipleLocator(15))
 		# plt.show()
 
 

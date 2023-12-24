@@ -12,6 +12,14 @@
 7. 1.2.5 提供DPI锁定功能
 
 ### Version 1.2.5
+#### Release 5
+1. #### 更新 更新12月22日喵赛克新增曲目
+    - fallin' fallin' (EZ HD)
+    - Cross†Destination (EZ HD)
+    - Don't Never Around (EZ HD IN)
+    - Eschatology (EZ HD IN)
+    - Revival of Kalpa (EZ HD IN)
+1. 优化 优化`HitDelay`中柱状图x轴间隔
 #### Release 4
 1. #### 更新 更新11月01日喵赛克新增曲目
     - spooky mummy party (EZ HD)
@@ -28,7 +36,6 @@
 #### PreRelease 2
 1. 更新 `HitDelay`模块中`tap的Rate环形图`中新增柱状图子图
 2. 修复 修复`HitDelay`模块中更改、删除记录时删除所有同名记录的bug
-
 #### Release 1
 1. #### 更新 更新9月28日喵赛克新增曲目
     - 中华少女·终 (EZ HD)

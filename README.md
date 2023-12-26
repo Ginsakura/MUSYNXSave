@@ -15,8 +15,7 @@ MUSYNX Steam Client Savefile Decode & Analyze Tool
 ![HitDelay页面](./ReadmeResources/HitDelay.png "HitDelay页面")
 ![HitAnalyze-Pie&Bar页面](./ReadmeResources/HitAnalyze-Pie&Bar.png "HitAnalyze-Pie&Bar页面")
 ![HitAnalyze-Line页面](./ReadmeResources/HitAnalyze-Line.png "HitAnalyze-Line页面")
-![AllHitAnalyze-Pie页面](./ReadmeResources/AllHitAnalyze-Pie.png "AllHitAnalyze-Pie页面")
-![AllHitAnalyze-Bar页面](./ReadmeResources/AllHitAnalyze-Bar.png "AllHitAnalyze-Bar页面")
+![AllHitAnalyze-Pie页面](./ReadmeResources/AllHitAnalyze.png "AllHitAnalyze页面")
 ![AvgAcc-SYNC.Rate回归分析页面](./ReadmeResources/AvgAcc-SYNC.Rate.png "AvgAcc-SYNC.Rate回归分析")
 
 ## 计划
@@ -62,7 +61,7 @@ WithConsole版本为带命令提示符界面，适合出现bug时快速定位错
 ### 高级功能简介
 下列组件对游戏客户端有修改,请谨慎使用
 
-*** $\color{Red}{ 注意备份 注意备份 注意备份 }$ ***
+$\color{Red}{*** 注意备份 注意备份 注意备份 ***}$
 
 $\color{Red}{请自行决定是否使用,使用过程中出现任何意外}$
 $\color{Red}{后果自负,开发者概不负责}$
@@ -82,7 +81,7 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 ## 更新日志
 ### Version 1.2.5
 #### Release 5
-1. #### 更新 更新12月22日喵赛克新增曲目
+1. #### 更新 更新12月22日喵赛克新增曲目 (圣诞节更新)
     - fallin' fallin' (EZ HD)
     - Cross†Destination (EZ HD)
     - Don't Never Around (EZ HD IN)
@@ -91,7 +90,7 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 1. 优化 优化`HitDelay`中柱状图x轴间隔
 #### Release 4
 1. 更新 提供DPI锁定，使得界面不会随着系统DPI设置而导致UI显示错误
-2. #### 更新 更新11月01日喵赛克新增曲目
+2. #### 更新 更新11月01日喵赛克新增曲目 (万圣节更新)
     - spooky mummy party (EZ HD)
 1. 修复 修复`Readme`中的链接错误
 2. 修复 修复配置项中的SystemDPI无法正确更新的bug
@@ -103,7 +102,7 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 1. 修复 修复`HitDelay`模块中更改、删除记录时删除所有同名记录的bug
 1. 优化 优化`HitDelay`中的折线图使其自适应显示记录中的最大值
 #### Release 1
-1. #### 更新 更新9月28日喵赛克新增曲目
+1. #### 更新 更新9月28日喵赛克新增曲目 (国庆节更新)
     - 中华少女·终 (EZ HD)
     - 夜月花 (EZ HD)
     - KiNG FORM -XIII- (2023 Update) (EZ HD IN)

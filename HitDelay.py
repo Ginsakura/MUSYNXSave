@@ -328,7 +328,7 @@ class HitDelayDraw(object):
 		fig = plt.figure(f'AvgDelay: {"%.4fms"%self.avgDelay}    ' \
 			f'AllKeys: {self.allKeys}    AvgAcc: {"%.4fms"%self.avgAcc}',figsize=(9, 4))
 		fig.clear()
-		fig.subplots_adjust(**{"left":0.048,"bottom":0.05,"right":1,"top":1})
+		fig.subplots_adjust(**{"left":0.045,"bottom":0.055,"right":1,"top":1})
 		ax = fig.add_subplot()
 		plt.rcParams['font.serif'] = ["LXGW WenKai Mono"]
 		plt.rcParams["font.sans-serif"] = ["LXGW WenKai Mono"]
@@ -390,12 +390,11 @@ class HitDelayDraw(object):
 		wedgeprops = {'width':0.15, 'edgecolor':'black', 'linewidth':0.2}
 		if self.sum[0]/sum(self.sum) > 0.6:
 			exCountSum = sum(self.exCount)
-			ax1.pie(self.exCount, wedgeprops=wedgeprops, startangle=90, autopct='%1.1f%%', pctdistance = 0.95, labeldistance = 1.05, 
-				colors=['#c8fff7','#9ff2ee','#69e0ce','#53cac4', '#2F97FF', 'green', 'orange', 'red'],
-				# autopct=lambda x:'%.3f%%'%(x*sum(self.exCount)/100+0.5),
-				labels=["EXACT±5ms", "EXACT±10ms", "EXACT±20ms", "EXACT±45ms", "Exact", "Great", "Right", "Miss"],
+			pieRtn = ax1.pie(self.exCount, wedgeprops=wedgeprops, startangle=90, autopct='%1.1f%%', pctdistance = 0.95, labeldistance = 1.05, 
+				colors=['#9dfff0',    '#69f1f1',     '#25d8d8',     '#32a9c7',     '#2F97FF', 'green', 'orange', 'red', ], 
+				labels=["EXACT±5ms", "EXACT±10ms", "EXACT±20ms", "EXACT±45ms", "Exact",   "Great", "Right",  "Miss", ],
 				textprops={'size':10})
-			ax1.legend(prop={'size':9},loc='center',
+			ax1.legend(prop={'size':9},loc='center', handles=pieRtn[0], 
 				labels=[
 					f"EXACT± 5ms  {Count(self.exCount[0])}  {Percentage(self.exCount[0], exCountSum)}", 
 					f"EXACT±10ms  {Count(self.exCount[1])}  {Percentage(self.exCount[1], exCountSum)}", 
@@ -404,7 +403,7 @@ class HitDelayDraw(object):
 					f"Exact±90ms  {Count(self.exCount[4])}  {Percentage(self.exCount[4], exCountSum)}", 
 					f"Great±150ms {Count(self.exCount[5])}  {Percentage(self.exCount[5], exCountSum)}", 
 					f"Right＋250ms {Count(self.exCount[6])}  {Percentage(self.exCount[6], exCountSum)}", 
-					f"Miss >=251ms {Count(self.exCount[7])}  {Percentage(self.exCount[7], exCountSum)}"],
+					f"Miss >=251ms {Count(self.exCount[7])}  {Percentage(self.exCount[7], exCountSum)}", ],
 				)
 			ax1.text(-0.41,0.48,f"EXACT        {Count(sum(self.exCount[0:4]))}  " \
 				f"{Percentage(sum(self.exCount[0:4]), exCountSum)}", 

@@ -215,12 +215,12 @@ class HitAnalyze(object):
 		accurateRateSum = sum(self.accurateRate)
 
 		wedgeprops = {'width':0.15, 'edgecolor':'black', 'linewidth':0.2}
-		ax2.pie(self.accurateRate, wedgeprops=wedgeprops, startangle=90, autopct='%1.1f%%', pctdistance = 0.95, labeldistance = 1.05, 
-			colors=['#c8fff7','#9ff2ee','#69e0ce','#53cac4', '#2F97FF', 'green', 'orange', 'red'],
-			# autopct=lambda x:'%.3f%%'%(x*sum(self.accurateRate)/100+0.5),
-			labels=["EXACT±5ms", "EXACT±10ms", "EXACT±20ms", "EXACT±45ms", "Exact", "Great", "Right", "Miss"],
+		pieRtn = ax2.pie(self.accurateRate, wedgeprops=wedgeprops, startangle=90, autopct='%1.1f%%', pctdistance = 0.95, labeldistance = 1.05, 
+			colors=['#9dfff0',    '#69f1f1',     '#25d8d8',     '#32a9c7',     '#2F97FF', 'green', 'orange', 'red', ], 
+			labels=["EXACT±5ms", "EXACT±10ms", "EXACT±20ms", "EXACT±45ms", "Exact",   "Great", "Right",  "Miss", ], 
 			textprops={'size':12})
-		ax2.legend(prop={'size':12},loc='center',
+		ax2.legend(prop={'size':12},loc='center', handles=pieRtn[0], 
+			# labelcolor=['#9dfff0', '#69f1f1', '#25d8d8', '#32a9c7', '#2F97FF', 'green', 'orange', 'red', ], 
 			labels=[
 				f"EXACT± 5ms  {Count(self.accurateRate[0])}  {Percentage(self.accurateRate[0], accurateRateSum)}", 
 				f"EXACT±10ms  {Count(self.accurateRate[1])}  {Percentage(self.accurateRate[1], accurateRateSum)}", 
@@ -229,11 +229,11 @@ class HitAnalyze(object):
 				f"Exact±90ms  {Count(self.accurateRate[4])}  {Percentage(self.accurateRate[4], accurateRateSum)}", 
 				f"Great±150ms {Count(self.accurateRate[5])}  {Percentage(self.accurateRate[5], accurateRateSum)}", 
 				f"Right＋250ms {Count(self.accurateRate[6])}  {Percentage(self.accurateRate[6], accurateRateSum)}", 
-				f"Miss > 250ms {Count(self.accurateRate[7])}  {Percentage(self.accurateRate[7], accurateRateSum)}"],
+				f"Miss > 250ms {Count(self.accurateRate[7])}  {Percentage(self.accurateRate[7], accurateRateSum)}", ],
 			)
-		ax2.text(-0.41,0.48,f"EXACT        {Count(sum(self.accurateRate[0:4]))}  " \
+		ax2.text(0.1,0.5,f"EXACT        {Count(sum(self.accurateRate[0:4]))}  " \
 			f"{Percentage(sum(self.accurateRate[0:4]), accurateRateSum)}", 
-			ha='left',va='top',fontsize=12,color='#00B5B5', )
+			ha='center',va='top',fontsize=12,color='#00B5B5', )
 
 if __name__ == '__main__':
 	HitAnalyze().Show()

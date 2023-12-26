@@ -79,7 +79,7 @@ class MusyncSavDecodeGUI(object):
 		self.totalSync = 0
 		self.avgSyncVar = StringVar()
 		self.avgSyncVar.set(f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount))}')
-		self.dataSortMethodsort = [None,False]
+		self.dataSortMethodsort = [None,True]
 		self.dataSelectMethod = None
 		self.treeviewColumns = ["SpeedStall",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","IsFav"]
 		self.difficute = 3
@@ -324,7 +324,7 @@ class MusyncSavDecodeGUI(object):
 				self.dataSortMethodsort[1] = not self.dataSortMethodsort[1]
 			else:
 				self.dataSortMethodsort[0] = col
-				self.dataSortMethodsort[1] = False
+				self.dataSortMethodsort[1] = True
 			if col == 'SyncNumber' or col == 'UploadScore':
 				l = [(float((self.saveData.set(k, col))[:-1]), k) for k in self.saveData.get_children('')]
 			elif col == 'PlayCount':

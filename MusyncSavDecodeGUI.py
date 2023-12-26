@@ -22,8 +22,8 @@ import Functions
 from HitDelay import HitDelayCheck,HitDelayText
 import MusyncSavDecode
 
-version = '1.2.5rc5'
-preVersion = "1.2.5pre6"
+version = '1.2.5rc6'
+preVersion = "1.2.5pre9"
 isPreRelease = True
 # isPreRelease = False
 

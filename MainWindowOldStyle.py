@@ -312,10 +312,10 @@ class MusyncSavDecodeGUI(object):
 		itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
 		# state = e.item(itemID,"text")						# 取得text参数
 		songData = e.item(itemID,"values")					# 取得values参数
-		# print(e.item(itemID))
-		nroot = Toplevel(self.root)
-		nroot.resizable(True, True)
-		newWindow = SubWindow(nroot, songData[0], songData[1], songData[2])
+		print(songData)
+		# nroot = Toplevel(self.root)
+		# nroot.resizable(True, True)
+		# newWindow = SubWindow(nroot, songData[0], songData[1], songData[2])
 
 	def SortClick(self,event):
 		def TreeviewSortColumn(col):
@@ -580,7 +580,7 @@ class MusyncSavDecodeGUI(object):
 		self.gitHubLink.place(x=420,y=self.windowInfo[3]-30,width=self.windowInfo[2]-420,height=30)
 
 		self.isGameRunning.bind('<Button-1>', self.StartGame)
-		# self.saveData.bind("<Double-1>",self.DoubleClick)
+		self.saveData.bind("<Double-1>",self.DoubleClick)
 		self.saveData.bind("<ButtonRelease-1>",self.SortClick)
 		self.root.bind("<F5>", self.F5Key)
 		self.wh = self.windowInfo[2:]

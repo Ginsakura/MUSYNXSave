@@ -1,15 +1,16 @@
 import json
 # import numpy as np
+import matplotlib.gridspec as gridspec
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
 import sqlite3 as sql
 
-from matplotlib import pyplot as plt
 from matplotlib.pyplot import MultipleLocator
 
 class HitAnalyze(object):
 	"""docstring for HitAnalyze"""
-	def __init__(self,isOpen=False):
+	def __init__(self):
 		super(HitAnalyze, self).__init__()
-		self.isOpen = isOpen
 		db = sql.connect('./musync_data/HitDelayHistory_v2.db')
 		cur = db.cursor()
 		res = cur.execute('select HitMap from HitDelayHistory')
@@ -91,12 +92,32 @@ class HitAnalyze(object):
 			print('cyan Exact:',self.avgEX,self.varEX,self.stdEX,self.sumYnumEX)
 		else:
 			self.enablePDFofCyanExact = False
-		self.Analyze()
+
+		fig = plt.figure(f"HitAnalyze (Total:{self.sumYnum},  CyanEx:{self.rate[0]},  BlueEx:{self.rate[1]},  Great:{self.rate[2]},  Right:{self.rate[3]},  Miss:{self.rate[4]})", figsize=(16, 9))
+		fig.clear()
+		# fig.subplots_adjust(**{"left":0,"bottom":0,"right":1,"top":1})
+		plt.rcParams['font.serif'] = ["LXGW WenKai Mono"]
+		plt.rcParams["font.sans-serif"] = ["LXGW WenKai Mono"]
+		# plt.rcParams["figure.subplot.bottom"] = 0
+		# plt.rcParams["figure.subplot.hspace"] = 0
+		# plt.rcParams["figure.subplot.left"] = 0
+		# plt.rcParams["figure.subplot.right"] = 0
+		# plt.rcParams["figure.subplot.top"] = 0
+		# plt.rcParams["figure.subplot.wspace"] = 0
+		grid = gridspec.GridSpec(3, 5, left=0.045, right=1, top=1, bottom=0.06, wspace=0, hspace=0)
+
+		# print(plt.rcParams)
+
+		ax1 = fig.add_subplot(grid[:,:])
+		self.Line(ax1)
 		if config['EnableDonutChartinAllHitAnalyze']:
-			self.Pie()
+			ax2 = fig.add_subplot(grid[0:2,3:])
+			ax2.add_patch(patches.Rectangle((-1.5, -1.5), 3, 3, color="white"))
+			# print(ax2.get_subplotspec())
+			self.Pie(ax2)
 		plt.show()
 
-	def Analyze(self):
+	def Line(self,ax1):
 		e = 2.718281828459045
 		p = 3.141592653589793
 		def PDFx(x):
@@ -136,55 +157,52 @@ class HitAnalyze(object):
 			for ids in range(maxLen//10,maxY+maxLen//10,maxLen//10):
 				yLine.append([ids for i in range(-150,251)])
 
-		fig = plt.figure(f"HitAnalyze (Total:{self.sumYnum},  CyanEx:{self.rate[0]},  BlueEx:{self.rate[1]},  Great:{self.rate[2]},  Right:{self.rate[3]},  Miss:{self.rate[4]})", figsize=(16, 8))
-		fig.subplots_adjust(**{"left":0.045,"bottom":0.06,"right":1,"top":1})
-		if self.isOpen: fig.clear()
-		plt.xlabel("Delay(ms)",fontproperties='LXGW WenKai Mono',fontsize=15)
-		plt.ylabel("HitCount",fontproperties='LXGW WenKai Mono',fontsize=15)
-		plt.xlim(-155,255)
+		ax1.set_xlabel("Delay(ms)", fontsize=15)
+		ax1.set_ylabel("HitCount", fontsize=15)
+		ax1.set_xlim(-155,255)
 
-		plt.gca().xaxis.set_major_locator(MultipleLocator(10))
+		ax1.xaxis.set_major_locator(MultipleLocator(10))
 		if maxY < 100:
-			plt.gca().yaxis.set_major_locator(MultipleLocator(5))
+			ax1.yaxis.set_major_locator(MultipleLocator(5))
 		elif maxY < 1000:
-			plt.gca().yaxis.set_major_locator(MultipleLocator(25))
+			ax1.yaxis.set_major_locator(MultipleLocator(25))
 		elif maxY < 2000:
-			plt.gca().yaxis.set_major_locator(MultipleLocator(50))
+			ax1.yaxis.set_major_locator(MultipleLocator(50))
 		elif maxY < 4000:
-			plt.gca().yaxis.set_major_locator(MultipleLocator(75))
+			ax1.yaxis.set_major_locator(MultipleLocator(75))
 		elif maxY < 8000:
-			plt.gca().yaxis.set_major_locator(MultipleLocator(150))
+			ax1.yaxis.set_major_locator(MultipleLocator(150))
 		elif maxY < 16000:
-			plt.gca().yaxis.set_major_locator(MultipleLocator(300))
+			ax1.yaxis.set_major_locator(MultipleLocator(300))
 		elif maxY < 32000:
-			plt.gca().yaxis.set_major_locator(MultipleLocator(600))
+			ax1.yaxis.set_major_locator(MultipleLocator(600))
 
 		x=0
 		for ids in yLine:
-			plt.plot(self.xAxis,ids,linestyle='--',alpha=1,linewidth=1,color=colors[x])
+			ax1.plot(self.xAxis,ids,linestyle='--',alpha=1,linewidth=1,color=colors[x])
 			x = (x+1)%7
 
 		##正态分布函数曲线
 		pdfAxis = [PDFx(i) for i in self.xAxis]
-		plt.plot(self.xAxis,pdfAxis,linestyle='-',alpha=1,linewidth=1,color='grey',
+		ax1.plot(self.xAxis,pdfAxis,linestyle='-',alpha=1,linewidth=1,color='grey',
 			label=f'Fitting all data\n(μ={self.avg}\n σ={self.std})')
 
 		pdfExAxis = [PDFxEx(i) for i in self.xAxis]
-		plt.plot(self.xAxis,pdfExAxis,linestyle='-',alpha=1,linewidth=1,color='black',
+		ax1.plot(self.xAxis,pdfExAxis,linestyle='-',alpha=1,linewidth=1,color='black',
 			label=f'Fitting only on Exact rate\n(μ={self.avgEx}\n σ={self.stdEx})')
 
 		if self.enablePDFofCyanExact:
 			pdfEXAxis = [PDFxEX(i) for i in self.xAxis]
-			plt.plot(self.xAxis,pdfEXAxis,linestyle='-',alpha=1,linewidth=1,color='blue',
+			ax1.plot(self.xAxis,pdfEXAxis,linestyle='-',alpha=1,linewidth=1,color='blue',
 				label=f'Fitting only on Cyan Exact rate\n(μ={self.avgEX}\n σ={self.stdEX})')
 
 
 		for i in range(len(self.xAxis)):
-			plt.bar(self.xAxis[i],self.yAxis[i])
+			ax1.bar(self.xAxis[i],self.yAxis[i])
 
-		plt.legend(loc='upper left',prop={'family':'LXGW WenKai Mono','weight':'normal','size':15})  #显示上面的label
+		ax1.legend(loc='upper left',prop={'size':15})  #显示上面的label
 
-	def Pie(self):
+	def Pie(self,ax2):
 		def Percentage(num, summ):
 			per = num/summ*100
 			return ' '*(3-len(str(int((per)))))+'%.3f%%'%(per)
@@ -195,24 +213,14 @@ class HitAnalyze(object):
 			per = num/summ*100
 			return '%.1f%%'%(per)
 		accurateRateSum = sum(self.accurateRate)
-		fig = plt.figure(f'Pie', figsize=(7, 6))
-		fig.subplots_adjust(**{"left":0,"bottom":0,"right":1,"top":1})
-		if self.isOpen: fig.clear()
+
 		wedgeprops = {'width':0.15, 'edgecolor':'black', 'linewidth':0.2}
-		plt.pie(self.accurateRate, wedgeprops=wedgeprops, startangle=90,
-			colors=['#AAFFFF','#00B5B5','#78BEFF','cyan', 'blue', 'green', 'orange', 'red'],
+		ax2.pie(self.accurateRate, wedgeprops=wedgeprops, startangle=90, autopct='%1.1f%%', pctdistance = 0.95, labeldistance = 1.05, 
+			colors=['#c8fff7','#9ff2ee','#69e0ce','#53cac4', '#2F97FF', 'green', 'orange', 'red'],
 			# autopct=lambda x:'%.3f%%'%(x*sum(self.accurateRate)/100+0.5),
-			labels=[
-				f"EXACT±5ms {PercentageLabel(self.accurateRate[0], accurateRateSum)}", 
-				f"EXACT±10ms {PercentageLabel(self.accurateRate[1], accurateRateSum)}", 
-				f"EXACT±20ms {PercentageLabel(self.accurateRate[2], accurateRateSum)}", 
-				f"EXACT±45ms {PercentageLabel(self.accurateRate[3], accurateRateSum)}", 
-				f"Exact {PercentageLabel(self.accurateRate[4], accurateRateSum)}", 
-				f"Great {PercentageLabel(self.accurateRate[5], accurateRateSum)}", 
-				f"Right {PercentageLabel(self.accurateRate[6], accurateRateSum)}", 
-				f"Miss {PercentageLabel(self.accurateRate[7], accurateRateSum)}"],
-			textprops={'family':'LXGW WenKai Mono','weight':'normal','size':12})
-		plt.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':12},loc='center',
+			labels=["EXACT±5ms", "EXACT±10ms", "EXACT±20ms", "EXACT±45ms", "Exact", "Great", "Right", "Miss"],
+			textprops={'size':12})
+		ax2.legend(prop={'size':12},loc='center',
 			labels=[
 				f"EXACT± 5ms  {Count(self.accurateRate[0])}  {Percentage(self.accurateRate[0], accurateRateSum)}", 
 				f"EXACT±10ms  {Count(self.accurateRate[1])}  {Percentage(self.accurateRate[1], accurateRateSum)}", 
@@ -223,9 +231,9 @@ class HitAnalyze(object):
 				f"Right＋250ms {Count(self.accurateRate[6])}  {Percentage(self.accurateRate[6], accurateRateSum)}", 
 				f"Miss > 250ms {Count(self.accurateRate[7])}  {Percentage(self.accurateRate[7], accurateRateSum)}"],
 			)
-		plt.text(-0.41,0.48,f"EXACT        {Count(sum(self.accurateRate[0:4]))}  {Percentage(sum(self.accurateRate[0:4]), accurateRateSum)}", 
-			ha='left',va='top',fontsize=12,color='#00B5B5', 
-			fontdict={'family':'LXGW WenKai Mono','weight':'normal'})
+		ax2.text(-0.41,0.48,f"EXACT        {Count(sum(self.accurateRate[0:4]))}  " \
+			f"{Percentage(sum(self.accurateRate[0:4]), accurateRateSum)}", 
+			ha='left',va='top',fontsize=12,color='#00B5B5', )
 
 if __name__ == '__main__':
 	HitAnalyze().Show()

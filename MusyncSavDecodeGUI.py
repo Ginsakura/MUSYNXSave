@@ -23,9 +23,9 @@ from HitDelay import HitDelayCheck,HitDelayText
 import MusyncSavDecode
 
 version = '1.2.5rc6'
-preVersion = "1.2.5pre10"
+preVersion = "1.2.5pre11"
 isPreRelease = True
-# isPreRelease = False
+isPreRelease = False
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""

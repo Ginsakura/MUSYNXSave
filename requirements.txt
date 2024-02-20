@@ -1,8 +1,8 @@
-Pillow
-requests
-pyinstaller
-matplotlib
-pywin32
-uiautomation
-pyperclip
-psutil
+Pillow==10.0.0
+requests==2.31.0
+pyinstaller==6.1.0
+matplotlib==3.7.2
+pywin32==306
+uiautomation==2.0.18
+pyperclip==1.8.2
+psutil==5.9.5

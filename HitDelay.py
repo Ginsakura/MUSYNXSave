@@ -30,6 +30,7 @@ class HitDelayCheck(object):
 		self.DLLCheck()
 
 	def DLLCheck(self):
+		# 'D41D8CD98F00B204E9800998ECF8427E' is 0B file
 		with open(self.spfr,'rb') as spfrb:
 			md5o = md5(spfrb.read()).hexdigest().upper()
 		if (md5o != "D41D8CD98F00B204E9800998ECF8427E") and (md5o == self.md5o) and (not md5o == self.md5l):
@@ -82,20 +83,28 @@ class HitDelayText(object):
 
 		self.hitAnalyzeButton = Button(self.subroot,text='All\nHit',command=self.OpenHitAnalyze,font=self.font, relief="groove")
 		self.hitAnalyzeButton.place(x=0,y=40,height=90,relwidth=0.05)
-		self.nameDelayLabel = Label(self.subroot,font=self.font, relief="groove",text='↓请在下面输入曲名与谱面难度↓这只是用来标记你玩的哪个谱面而已，\n只要你能分辨就行，没有格式要求。如"ニニ 4KEZ"、"二重4H"等')
+		self.nameDelayLabel = Label(self.subroot,font=self.font, relief="groove",text='↓请在下面输入曲名与谱面难度↓这只是用来标记你玩的哪个谱面而已，\n没有任何要求                    ↓右侧水绿色按钮选择难度和键数↓')
 		self.nameDelayLabel.place(relx=0.05,y=40,height=60,relwidth=0.65)
 		self.nameDelayEntry = Entry(self.subroot,font=self.font, relief="sunken",validate='focus',validatecommand=self.TestEntryString)
 		self.nameDelayEntry.insert(0, "→→在这里输入谱面标识←←")
-		self.nameDelayEntry.place(relx=0.05,y=100,height=30,relwidth=0.65)
+		self.nameDelayEntry.place(relx=0.05,y=100,height=30,relwidth=0.349)
 		self.delayHistory = ttk.Treeview(self.subroot, show="headings", columns = ['Name','RecordTime','AllKeys','AvgDelay','AvgAcc'])
 		self.VScroll1 = Scrollbar(self.subroot, orient='vertical', command=self.delayHistory.yview)
 		self.delayHistory.configure(yscrollcommand=self.VScroll1.set)
 		
 		self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
-		self.logButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
 		if config['EnableAcc-Sync']:
+			self.logButton.place(relx=0.7,y=70,height=60,relwidth=0.3)
 			self.txtButton = Button(self.subroot,text='生成Acc-Sync图表',command=self.OpenTxt,font=self.font)
-			self.txtButton.place(relx=0.7,y=70,height=30,relwidth=0.3)
+			self.txtButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
+		else:
+			self.logButton.place(relx=0.7,y=40,height=90,relwidth=0.3)
+		self.keys = config['DefaultKeys'] # F=4, T=6
+		self.keysButton = Button(self.subroot,font=self.font, text="4Key", command=self.ChangeKeys, bg="#4AA4C9")
+		self.keysButton.place(relx=0.4,y=100,height=30,relwidth=0.15)
+		self.diffcute = config['DefaultDiffcute']
+		self.diffcuteButton = Button(self.subroot,font=self.font, text="Easy", command=self.ChangeDiffcute, bg="#4AA4C9")
+		self.diffcuteButton.place(relx=0.55,y=100,height=30,relwidth=0.15)
 
 		self.historyFrame = Frame(self.subroot,relief="groove",bd=2)
 		self.historyFrame.place(relx=0.701,y=198,height=244,relwidth=0.298)
@@ -135,6 +144,25 @@ class HitDelayText(object):
 		self.HistoryUpdate()
 		self.UpdateWindowInfo()
 
+	def ChangeKeys(self):
+		self.keys = not self.keys
+		self.keysButton.configure(text=("6Key" if self.keys else "4Key"))
+	def ChangeDiffcute(self):
+		self.diffcute = (self.diffcute+1)%3
+		self.diffcuteButton.configure(text=["Easy","Hard","Inferno"][self.diffcute])
+	def ChangeConfig(self):
+		with open('./musync_data/ExtraFunction.cfg', 'r',encoding='utf8') as confFile:
+			config = json.load(confFile)
+		isChange = False
+		if config["DefaultKeys"] != self.keys:
+			config["DefaultKeys"] = self.keys
+			isChange = True
+		if config["DefaultDiffcute"] != self.diffcute:
+			config["DefaultDiffcute"] = self.diffcute
+			isChange = True
+		if isChange:
+			json.dump(config,open('./musync_data/ExtraFunction.cfg','w',encoding='utf8'),indent="",ensure_ascii=False)
+
 	def TestEntryString(self):
 		string = self.nameDelayEntry.get()
 		# print(type(string),string,reason)
@@ -157,6 +185,7 @@ class HitDelayText(object):
 		self.UpdateWindowInfo()
 
 	def Draw(self):
+		self.ChangeConfig()
 		consoleFind = False
 		try:
 			win = uiauto.WindowControl(searchDepth=1,Name='MUSYNX Delay',searchInterval=1).DocumentControl(serchDepth=1,Name='Text Area',searchInterval=1)
@@ -174,7 +203,10 @@ class HitDelayText(object):
 		if consoleFind:
 			data = pyperclip.paste().split('\n')
 			dataList=list()
-			name = self.nameDelayEntry.get().replace("\'","’")
+			n = self.nameDelayEntry.get().replace("\'","’")
+			k = "6K" if self.keys else "4K"
+			d = ["EZ","HD","IN"][self.diffcute]
+			name = f"{n} {k}{d}"
 			time = f"{dt.now()}"
 			if data[-1] == "": #如果最后一行是空行，则去除
 				data.pop(-1)

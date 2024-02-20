@@ -37,10 +37,9 @@ namespace BMSLib
 		{
 			int result = -1;
 			bool flag = knockDistance < 0L;
-			float num = (float)knockDistance / 10000f;
-			if (num >= -150f)
+			if (knockDistance >= -1500000L)
 			{
-				JudgeGrade.ci.kD = num;
+				JudgeGrade.ci.kD = (float)knockDistance / 10000f;
 				JudgeGrade.ci.OnEnter();
 			}
 			knockDistance = Math.Abs(knockDistance);

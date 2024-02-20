@@ -44,7 +44,7 @@ WithConsole版本为带命令提示符界面，适合出现bug时快速定位错
 | `EnableAcc-Sync`                  |false          |boolean |是否启用Acc-Synx图表                                                    |
 | `DisableCheckUpdate`              |false          |boolean |是否禁用更新检测                                                        |
 | `EnableAnalyzeWhenStarting`       |false          |boolean |是否启用每次启动时重新扫描存档文件                                      |
-| `EnableDLLInjection`              |false          |boolean |是否启用DLL注入以开启高级功能                                           |
+| `EnableDLLInjection`              |false          |boolean |是否启用DLL注入以开启`高级功能`                                         |
 | `SystemDPI`                       |`自动获取`     |string  |读取系统DPI, 提供DPI窗体修正(未实现)                                    |
 | `EnableDonutChartinHitDelay`      |false          |boolean |是否在单次游玩统计中显示击打延迟环形图                                  |
 | `EnableDonutChartinAllHitAnalyze` |false          |boolean |是否在全局统计中显示击打延迟环形图                                      |
@@ -56,7 +56,9 @@ WithConsole版本为带命令提示符界面，适合出现bug时快速定位错
 | `MainExecPath`                    |`自动获取`     |string  |喵赛克游戏本体主程序所在的路径                                          |
 | `ChangeConsoleStyle`              |false          |boolean |是否启用自定义喵赛克游戏本体控制台窗口样式                              |
 | `EnableFramelessWindow`           |false          |boolean |是否启用无边框窗口样式(未完成)                                          |
-| `TransparentColor`                |'#FFFFFF'      |string<br>boolean  |设置透明色(仅限新样式)<br>设置为false即为关闭透明色          |
+| `TransparentColor`                |'#FFFFFF'      |string<br>boolean |设置透明色(仅限新样式)<br>设置为false即为关闭透明色           |
+| `DefaultKeys`                     |false          |boolean |`高级功能`中默认`键数`参数                                              |
+| `DefaultDiffcute`                 |0              |int     |`高级功能`中默认`难度`参数                                              |
 
 ### 高级功能简介
 下列组件对游戏客户端有修改,请谨慎使用
@@ -79,7 +81,24 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
     该值越小,就说明您击打的越精准,(在该值小于45ms时，您的)分值就会越高.
 
 ## 更新日志
+### Version 1.2.6
+#### Release 1
+1. #### 更新 更新02月08日喵赛克新增曲目 (新春超大份更新)
+    - Maholova (EZ HD IN)
+    - Inverted World (EZ HD IN)
+    - Shooting☆Stars (EZ HD IN)
+    - Provison (EZ HD)
+    - Lockdown(MUSYNX edit.) (EZ HD)
+    - Shizuku (ft. NEONA & KOTONOHOUSE) (EZ HD)
+    - Bison Charge(MUSYNX Update) (EZ HD IN)
+    - opia -awakened- (MUSYNC edit.) (EZ HD IN)
+    - quia desolatio (EZ HD IN)
+    - Xigns (EZ HD IN)
+1. 优化 优化C#代码中的判断流程
+
 ### Version 1.2.5
+#### Release 7
+1. 优化 优化`songname.json`的格式 (20231229 -> 20230118)
 #### Release 6
 1. #### 更新 更新12月29日喵赛克新增曲目 (元旦节更新)
     - Flammable (EZ HD IN)

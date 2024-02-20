@@ -168,6 +168,12 @@ def CheckConfig():
 	elif dpi != cfg['SystemDPI']:
 		cfg['SystemDPI'] = dpi
 		isChange = True
+	if "DefaultKeys" not in cfg:
+		cfg["DefaultKeys"] = False
+		isChange = True
+	if "DefaultDiffcute" not in cfg:
+		cfg["DefaultDiffcute"] = 0
+		isChange = True
 	if isChange:
 		json.dump(cfg,open('./musync_data/ExtraFunction.cfg','w',encoding='utf8'),indent="",ensure_ascii=False)
 

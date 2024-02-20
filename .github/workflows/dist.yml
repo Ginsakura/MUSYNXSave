@@ -50,9 +50,12 @@ jobs:
       with:
         python-version: '3.11.5'
 
-    - name: Python Pip Install
+    # - name: Python Pip Install
+    #   if: ${{ env.NotSkip == 'true'}}
+    #   uses: logikal-code/pip-install@v1.0.0
+    - name: pip-secure-install
       if: ${{ env.NotSkip == 'true'}}
-      uses: logikal-code/pip-install@v1.0.0
+      uses: brettcannon/pip-secure-install@v1.0.0
 
     # - name: Clean up PATH
     #   uses: egor-tensin/cleanup-path@v3

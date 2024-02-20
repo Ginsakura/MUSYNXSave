@@ -25,3 +25,4 @@
     - quia desolatio (EZ HD IN)
     - Xigns (EZ HD IN)
 1. 优化 优化C#代码中的判断流程
+2. 优化 优化`songname.json`的格式 (20231229 -> 20230118)

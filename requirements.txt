@@ -1,4 +1,4 @@
-Pillow==10.0.0
+Pillow==10.0.0 --hash=sha256:3a82c40d706d9aa9734289740ce26460a11aeec2d9c79b7af87bb35f0073c12f
 requests==2.31.0
 pyinstaller==6.1.0
 matplotlib==3.7.2

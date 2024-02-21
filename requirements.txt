@@ -1,8 +1,8 @@
 Pillow==10.0.0 --hash=sha256:3a82c40d706d9aa9734289740ce26460a11aeec2d9c79b7af87bb35f0073c12f
-requests==2.31.0
-pyinstaller==6.1.0
-matplotlib==3.7.2
-pywin32==306
-uiautomation==2.0.18
+requests==2.31.0 --hash=sha256:58cd2187c01e70e6e26505bca751777aa9f2ee0b7f4300988b709f44e013003f
+pyinstaller==6.1.0  --hash=sha256:f9f5bcaef6122d93c54ee7a9ecb07eab5b81a7ebfb5cb99af2b2a6ff49eff62f
+matplotlib==3.7.2 --hash=sha256:af4860132c8c05261a5f5f8467f1b269bf1c7c23902d75f2be57c4a7f2394b3e
+pywin32==306 --hash=sha256:a7639f51c184c0272e93f244eb24dafca9b1855707d94c192d4a0b4c01e1100e
+uiautomation==2.0.18 --hash=sha256:19b2e03d7f94acf89c2f4dedf29d88e0befb2cb3ce9862039f7c548cb0a4de43
 pyperclip==1.8.2
 psutil==5.9.5

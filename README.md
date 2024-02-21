@@ -94,8 +94,10 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
     - opia -awakened- (MUSYNC edit.) (EZ HD IN)
     - quia desolatio (EZ HD IN)
     - Xigns (EZ HD IN)
+1. 修复 修复ci中requirement安装失败的bug
 1. 优化 优化C#代码中的判断流程
 2. 优化 优化`songname.json`的格式 (20231229 -> 20230118)
+3. 优化 优化ci执行流程
 
 ### Version 1.2.5
 #### Release 6

@@ -23,15 +23,15 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    # - name: Cache Python Environment
-    #   uses: actions/cache@v2
-    #   env:
-    #     cache-name: cache-python-environment
-    #   with:
-    #     path: c:\hostedtoolcache\windows\python
-    #     key: python-build
-    #     restore-keys: |
-    #       python-build
+    - name: Cache Python Environment
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-python-environment
+      with:
+        path: c:\hostedtoolcache\windows\python
+        key: python-build-${{ env.pythonLocation }}
+        restore-keys: |
+          python-build-${{ env.pythonLocation }}
 
     - name: Get Version & Set GITHUB_ENV
       run: |
@@ -46,7 +46,7 @@ jobs:
           echo (Get-Content ./changelog.txt)
         }elseif( $vc[2] -eq 'NotRelease' ){
           $release = $vc[0] -replace "pre"," NotRelease "
-          echo "NotSkip=false" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          # echo "NotSkip=false" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         }else{
           $release = $vc[0] -replace "pre"," PreRelease "
           echo (Get-Content ./changelog.txt)
@@ -55,17 +55,16 @@ jobs:
         echo $release
 
     - name: Set up Python
-      if: ${{ env.NotSkip == 'true'}}
       uses: actions/setup-python@v4
       with:
         python-version: '3.11.5'
 
     # - name: Python Pip Install
-    #   if: ${{ env.NotSkip == 'true'}}
     #   uses: logikal-code/pip-install@v1.0.0
-    - name: pip-secure-install
-      if: ${{ env.NotSkip == 'true'}}
-      uses: brettcannon/pip-secure-install@v1.0.0
+    - name: Install requirements
+      run: |
+        pip install -r requirements.txt -e .
+
 
     # - name: Clean up PATH
     #   uses: egor-tensin/cleanup-path@v3
@@ -79,28 +78,28 @@ jobs:
     #     & '${{ steps.setup.outputs.gxx }}' --version
 
     - name: Dist NoConsole ${{ env.Version }} Compress Version
-      if: ${{ env.NotSkip == 'true'}}
+      # if: ${{ env.NotSkip == 'true'}}
       run: |
         pyinstaller --distpath ./NoCLI/ -D -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py -w --clean
         Compress-Archive -LiteralPath ./NoCLI/MusyncSavDecodeGUI/ -DestinationPath ("./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}.zip")
     - name: Dist NoConsole ${{ env.Version }} AllInOne Version
-      if: ${{ env.NotSkip == 'true'}}
+      # if: ${{ env.NotSkip == 'true'}}
       run: |
         pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py -w
         Rename-Item -Path ./MusyncSavDecodeGUI.exe -NewName ("MusyncSavDecodeGUI_NoConsole_${{ env.Version }}_AllInOne.exe")
     - name: Dist WithConsole ${{ env.Version }} Compress Version
-      if: ${{ env.NotSkip == 'true'}}
+      # if: ${{ env.NotSkip == 'true'}}
       run: |
         pyinstaller --distpath ./WithCLI/ -D -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py
         Compress-Archive -LiteralPath ./WithCLI/MusyncSavDecodeGUI/ -DestinationPath ("./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}.zip")
     - name: Dist WithConsole ${{ env.Version }} AllInOne Version
-      if: ${{ env.NotSkip == 'true'}}
+      # if: ${{ env.NotSkip == 'true'}}
       run: |
         pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py
         Rename-Item -Path ./MusyncSavDecodeGUI.exe -NewName ("MusyncSavDecodeGUI_WithConsole_${{ env.Version }}_AllInOne.exe")
 
     - name: Commit Release
-      if: ${{ env.NotSkip == 'true'}}
+      # if: ${{ env.NotSkip == 'true'}}
       id: create_release
       uses: softprops/action-gh-release@v1
       env:

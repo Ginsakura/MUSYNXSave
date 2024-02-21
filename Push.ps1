@@ -12,7 +12,7 @@ if ($message[-1] -eq 'rc'){
   $release = 'PreRelease'
 }else{
   $version = (py -c "import MusyncSavDecodeGUI;print(MusyncSavDecodeGUI.preVersion)")
-  $release = 'NotRelease'
+  $release = '[no ci]'
 }
 if ($message[0] -eq ""){
   $message[0] = "null"

@@ -23,16 +23,6 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v3
 
-    - name: Cache Python Environment
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-python-environment
-      with:
-        path: c:\hostedtoolcache\windows\python
-        key: python-build-${{ env.pythonLocation }}
-        restore-keys: |
-          python-build-${{ env.pythonLocation }}
-
     - name: Get Version & Set GITHUB_ENV
       run: |
         $vc = "${{ github.event.head_commit.message }}" -split "  "
@@ -58,6 +48,16 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.11.5'
+
+    - name: Cache Python Environment
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-python-environment
+      with:
+        path: c:\hostedtoolcache\windows\python
+        key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
+        restore-keys: |
+          ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
 
     # - name: Python Pip Install
     #   uses: logikal-code/pip-install@v1.0.0

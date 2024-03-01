@@ -82,6 +82,9 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 
 ## 更新日志
 ### Version 1.2.6
+#### Release 2
+1. 修复 修复Delay中默认数值无法载入的bug
+2. 更新 修补新的Assembly-CSharp.dll
 #### Release 1
 1. #### 更新 更新02月08日喵赛克新增曲目 (新春超大份更新)
     - Maholova (EZ HD IN)

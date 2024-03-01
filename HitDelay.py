@@ -87,7 +87,7 @@ class HitDelayText(object):
 		self.nameDelayLabel.place(relx=0.05,y=40,height=60,relwidth=0.65)
 		self.nameDelayEntry = Entry(self.subroot,font=self.font, relief="sunken",validate='focus',validatecommand=self.TestEntryString)
 		self.nameDelayEntry.insert(0, "→→在这里输入谱面标识←←")
-		self.nameDelayEntry.place(relx=0.05,y=100,height=30,relwidth=0.349)
+		self.nameDelayEntry.place(relx=0.05,y=100,height=30,relwidth=0.449)
 		self.delayHistory = ttk.Treeview(self.subroot, show="headings", columns = ['Name','RecordTime','AllKeys','AvgDelay','AvgAcc'])
 		self.VScroll1 = Scrollbar(self.subroot, orient='vertical', command=self.delayHistory.yview)
 		self.delayHistory.configure(yscrollcommand=self.VScroll1.set)
@@ -100,11 +100,11 @@ class HitDelayText(object):
 		else:
 			self.logButton.place(relx=0.7,y=40,height=90,relwidth=0.3)
 		self.keys = config['DefaultKeys'] # F=4, T=6
-		self.keysButton = Button(self.subroot,font=self.font, text="4Key", command=self.ChangeKeys, bg="#4AA4C9")
-		self.keysButton.place(relx=0.4,y=100,height=30,relwidth=0.15)
+		self.keysButton = Button(self.subroot,font=self.font, text=("6Key" if self.keys else "4Key"), command=self.ChangeKeys, bg="#4AA4C9")
+		self.keysButton.place(relx=0.5,y=100,height=30,relwidth=0.1)
 		self.diffcute = config['DefaultDiffcute']
-		self.diffcuteButton = Button(self.subroot,font=self.font, text="Easy", command=self.ChangeDiffcute, bg="#4AA4C9")
-		self.diffcuteButton.place(relx=0.55,y=100,height=30,relwidth=0.15)
+		self.diffcuteButton = Button(self.subroot,font=self.font, text=["Easy","Hard","Inferno"][self.diffcute], command=self.ChangeDiffcute, bg="#4AA4C9")
+		self.diffcuteButton.place(relx=0.6,y=100,height=30,relwidth=0.1)
 
 		self.historyFrame = Frame(self.subroot,relief="groove",bd=2)
 		self.historyFrame.place(relx=0.701,y=198,height=244,relwidth=0.298)

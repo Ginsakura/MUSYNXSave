@@ -10,8 +10,12 @@
 5. 1.2.4 将License从GPLv3切换为MIT
 6. 1.2.5 `HitDelay`模块中`tap的Rate环形图`中新增柱状图子图
 7. 1.2.5 提供DPI锁定功能
+8. 1.2.6 更新ci
 
 ### Version 1.2.6
+#### Release 2
+1. 修复 修复Delay中默认数值无法载入的bug
+2. 更新 修补新的Assembly-CSharp.dll
 #### Release 1
 1. #### 更新 更新02月08日喵赛克新增曲目 (新春超大份更新)
     - Maholova (EZ HD IN)

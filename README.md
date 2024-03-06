@@ -81,65 +81,95 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
     该值越小,就说明您击打的越精准,(在该值小于45ms时，您的)分值就会越高.
 
 ## 更新日志
+<!--
+### Version 
+#### Release 
+1. 更新
+    1. xxx
+2. 修复
+    1. xxx
+3. 优化
+    1. xxx
+-->
 ### Version 1.2.6
 #### Release 2
-1. 修复 修复Delay中默认数值无法载入的bug
-2. 更新 修补新的Assembly-CSharp.dll
+1. 更新
+    1. 修补新的Assembly-CSharp.dll
+    2. 使用新的md结构用于展示版本更新内容
+2. 修复
+    1. 修复Delay中默认数值无法载入的bug
+3. 优化
 #### Release 1
-1. #### 更新 更新02月08日喵赛克新增曲目 (新春超大份更新)
-    - Maholova (EZ HD IN)
-    - Inverted World (EZ HD IN)
-    - Shooting☆Stars (EZ HD IN)
-    - Provison (EZ HD)
-    - Lockdown(MUSYNX edit.) (EZ HD)
-    - Shizuku (ft. NEONA & KOTONOHOUSE) (EZ HD)
-    - Bison Charge(MUSYNX Update) (EZ HD IN)
-    - opia -awakened- (MUSYNC edit.) (EZ HD IN)
-    - quia desolatio (EZ HD IN)
-    - Xigns (EZ HD IN)
-1. 修复 修复ci中requirement安装失败的bug
-1. 优化 优化C#代码中的判断流程
-2. 优化 优化`songname.json`的格式 (20231229 -> 20230118)
-3. 优化 优化ci执行流程
+1. 更新
+    1. #### ***更新02月08日喵赛克新增曲目 (新春超大份更新)***
+        - Maholova (EZ HD IN)
+        - Inverted World (EZ HD IN)
+        - Shooting☆Stars (EZ HD IN)
+        - Provison (EZ HD)
+        - Lockdown(MUSYNX edit.) (EZ HD)
+        - Shizuku (ft. NEONA & KOTONOHOUSE) (EZ HD)
+        - Bison Charge(MUSYNX Update) (EZ HD IN)
+        - opia -awakened- (MUSYNC edit.) (EZ HD IN)
+        - quia desolatio (EZ HD IN)
+        - Xigns (EZ HD IN)
+2. 修复
+    1. 修复ci中requirement安装失败的bug
+3. 优化
+    1. 优化C#代码中的判断流程
+    2. 优化`songname.json`的格式 (20231229 -> 20230118)
+    3. 优化ci执行流程
 
 ### Version 1.2.5
 #### Release 6
-1. #### 更新 更新12月29日喵赛克新增曲目 (元旦节更新)
-    - Flammable (EZ HD IN)
-1. 修复 修复`AllHitDelay`中环形图Legend显示错误的bug
-1. 优化 优化部分UI布局
-2. 优化 优化绘图部分程序逻辑
-3. 优化 优化绘图样式与展示
-4. 优化 优化主页谱面排序规则：`顺序优先 -> 逆序优先`
-5. 优化 主页面双击谱面能够在控制台输出谱面信息
+1. 更新
+    1. #### ***更新12月29日喵赛克新增曲目 (元旦节更新)***
+        - Flammable (EZ HD IN)
+2. 修复
+    1. 修复`AllHitDelay`中环形图Legend显示错误的bug
+3. 优化
+    1. 优化部分UI布局
+    2. 优化绘图部分程序逻辑
+    3. 优化绘图样式与展示
+    4. 优化主页谱面排序规则：`顺序优先 -> 逆序优先`
+    5. 主页面双击谱面能够在控制台输出谱面信息
 #### Release 5
-1. #### 更新 更新12月22日喵赛克新增曲目 (圣诞节更新)
-    - fallin' fallin' (EZ HD)
-    - Cross†Destination (EZ HD)
-    - Don't Never Around (EZ HD IN)
-    - Eschatology (EZ HD IN)
-    - Revival of Kalpa (EZ HD IN)
-1. 优化 优化`HitDelay`中柱状图x轴间隔
+1. 更新
+    1. #### ***更新12月22日喵赛克新增曲目 (圣诞节更新)***
+        - fallin' fallin' (EZ HD)
+        - Cross†Destination (EZ HD)
+        - Don't Never Around (EZ HD IN)
+        - Eschatology (EZ HD IN)
+        - Revival of Kalpa (EZ HD IN)
+3. 优化
+    1. 优化`HitDelay`中柱状图x轴间隔
 #### Release 4
-1. 更新 提供DPI锁定，使得界面不会随着系统DPI设置而导致UI显示错误
-2. #### 更新 更新11月01日喵赛克新增曲目 (万圣节更新)
-    - spooky mummy party (EZ HD)
-1. 修复 修复`Readme`中的链接错误
-2. 修复 修复配置项中的SystemDPI无法正确更新的bug
+1. 更新
+    1. 提供DPI锁定，使得界面不会随着系统DPI设置而导致UI显示错误
+    2. #### ***更新11月01日喵赛克新增曲目 (万圣节更新)***
+        - spooky mummy party (EZ HD)
+2. 修复
+    1. 修复`Readme`中的链接错误
+    2. 修复配置项中的SystemDPI无法正确更新的bug
 #### Release 3
-1. 修复 修复图片资源缺失的bug
-1. 优化 优化字节读取
+2. 修复
+    1. 修复图片资源缺失的bug
+3. 优化
+    1. 优化字节读取
 #### Release 2
-1. 更新 `HitDelay`模块中`tap的Rate环形图`中新增柱状图子图
-1. 修复 修复`HitDelay`模块中更改、删除记录时删除所有同名记录的bug
-1. 优化 优化`HitDelay`中的折线图使其自适应显示记录中的最大值
+1. 更新
+    1. `HitDelay`模块中`tap的Rate环形图`中新增柱状图子图
+2. 修复
+    1. 修复`HitDelay`模块中更改、删除记录时删除所有同名记录的bug
+3. 优化
+    1. 优化`HitDelay`中的折线图使其自适应显示记录中的最大值
 #### Release 1
-1. #### 更新 更新9月28日喵赛克新增曲目 (国庆节更新)
-    - 中华少女·终 (EZ HD)
-    - 夜月花 (EZ HD)
-    - KiNG FORM -XIII- (2023 Update) (EZ HD IN)
-    - Binary Star (EZ HD)
-    - wish upon the polar star (EZ HD)
+1. 更新
+    1. #### ***更新9月28日喵赛克新增曲目 (国庆节更新)***
+        - 中华少女·终 (EZ HD)
+        - 夜月花 (EZ HD)
+        - KiNG FORM -XIII- (2023 Update) (EZ HD IN)
+        - Binary Star (EZ HD)
+        - wish upon the polar star (EZ HD)
 
 ### Version 1.2.4
 #### Release 7

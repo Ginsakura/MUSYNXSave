@@ -88,10 +88,8 @@ class MusyncSavDecodeGUI(object):
 		self.wh = [0,0]
 
 	##Controller##
-		self.deleteAnalyzeFile = ttk.Button(self.root, text="刷新",command=self.DeleteAnalyzeFile,style='F5.TButton')
-		self.deleteAnalyzeFile.place(x=10,y=10,width=90,height=30)
-		self.saveFileDecodeButton = ttk.Button(self.root, text="解码", command=self.DeleteAnalyzeFile, style='reload.TButton')
-		self.saveFileDecodeButton.place(x=100,y=10,width=60,height=30)
+		self.deleteAnalyzeFile = ttk.Button(self.root, text="解码并刷新",command=self.DeleteAnalyzeFile,style='F5.TButton')
+		self.deleteAnalyzeFile.place(x=10,y=10,width=160,height=30)
 		self.isGameRunning = Label(self.root, text="游戏未启动", font=self.font,bg='#FF8080')
 		self.isGameRunning.place(x=30,y=85,width=110,height=30)
 

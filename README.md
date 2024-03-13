@@ -1,14 +1,32 @@
 ﻿# 同步音律喵赛克 Steam端 存档解析工具
 MUSYNX Steam Client Savefile Decode & Analyze Tool
 
-[![All releases](https://img.shields.io/github/downloads/ginsakura/MUSYNCSave/total)](https://github.com/Ginsakura/MUSYNCSave/releases)
-[![All commit activity (branch)](https://img.shields.io/github/commit-activity/t/ginsakura/MUSYNCSave)](https://github.com/Ginsakura/MUSYNCSave/commits)
-[![License](https://img.shields.io/github/license/ginsakura/MUSYNCSave)](./LICENSE)
+[down_svg]: https://img.shields.io/github/downloads/ginsakura/MUSYNCSave/total?label=All%20Downloads
+[all_release]: https://github.com/Ginsakura/MUSYNCSave/releases
+[commit_svg]: https://img.shields.io/github/commit-activity/t/ginsakura/MUSYNCSave?label=All%20Commits
+[commit]: https://github.com/Ginsakura/MUSYNCSave/commits
+[license_svg]: https://img.shields.io/github/license/ginsakura/MUSYNCSave?label=License
+[![All releases][down_svg]][all_release]
+[![All commit activity (branch)][commit_svg]][commit]
+[![License][license_svg]](./LICENSE)
 
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/ginsakura/MUSYNCSave?display_name=release&label=latest%20release&style=flat-square)](https://github.com/Ginsakura/MUSYNCSave/releases/latest)
+[latest_prerelease_svg]: https://img.shields.io/github/v/release/ginsakura/MUSYNCSave?display_name=release&label=Latest%20PreRelease&include_prereleases
+[all_tags]: https://github.com/Ginsakura/MUSYNCSave/tags
+[![Latest tag][latest_prerelease_svg]][all_tags]
 
+[latest_release_svg]: https://img.shields.io/github/v/release/ginsakura/MUSYNCSave?display_name=release&label=Latest%20Release
+[release]: https://github.com/Ginsakura/MUSYNCSave/releases/latest
+[![latest release][latest_release_svg]][release]
+
+## How to use
+
+1. [English (English, `en-us`) v1.2.6 rc2](readme.en.md)
+2. [简体中文 (Simplified Chinese, `zh-Hans`) v1.2.6 rc2](readme.zh.md)
 
 ## 界面展示
+
+<details>
+<summary>界面展示</summary>
 
 ![主页面](./ReadmeResources/main.png "主页面")
 ![score-diff页面](./ReadmeResources/score-diff.png "score-diff页面")
@@ -17,6 +35,8 @@ MUSYNX Steam Client Savefile Decode & Analyze Tool
 ![HitAnalyze-Line页面](./ReadmeResources/HitAnalyze-Line.png "HitAnalyze-Line页面")
 ![AllHitAnalyze-Pie页面](./ReadmeResources/AllHitAnalyze.png "AllHitAnalyze页面")
 ![AvgAcc-SYNC.Rate回归分析页面](./ReadmeResources/AvgAcc-SYNC.Rate.png "AvgAcc-SYNC.Rate回归分析")
+
+</details>
 
 ## 计划
 ### 未来的计划
@@ -38,6 +58,9 @@ NoConsole版本为没有命令提示符界面，适合正常使用
 WithConsole版本为带命令提示符界面，适合出现bug时快速定位错误发生地点以及原因
 
 ## 功能控制模块
+<details>
+<summary>控制参数详解</summary>
+
 于`./musync_data/ExtraFunction.cfg`文件中启用/禁用对应功能
 |               配置项              |     默认值    | 值类型 |                                配置说明                                |
 |-----------------------------------|---------------|--------|------------------------------------------------------------------------|
@@ -59,6 +82,8 @@ WithConsole版本为带命令提示符界面，适合出现bug时快速定位错
 | `TransparentColor`                |'#FFFFFF'      |string<br>boolean |设置透明色(仅限新样式)<br>设置为false即为关闭透明色           |
 | `DefaultKeys`                     |false          |boolean |`高级功能`中默认`键数`参数                                              |
 | `DefaultDiffcute`                 |0              |int     |`高级功能`中默认`难度`参数                                              |
+
+</details>
 
 ### 高级功能简介
 下列组件对游戏客户端有修改,请谨慎使用
@@ -92,13 +117,19 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
     1. xxx
 -->
 ### Version 1.2.6
+#### Release 3
+1. 更新
+    1. 编写使用说明与wiki
+2. 修复
+    1. xxx
+3. 优化
+    1. 将`刷新`与`解码`合并为`解码并刷新`按钮
 #### Release 2
 1. 更新
     1. 修补新的Assembly-CSharp.dll
     2. 使用新的md结构用于展示版本更新内容
 2. 修复
     1. 修复Delay中默认数值无法载入的bug
-3. 优化
 #### Release 1
 1. 更新
     1. #### ***更新02月08日喵赛克新增曲目 (新春超大份更新)***
@@ -118,6 +149,10 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
     1. 优化C#代码中的判断流程
     2. 优化`songname.json`的格式 (20231229 -> 20230118)
     3. 优化ci执行流程
+
+## 旧版本更新日志 (1.0.0 - 1.2.6rc6)
+<details>
+  <summary>旧版本更新日志</summary>
 
 ### Version 1.2.5
 #### Release 6
@@ -512,5 +547,7 @@ $\color{Red}{更新后的数据库不向下兼容}$
 5. 更新 使用红色"重新分析"按钮清除分析缓存并重新生成
 6. 更新 窗口控件自动跟随窗口大小改变
 7. 更新 在窗口标题栏显示最后一次游玩曲名
+
+</details>
 
 ## 声明：妾身`不会`对存档文件进行`写`操作

@@ -20,8 +20,8 @@ MUSYNX Steam Client Savefile Decode & Analyze Tool
 
 ## How to use
 
-1. [English (English, `en-us`) v1.2.6 rc2](readme.en.md)
-2. [简体中文 (Simplified Chinese, `zh-Hans`) v1.2.6 rc2](readme.zh.md)
+1. [English (English, `en-us`) v1.2.6 rc2](how_to_use.en.md)
+2. [简体中文 (Simplified Chinese, `zh-Hans`) v1.2.6 rc2](how_to_use.zh.md)
 
 ## 界面展示
 

@@ -30,7 +30,7 @@ class HitDelayCheck(object):
 		self.DLLCheck()
 
 	def DLLCheck(self):
-		# 'D41D8CD98F00B204E9800998ECF8427E' is 0B file
+		# 'D41D8CD98F00B204E9800998ECF8427E' is a Null file
 		with open(self.spfr,'rb') as spfrb:
 			md5o = md5(spfrb.read()).hexdigest().upper()
 		if (md5o != "D41D8CD98F00B204E9800998ECF8427E") and (md5o == self.md5o) and (not md5o == self.md5l):

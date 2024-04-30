@@ -88,7 +88,7 @@ WithConsole版本为带命令提示符界面，适合出现bug时快速定位错
 ### 高级功能简介
 下列组件对游戏客户端有修改,请谨慎使用
 
-$\color{Red}{*** 注意备份 注意备份 注意备份 ***}$
+*** $\color{Red}{ 注意备份 注意备份 注意备份 }$ ***
 
 $\color{Red}{请自行决定是否使用,使用过程中出现任何意外}$
 $\color{Red}{后果自负,开发者概不负责}$
@@ -120,10 +120,27 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 #### Release 3
 1. 更新
     1. 编写使用说明与wiki
+    2. #### ***更新04月30日喵赛克新增曲目 (劳动节更新)***
+        - City Night Comedy (EZ HD)
+        - Submerge in Color (EZ HD)
+        - Invisible Chaos (EZ HD)
+    3. 更新`songname.json`的内容 (20240220 -> 20240330)
+    4. 将`IsFav`字段改为`Status`字段,并扩充状态列表
+        |  Status  | 中文释义 |       English        |
+        |----------|----------|----------------------|
+        | '    '   | 无状态   | No Status            |
+        | 'Favo'   | 收藏曲目 | Favorite             |
+        | 'NoCR'   | 下架曲目 | No CopyRight         |
+        | 'NoName' | 未命名   | Not in Songname.json |
+    5. 修补新的Assembly-CSharp.dll
 2. 修复
-    1. xxx
+    1. 修复未启用谱面数据同步的bug
+        - 因为仓库使用GitHub，所以在国内环境中可能出现无法连接的问题
+    2. 
 3. 优化
     1. 将`刷新`与`解码`合并为`解码并刷新`按钮
+    2. 优化字体判定流程
+    3. 优化C#代码中的判断流程
 #### Release 2
 1. 更新
     1. 修补新的Assembly-CSharp.dll
@@ -147,7 +164,7 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
     1. 修复ci中requirement安装失败的bug
 3. 优化
     1. 优化C#代码中的判断流程
-    2. 优化`songname.json`的格式 (20231229 -> 20230118)
+    2. 优化`songname.json`的格式 (20231229 -> 20240118)
     3. 优化ci执行流程
 
 ## 旧版本更新日志 (1.0.0 - 1.2.6rc6)

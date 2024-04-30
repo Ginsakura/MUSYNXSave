@@ -81,7 +81,7 @@ class MusyncSavDecodeGUI(object):
 		self.avgSyncVar.set(f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount))}')
 		self.dataSortMethodsort = [None,True]
 		self.dataSelectMethod = None
-		self.treeviewColumns = ["SpeedStall",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","IsFav"]
+		self.treeviewColumns = ["SpeedStall",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","Status"]
 		self.difficute = 3
 		self.keys = 0
 		self.isDLC = 0
@@ -192,12 +192,12 @@ class MusyncSavDecodeGUI(object):
 				print("CheckGameIsStart Run Time: %f ms"%((endTime - startTime)/1000000))
 				time.sleep(5)
 		threading.Thread(target=CheckGameIsStart).start()
+		threading.Thread(target=self.CheckJsonUpdate).start()
 
 		if self.config['DisableCheckUpdate']:
 			self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页')
 		else:
 			threading.Thread(target=self.CheckUpdate).start()
-			# threading.Thread(target=self.CheckJsonUpdate).start()
 		if not os.path.isfile('./musync_data/SaveFilePath.sfp'):
 			self.GetSaveFile()
 		else:
@@ -360,6 +360,8 @@ class MusyncSavDecodeGUI(object):
 			githubVersion = response.content.decode('utf8')
 			with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
 				localVersion = snju.read()
+			print(f"   Local Json Version: {localVersion}")
+			print(f"  Terget Json Version: {githubVersion}")
 			if githubVersion>localVersion:
 				response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.json")
 				songNameJson = response.json()
@@ -369,6 +371,7 @@ class MusyncSavDecodeGUI(object):
 					snju.write(githubVersion)
 		except Exception as e:
 			messagebox.showerror("Error", f'发生错误: {e}')
+			messagebox.showerror("Error", f'若游戏本体已更新，请访问仓库更新songname.update和songname.json两个文件')
 		endTime = time.perf_counter_ns()
 		print("CheckJsonUpdate Run Time: %f ms"%((endTime - startTime)/1000000))
 
@@ -501,7 +504,7 @@ class MusyncSavDecodeGUI(object):
 				elif self.dataSelectMethod == "Unplay":
 					if not ((saveLine["PlayCount"] == 0) and (float(saveLine["SyncNumber"][0:-1]) == 0)):continue
 				elif self.dataSelectMethod == "IsFav":
-					if saveLine["IsFav"] == '0x00':continue
+					if saveLine["Status"] != 'Favo':continue
 				elif self.dataSelectMethod == "Sync122":
 					if float(saveLine["SyncNumber"][0:-1]) < 122:continue
 				elif self.dataSelectMethod == "Sync120":
@@ -525,7 +528,7 @@ class MusyncSavDecodeGUI(object):
 					("" if saveLine["SongName"] is None else ("" if saveLine["SongName"][3]=="00" else saveLine["SongName"][3])), #等级
 					saveLine["SyncNumber"], #本地同步率
 					("" if ((saveLine["PlayCount"] == 0) and (saveLine["UploadScore"] == "0.00000000000000%")) else Rank(saveLine["SyncNumber"])), #Rank
-					saveLine["UploadScore"], saveLine["PlayCount"], saveLine["IsFav"]))
+					saveLine["UploadScore"], saveLine["PlayCount"], saveLine["Status"]))
 			# print(songNameJson["NotDLCSong"])
 		if not self.dataSortMethodsort[0] is None:
 			self.SortClick(self.dataSortMethodsort)
@@ -545,7 +548,7 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.heading("Rank",anchor="center",text="Rank"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='Rank' else ''))
 		self.saveData.heading("UploadScore",anchor="center",text="云端同步率"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='UploadScore' else ''))
 		self.saveData.heading("PlayCount",anchor="center",text="游玩计数"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='PlayCount' else ''))
-		self.saveData.heading("IsFav",anchor="center",text="IsFav"+(('⇓   ' if self.dataSortMethodsort[1] else '⇑   ') if self.dataSortMethodsort[0]=='IsFav' else '   '))
+		self.saveData.heading("Status",anchor="center",text="Status"+(('⇓   ' if self.dataSortMethodsort[1] else '⇑   ') if self.dataSortMethodsort[0]=='Status' else '   '))
 		self.root.update()
 
 	def TreeviewWidthUptate(self):
@@ -558,7 +561,7 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.column("Rank",anchor="center",width=55)
 		self.saveData.column("UploadScore",anchor="e",width=160)
 		self.saveData.column("PlayCount",anchor="e",width=90)
-		self.saveData.column("IsFav",anchor="w",width=80)
+		self.saveData.column("Status",anchor="w",width=80)
 
 	def UpdateWindowInfo(self):
 
@@ -626,3 +629,25 @@ class SubWindow(object):
 		self.globalSync.heading("SyncNumber",anchor="center",text="同步率")
 
 		self.VScroll.place(x=self.windowInfo[2]-40, y=1, width=20, relheight=1)
+
+
+if __name__ == '__main__':
+	version = '1.2.6rc3'
+	isPreRelease = True
+	preVersion = "1.2.6pre7"
+
+	root = Tk()
+	ctypes.windll.shcore.SetProcessDpiAwareness(1)
+	fonts = list(font.families())
+	Functions.CheckFileBeforeStarting(fonts)
+	del fonts
+	Functions.CheckConfig()
+	with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
+		cfg = json.load(cfg)
+	if cfg['ChangeConsoleStyle']:
+		Functions.ChangeConsoleStyle()
+	root.tk.call('tk', 'scaling', 1.25)
+	root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
+	window = MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease)
+	root.update()
+	root.mainloop()

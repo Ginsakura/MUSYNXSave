@@ -91,7 +91,7 @@ class MUSYNCSavProcess():
 		self.SaveAnalyzeFileWrite(self.saveData[136:162].decode()) #'<PlayCount>k__BackingField'
 		self.SaveAnalyzeFileWrite(self.saveData[163:185].decode()) #'<Isfav>k__BackingField'
 		self.SaveBinFileRead(37)
-		self.SaveAnalyzeFileWrite('| SongID | Unknown0 | SpeedStall | Unknown1 | SyncNumber |     UploadScore     | PlayCount | IsFav |')
+		self.SaveAnalyzeFileWrite('| SongID | Unknown0 | SpeedStall | Unknown1 | SyncNumber |     UploadScore     | PlayCount | statu |')
 		self.Analyze2Json()
 		self.savBinFile.close()
 		self.savAnalyzeFile.close()
@@ -153,35 +153,43 @@ class MUSYNCSavProcess():
 			UploadScore = unpack('<f',bytes.fromhex(self.Bytes2HexString(self.saveData[20:24])))[0]
 			PlayCount = int.from_bytes(self.saveData[24:28], 'little')
 
-			if NoCopyright(SpeedStall):
-				print(SpeedStall,"NoCopyright")
-				continue
-			if OldAprilFoolsDay(SpeedStall):
-				print(SpeedStall,'OldAprilFoolsDay')
-				continue
-			songName = GetSongName(SpeedStall)
-			if songName is None:
-				self.SaveAnalyzeFileWrite(SpeedStall+' ,No Name')
-				continue
-
 			if self.saveData[28]==1:
-				IsFav = '0x01'
+				statu = "Favo"
 				# FavSong.write(songName[0]+"\n")
 				self.FavSong.append(songName[0])
 			else:
-				IsFav = '0x00'
+				statu = '    '
+
+			if NoCopyright(SpeedStall):
+				statu = "NoCR"
+			if OldAprilFoolsDay(SpeedStall):
+				statu = "Fool"
+			songName = GetSongName(SpeedStall)
+			if songName is None:
+				statu = "NoName"
+
 			if len(SyncNumber) == 5:SyncNumber = f'{SyncNumber[0:3]}.{SyncNumber[3:]}%'
 			elif len(SyncNumber) == 4:SyncNumber = f'{SyncNumber[0:2]}.{SyncNumber[2:]}%'
 			elif len(SyncNumber) == 3:SyncNumber = f'{SyncNumber[0]}.{SyncNumber[1:]}%'
 			elif len(SyncNumber) == 2:SyncNumber = f'0.{SyncNumber}%'
 			else:SyncNumber = f'0.0{SyncNumber}%'
+
 			UploadScore = UploadScore*100
 			if UploadScore == 0:UploadScore = '0.00000000000000%'
 			elif UploadScore < 10:UploadScore = ZeroFormat(UploadScore,16) #'%.16f%%'%UploadScore
 			elif UploadScore < 100:UploadScore = ZeroFormat(UploadScore,17)
 			else:UploadScore = ZeroFormat(UploadScore,18)
-			self.SaveAnalyzeFileWrite(f'| {" "*(6-len(str(SongID)))}{SongID} | {Unknown0} |  {SpeedStall}  | {Unknown1} |    {" "*(7-len(SyncNumber))}{SyncNumber} | {" "*(19-len(UploadScore))}{UploadScore} | {" "*(9-len(str(PlayCount)))}{PlayCount} |  {IsFav} |')
-			saveDataAnalyzeJson["SaveData"].append(dict(SpeedStall=SpeedStall,SongName=songName,SyncNumber=SyncNumber,UploadScore=UploadScore,PlayCount=PlayCount,IsFav=IsFav))
+
+			self.SaveAnalyzeFileWrite(f'| {" "*(6-len(str(SongID)))}{SongID} | {Unknown0} |  {SpeedStall}  | {Unknown1} |    {" "*(7-len(SyncNumber))}{SyncNumber} | {" "*(19-len(UploadScore))}{UploadScore} | {" "*(9-len(str(PlayCount)))}{PlayCount} | {statu:^6} |')
+			if statu == 'NoName': continue
+			saveDataAnalyzeJson["SaveData"].append(dict(
+				SpeedStall=SpeedStall,
+				SongName=songName,
+				SyncNumber=SyncNumber,
+				UploadScore=UploadScore,
+				PlayCount=PlayCount,
+				Status=statu
+				))
 		json.dump(saveDataAnalyzeJson,saveDataAnalyze,indent="",ensure_ascii=False)
 		saveDataAnalyze.close()
 		# FavSong.close()
@@ -204,7 +212,7 @@ class MUSYNCSavProcess():
 		print(f"Favorites List：{self.FavSong}")
 		for ids in range(len(saveJsonFavFix["SaveData"])):
 			if saveJsonFavFix["SaveData"][ids]["SongName"][0] in self.FavSong:
-				saveJsonFavFix["SaveData"][ids]["IsFav"] = "0x01"
+				saveJsonFavFix["SaveData"][ids]["statu"] = "Favo"
 		json.dump(saveJsonFavFix,saveJsonFile,indent="",ensure_ascii=False)
 		saveJsonFile.close()
 		endTime = time.perf_counter_ns()

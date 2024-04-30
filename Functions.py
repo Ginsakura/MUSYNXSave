@@ -56,11 +56,9 @@ def CheckFileBeforeStarting(fonts):
 		json.dump({"DisableCheckUpdate": False,"EnableDLLInjection": False},
 			open('./musync_data/ExtraFunction.cfg','w'),indent="",ensure_ascii=False)
 	if not '霞鹜文楷等宽' in fonts:
-		if os.path.isfile('./musync_data/LXGW.ttf'):
-			os.system(f'{os.getcwd()}/musync_data/LXGW.ttf')
-		else:
+		if not os.path.isfile('./musync_data/LXGW.ttf'):
 			FileExport.WriteTTF()
-			os.system(f'{os.getcwd()}/musync_data/LXGW.ttf')
+		os.system(f'{os.getcwd()}/musync_data/LXGW.ttf')
 	if not os.path.exists("./skin/"):
 		os.makedirs('./skin/')
 	if (not os.path.isfile('./musync_data/HitDelayHistory_v2.db')) and os.path.isfile('./musync_data/HitDelayHistory.db'):

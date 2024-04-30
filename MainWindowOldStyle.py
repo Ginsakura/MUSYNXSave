@@ -74,11 +74,8 @@ class MusyncSavDecodeGUI(object):
 		self.analyzeFilePathVar.set('Input Analyze File Dir (or not)')
 		self.windowInfo = [root.winfo_x(),root.winfo_y(),root.winfo_width(),root.winfo_height()]
 		self.saveCount = 0
-		self.saveCountVar = StringVar()
-		self.saveCountVar.set(str(self.saveCount))
 		self.totalSync = 0
-		self.avgSyncVar = StringVar()
-		self.avgSyncVar.set(f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount))}')
+		self.excludeCount = 0
 		self.dataSortMethodsort = [None,True]
 		self.dataSelectMethod = None
 		self.treeviewColumns = ["SpeedStall",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","Status"]
@@ -97,7 +94,7 @@ class MusyncSavDecodeGUI(object):
 		self.CountFrameLanel.place(x=8,y=48,width=164,height=34)
 		self.PrintLabel0 = Label(self.root, text='显示计数: ', font=self.font, relief="flat")
 		self.PrintLabel0.place(x=10,y=50,width=100,height=30)
-		self.saveCountLabel = Label(self.root, text=self.saveCountVar.get(), font=self.font, relief="flat")
+		self.saveCountLabel = Label(self.root, text=str(self.saveCount+self.excludeCount), font=self.font, relief="flat")
 		self.saveCountLabel.place(x=110,y=50,width=60,height=30)
 
 		self.saveFilePathEntry = Entry(self.root, textvariable=self.saveFilePathVar, font=self.font, relief="sunken")
@@ -125,7 +122,7 @@ class MusyncSavDecodeGUI(object):
 		self.totalSyncFrameLabel.place(x=868,y=48,width=124,height=74)
 		self.totalSyncTextLabel = Label(self.root, text='综合同步率', anchor="center", font=self.font, relief="flat")
 		self.totalSyncTextLabel.place(x=870,y=50,width=120,height=30)
-		self.avgSyncLabel = Label(self.root, text=self.avgSyncVar.get()+'%', anchor="w", font=self.font, relief="flat")
+		self.avgSyncLabel = Label(self.root, text=f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount))}%', anchor="w", font=self.font, relief="flat")
 		self.avgSyncLabel.place(x=870,y=90,width=120,height=30)
 
 	#筛选控件
@@ -519,8 +516,11 @@ class MusyncSavDecodeGUI(object):
 					if (float(saveLine["SyncNumber"][0:-1]) < 75) or (float(saveLine["SyncNumber"][0:-1]) >= 95):continue
 				elif self.dataSelectMethod == "RankC":
 					if (float(saveLine["SyncNumber"][0:-1]) == 0) or (float(saveLine["SyncNumber"][0:-1]) >= 75):continue
-				self.saveCount += 1
-				self.totalSync += float(saveLine["UploadScore"][0:-1])
+				if saveLine["Status"] in ['    ', 'Favo']:
+					self.saveCount += 1
+					self.totalSync += float(saveLine["UploadScore"][0:-1])
+				else:
+					self.excludeCount += 1
 				self.saveData.insert('', END, values=(saveLine["SpeedStall"], #谱面号
 					("" if saveLine["SongName"] is None else saveLine["SongName"][0]), #曲名
 					("" if saveLine["SongName"] is None else saveLine["SongName"][1]), #键数
@@ -573,10 +573,9 @@ class MusyncSavDecodeGUI(object):
 		if not self.wh == self.windowInfo[2:]:
 			self.TreeviewWidthUptate()
 			self.VScroll1.place(x=self.windowInfo[2]-22, y=1, width=20, height=self.windowInfo[3]-162)
-		self.saveCountVar.set(self.saveCount)
-		self.saveCountLabel.configure(text=self.saveCountVar.get())
-		self.avgSyncVar.set(f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount))}')
-		self.avgSyncLabel.configure(text=self.avgSyncVar.get()[0:10]+"%")
+		# self.saveCountVar.set()
+		self.saveCountLabel.configure(text=str(self.saveCount+self.excludeCount))
+		self.avgSyncLabel.configure(text=f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount))}%')
 		self.developer.place(x=0,y=self.windowInfo[3]-30,width=420,height=30)
 		self.gitHubLink.place(x=420,y=self.windowInfo[3]-30,width=self.windowInfo[2]-420,height=30)
 

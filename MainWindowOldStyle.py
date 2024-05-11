@@ -122,7 +122,7 @@ class MusyncSavDecodeGUI(object):
 		self.totalSyncFrameLabel.place(x=868,y=48,width=124,height=74)
 		self.totalSyncTextLabel = Label(self.root, text='综合同步率', anchor="center", font=self.font, relief="flat")
 		self.totalSyncTextLabel.place(x=870,y=50,width=120,height=30)
-		self.avgSyncLabel = Label(self.root, text=f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount))}%', anchor="w", font=self.font, relief="flat")
+		self.avgSyncLabel = Label(self.root, text=f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount)):.6f}%', anchor="w", font=self.font, relief="flat")
 		self.avgSyncLabel.place(x=870,y=90,width=120,height=30)
 
 	#筛选控件
@@ -575,7 +575,7 @@ class MusyncSavDecodeGUI(object):
 			self.VScroll1.place(x=self.windowInfo[2]-22, y=1, width=20, height=self.windowInfo[3]-162)
 		# self.saveCountVar.set()
 		self.saveCountLabel.configure(text=str(self.saveCount+self.excludeCount))
-		self.avgSyncLabel.configure(text=f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount))}%')
+		self.avgSyncLabel.configure(text=f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount)):.6f}%')
 		self.developer.place(x=0,y=self.windowInfo[3]-30,width=420,height=30)
 		self.gitHubLink.place(x=420,y=self.windowInfo[3]-30,width=self.windowInfo[2]-420,height=30)
 

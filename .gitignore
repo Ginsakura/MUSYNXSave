@@ -2,7 +2,7 @@
 /.vs
 /build
 /musync
-/othersSavFile/*
+/saveFile
 /Releases
 /venv
 
@@ -26,6 +26,7 @@ SavAnalyze.json
 *.psd
 *.pyd
 *.pyproj*
+*.sav
 *.sfp
 *.sln
 *.spec

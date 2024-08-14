@@ -119,8 +119,9 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 -->
 ### Version 1.2.6
 #### PreRelease
+#### Release 4
 1. 更新
-    1. xxx
+    1. 通过threading.event事件在关闭窗口时结束子线程以避免在关闭时出现孤儿进程的情况
 2. 修复
     1. 修复综合同步率小数位数未被限制的bug
     2. `Songname.json`中错误的记录

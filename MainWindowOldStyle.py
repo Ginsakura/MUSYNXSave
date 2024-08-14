@@ -83,6 +83,9 @@ class MusyncSavDecodeGUI(object):
 		self.keys = 0
 		self.isDLC = 0
 		self.wh = [0,0]
+		self.checkGameStartEvent = threading.Event()
+
+		root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
 	##Controller##
 		self.deleteAnalyzeFile = ttk.Button(self.root, text="解码并刷新",command=self.DeleteAnalyzeFile,style='F5.TButton')
@@ -168,8 +171,11 @@ class MusyncSavDecodeGUI(object):
 		self.TreeviewWidthUptate()
 		self.TreeviewColumnUpdate()
 
-		def CheckGameIsStart():
+		def CheckGameIsStart(event):
 			while True:
+				if event.is_set():
+					print("Stop Thread: CheckGameIsStart.")
+					break
 				startTime = time.perf_counter_ns()
 				# print("Checking Game Is Start?")
 				for ids in psutil.pids():
@@ -188,7 +194,8 @@ class MusyncSavDecodeGUI(object):
 				endTime = time.perf_counter_ns()
 				print("CheckGameIsStart Run Time: %f ms"%((endTime - startTime)/1000000))
 				time.sleep(5)
-		threading.Thread(target=CheckGameIsStart).start()
+
+		threading.Thread(target=CheckGameIsStart, args=(self.checkGameStartEvent, )).start()
 		threading.Thread(target=self.CheckJsonUpdate).start()
 
 		if self.config['DisableCheckUpdate']:
@@ -223,6 +230,11 @@ class MusyncSavDecodeGUI(object):
 			self.DataLoad()
 		else:
 			self.DataLoad()
+
+# TK事件重载
+	def on_closing(self):
+		self.checkGameStartEvent.set()
+		self.root.destroy()
 
 # json文件检查
 	def CheckFile(self):

@@ -25,7 +25,7 @@ import MusyncSavDecode
 version = '1.2.6rc4'
 isPreRelease = True
 preVersion = "1.2.6pre11"
-# isPreRelease = False
+isPreRelease = False
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""

@@ -6,3 +6,4 @@ pywin32==306
 uiautomation==2.0.18
 pyperclip==1.8.2
 psutil==5.9.5
+numpy==2.0.1

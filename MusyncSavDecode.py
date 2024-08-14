@@ -52,15 +52,22 @@ class MUSYNCSavProcess():
 		print("SaveFileAnalyze Start.")
 		self.savBinFile = open(f'./musync_data/SavDecode.decode','rb+')
 		self.savAnalyzeFile = open(f'./musync_data/SavAnalyze.analyze','w+')
-		self.SaveBinFileRead(887)
 		self.SaveBinFileRead(22)
+		self.SaveBinFileRead(92)
+		self.SaveBinFileRead(518)
+		self.SaveBinFileRead(41)
+		self.SaveBinFileRead(121)
+		binTemp = self.savBinFile.read(1)
+		while (binTemp != b'\x55'): # UIB_PlayingScene
+			binTemp = self.savBinFile.read(1)
+		self.SaveBinFileRead(21)
 		while True:
 			binTemp = self.savBinFile.read(1)
 			if binTemp == b'\x06':
 				self.SaveAnalyzeFileWrite(f'上次游玩曲目: {"".join(self.lastPlaySong)}')
 				break
 			else:
-				self.lastPlaySong.append(binTemp.decode())
+				self.lastPlaySong.append(binTemp.decode('ascii'))
 		self.SaveBinFileRead(475)
 		while True:
 			if self.savBinFile.read(1) == b'\x02':
@@ -91,7 +98,6 @@ class MUSYNCSavProcess():
 		self.SaveAnalyzeFileWrite(self.saveData[136:162].decode()) #'<PlayCount>k__BackingField'
 		self.SaveAnalyzeFileWrite(self.saveData[163:185].decode()) #'<Isfav>k__BackingField'
 		self.SaveBinFileRead(37)
-		self.SaveAnalyzeFileWrite('| SongID | Unknown0 | SpeedStall | Unknown1 | SyncNumber |     UploadScore     | PlayCount | statu |')
 		self.Analyze2Json()
 		self.savBinFile.close()
 		self.savAnalyzeFile.close()
@@ -103,6 +109,7 @@ class MUSYNCSavProcess():
 	def Analyze2Json(self):
 		startTime = time.perf_counter_ns()
 		print("Analyze2Json Start.")
+		self.SaveAnalyzeFileWrite('| SongID | Unknown0 | SpeedStall | Unknown1 | SyncNumber |     UploadScore     | PlayCount | statu |')
 		saveDataAnalyze = open(f'./musync_data/SavAnalyze.json','w+',encoding='utf8')
 		# FavSong = open(f'./musync_data/FavSong.tmp','w',encoding='utf8')
 		saveDataAnalyzeJson = dict()

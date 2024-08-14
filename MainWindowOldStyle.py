@@ -84,6 +84,7 @@ class MusyncSavDecodeGUI(object):
 		self.isDLC = 0
 		self.wh = [0,0]
 		self.checkGameStartEvent = threading.Event()
+		self.CheckGameIsStartThread = None
 
 		root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -172,30 +173,33 @@ class MusyncSavDecodeGUI(object):
 		self.TreeviewColumnUpdate()
 
 		def CheckGameIsStart(event):
-			while True:
-				if event.is_set():
-					print("Stop Thread: CheckGameIsStart.")
-					break
-				startTime = time.perf_counter_ns()
-				# print("Checking Game Is Start?")
-				for ids in psutil.pids():
-					try:
-						if psutil.Process(pid=ids).name() == "MUSYNX.exe":
-							# self.config["MainExecPath"]
-							self.isGameRunning["text"] = "游戏已启动"
-							self.isGameRunning["bg"] = "#98E22B"
-							break
-					except Exception as e:
-						print(repr(e))
-					
-				else:
-					self.isGameRunning["text"] = "游戏未启动"
-					self.isGameRunning["bg"] = "#FF8080"
-				endTime = time.perf_counter_ns()
-				print("CheckGameIsStart Run Time: %f ms"%((endTime - startTime)/1000000))
-				time.sleep(5)
+			count = 0
+			while event.is_set():
+				if count%10 == 0:
+					startTime = time.perf_counter_ns()
+					# print("Checking Game Is Start?")
+					for ids in psutil.pids():
+						try:
+							if psutil.Process(pid=ids).name() == "MUSYNX.exe":
+								# self.config["MainExecPath"]
+								self.isGameRunning["text"] = "游戏已启动"
+								self.isGameRunning["bg"] = "#98E22B"
+								break
+						except Exception as e:
+							print(repr(e))
+					else:
+						self.isGameRunning["text"] = "游戏未启动"
+						self.isGameRunning["bg"] = "#FF8080"
+					endTime = time.perf_counter_ns()
+					print("CheckGameIsStart Run Time: %f ms"%((endTime - startTime)/1000000))
+					count = 0
+				time.sleep(0.5)
+				count += 1
+			print("Stop Thread: CheckGameIsStart.")
 
-		threading.Thread(target=CheckGameIsStart, args=(self.checkGameStartEvent, )).start()
+		self.checkGameStartEvent.set()
+		self.CheckGameIsStartThread = threading.Thread(target=CheckGameIsStart, args=(self.checkGameStartEvent, ))
+		self.CheckGameIsStartThread.start()
 		threading.Thread(target=self.CheckJsonUpdate).start()
 
 		if self.config['DisableCheckUpdate']:
@@ -227,13 +231,12 @@ class MusyncSavDecodeGUI(object):
 		elif os.path.isfile('./musync_data/SavDecode.decode'):
 			self.InitLabel('解码存档中......')
 			MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
-			self.DataLoad()
-		else:
-			self.DataLoad()
+		self.DataLoad()
 
 # TK事件重载
 	def on_closing(self):
-		self.checkGameStartEvent.set()
+		self.checkGameStartEvent.clear()
+		self.CheckGameIsStartThread.join()
 		self.root.destroy()
 
 # json文件检查
@@ -643,9 +646,9 @@ class SubWindow(object):
 
 
 if __name__ == '__main__':
-	version = '1.2.6rc3'
+	version = '0.0.0rc0'
 	isPreRelease = True
-	preVersion = "1.2.6pre7"
+	preVersion = "9.9.9pre9"
 
 	root = Tk()
 	ctypes.windll.shcore.SetProcessDpiAwareness(1)

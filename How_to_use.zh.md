@@ -40,19 +40,19 @@
 
 	- 无命令行的散包：
 	```cmd
-	pyinstaller --distpath ./NoCLI/ -D -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py -w
+	pyinstaller --distpath ./NoCLI/ -D -i ./musync_data/Musync.ico ./Launcher.py -w
 	```
 	- 无命令行的单exe文件：
 	```cmd
-	pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py -w
+	pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./Launcher.py -w
 	```
 	- 带命令行的散包：
 	```cmd
-	pyinstaller --distpath ./WithCLI/ -D -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py
+	pyinstaller --distpath ./WithCLI/ -D -i ./musync_data/Musync.ico ./Launcher.py
 	```
 	- 带命令行的单exe文件：
 	```cmd
-	pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./MusyncSavDecodeGUI.py
+	pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./Launcher.py
 	```
 
 ## 功能介绍

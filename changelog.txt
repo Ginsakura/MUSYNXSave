@@ -9,10 +9,11 @@
 5. 1.2.4 将License从GPLv3切换为MIT
 7. 1.2.5 提供DPI锁定功能(测试)
 8. 1.2.6 更新ci
+9. 1.2.7 环境更新：`matplotlib 3.7.2->3.9.2`,`numpy 1.25.2->2.0.1`
 
-### Version 1.2.6
+### Version 1.2.7
 #### PreRelease
-#### Release 4
+#### Release 1
 1. 更新
     1. 通过threading.event事件在关闭窗口时结束子线程以避免在关闭时出现孤儿进程的情况
 2. 修复
@@ -24,53 +25,6 @@
         | Spooky Mummy Party | 难度标记错误 |
     3. 修复`综合同步率`数值小数部分长度未被限制的bug
     4. 修复`HitDelay`中按钮命名重复的bug
+    5. 修复`matplotlib, numpy`版本错误导致CI不通过的bug
 3. 优化
     1. 简化变量存储与读取流程
-#### Release 3
-1. 更新
-    1. 编写使用说明与wiki
-    2. #### ***更新04月30日喵赛克新增曲目 (劳动节更新)***
-        - City Night Comedy (EZ HD)
-        - Submerge in Color (EZ HD)
-        - Invisible Chaos (EZ HD)
-    3. 更新`songname.json`的内容 (20240220 -> 20240330)
-    4. 将`IsFav`字段改为`Status`字段,并扩充状态列表
-        |  Status  | 中文释义 |       English        |
-        |----------|----------|----------------------|
-        | '    '   | 无状态   | No Status            |
-        | 'Favo'   | 收藏曲目 | Favorite             |
-        | 'NoCR'   | 下架曲目 | No CopyRight         |
-        | 'NoName' | 未命名   | Not in Songname.json |
-2. 修复
-    1. 修复未启用谱面数据同步的bug
-        - 因为仓库使用GitHub，所以在国内环境中可能出现无法连接的问题
-    2. 
-3. 优化
-    1. 将`刷新`与`解码`合并为`解码并刷新`按钮
-    2. 优化字体判定流程
-    3. 优化C#代码中的判断流程
-#### Release 2
-1. 更新
-    1. 修补新的Assembly-CSharp.dll
-    2. 使用新的md结构用于展示版本更新内容
-2. 修复
-    1. 修复Delay中默认数值无法载入的bug
-#### Release 1
-1. 更新
-    1. #### ***更新02月08日喵赛克新增曲目 (新春超大份更新)***
-        - Maholova (EZ HD IN)
-        - Inverted World (EZ HD IN)
-        - Shooting☆Stars (EZ HD IN)
-        - Provison (EZ HD)
-        - Lockdown(MUSYNX edit.) (EZ HD)
-        - Shizuku (ft. NEONA & KOTONOHOUSE) (EZ HD)
-        - Bison Charge(MUSYNX Update) (EZ HD IN)
-        - opia -awakened- (MUSYNC edit.) (EZ HD IN)
-        - quia desolatio (EZ HD IN)
-        - Xigns (EZ HD IN)
-2. 修复
-    1. 修复ci中requirement安装失败的bug
-3. 优化
-    1. 优化 优化C#代码中的判断流程
-    2. 优化 优化`songname.json`的格式 (20231229 -> 20240118)
-    3. 优化 优化ci执行流程

@@ -117,9 +117,9 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 3. 优化
     1. xxx
 -->
-### Version 1.2.6
+### Version 1.2.7
 #### PreRelease
-#### Release 4
+#### Release 1
 1. 更新
     1. 通过threading.event事件在关闭窗口时结束子线程以避免在关闭时出现孤儿进程的情况
 2. 修复
@@ -131,8 +131,10 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
         | Spooky Mummy Party | 难度标记错误 |
     3. 修复`综合同步率`数值小数部分长度未被限制的bug
     4. 修复`HitDelay`中按钮命名重复的bug
+    5. 修复`matplotlib, numpy`版本错误导致CI不通过的bug
 3. 优化
     1. 简化变量存储与读取流程
+### Version 1.2.6
 #### Release 3
 1. 更新
     1. 编写使用说明与wiki

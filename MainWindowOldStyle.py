@@ -5,6 +5,7 @@ import psutil
 import requests
 import threading
 import time
+# import traceback
 import webbrowser
 #import win32api
 #import win32con
@@ -383,7 +384,8 @@ class MusyncSavDecodeGUI(object):
 					snju.write(githubVersion)
 		except Exception as e:
 			messagebox.showerror("Error", f'发生错误: {e}')
-			messagebox.showerror("Error", f'若游戏本体已更新，请访问仓库更新songname.update和songname.json两个文件')
+			if messagebox.askyesno("无法获取谱面信息更新", f'是否前往网页查看是否存在更新？\n(请比对 SongName.update 中的时间是否比本地文件中的时间更大)'):
+				webbrowser.open("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
 		endTime = time.perf_counter_ns()
 		print("CheckJsonUpdate Run Time: %f ms"%((endTime - startTime)/1000000))
 
@@ -392,6 +394,10 @@ class MusyncSavDecodeGUI(object):
 		localVersion = float(self.version.replace(".","").replace("rc","."))
 		try:
 			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
+			if response.json()["message"][:23] == "API rate limit exceeded":
+				if messagebox.askyesno("GitHub公共API访问速率已达上限", "是否前往发布页查看是否存在更新？"):
+					webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases/latest")
+				return
 			tagVersion = response.json()["tag_name"]
 			tergetVersion = float(tagVersion.replace(".","").replace("rc","."))
 		except Exception as e:

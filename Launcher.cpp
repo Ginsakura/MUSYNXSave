@@ -2,7 +2,7 @@
 
 int main()
 {
-	system("py ./MusyncSavDecodeGUI.py");
+	system("py ./Launcher.py");
 	system("pause");
 	return 0;
 }

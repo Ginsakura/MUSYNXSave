@@ -13,6 +13,12 @@
 
 ### Version 1.2.7
 #### PreRelease
+#### Release 3
+1. 修复
+    1. 修复`Launcher.cpp`中没有更改程序入口的bug
+    2. 修复没有取消新UI导入的bug
+2. 优化
+    1. 将网络连接失败提示改为跳转框,点击`是`即可自动打开浏览器访问GitHub页面
 #### Release 2
 1. 更新
     1. 将启动函数单独拆分到`Launcher.py`

@@ -179,18 +179,18 @@ class MusyncSavDecodeGUI(object):
 				if count%10 == 0:
 					startTime = time.perf_counter_ns()
 					# print("Checking Game Is Start?")
-					for ids in psutil.pids():
-						try:
+					try:
+						for ids in psutil.pids():
 							if psutil.Process(pid=ids).name() == "MUSYNX.exe":
 								# self.config["MainExecPath"]
 								self.isGameRunning["text"] = "游戏已启动"
 								self.isGameRunning["bg"] = "#98E22B"
 								break
-						except Exception as e:
-							print(repr(e))
-					else:
-						self.isGameRunning["text"] = "游戏未启动"
-						self.isGameRunning["bg"] = "#FF8080"
+						else:
+							self.isGameRunning["text"] = "游戏未启动"
+							self.isGameRunning["bg"] = "#FF8080"
+					except Exception as e:
+						print(repr(e))
 					endTime = time.perf_counter_ns()
 					print("CheckGameIsStart Run Time: %f ms"%((endTime - startTime)/1000000))
 					count = 0

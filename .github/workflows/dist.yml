@@ -108,7 +108,7 @@ jobs:
         name: ${{ env.Release }}  ${{ env.CommitMessage }}  < Auto Release >
         tag_name: ${{ env.Version }}
         draft: false
-        body_path: ${{ github.workspace }}/changelog.txt
+        body_path: ${{ github.workspace }}/changelog.md
         prerelease: ${{ env.isPreRelease }}
         files: |
           ./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}.zip

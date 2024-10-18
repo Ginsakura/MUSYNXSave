@@ -9,6 +9,7 @@
 SavDecode/.vs
 SavDecode/gcm.cache
 SavDecode/x64
+SavDecode/**
 
 ExtraFunction.cfg
 LXGW.ttf
@@ -25,16 +26,11 @@ SavAnalyze.json
 *.log
 *.psd
 *.pyd
-*.pyproj*
 *.sav
 *.split
 *.sfp
-*.sln
-*.spec
 *.sql
 *.sublime*
 *.tmp
 *.txt
 !requirements.txt
-!changelog.txt
-*.vc*

@@ -1,26 +1,29 @@
-import json
-from pickletools import floatnl
-from matplotlib.axes import Axes
-import numpy
-import matplotlib.gridspec as gridspec
-import matplotlib.patches as patches
-import matplotlib.pyplot as plt
-#import matplotlib.widgets as widgets
-import sqlite3 as sql
-
+ï»¿from matplotlib.axes import Axes;
+from matplotlib.figure import Figure
+from matplotlib.gridspec import GridSpec
 from matplotlib.pyplot import MultipleLocator
 from matplotlib.widgets import Button, Slider
+import numpy
+import matplotlib.patches
+import matplotlib.pyplot
+#import matplotlib.widgets as widgets
+import json;
+import sqlite3
+
+# init Natural Constant: Ï€ & The base *e* of the natural logarithm
+E:float = 2.718281828459045;
+PI:float = 3.141592653589793;
 
 class AllHitAnalyze(object):
 	def __init__(self) -> None:
 		super(AllHitAnalyze,self).__init__();
-		# sql init and select data
-		db:sql.Connection = sql.connect("./musync_data/HitDelayHistory_v2.db");
-		cur:sql.Cursor = db.cursor();
+		# sqlite3 init and select data
+		db:sqlite3.Connection = sqlite3.connect("./musync_data/HitDelayHistory_v2.db");
+		cur:sqlite3.Cursor = db.cursor();
 		self.sqlData:list[list[str]] = cur.execute("SELECT HitMap FROM HitDelayHistory").fetchall();
 		# load config
 		with open('./musync_data/ExtraFunction.cfg', 'r',encoding='utf8') as confFile:
-			config:dict = json.load(confFile)
+			self.config:dict = json.load(confFile);
 		# init PDF(Probability Density Function)
 		self.summation:int = 0; # All Hit
 		self.summationEx:int = 0; # Blue Exact & Cyan Exact
@@ -28,7 +31,7 @@ class AllHitAnalyze(object):
 		# summation SYNC.Rate: [Cyan Exact, Blue Exact, Great, Right, Miss]
 		# self.SYNC_Rate:list[int] = [0] * 5;
 		# summation Accurate SYNC.Rate:
-		#   [¡À5ms, ¡À10ms, ¡À20ms, ¡À45ms, Blue Exact, Great, Right, Miss]
+		#   [Â±5ms, Â±10ms, Â±20ms, Â±45ms, Blue Exact, Great, Right, Miss]
 		self.Accurate_Sync_Rate:list[int] = [0] * 8;
 		# init hit map: [-149, -0], [+0, +250]
 		# self.hitMapPositive:list[int] = [0]*150;
@@ -91,20 +94,66 @@ class AllHitAnalyze(object):
 				# Right, [+150, +250) ms
 				elif hitFAbs < 250:
 					self.Accurate_Sync_Rate[6] += 1;
-				# Miss, [+250, +¡Þ) ms
+				# Miss, [+250, +âˆž) ms
 				else:
 					self.Accurate_Sync_Rate[7] += 1;
 				# add yAxis list
 				if hitI < 250:
 					self.yAxis[150 + hitI] += 1;
 				else:
-					self.yAxis[401] += 1;
+					self.yAxis[400] += 1;
 
 	def Show(self) -> None:
-		pass
+		# init Figure
+		fig:Figure = matplotlib.pyplot.figure(f"HitAnalyze (Total:{self.summation},"\
+			f"  CyanEx:{sum(self.Accurate_Sync_Rate[0:4])},"\
+			f"  BlueEx:{self.Accurate_Sync_Rate[5]},"\
+			f"  Great:{self.Accurate_Sync_Rate[6]},"\
+			f"  Right:{self.Accurate_Sync_Rate[7]},"\
+			f"  Miss:{self.Accurate_Sync_Rate[8]})",
+				  figsize=(16.0, 9.0));
+		fig.clear();
+		# init plot config
+		matplotlib.pyplot.rcParams["font.serif"] = ["LXGW WenKai Mono"];
+		matplotlib.pyplot.rcParams["font.sans-serif"] = ["LXGW WenKai Mono"]
+		grid:GridSpec = GridSpec(3, 5, left=0.045, right=1, top=1, bottom=0.06, wspace=0, hspace=0);
+		# create Bar Chart Axes
+		BarAxes:Axes = fig.add_subplot(grid[:,:]);
+		self.BarChart(BarAxes);
+		if self.config['EnableDonutChartinAllHitAnalyze']:
+			# create Ring Chart Axes
+			RingAxes:Axes = fig.add_subplot(grid[0:2,3:]);
+			RingAxes.add_patch(matplotlib.patches.Rectangle((-1.5, -1.5), 3, 3, color="white"));
+			self.RingChart(RingAxes);
+		# Show Plots
+		matplotlib.plt.show();
 
 	def BarChart(self, axes:Axes) -> None:
-		pass
+		# f(x) = \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}
+		# define PDF functions
+		def PDF(x:int) -> float:
+			return (E ** (((x - self.avg) ** 2) / (-2 * self.std ** 2))) / (((2 * PI) ** 0.5) * self.std) * self.summation;
+		def PDFEx(x:int) -> float:
+			return (E ** (((x - self.avgEx) ** 2) / (-2 * self.stdEx ** 2))) / (((2 * PI) ** 0.5) * self.stdEx) * self.summationEx;
+		def PDFEX(x:int) -> float:
+			return (E ** (((x - self.avgEX) ** 2) / (-2 * self.stdEX ** 2))) / (((2 * PI) ** 0.5) * self.stdEX) * self.summationEX;
+		# init chart argument
+		colors:list[str] = ['red','orange','yellow','green','cyan','blue','purple'];
+		horizontalLines:list[list[int]] = list(list(int));
+		yAxisMax:int = max(self.yAxis);
+		yAxisMaxS:str = "%d"%yAxisMax;
+		yAxisUpperLimit:int = 10 ** len(yAxisMaxS);
+		yAxisLowerLimit:int = yAxisUpperLimit // 100;
+
+		# yAxisMax = 190, yAxisUpperLimit = 1000, yAxisLowerLimit = 10
+		# HorizontalLines = [2.5, 5, 7.5]
+		# HorizontalLines = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
+		if yAxisMax < yAxisUpperLimit / 5: # 20% UpperLimit
+			for y in range(yAxisUpperLimit // 400, yAxisLowerLimit, yAxisUpperLimit // 400):
+				horizontalLines.append([y] * 401);
+			for y in range(yAxisLowerLimit, yAxisLowerLimit * (int(yAxisMaxS[0:2]) + 2), yAxisLowerLimit):
+				horizontalLines.append([y] * 401);
+
 
 	def RingChart(self, axes:Axes) -> None:
 		pass

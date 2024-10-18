@@ -13,7 +13,7 @@ from datetime import datetime as dt
 from hashlib import md5
 
 import FileExport
-from AllHitAnalyze import HitAnalyze
+from AllHitAnalyze_New import AllHitAnalyze
 
 uiauto.SetGlobalSearchTimeout(1)
 
@@ -81,7 +81,7 @@ class HitDelayText(object):
 		with open('./musync_data/ExtraFunction.cfg', 'r',encoding='utf8') as confFile:
 			config = json.load(confFile)
 
-		self.hitAnalyzeButton = Button(self.subroot,text='All\nHit',command=self.OpenHitAnalyze,font=self.font, relief="groove")
+		self.hitAnalyzeButton = Button(self.subroot,text='All\nHit',command=lambda :AllHitAnalyze().Show(),font=self.font, relief="groove")
 		self.hitAnalyzeButton.place(x=0,y=40,height=90,relwidth=0.05)
 		self.nameDelayLabel = Label(self.subroot,font=self.font, relief="groove",text='↓请在下面输入曲名与谱面难度↓这只是用来标记你玩的哪个谱面而已，\n没有任何要求                    ↓右侧水绿色按钮选择难度和键数↓')
 		self.nameDelayLabel.place(relx=0.05,y=40,height=60,relwidth=0.65)
@@ -236,10 +236,6 @@ class HitDelayText(object):
 		# os.system(f'start explorer {os.getcwd()}')
 		import AvgAcc_SynxAnalyze
 		AvgAcc_SynxAnalyze.Analyze()
-
-	def OpenHitAnalyze(self):
-		hitAnalyze = HitAnalyze()
-		hitAnalyze.Show()
 
 	def ShowHistoryInfo(self,event):
 		e = event.widget									# 取得事件控件

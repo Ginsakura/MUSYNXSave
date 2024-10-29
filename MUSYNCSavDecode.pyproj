@@ -23,7 +23,7 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AllHitAnalyze.New.py" />
+    <Compile Include="AllHitAnalyze_New.py" />
     <Compile Include="AllHitAnalyze.py" />
     <Compile Include="AvgAcc-SyncFormat.py" />
     <Compile Include="AvgAcc_SynxAnalyze.py" />

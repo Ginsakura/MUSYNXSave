@@ -7,10 +7,10 @@ import sqlite3 as sql
 
 from matplotlib.pyplot import MultipleLocator
 
-class HitAnalyze(object):
+class AllHitAnalyze(object):
 	"""docstring for HitAnalyze"""
 	def __init__(self):
-		super(HitAnalyze, self).__init__()
+		super(AllHitAnalyze, self).__init__()
 		db = sql.connect('./musync_data/HitDelayHistory_v2.db')
 		cur = db.cursor()
 		res = cur.execute('select HitMap from HitDelayHistory')
@@ -77,21 +77,18 @@ class HitAnalyze(object):
 		self.avgEx = sum([ids[0]*ids[1]/self.sumYnumEx for ids in zip(self.xAxis[61:240],self.yAxis[61:240])])
 		self.varEx = sum([(ids[1]/self.sumYnumEx)*((ids[0] - self.avgEx) ** 2) for ids in zip(self.xAxis[61:240],self.yAxis[61:240])])
 		self.stdEx = self.varEx**0.5
+
+		self.avgEX = sum([ids[0]*ids[1]/self.sumYnumEX for ids in zip(self.xAxis[106:195],self.yAxis[106:195])])
+		self.varEX = sum([(ids[1]/self.sumYnumEX)*((ids[0] - self.avgEX) ** 2) for ids in zip(self.xAxis[106:195],self.yAxis[106:195])])
+		self.stdEX = self.varEX**0.5
 		# del db,cur,hitMapA,hitMapB,res,idxAbs
 		print('All data:  ',self.avg,self.var,self.std,self.sumYnum)
 		print('Exact rate:',self.avgEx,self.varEx,self.stdEx,self.sumYnumEx)
+		print('cyan Exact:',self.avgEX,self.varEX,self.stdEX,self.sumYnumEX)
 
 	def Show(self):
 		with open('./musync_data/ExtraFunction.cfg', 'r',encoding='utf8') as confFile:
 			config = json.load(confFile)
-		if config['EnablePDFofCyanExact']:
-			self.avgEX = sum([ids[0]*ids[1]/self.sumYnumEX for ids in zip(self.xAxis[106:195],self.yAxis[106:195])])
-			self.varEX = sum([(ids[1]/self.sumYnumEX)*((ids[0] - self.avgEX) ** 2) for ids in zip(self.xAxis[106:195],self.yAxis[106:195])])
-			self.stdEX = self.varEX**0.5
-			self.enablePDFofCyanExact = True
-			print('cyan Exact:',self.avgEX,self.varEX,self.stdEX,self.sumYnumEX)
-		else:
-			self.enablePDFofCyanExact = False
 
 		fig = plt.figure(f"HitAnalyze (Total:{self.sumYnum},  CyanEx:{self.rate[0]},  BlueEx:{self.rate[1]},  Great:{self.rate[2]},  Right:{self.rate[3]},  Miss:{self.rate[4]})", figsize=(16, 9))
 		fig.clear()
@@ -191,10 +188,9 @@ class HitAnalyze(object):
 		ax1.plot(self.xAxis,pdfExAxis,linestyle='-',alpha=1,linewidth=1,color='black',
 			label=f'Fitting only on Exact rate\n(μ={self.avgEx}\n σ={self.stdEx})')
 
-		if self.enablePDFofCyanExact:
-			pdfEXAxis = [PDFxEX(i) for i in self.xAxis]
-			ax1.plot(self.xAxis,pdfEXAxis,linestyle='-',alpha=1,linewidth=1,color='blue',
-				label=f'Fitting only on Cyan Exact rate\n(μ={self.avgEX}\n σ={self.stdEX})')
+		pdfEXAxis = [PDFxEX(i) for i in self.xAxis]
+		ax1.plot(self.xAxis,pdfEXAxis,linestyle='-',alpha=1,linewidth=1,color='blue',
+			label=f'Fitting only on Cyan Exact rate\n(μ={self.avgEX}\n σ={self.stdEX})')
 
 
 		for i in range(len(self.xAxis)):

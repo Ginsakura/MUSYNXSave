@@ -13,7 +13,8 @@ from datetime import datetime as dt
 from hashlib import md5
 
 import FileExport
-from AllHitAnalyze_New import AllHitAnalyze
+from AllHitAnalyze import AllHitAnalyze
+# from AllHitAnalyze_New import AllHitAnalyze
 
 uiauto.SetGlobalSearchTimeout(1)
 

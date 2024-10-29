@@ -29,6 +29,7 @@ SavAnalyze.json
 *.sav
 *.split
 *.sfp
+*.split
 *.sql
 *.sublime*
 *.tmp

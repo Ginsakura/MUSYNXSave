@@ -394,12 +394,16 @@ class MusyncSavDecodeGUI(object):
 		localVersion = float(self.version.replace(".","").replace("rc","."))
 		try:
 			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
-			if response.json()["message"][:23] == "API rate limit exceeded":
-				if messagebox.askyesno("GitHub公共API访问速率已达上限", "是否前往发布页查看是否存在更新？"):
-					webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases/latest")
-				return
-			tagVersion = response.json()["tag_name"]
-			tergetVersion = float(tagVersion.replace(".","").replace("rc","."))
+			# print(response.json())
+			resJson = response.json()
+			if "tag_name" in resJson:
+				tagVersion = response.json()["tag_name"]
+				tergetVersion = float(tagVersion.replace(".","").replace("rc","."))
+			elif "message" in resJson:
+				if resJson["message"][:23] == "API rate limit exceeded":
+					if messagebox.askyesno("GitHub公共API访问速率已达上限", "是否前往发布页查看是否存在更新？"):
+						webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases/latest")
+					return
 		except Exception as e:
 			messagebox.showerror("Error", f'发生错误: {e}')
 			tergetVersion = localVersion

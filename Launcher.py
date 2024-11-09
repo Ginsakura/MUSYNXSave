@@ -14,7 +14,7 @@ import MainWindowOldStyle as OldStyle
 
 version = '1.2.8rc2'
 isPreRelease = True
-preVersion = "1.2.8pre5"
+preVersion = "1.2.8pre6"
 isPreRelease = False
 
 def launcher():

@@ -20,9 +20,9 @@ if ($message[0] -eq ""){
 $str = $version+'  '+$message[0]+'  '+$release
 
 echo $str
-git pull
 git add .
 git commit -m $str
+git pull
 git push
 # git tag -a $version -m $message[0]
 Read-Host -Prompt "Press Enter to exit"

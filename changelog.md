@@ -12,9 +12,12 @@
 9. 1.2.7 环境更新：`matplotlib 3.7.2->3.9.2`,`numpy 1.25.2->2.0.1`
 
 ### Version 1.2.8
-#### PreRelease 
-1. 修复
+#### PreRelease
+2. 修复
     1. 修复能够获取版本号时出现Json解析错误的bug
+    2. 尝试修复如果4K/6K模式没有一次游玩记录时`Difficulty_ScoreAnalyze`无法加载的bug
+3. 优化
+    1. 微调难度分布曲线中文本的位置
 #### Release 2
 2. 修复
     1. ***修复新用户释放资源时，图标文件名称错误的bug***

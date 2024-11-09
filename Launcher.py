@@ -14,8 +14,8 @@ import MainWindowOldStyle as OldStyle
 
 version = '1.2.8rc2'
 isPreRelease = True
-preVersion = "1.2.8pre6"
-isPreRelease = False
+preVersion = "1.2.8pre7"
+# isPreRelease = False
 
 def launcher():
 	root = Tk()

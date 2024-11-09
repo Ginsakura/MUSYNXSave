@@ -45,7 +45,11 @@ def Analyze():
 	axR.yaxis.set_major_locator(MultipleLocator(1))
 	ax.xaxis.set_major_locator(MultipleLocator(1))
 	ax.set_xlim(0,16)
-	minScore = int(min([min(score[0]),min(score[1])]))
+	if len(score[0]) == 0:
+		min0 = 125
+	if len(score[1]) == 0:
+		min1 = 125
+	minScore = int(min([min0,min1]))
 	ax.set_ylim(minScore-1,125)
 	axR.set_ylim(minScore-1,125)
 
@@ -96,7 +100,7 @@ def Analyze():
 
 	ax.scatter(diff[0],score[0],alpha=0.7,color='#8A68D0',s=5)
 	ax.scatter(diff[1],score[1],alpha=0.7,color='#F83535',s=5)
-	ax.text(18.2,123,"\n".join(labels),ha="left",va="top",alpha=1,
+	ax.text(18,123,"\n".join(labels),ha="left",va="top",alpha=1,
 		fontdict={'family':'LXGW WenKai Mono','weight':'normal','size':10})
 	ax.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':10},framealpha=0.4)  #show label
 	ax.set_xlabel('Difficulty') #x_label

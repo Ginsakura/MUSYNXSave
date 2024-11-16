@@ -45,10 +45,8 @@ def Analyze():
 	axR.yaxis.set_major_locator(MultipleLocator(1))
 	ax.xaxis.set_major_locator(MultipleLocator(1))
 	ax.set_xlim(0,16)
-	if len(score[0]) == 0:
-		min0 = 125
-	if len(score[1]) == 0:
-		min1 = 125
+	min0 = 125 if len(score[0]) == 0 else min(score[0])
+	min1 = 125 if len(score[1]) == 0 else min(score[1])
 	minScore = int(min([min0,min1]))
 	ax.set_ylim(minScore-1,125)
 	axR.set_ylim(minScore-1,125)

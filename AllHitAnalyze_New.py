@@ -145,7 +145,7 @@ class AllHitAnalyze(object):
 		yAxisUpperLimit:int = 10 ** len(yAxisMaxS);
 		yAxisLowerLimit:int = yAxisUpperLimit // 100;
 
-		# yAxisMax = 190, yAxisUpperLimit = 1000, yAxisLowerLimit = 10
+		# yAxisMax = [100, 200), yAxisUpperLimit = 1000, yAxisLowerLimit = 10
 		# HorizontalLines = [2.5, 5, 7.5]
 		# HorizontalLines = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120, 130, 140, 150, 160, 170, 180, 190, 200]
 		if yAxisMax < yAxisUpperLimit / 5: # 20% UpperLimit

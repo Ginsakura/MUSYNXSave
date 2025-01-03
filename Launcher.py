@@ -12,10 +12,10 @@ import Functions
 import MainWindowOldStyle as OldStyle
 # import MusyncSavDecodeGUI as NewStyle
 
-version = '1.2.8rc2'
+version = '1.2.8rc4'
 isPreRelease = True
-preVersion = "1.2.8pre7"
-# isPreRelease = False
+preVersion = "1.2.8pre9"
+isPreRelease = False
 
 def launcher():
 	root = Tk()

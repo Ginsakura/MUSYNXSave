@@ -121,6 +121,9 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 [ ] 日志工具提上日程
 ### Version 1.2.8
 #### PreRelease
+#### Release 4
+1. 更新
+    1. 25年1月3日 本体Assembly-CSharp.dll更新
 #### Release 3
 1. 更新
     1. #### ***更新12月24日喵赛克新增曲目 (圣诞节更新)***

@@ -13,6 +13,9 @@
     <RootNamespace>MUSYNCSavDecode</RootNamespace>
     <IsWindowsApplication>False</IsWindowsApplication>
     <InterpreterId>MSBuild|venv|$(MSBuildProjectFullPath)</InterpreterId>
+    <TestFramework>pytest</TestFramework>
+    <UnitTestPattern>test*.py</UnitTestPattern>
+    <UnitTestRootDirectory>.</UnitTestRootDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -37,7 +40,9 @@
     <Compile Include="MainWindowOldStyle.py" />
     <Compile Include="MUSYNCSavDecode.py" />
     <Compile Include="MusyncSavDecodeGUI.py" />
+    <Compile Include="Resources.py" />
     <Compile Include="SavDecode\setup.py" />
+    <Compile Include="SaveStruct.py" />
     <Compile Include="uiautomation.py" />
   </ItemGroup>
   <ItemGroup>
@@ -82,7 +87,7 @@
     <Content Include="musync_data\Acc-SyncFormat.txt" />
     <Content Include="musync_data\Assembly-CSharp.b64" />
     <Content Include="musync_data\Assembly-CSharp.dll" />
-    <Content Include="musync_data\ExtraFunction.cfg" />
+    <Content Include="musync_data\bootcfg.json" />
     <Content Include="musync_data\FavSong.tmp" />
     <Content Include="musync_data\HitDelayHistory.sql" />
     <Content Include="musync_data\HitDelayHistory_v2.db" />

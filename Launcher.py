@@ -1,5 +1,6 @@
 import ctypes
 import json
+import logging
 import os
 import sys
 # import traceback
@@ -12,10 +13,26 @@ import Functions
 import MainWindowOldStyle as OldStyle
 # import MusyncSavDecodeGUI as NewStyle
 
-version = '1.2.8rc4'
+from Resources import Config
+
+version = '1.3.0rc1'
 isPreRelease = True
-preVersion = "1.2.8pre9"
+preVersion = "1.3.0pre1"
 isPreRelease = False
+
+logger = logging.getLogger("Launcher")
+logger.setLevel(level = logging.INFO)
+file = logging.FileHandler("./log.txt")
+file.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+
+console = logging.StreamHandler()
+console.setLevel(logging.INFO)
+
+logger.addHandler(handler)
+logger.addHandler(console)
+
 
 def launcher():
 	root = Tk()

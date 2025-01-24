@@ -12,15 +12,15 @@ class MUSYNCSavProcess():
 	"""docstring for MUSYNCSavProcess"""
 	def __init__(self, savFile='', decodeFile=''):
 		super(MUSYNCSavProcess, self).__init__()
-		self.savPath = savFile
-		self.decodeFile = decodeFile
+		self.savPath:str = savFile;
+		self.decodeFile:str = decodeFile;
 		#self.dt = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
 		#self.dt = '2023-01-22_16-28-04'
-		self.charDict = dict()
-		self.saveData = ''
-		self.lastPlaySong = list()
-		self.FavSong = list()
-		
+		self.charDict = dict();
+		self.saveData:bytes = b'\x00';
+		self.lastPlaySong:str = "";
+		self.FavSong:list[str] = list();
+
 	def Main(self,fileExtension=''):
 		if fileExtension == 'decode':
 			self.SaveFileAnalyze()
@@ -63,12 +63,22 @@ class MUSYNCSavProcess():
 			binTemp = self.savBinFile.read(1)
 		self.SaveBinFileRead(21)
 		while True:
-			binTemp = self.savBinFile.read(1)
+			lastSong:list = list();
+			binTemp:bytes = self.savBinFile.read(1)
 			if binTemp == b'\x06':
-				self.SaveAnalyzeFileWrite(f'上次游玩曲目: {"".join(self.lastPlaySong)}')
+				try:
+					self.lastPlaySong = "".join(lastSong);
+				except:
+					self.lastPlaySong = "无法解析"
+				self.SaveAnalyzeFileWrite(f'上次游玩曲目: {self.lastPlaySong}')
 				break
 			else:
-				self.lastPlaySong.append(binTemp.decode('ascii'))
+				tempVar:str = "";
+				try:
+					tempVar = binTemp.decode('ascii')
+				except:
+					tempVar = binTemp
+				lastSong.append(tempVar)
 		self.SaveBinFileRead(475)
 		while True:
 			if self.savBinFile.read(1) == b'\x02':
@@ -114,7 +124,7 @@ class MUSYNCSavProcess():
 		saveDataAnalyze = open(f'./musync_data/SavAnalyze.json','w+',encoding='utf8')
 		# FavSong = open(f'./musync_data/FavSong.tmp','w',encoding='utf8')
 		saveDataAnalyzeJson = dict()
-		saveDataAnalyzeJson["LastPlay"] = "".join(self.lastPlaySong)
+		saveDataAnalyzeJson["LastPlay"] = self.lastPlaySong
 		saveDataAnalyzeJson["SaveData"] = list()
 		with open("./musync_data/SongName.json",'r',encoding='utf8') as songNameFile:
 			songNameJson = json.load(songNameFile)
@@ -228,8 +238,8 @@ class MUSYNCSavProcess():
 
 if __name__ == '__main__':
 	#Config#
-	# savPath = "D:/Program Files/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav"
-	savPath = "C:/Users/Ginsakura/Documents/Tencent Files/2602961063/FileRecv/savedata.sav"
+	savPath = "D:/Program Files/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav"
+	# savPath = "C:/Users/Ginsakura/Documents/Tencent Files/2602961063/FileRecv/savedata.sav"
 
 	#Run#
 	Object = MUSYNCSavProcess(savPath)

@@ -121,6 +121,10 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 [ ] 日志工具提上日程
 ### Version 1.2.8
 #### PreRelease
+#### Release 5
+1. 修复
+    1. 修复特定情况下因无法获取最后游玩谱面名称导致存档加载失败的bug
+    2. 修复仓库主页链接错误的bug
 #### Release 4
 1. 更新
     1. 25年1月3日 本体Assembly-CSharp.dll更新

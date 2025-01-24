@@ -1,0 +1,20 @@
+{
+  "Version": "1.3.0.1",
+  "Acc_Sync": true,
+  "CheckUpdate": false,
+  "AnalyzeWhenStarting": false,
+  "DLLInjection": true,
+  "SystemDPI": 100,
+  "DonutChartinHitDelay": true,
+  "DonutChartinAllHitAnalyze": true,
+  "NarrowDelayInterval": true,
+  "ConsoleAlpha": 75,
+  "ConsoleFont": "霞鹜文楷等宽",
+  "ConsoleFontSize": 36,
+  "MainExecPath": "D:/Program Files/steam/steamapps/common/MUSYNX/",
+  "ChangeConsoleStyle": true,
+  "FramelessWindow": false,
+  "TransparentColor": "#FFFFFF",
+  "Default4Keys": false,
+  "DefaultDiffcute": 1
+}

@@ -7,12 +7,12 @@ Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "MUSYNCSavDecode", "MUSYNCSa
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{614AE87F-B8A4-457C-B876-4C6631CB2D19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{614AE87F-B8A4-457C-B876-4C6631CB2D19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{614AE87F-B8A4-457C-B876-4C6631CB2D19}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{614AE87F-B8A4-457C-B876-4C6631CB2D19}.Release|x64.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

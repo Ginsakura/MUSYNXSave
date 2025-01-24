@@ -1,14 +1,18 @@
 ﻿import ctypes
 import json
+import logging
 import os
+import shutil
 import sqlite3 as sql
+import sys
 import winreg
-
 from win32 import win32gui, win32print
 from win32.lib import win32con
 from win32.win32api import GetSystemMetrics
+from . import FileExport
 
-import FileExport
+
+
 
 def GetDpi():
 	hDC = win32gui.GetDC(0)
@@ -38,13 +42,40 @@ def ChangeConsoleStyle():
 	winreg.SetValueEx(regkey,'FontSize',0,winreg.REG_DWORD,(cfg['ConsoleFontSize'] << 16))
 	regkey.Close()
 
+def GetResourcePath(relative_path):
+	"""获取资源文件在临时目录中的绝对路径"""
+	try:
+		# 如果是打包后的单文件模式，使用 _MEIPASS
+		base_path = sys._MEIPASS
+	except AttributeError:
+		# 如果是正常运行模式，使用当前文件夹
+		base_path = os.path.abspath(".")
+	return os.path.join(base_path, relative_path)
+
+def EnsureResourceInRuntimeDirectory(relative_path):
+	"""确保资源文件存在于运行目录中"""
+	source_path = GetResourcePath(relative_path)  # 获取临时目录中的资源路径
+	destination_path = os.path.join(os.getcwd(), relative_path)  # 获取运行目录中的目标路径
+
+	# 检查资源文件是否已经存在于运行目录
+	if not os.path.exists(destination_path):
+		logging(f"资源文件 {relative_path} 不存在于运行目录，正在复制...")
+		# 确保目标目录存在
+		os.makedirs(os.path.dirname(destination_path), exist_ok=True)
+		# 复制文件
+		shutil.copy2(source_path, destination_path)
+		print(f"资源文件已复制到 {destination_path}")
+	else:
+		print(f"资源文件 {relative_path} 已存在于运行目录，无需复制")
+
 def CheckFileBeforeStarting(fonts):
+	"运行前环境检查"
 	if os.path.exists('./musync/'):
-		os.rename('./musync/','./musync_data/')
+		os.rename('./musync/','./musync_data/');
 	if not os.path.exists('./musync_data/'):
-		os.makedirs('./musync_data/')
+		os.makedirs('./musync_data/');
 	if not os.path.isfile('./musync_data/MUSYNC.ico'):
-		FileExport.WriteIcon()
+		EnsureResourceInRuntimeDirectory("musync_data/MUSYNC.ico");
 	if not os.path.isfile('./musync_data/ExtraFunction.cfg'):
 		cfgData = "{\n\"EnableAcc-Sync\": true,\n\"DisableCheckUpdate\": false,\n\"EnableAnalyzeWhenStarting\": false,\n\"EnableDLLInjection\": true,\n\"SystemDPI\": 100,\n\"EnableDonutChartinHitDelay\": true,\n\"EnableDonutChartinAllHitAnalyze\": true,\n\"EnablePDFofCyanExact\": true,\n\"EnableNarrowDelayInterval\": true,\n\"ConsoleAlpha\": 75,\n\"ConsoleFont\": \"霞鹜文楷等宽\",\n\"ConsoleFontSize\": 36,\n\"MainExecPath\": \"\",\n\"ChangeConsoleStyle\": true,\n\"EnableFramelessWindow\": false,\n\"TransparentColor\": \"#FFFFFF\"\n}"
 		with open('./musync_data/ExtraFunction.cfg','w',encoding='utf8') as cfg:
@@ -99,78 +130,7 @@ def CheckFileBeforeStarting(fonts):
 			db.close()
 			os.rename("./musync_data/HitDelayHistory.db", "./musync_data/HitDelayHistory_v2.db")
 			print("记录数据无需迁移.")
-			
 
-def CheckConfig():
-	try:
-		with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
-			cfg = json.load(cfg)
-	except UnicodeDecodeError:
-		with open('./musync_data/ExtraFunction.cfg','r',encoding='gbk') as cfg:
-			cfg = json.load(cfg)
-		json.dump(cfg,open('./musync_data/ExtraFunction.cfg','w',encoding='utf8'),indent="",ensure_ascii=False)
-	except Exception as e:
-		raise e
-	with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
-		cfg = json.load(cfg)
-		isChange = False
-	if 'EnableAcc-Sync' not in cfg:
-		cfg['EnableAcc-Sync'] = False
-		isChange = True
-	if 'DisableCheckUpdate' not in cfg:
-		cfg['DisableCheckUpdate'] = False
-		isChange = True
-	if 'EnableAnalyzeWhenStarting' not in cfg:
-		cfg['EnableAnalyzeWhenStarting'] = False
-		isChange = True
-	if 'EnableDLLInjection' not in cfg:
-		cfg['EnableDLLInjection'] = False
-		isChange = True
-	if 'EnableDonutChartinHitDelay' not in cfg:
-		cfg['DonutChartinHitDelay'] = False
-		isChange = True
-	if 'EnableDonutChartinAllHitAnalyze' not in cfg:
-		cfg['EnableDonutChartinAllHitAnalyze'] = False
-		isChange = True
-	if 'EnableNarrowDelayInterval' not in cfg:
-		cfg['EnableNarrowDelayInterval'] = True
-		isChange = True
-	if 'ConsoleAlpha' not in cfg:
-		cfg['ConsoleAlpha'] = 75
-		isChange = True
-	if 'ConsoleFont' not in cfg:
-		cfg['ConsoleFont'] = '霞鹜文楷等宽'
-		isChange = True
-	if 'ConsoleFontSize' not in cfg:
-		cfg['ConsoleFontSize'] = 36
-		isChange = True
-	if 'MainExecPath' not in cfg:
-		cfg['MainExecPath'] = ''
-		isChange = True
-	if 'ChangeConsoleStyle' not in cfg:
-		cfg['ChangeConsoleStyle'] = False
-		isChange = True
-	if 'EnableFramelessWindow' not in cfg:
-		cfg['EnableFramelessWindow'] = False
-		isChange = True
-	if 'TransparentColor' not in cfg:
-		cfg['TransparentColor'] = "#FFFFFF"
-		isChange = True
-	dpi = ctypes.windll.shcore.GetScaleFactorForDevice(0) # GetDpi()
-	if 'SystemDPI' not in cfg:
-		cfg['SystemDPI'] = dpi
-		isChange = True
-	elif dpi != cfg['SystemDPI']:
-		cfg['SystemDPI'] = dpi
-		isChange = True
-	if "DefaultKeys" not in cfg:
-		cfg["DefaultKeys"] = False
-		isChange = True
-	if "DefaultDiffcute" not in cfg:
-		cfg["DefaultDiffcute"] = 0
-		isChange = True
-	if isChange:
-		json.dump(cfg,open('./musync_data/ExtraFunction.cfg','w',encoding='utf8'),indent="",ensure_ascii=False)
 
 if __name__ == '__main__':
 	print(GetDpi())

@@ -34,7 +34,7 @@
     <Compile Include="File2Base64.py" />
     <Compile Include="FileExport.py" />
     <Compile Include="FormatSongName.py" />
-    <Compile Include="Functions.py" />
+    <Compile Include="Toolkit.py" />
     <Compile Include="HitDelay.py" />
     <Compile Include="Launcher.py" />
     <Compile Include="MainWindowOldStyle.py" />
@@ -42,7 +42,6 @@
     <Compile Include="MusyncSavDecodeGUI.py" />
     <Compile Include="Resources.py" />
     <Compile Include="SavDecode\setup.py" />
-    <Compile Include="SaveStruct.py" />
     <Compile Include="uiautomation.py" />
   </ItemGroup>
   <ItemGroup>
@@ -85,28 +84,21 @@
     <Content Include="musync_data\Acc-Sync.json" />
     <Content Include="musync_data\Acc-SyncAnalyze%28Stata%29.do" />
     <Content Include="musync_data\Acc-SyncFormat.txt" />
-    <Content Include="musync_data\Assembly-CSharp.b64" />
     <Content Include="musync_data\Assembly-CSharp.dll" />
     <Content Include="musync_data\bootcfg.json" />
-    <Content Include="musync_data\FavSong.tmp" />
     <Content Include="musync_data\HitDelayHistory.sql" />
     <Content Include="musync_data\HitDelayHistory_v2.db" />
     <Content Include="musync_data\how to use.psd" />
     <Content Include="musync_data\ico.rc" />
     <Content Include="musync_data\ico.res" />
-    <Content Include="musync_data\icon.b64" />
-    <Content Include="musync_data\LICENSE.b64" />
     <Content Include="musync_data\LXGW.ttf" />
     <Content Include="musync_data\Musync.ico" />
     <Content Include="musync_data\SavAnalyze.analyze" />
     <Content Include="musync_data\SavAnalyze.json" />
     <Content Include="musync_data\SavDecode.decode" />
     <Content Include="musync_data\SaveFilePath.sfp" />
-    <Content Include="musync_data\songname.b64" />
     <Content Include="musync_data\songname.json" />
     <Content Include="musync_data\songname.update" />
-    <Content Include="musync_data\ttf.b64" />
-    <Content Include="musync_data\ttf.split" />
     <Content Include="Push.ps1" />
     <Content Include="README.md" />
     <Content Include="ReadmeResources\AllHitAnalyze.png" />

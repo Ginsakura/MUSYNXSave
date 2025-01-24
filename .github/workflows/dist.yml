@@ -77,26 +77,14 @@ jobs:
     #   run: |
     #     & '${{ steps.setup.outputs.gxx }}' --version
 
-    - name: Dist NoConsole ${{ env.Version }} Compress Version
+    - name: Dist ${{ env.Version }}
       # if: ${{ env.NotSkip == 'true'}}
       run: |
-        pyinstaller --distpath ./NoCLI/ -D -i ./musync_data/Musync.ico ./Launcher.py -w --clean
-        Compress-Archive -LiteralPath ./NoCLI/Launcher/ -DestinationPath ("./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}.zip")
-    - name: Dist NoConsole ${{ env.Version }} AllInOne Version
-      # if: ${{ env.NotSkip == 'true'}}
-      run: |
-        pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./Launcher.py -w
-        Rename-Item -Path ./Launcher.exe -NewName ("MusyncSavDecodeGUI_NoConsole_${{ env.Version }}_AllInOne.exe")
-    - name: Dist WithConsole ${{ env.Version }} Compress Version
-      # if: ${{ env.NotSkip == 'true'}}
-      run: |
-        pyinstaller --distpath ./WithCLI/ -D -i ./musync_data/Musync.ico ./Launcher.py
-        Compress-Archive -LiteralPath ./WithCLI/Launcher/ -DestinationPath ("./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}.zip")
-    - name: Dist WithConsole ${{ env.Version }} AllInOne Version
-      # if: ${{ env.NotSkip == 'true'}}
-      run: |
-        pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./Launcher.py
-        Rename-Item -Path ./Launcher.exe -NewName ("MusyncSavDecodeGUI_WithConsole_${{ env.Version }}_AllInOne.exe")
+        pyinstaller build.spec --distpath ./NoCLI/ --clean
+        Compress-Archive -LiteralPath ./NoCLI/MusyncSaveDecode/ -DestinationPath ("./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}.zip")
+        Rename-Item -Path ./MusyncSaveDecode.exe -NewName ("MusyncSavDecodeGUI_NoConsole_${{ env.Version }}_AllInOne.exe")
+        Compress-Archive -LiteralPath ./WithCLI/MusyncSaveDecode/ -DestinationPath ("./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}.zip")
+        Rename-Item -Path ./MusyncSaveDecode.exe -NewName ("MusyncSavDecodeGUI_WithConsole_${{ env.Version }}_AllInOne.exe")
 
     - name: Commit Release
       # if: ${{ env.NotSkip == 'true'}}

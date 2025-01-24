@@ -5,6 +5,7 @@
 /saveFile
 /Releases
 /venv
+/dist
 
 SavDecode/.vs
 SavDecode/gcm.cache

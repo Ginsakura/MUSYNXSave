@@ -9,18 +9,16 @@ import webbrowser
 #import win32con
 #import win32gui_struct
 #import win32gui
-
 from PIL import Image as PILImage
 from PIL import ImageTk
 #from threading import Thread
 from tkinter import *
 from tkinter import Tk,ttk,font,messagebox
 from tkinter.filedialog import askopenfilename
-
-import MainWindowOldStyle as OldStyle
-import Functions
-from HitDelay import HitDelayCheck,HitDelayText
-import MusyncSavDecode
+from . import Functions
+from . import MainWindowOldStyle as OldStyle
+from . import MusyncSavDecode
+from .HitDelay import HitDelayCheck,HitDelayText
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""

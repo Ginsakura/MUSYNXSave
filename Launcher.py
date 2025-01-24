@@ -3,48 +3,51 @@ import json
 import logging
 import os
 import sys
-# import traceback
-# import requests
-
 # from tkinter import *
 from tkinter import Tk,font
-
-import Functions
-import MainWindowOldStyle as OldStyle
-# import MusyncSavDecodeGUI as NewStyle
-
-from Resources import Config
+from . import Toolkit
+from . import MainWindowOldStyle as OldStyle
+#from . import MusyncSavDecodeGUI as NewStyle
+from .Resources import Config
 
 version = '1.3.0rc1'
 isPreRelease = True
 preVersion = "1.3.0pre1"
 isPreRelease = False
 
+config:Config = Config();
+loggerFilter = logging.INFO;
+match config.LoggerFilter.lower():
+	case "debug": loggerFilter = logging.DEBUG;
+	case "warning": loggerFilter = logging.WARNING;
+	case "error": loggerFilter = logging.ERROR;
+	case "fatal": loggerFilter = logging.FATAL;
+	case _: loggerFilter = logging.INFO;
+
 logger = logging.getLogger("Launcher")
-logger.setLevel(level = logging.INFO)
-file = logging.FileHandler("./log.txt")
-file.setLevel(logging.INFO)
+logger.setLevel(level = loggerFilter)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
+
+file = logging.FileHandler("./log.txt")
+file.setLevel(loggerFilter)
+file.setFormatter(formatter)
 
 console = logging.StreamHandler()
-console.setLevel(logging.INFO)
+console.setLevel(loggerFilter)
+console.setFormatter(formatter)
 
-logger.addHandler(handler)
+logger.addHandler(file)
 logger.addHandler(console)
 
 
 def launcher():
-	root = Tk()
+	root:Tk = Tk()
 	ctypes.windll.shcore.SetProcessDpiAwareness(1)
-	fonts = list(font.families())
-	Functions.CheckFileBeforeStarting(fonts)
+	fonts:list[str] = list(font.families())
+	Toolkit.CheckFileBeforeStarting(fonts)
 	# del fonts
-	Functions.CheckConfig()
-	with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
-		cfg = json.load(cfg)
-	if cfg['ChangeConsoleStyle']:
-		Functions.ChangeConsoleStyle()
+	if config.ChangeConsoleStyle:
+		Toolkit.ChangeConsoleStyle()
 	root.tk.call('tk', 'scaling', 1.25)
 	root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
 	# 强制仅旧版UI

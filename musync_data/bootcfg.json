@@ -1,5 +1,6 @@
 {
   "Version": "1.3.0.1",
+  "LoggerFilter": "DEBUG",
   "Acc_Sync": true,
   "CheckUpdate": false,
   "AnalyzeWhenStarting": false,

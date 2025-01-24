@@ -5,24 +5,21 @@ import psutil
 import requests
 import threading
 import time
-# import traceback
 import webbrowser
 #import win32api
 #import win32con
 #import win32gui_struct
 #import win32gui
-
 from PIL import Image as PILImage
 from PIL import ImageTk
 #from threading import Thread
 from tkinter import *
 from tkinter import Tk,ttk,font,messagebox
 from tkinter.filedialog import askopenfilename
-
-import Difficulty_ScoreAnalyze as dsa
-import Functions
-import MusyncSavDecode
-from HitDelay import HitDelayCheck,HitDelayText
+from . import Difficulty_ScoreAnalyze as dsa
+from . import Functions
+from . import MusyncSavDecode
+from .HitDelay import HitDelayCheck,HitDelayText
 
 
 class MusyncSavDecodeGUI(object):

@@ -1,13 +1,15 @@
-﻿import json
+﻿import gzip
+import json
 import logging
 import os
+import shutil
 import threading
 
 
 class SongName(object):
 	"存储SongName.json,单例";
 	__instance = None;
-	__lock:threading.Lock = threading.Lock()
+	__lock:threading.Lock = threading.Lock();
 
 	def __new__(cls):
 		with cls.__lock:
@@ -17,28 +19,32 @@ class SongName(object):
 		return cls.__instance
 
 	def __init__(self) -> None:
-		self.__data:dict[str,list] = None;
-		self.__filePath:str = "./musync_data/SongName.json";
-		self.__logger:logging.Logger = logging.getLogger("Resources.SongName");
+		self.__data:dict[str,list|int]	= None;
+		self.__filePath:str				= os.getcwd()+"/musync_data/SongName.json";
+		self.__logger:logging.Logger	= Logger().GetLogger("Resources.SongName");
 		self.__logger.info("creating an instance in Resources.SongName");
 		self.LoadFile();
 
 	@property
-	def SongNameData(self)->str: return self.__data
+	def SongNameData(self)->str: return self.__data;
 
 	@property
-	def FilePath(self)->str: return self.__filePath
+	def Update(self)->int: return self.__data["update"];
+
+	@property
+	def FilePath(self)->str: return self.__filePath;
 	# @FilePath.setter
 	# def FilePath(self, value:str): self.__filePath = value; self.LoadFile();
 
 	def LoadFile(self)->None:
 		"加载配置文件,自动执行";
-		if os.path.isfile(self.__filePath):
+		if not os.path.isfile(self.__filePath):
 			self.__logger.error(f"file: \"{self.__filePath}\" not exists.");
+			self.__data = None;
 			return;
 		with open(self.__filePath,'r',encoding='utf8') as songNameFile:
 			try:
-				songNameJson:dict[str,list] = json.load(songNameFile);
+				self.__data:dict[str,list] = json.load(songNameFile);
 			except Exception:
 				self.__logger.exception(f"file: \"{self.__filePath}\" load failure.");
 			else:
@@ -46,8 +52,32 @@ class SongName(object):
 
 class Config(object):
 	"从bootcfg.json读取配置信息,单例";
+	def CompressLogFile()->None:
+		logsDir:str		= "./logs/";
+		logsName:str	= "log.gz";
+		logName:str		= "log.txt";
+		# 移动压缩文件到 logs 目录
+		shutil.move(f"./{logName}", logsDir+logName);
+		# 获取已有的压缩文件数量
+		nextIndex:int = len([f for f in os.listdir(logsDir)]);
+		# 压缩 log.txt 文件
+		with open(logsDir+logName, 'rb') as f_in:
+			with gzip.open(f"{logsDir}{logsName}.{nextIndex}", 'wb') as f_out:
+				shutil.copyfileobj(f_in, f_out);
+		# 清理 log.txt 文件
+		os.remove(logsDir+logName);
 	__instance = None;
-	__lock:threading.Lock = threading.Lock()
+	__lock:threading.Lock = threading.Lock();
+	if (os.path.isfile("./log.txt")):CompressLogFile();
+	__logger:logging.Logger = logging.getLogger("Resources.Config");
+	__file:logging.FileHandler = logging.FileHandler("./log.txt");
+	__file.setLevel(logging.DEBUG);
+	__file.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'));
+	__console:logging.StreamHandler = logging.StreamHandler();
+	__console.setLevel(logging.DEBUG);
+	__console.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'));
+	__logger.addHandler(__file);
+	__logger.addHandler(__console);
 
 	def __new__(cls):
 		with cls.__lock:
@@ -56,29 +86,28 @@ class Config(object):
 		return cls.__instance
 
 	def __init__(self) -> None:
-		self.__filePath:str = "./musync_data/bootcfg.json";
-		self.__logger:logging.Logger = logging.getLogger("Resources.Config");
+		self.__filePath:str					= os.getcwd()+"/musync_data/bootcfg.json";
 		self.__logger.info("creating an instance in Resources.Config");
+		self.Version:str					= None;
+		self.LoggerFilter:str				= "Info";
+		self.Acc_Sync:bool					= False;
+		self.CheckUpdate:bool				= True;
+		self.AnalyzeWhenStarting:bool		= False;
+		self.DLLInjection:bool				= False;
+		self.SystemDPI:int					= 100;
+		self.DonutChartinHitDelay:bool		= True;
+		self.DonutChartinAllHitAnalyze:bool	= True;
+		self.NarrowDelayInterval:bool		= True;
+		self.ConsoleAlpha:int				= 75;
+		self.ConsoleFont:str				= "霞鹜文楷等宽";
+		self.ConsoleFontSize:int			= 36;
+		self.MainExecPath:str				= None;
+		self.ChangeConsoleStyle:bool		= True;
+		self.FramelessWindow:bool			= False;
+		self.TransparentColor:str			= "#FFFFFF";
+		self.Default4Keys:bool				= False;
+		self.DefaultDiffcute:int			= 0;
 		self.LoadConfig();
-		self.Version:str = None;
-		self.LoggerFilter:str = "Info";
-		self.Acc_Sync:bool = False;
-		self.CheckUpdate:bool = True;
-		self.AnalyzeWhenStarting:bool = False;
-		self.DLLInjection:bool = False;
-		self.SystemDPI:int = 100;
-		self.DonutChartinHitDelay:bool = True;
-		self.DonutChartinAllHitAnalyze:bool = True;
-		self.NarrowDelayInterval:bool = True;
-		self.ConsoleAlpha:int = 75;
-		self.ConsoleFont:str = "霞鹜文楷等宽";
-		self.ConsoleFontSize:int = 36;
-		self.MainExecPath:str = None;
-		self.ChangeConsoleStyle:bool = True;
-		self.FramelessWindow:bool = False;
-		self.TransparentColor:str = "#FFFFFF";
-		self.Default4Keys:bool = False;
-		self.DefaultDiffcute:int = 0;
 
 	# def __repr__(self):
 	# 	pass
@@ -90,7 +119,7 @@ class Config(object):
 
 	def LoadConfig(self)->None:
 		"读取配置文件,自动执行";
-		if os.path.isfile(self.__filePath):
+		if not os.path.isfile(self.__filePath):
 			self.__logger.error(f"file: \"{self.__filePath}\" not exists.");
 			return;
 		with open(self.__filePath,'r',encoding='utf8') as configFile:
@@ -109,6 +138,7 @@ class Config(object):
 		# 获取所有需要保存的属性
 		config_data = {
 			"Version": self.Version,
+			"LoggerFilter" : self.LoggerFilter,
 			"Acc_Sync": self.Acc_Sync,
 			"CheckUpdate": self.CheckUpdate,
 			"AnalyzeWhenStarting": self.AnalyzeWhenStarting,
@@ -140,7 +170,7 @@ class Config(object):
 class SaveDataInfo(object):
 	"存储存档数据,单例"
 	__instance = None;
-	__lock:threading.Lock = threading.Lock()
+	__lock:threading.Lock = threading.Lock();
 
 	def __new__(cls):
 		with cls.__lock:
@@ -150,50 +180,50 @@ class SaveDataInfo(object):
 
 	def __init__(self):
 		super(SaveDataInfo, self).__init__()
-		self.__logger:logging.Logger = logging.getLogger("Resources.SaveDataInfo");
+		self.__logger:logging.Logger		= Logger().GetLogger(name="Resources.SaveDataInfo");
 		self.__logger.info("creating an instance in Resources.SaveDataInfo");
-		self.version:int = None;
-		self.AppVersion:int = None;
-		self.saveInfoList:list[MapDataInfo] = list();
-		self.purchaseIds:list[str] = list();
-		self.crc:int = None;
-		# self.instance = None;
-		self.saveDate:int = None;
-		self.songIndex:int = 1;
-		self.isHard:int = None;
-		self.buttonNumber:int = 4;
-		self.sortNum:int = None;
-		self.missVibrate:bool = None;
-		self.soundHelper:int = 3;
-		self.displayAdjustment:int = None;
-		self.judgeCompensate:int = None;
-		self.advSceneSettringString:str = None;
-		self.metronomeSquipment:str = None;
-		self.playTimeUIA:int = None;
-		self.playTimeUIB:int = None;
-		self.playTimeUIC:int = None;
-		self.playTimeUID:int = None;
-		self.playTimeUIE:int = None;
-		self.playTimeUIF:int = None;
-		self.playTimeRankEX:int = None;
-		self.playTimeKnockEX:int = None;
-		self.playTimeKnockNote:int = None;
-		self.playVsync:bool = True;
-		self.buttonSetting4K:list[int] = list();
-		self.buttonSetting6K:list[int] = list();
-		self.hiddenUnlockSongs:bool = None;
-		self.hideLeaderboardMini:bool = True;
-		self.playingSceneName:str = None;
-		self.selectSongName:str = "luobi";
-		self.sceneName:str = "SelectSongScene";
-		self.busVolume:float = None;
-		self.advSceneSettingString:str = "\n";
-		self.dropSpeed:int = 8;
-		self.isUseUserMemoryDropSpeed:bool = True;
-		self.dropSpeedFloat:float = None;
-		self.isOpenVSync:bool = True;
-		self.hadSaveFpsAndVSync:bool = None;
-		self.fps:int = 60;
+		self.version:int					= None;
+		self.AppVersion:int					= None;
+		self.saveInfoList:list[MapDataInfo]	= list();
+		self.purchaseIds:list[str]			= list();
+		self.crc:int						= None;
+		# self.instance						= None;
+		self.saveDate:int					= None;
+		self.songIndex:int					= 1;
+		self.isHard:int						= None;
+		self.buttonNumber:int				= 4;
+		self.sortNum:int					= None;
+		self.missVibrate:bool				= None;
+		self.soundHelper:int				= 3;
+		self.displayAdjustment:int			= None;
+		self.judgeCompensate:int			= None;
+		self.advSceneSettringString:str		= None;
+		self.metronomeSquipment:str			= None;
+		self.playTimeUIA:int				= None;
+		self.playTimeUIB:int				= None;
+		self.playTimeUIC:int				= None;
+		self.playTimeUID:int				= None;
+		self.playTimeUIE:int				= None;
+		self.playTimeUIF:int				= None;
+		self.playTimeRankEX:int				= None;
+		self.playTimeKnockEX:int			= None;
+		self.playTimeKnockNote:int			= None;
+		self.playVsync:bool					= True;
+		self.buttonSetting4K:list[int]		= list();
+		self.buttonSetting6K:list[int]		= list();
+		self.hiddenUnlockSongs:bool			= None;
+		self.hideLeaderboardMini:bool		= True;
+		self.playingSceneName:str			= None;
+		self.selectSongName:str				= "luobi";
+		self.sceneName:str					= "SelectSongScene";
+		self.busVolume:float				= None;
+		self.advSceneSettingString:str		= "\n";
+		self.dropSpeed:int					= 8;
+		self.isUseUserMemoryDropSpeed:bool	= True;
+		self.dropSpeedFloat:float			= None;
+		self.isOpenVSync:bool				= True;
+		self.hadSaveFpsAndVSync:bool		= None;
+		self.fps:int						= 60;
 
 	def __str__(self)->str:
 		return f"SongSaveInfoPy(\n"\
@@ -242,49 +272,49 @@ class SaveDataInfo(object):
 	def ToDict(self)->dict[str,any]:
 		"格式化为dict类型";
 		return dict(
-			Version = self.version,
-			AppVersion = self.AppVersion,
-			SaveInfoList = [saveInfo.ToDict() for saveInfo in self.saveInfoList],
-			PurchaseIds = self.purchaseIds,
-			Crc = self.crc,
-			SongIndex = self.songIndex,
-			IsHard = self.isHard,
-			ButtonNumber = self.buttonNumber,
-			SortNum = self.sortNum,
-			MissVibrate = self.missVibrate,
-			SoundHelper = self.soundHelper,
-			DisplayAdjustment = self.displayAdjustment,
-			JudgeCompensate = self.judgeCompensate,
-			AdvSceneSettringString = self.advSceneSettringString,
-			MetronomeSquipment = self.metronomeSquipment,
-			PlayTimeUIA = self.playTimeUIA,
-			PlayTimeUIB = self.playTimeUIB,
-			PlayTimeUIC = self.playTimeUIC,
-			PlayTimeUID = self.playTimeUID,
-			PlayTimeUIE = self.playTimeUIE,
-			PlayTimeUIF = self.playTimeUIF,
-			PlayTimeRankEX = self.playTimeRankEX,
-			PlayTimeKnockEX = self.playTimeKnockEX,
-			PlayTimeKnockNote = self.playTimeKnockNote,
-			PlayVsync = self.playVsync,
-			ButtonSetting4K = self.buttonSetting4K,
-			ButtonSetting6K = self.buttonSetting6K,
-			HiddenUnlockSongs = self.hiddenUnlockSongs,
-			HideLeaderboardMini = self.hideLeaderboardMini,
-			PlayingSceneName = self.playingSceneName,
-			SelectSongName = self.selectSongName,
-			SceneName = self.sceneName,
-			BusVolume = self.busVolume,
-			AdvSceneSettingString = self.advSceneSettingString,
-			DropSpeed = self.dropSpeed,
+			Version					 = self.version,
+			AppVersion				 = self.AppVersion,
+			SaveInfoList			 = [saveInfo.ToDict() for saveInfo in self.saveInfoList],
+			PurchaseIds				 = self.purchaseIds,
+			Crc						 = self.crc,
+			SongIndex				 = self.songIndex,
+			IsHard					 = self.isHard,
+			ButtonNumber			 = self.buttonNumber,
+			SortNum					 = self.sortNum,
+			MissVibrate				 = self.missVibrate,
+			SoundHelper				 = self.soundHelper,
+			DisplayAdjustment		 = self.displayAdjustment,
+			JudgeCompensate			 = self.judgeCompensate,
+			AdvSceneSettringString	 = self.advSceneSettringString,
+			MetronomeSquipment		 = self.metronomeSquipment,
+			PlayTimeUIA				 = self.playTimeUIA,
+			PlayTimeUIB				 = self.playTimeUIB,
+			PlayTimeUIC				 = self.playTimeUIC,
+			PlayTimeUID				 = self.playTimeUID,
+			PlayTimeUIE				 = self.playTimeUIE,
+			PlayTimeUIF				 = self.playTimeUIF,
+			PlayTimeRankEX			 = self.playTimeRankEX,
+			PlayTimeKnockEX			 = self.playTimeKnockEX,
+			PlayTimeKnockNote		 = self.playTimeKnockNote,
+			PlayVsync				 = self.playVsync,
+			ButtonSetting4K			 = self.buttonSetting4K,
+			ButtonSetting6K			 = self.buttonSetting6K,
+			HiddenUnlockSongs		 = self.hiddenUnlockSongs,
+			HideLeaderboardMini		 = self.hideLeaderboardMini,
+			PlayingSceneName		 = self.playingSceneName,
+			SelectSongName			 = self.selectSongName,
+			SceneName				 = self.sceneName,
+			BusVolume				 = self.busVolume,
+			AdvSceneSettingString	 = self.advSceneSettingString,
+			DropSpeed				 = self.dropSpeed,
 			IsUseUserMemoryDropSpeed = self.isUseUserMemoryDropSpeed,
-			DropSpeedFloat = self.dropSpeedFloat,
-			IsOpenVSync = self.isOpenVSync,
-			HadSaveFpsAndVSync = self.hadSaveFpsAndVSync,
+			DropSpeedFloat			 = self.dropSpeedFloat,
+			IsOpenVSync				 = self.isOpenVSync,
+			HadSaveFpsAndVSync		 = self.hadSaveFpsAndVSync,
 			Fps = self.fps,
 			);
 
-	def ToJson(self)->None:
+	def DumpToJson(self)->None:
 		"实例的数据保存为 JSON 文件";
 		dataDict = self.ToDict();
 		filePath:str = "./musync_data/SaveDataInfo.json";
@@ -297,25 +327,27 @@ class SaveDataInfo(object):
 
 class MapInfo(object):
 	"存储谱面信息"
-	def __init__(self, info:list = None) -> None:
+	def __init__(self, info:list = None, isBuiltin=False) -> None:
 		if info is None:
-			self.name:str = None;
-			self.keys:str = None;
-			self.difficulty:str = None;
-			self.difficultyNumber:str = None;
+			self.SongName:str			  = None;
+			self.SongKeys:str			  = None;
+			self.SongDifficulty:str		  = None;
+			self.SongDifficultyNumber:str = None;
 		else:
-			self.name:str = str(info[0]);
-			self.keys:str = ("4Key" if info[1]==4 else "6Key");
-			self.difficulty:str = str(["Easy","Hard","Inferno"][info[2]]);
-			self.difficultyNumber:str = f"{info[3]:02d}";
+			self.SongName:str			  = str(info[0]);
+			self.SongKeys:str			  = ("4Key" if info[1]==4 else "6Key");
+			self.SongDifficulty:str		  = str(["Easy","Hard","Inferno"][info[2]]);
+			self.SongDifficultyNumber:str = f"{info[3]:02d}";
+		self.SongIsBuiltin:bool		  = isBuiltin;
 
 	def ToDict(self)->dict[str,str]:
 		"格式化为dict类型";
 		return dict(
-			Name = self.name,
-			Keys = self.keys,
-			Difficulty = self.difficulty,
-			DifficultyNumber = self.difficultyNumber
+			Name			 = self.SongName,
+			Keys			 = self.SongKeys,
+			Difficulty		 = self.SongDifficulty,
+			DifficultyNumber = self.SongDifficultyNumber,
+			SongIsBuiltin	 = self.SongIsBuiltin
 			);
 
 class MapDataInfo(MapInfo):
@@ -324,58 +356,89 @@ class MapDataInfo(MapInfo):
 			UploadScore:float=0.0, PlayCount:int=0, Isfav:bool=False,
 			CrcInt:int=0) -> None:
 		self.SongId:int = SongId;
-		self.SongInfo:MapInfo = None;
-		self.SpeedStall:int = SpeedStall;
-		self.SyncNumber:int = SyncNumber;
-		self.UploadScore:float = UploadScore;
-		self.PlayCount:int = PlayCount;
-		self.Isfav:bool = Isfav;
-		self.CrcInt:int = CrcInt;
-		self.state:str = "    ";
+		# self.SongInfo:MapInfo = None;
+		self.SpeedStall:int		= SpeedStall;
+		self.SyncNumber:int		= SyncNumber;
+		self.UploadScore:float	= UploadScore;
+		self.PlayCount:int		= PlayCount;
+		self.Isfav:bool			= Isfav;
+		self.CrcInt:int			= CrcInt;
+		self.State:str			= "    ";
 
 	def __str__(self):
 		return f"SongSaveInfoPy("\
 			f"SongId:{self.SongId:08X}, "\
-			f"Name:{self.name}, "\
-			f"Keys:{self.keys}, "\
-			f"Difficulty:{self.difficulty}, "\
-			f"DifficultyNumber:{self.difficultyNumber}, "\
+			f"Name:{self.SongName}, "\
+			f"Keys:{self.SongKeys}, "\
+			f"Difficulty:{self.SongDifficulty}, "\
+			f"DifficultyNumber:{self.SongDifficultyNumber}, "\
 			f"SpeedStall:{self.SpeedStall:08X}, "\
 			f"SyncNumber:{self.SyncNumber}, "\
 			f"UploadScore:{self.UploadScore}, "\
 			f"PlayCount:{self.PlayCount}, "\
 			f"Isfav:{self.Isfav}, "\
 			f"CrcInt:{self.CrcInt}, "\
-			f"state:{self.state})";
+			f"State:{self.State})";
 
 	def SetSongInfo(self, *args, **kwargs):
 		"设置SongInfo字段";
 		if len(args) == 1 and isinstance(args[0], list):
 			info = args[0];
-			self.name = str(info[0]);
-			self.keys = "4Key" if info[1] == 4 else "6Key";
-			self.difficulty = str(["Easy", "Hard", "Inferno"][info[2]]);
-			self.difficultyNumber = f"{info[3]:02d}";
+			self.SongName			  = str(info[0]);
+			self.SongKeys			  = "4Key" if info[1] == 4 else "6Key";
+			self.SongDifficulty		  = str(["Easy", "Hard", "Inferno"][info[2]]);
+			self.SongDifficultyNumber = f"{info[3]:02d}";
 		elif len(kwargs) == 4:
-			self.name = kwargs.get("name");
-			self.keys = kwargs.get("keys");
-			self.difficulty = kwargs.get("difficulty");
-			self.difficultyNumber = kwargs.get("difficultyNumber");
+			self.SongName			  = kwargs.get("name");
+			self.SongKeys			  = kwargs.get("keys");
+			self.SongDifficulty		  = kwargs.get("difficulty");
+			self.SongDifficultyNumber = kwargs.get("difficultyNumber");
 		else:
 			raise ValueError("Invalid arguments");
+
+	def SetSongFrom(self,isBuiltin=False)->None:
+		"设置曲目是否为内置曲目"
+		self.SongIsBuiltin = isBuiltin;
 
 	def ToDict(self)->dict[str,any]:
 		"格式化为dict类型";
 		return dict(
-			SongId		= f"{self.SongId:08X}",
-			Name		= self.name,
-			Keys		= self.keys,
-			Difficulty	= self.difficulty,
-			DifficultyNumber = self.difficultyNumber,
-			SpeedStall	= f"{self.SpeedStall:08X}",
-			SyncNumber	= f"{self.SyncNumber / 100.0}%",
-			UploadScore	= f"{self.UploadScore * 100.0}%",
-			CrcInt		= self.CrcInt,
-			State		= self.state
+			SongId			 = f"{self.SongId:08X}",
+			SongName		 = self.SongName,
+			SongKeys		 = self.SongKeys,
+			SongDifficulty	 = self.SongDifficulty,
+			SongDifficultyNumber = self.SongDifficultyNumber,
+			SongIsBuiltin	 = self.SongIsBuiltin,
+			SpeedStall		 = f"{self.SpeedStall:08X}",
+			SyncNumber		 = f"{self.SyncNumber / 100.0}%",
+			UploadScore		 = f"{self.UploadScore * 100.0}%",
+			CrcInt			 = self.CrcInt,
+			State			 = self.State
 			);
 
+class Logger(object):
+	"用于记录和生成logging.Logger"
+	def __init__(self, logFilter:str = Config().LoggerFilter) -> None:
+		self.loggerFilter = logging.INFO;
+		match logFilter.lower():
+			case "debug": self.loggerFilter		= logging.DEBUG;
+			case "warning": self.loggerFilter	= logging.WARNING;
+			case "error": self.loggerFilter		= logging.ERROR;
+			case "fatal": self.loggerFilter		= logging.FATAL;
+			case _: self.loggerFilter			= logging.INFO;
+
+		self.formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s');
+		self.file = logging.FileHandler("./log.txt");
+		self.file.setLevel(self.loggerFilter);
+		self.file.setFormatter(self.formatter);
+		self.console = logging.StreamHandler();
+		self.console.setLevel(self.loggerFilter);
+		self.console.setFormatter(self.formatter);
+
+	def GetLogger(self,name:str)->logging.Logger:
+		"获取Logger"
+		logger:logging.Logger = logging.getLogger(name);
+		logger.setLevel(level = self.loggerFilter)
+		logger.addHandler(self.file);
+		logger.addHandler(self.console);
+		return logger;

@@ -10,7 +10,7 @@ from matplotlib.pyplot import MultipleLocator
 class AllHitAnalyze(object):
 	"""docstring for HitAnalyze"""
 	def __init__(self):
-		super(AllHitAnalyze, self).__init__()
+		# super(AllHitAnalyze, self).__init__()
 		db = sql.connect('./musync_data/HitDelayHistory_v2.db')
 		cur = db.cursor()
 		res = cur.execute('select HitMap from HitDelayHistory')

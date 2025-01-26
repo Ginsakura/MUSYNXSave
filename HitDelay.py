@@ -92,7 +92,7 @@ class HitDelayText(object):
 		self.delayHistory = ttk.Treeview(self.subroot, show="headings", columns = ['Name','RecordTime','AllKeys','AvgDelay','AvgAcc'])
 		self.VScroll1 = Scrollbar(self.subroot, orient='vertical', command=self.delayHistory.yview)
 		self.delayHistory.configure(yscrollcommand=self.VScroll1.set)
-		
+
 		self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
 		if config['EnableAcc-Sync']:
 			self.logButton.place(relx=0.7,y=70,height=60,relwidth=0.3)

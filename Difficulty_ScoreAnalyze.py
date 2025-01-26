@@ -35,7 +35,7 @@ def Analyze():
 			# else:
 			# 	diffSocre.pop(ids, None)
 	# print(diffSocreTrim)
-	
+
 	fig = plt.figure('难度与分数散点图', figsize=(7, 8))
 	fig.clear()
 	fig.subplots_adjust(**{"left":0.083,"bottom":0.07,"right":0.60,"top":0.994})
@@ -90,10 +90,10 @@ def Analyze():
 
 	# supported values are '-', '--', '-.', ':', 'None', ' ', '', 'solid', 'dashed', 'dashdot', 'dotted'
 	ax.plot([int(i) for i in diffSocreTrim[0].keys()],[diffSocreTrim[0][ids][0] for ids in diffSocreTrim[0].keys()],
-		linestyle='-',color='orange',marker="D",markerfacecolor="Blue",alpha=0.7,linewidth=2, 
+		linestyle='-',color='orange',marker="D",markerfacecolor="Blue",alpha=0.7,linewidth=2,
 		label="4Key Mode")
 	ax.plot([int(i) for i in diffSocreTrim[1].keys()],[diffSocreTrim[1][ids][0] for ids in diffSocreTrim[1].keys()],
-		linestyle='-',color='orange',marker="D",markerfacecolor="Red",alpha=0.7,linewidth=2, 
+		linestyle='-',color='orange',marker="D",markerfacecolor="Red",alpha=0.7,linewidth=2,
 		label="6Key Mode")
 
 	ax.scatter(diff[0],score[0],alpha=0.7,color='#8A68D0',s=5)
@@ -103,7 +103,7 @@ def Analyze():
 	ax.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':10},framealpha=0.4)  #show label
 	ax.set_xlabel('Difficulty') #x_label
 	ax.set_ylabel('SYNC.Rate')#y_label
-	
+
 	plt.show()
 
 if __name__ == '__main__':

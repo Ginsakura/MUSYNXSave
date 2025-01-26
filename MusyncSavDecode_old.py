@@ -9,7 +9,7 @@ from base64 import b64decode,b64encode
 class MUSYNCSavProcess():
 	"""docstring for MUSYNCSavProcess"""
 	def __init__(self, savFile='', decodeFile=''):
-		super(MUSYNCSavProcess, self).__init__()
+		# super(MUSYNCSavProcess, self).__init__()
 		self.savPath:str = savFile;
 		self.decodeFile:str = decodeFile;
 		#self.dt = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')

@@ -1,13 +1,14 @@
 import clr
-import json
 import logging
 import os
 import time
 from base64 import b64decode
 from tkinter import messagebox
-from .Resources import SongName, SaveDataInfo, MapDataInfo, MapInfo
+from Resources import Config, SongName, SaveDataInfo, MapDataInfo, MapInfo, Logger
 
-logger = logging.getLogger("MUSYNCSavDecode")
+
+config:Config = Config();
+logger:logging.Logger = Logger().GetLogger(name="MUSYNCSavDecode");
 
 # Load C# Lib
 # clr.AddReference("System.Runtime.Serialization.Formatters.Binary")
@@ -17,24 +18,22 @@ from System.IO import MemoryStream
 from System.Reflection import Assembly
 from System.Runtime.Serialization.Formatters.Binary import BinaryFormatter
 try:
-	with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as confFile:
-		config = json.load(confFile)
-	assembly = Assembly.LoadFrom(config['MainExecPath']+'MUSYNX_Data/Managed/Assembly-CSharp.dll')
+	assembly = Assembly.LoadFrom(config.MainExecPath+'MUSYNX_Data/Managed/Assembly-CSharp.dll')
 	# 动态获取类的类型
 	UserMemory = assembly.GetType("Assembly-CSharp.UserMemory")
 	SongSaveInfo = assembly.GetType("Assembly-CSharp.SaveInfoList")
 except Exception:
-	logger.exception(f"Failed to Load {config['MainExecPath']}MUSYNX_Data/Managed/Assembly-CSharp.dll")
+	logger.exception(f"Failed to Load {config.MainExecPath}MUSYNX_Data/Managed/Assembly-CSharp.dll")
 
 class MUSYNCSavProcess(object):
 	"""docstring for MUSYNCSavProcess""";
 	def __init__(self, savFile=''):
-		super(MUSYNCSavProcess, self).__init__()
+		# super(MUSYNCSavProcess, self).__init__()
 		self.savPath:str = savFile;
 		self.userMemory:SaveDataInfo = SaveDataInfo();
 		self.saveDataDict:dict[str,any] = dict();
 		self.FavSong:list[str] = list();
-		self.__logger:logging.Logger = logging.getLogger("MUSYNCSavDecode.MUSYNCSavProcess");
+		self.__logger:logging.Logger = Logger().GetLogger(name="MUSYNCSavDecode.MUSYNCSavProcess");
 		self.__logger.info("creating an instance in MUSYNCSavDecode");
 
 	def Main(self):
@@ -42,6 +41,7 @@ class MUSYNCSavProcess(object):
 			self.LoadSaveFile();
 			self.FixUserMemory();
 			self.FavFix()
+			self.userMemory.DumpToJson();
 		else:
 			self.__logger.error(f"文件夹\"{self.savPath}\"内找不到存档文件.")
 			messagebox.showerror("Error", "文件夹内找不到存档文件.")
@@ -156,7 +156,8 @@ class MUSYNCSavProcess(object):
 			songData:list|None = allSongData.get(songId);
 			if songData is None:
 				return None;
-			return MapInfo(songData);
+			isBuiltin:bool = songData[0] in allSongData["BuiltinSong"];
+			return MapInfo(songData,isBuiltin);
 
 		def NoCopyright(songId:str)->bool:
 			"标记无版权曲目";
@@ -187,17 +188,17 @@ class MUSYNCSavProcess(object):
 			mapData:MapDataInfo = self.userMemory.saveInfoList[saveIndex];
 			mapInfo:MapInfo = GetSongName(mapData.SongId);
 			if mapData.SongInfo is None:
-				mapData.state = "NoName";
+				mapData.State = "NoName";
 				removeIndexList.insert(0,saveIndex);
 			elif mapData.Isfav:
 				self.FavSong.append(mapInfo.songName);
-				mapData.state = "Favo";
+				mapData.State = "Favo";
 			elif OldAprilFoolsDay(mapData.SongId):
-				mapData.state = "Fool";
+				mapData.State = "Fool";
 			elif NoCopyright(mapData.SongId):
-				mapData.state = "NoCR";
+				mapData.State = "NoCR";
 
-			self.__logger.debug(f'| {"%08X"%mapData.SongId:>8} | {"%08X"%mapData.SpeedStall:^10} | {"%f%%"%(mapData.SyncNumber/100):>10} | {"%f%%"%(mapData.UploadScore*100):>19} | {mapData.PlayCount:>9} | {mapData.state:>7} |');
+			self.__logger.debug(f'| {"%08X"%mapData.SongId:>8} | {"%08X"%mapData.SpeedStall:^10} | {"%f%%"%(mapData.SyncNumber/100):>10} | {"%f%%"%(mapData.UploadScore*100):>19} | {mapData.PlayCount:>9} | {mapData.State:>7} |');
 			mapData.SongInfo = mapInfo;
 			self.userMemory.saveInfoList[saveIndex] = mapData;
 		for removeIndex in removeIndexList:
@@ -213,8 +214,7 @@ class MUSYNCSavProcess(object):
 		self.__logger.debug(f"Favorites List：{self.FavSong}");
 		for index in range(len(self.userMemory.saveInfoList)):
 			if self.userMemory.saveInfoList[index].name in self.FavSong:
-				self.userMemory.saveInfoList[index].state = "Favo"
-		self.userMemory.ToJson();
+				self.userMemory.saveInfoList[index].State = "Favo"
 		self.__logger.debug("FavFix End.");
 		self.__logger.info("FavFix Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000));
 

@@ -13,9 +13,10 @@
     <RootNamespace>MUSYNCSavDecode</RootNamespace>
     <IsWindowsApplication>False</IsWindowsApplication>
     <InterpreterId>MSBuild|venv|$(MSBuildProjectFullPath)</InterpreterId>
-    <TestFramework>pytest</TestFramework>
+    <TestFramework>none</TestFramework>
     <UnitTestPattern>test*.py</UnitTestPattern>
     <UnitTestRootDirectory>.</UnitTestRootDirectory>
+    <SuppressConfigureTestFrameworkPrompt>true</SuppressConfigureTestFrameworkPrompt>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DebugSymbols>true</DebugSymbols>
@@ -37,12 +38,13 @@
     <Compile Include="Toolkit.py" />
     <Compile Include="HitDelay.py" />
     <Compile Include="Launcher.py" />
-    <Compile Include="MainWindowOldStyle.py" />
+    <Compile Include="MainWindow.py" />
     <Compile Include="MUSYNCSavDecode.py" />
-    <Compile Include="MusyncSavDecodeGUI.py" />
+    <Compile Include="MainWindow_New.py" />
     <Compile Include="Resources.py" />
     <Compile Include="SavDecode\setup.py" />
     <Compile Include="uiautomation.py" />
+    <Compile Include="__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".github\" />

@@ -1,90 +1,83 @@
-import ctypes
-import json
-import os
-import psutil
-import requests
-import threading
-import time
-import webbrowser
-#import win32api
-#import win32con
-#import win32gui_struct
-#import win32gui
-from PIL import Image as PILImage
-from PIL import ImageTk
-#from threading import Thread
-from tkinter import *
-from tkinter import Tk,ttk,font,messagebox
-from tkinter.filedialog import askopenfilename
-from . import Difficulty_ScoreAnalyze as dsa
-from . import Functions
-from . import MusyncSavDecode
-from .HitDelay import HitDelayCheck,HitDelayText
+import ctypes;
+import json;
+import logging;
+import os;
+import psutil;
+import requests;
+import threading;
+import time;
+import webbrowser;
+#import win32api;
+#import win32con;
+#import win32gui_struct;
+#import win32gui;
+# from PIL import Image as PILImage;
+# from PIL import ImageTk;
+from enum import Enum, unique
+from tkinter import *;
+from tkinter import Tk,ttk,font,messagebox;
+from tkinter.filedialog import askopenfilename;
+from Difficulty_ScoreAnalyze import Analyze;
+from HitDelay import HitDelayCheck,HitDelayText;
+from MusyncSavDecode import MUSYNCSavProcess;
+from Resources import Config, MapDataInfo, SaveDataInfo, SongName, Logger;
+from Toolkit import Toolkit
+
 
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
-	def __init__(self, version, preVersion, isPreRelease=False, root=None, isTKroot=True):
+	def __init__(self, version:str, preVersion:str, isPreRelease:bool=False, root:Tk=None, isTKroot:bool=True):
 	##Init##
-		self.version = version
-		self.preVersion = preVersion
-		with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as confFile:
-			self.config = json.load(confFile)
-		root.iconbitmap('./musync_data/Musync.ico')
-		super(MusyncSavDecodeGUI, self).__init__()
-		self.isTKroot = isTKroot
-		root.geometry(f'1000x670+500+300')
-		self.root = root
-		self.root.minsize(500, 460)
-		def fixed_map(option):
-			return [elm for elm in style.map("Treeview", query_opt=option) if elm[:2] != ("!disabled", "!selected")]
-		style = ttk.Style()
+		# super(MusyncSavDecodeGUI, self).__init__();
+		self.logger:logging.Logger = Logger().GetLogger(name="MusyncSavDecodeGUI");
+		self.version:str = version;
+		self.preVersion:str = preVersion;
+		self.config:Config = Config();
+		self.isTKroot:bool = isTKroot;
+		root.iconbitmap('./musync_data/Musync.ico');
+		root.geometry(f'1000x670+500+300');
+		root.title("同步音律喵赛克Steam端本地存档分析");
+		root['background'] = '#efefef';
+		# 监听窗口大小改变
+		root.bind('<Configure>', self.UpdateWindowInfo);
+		self.root:Tk = root;
+		self.root.minsize(500, 460);
+		# def fixed_map(option):
+		# 	return [elm for elm in style.map("Treeview", query_opt=option) if elm[:2] != ("!disabled", "!selected")]
+		style:ttk.Style = ttk.Style();
 		if 1 :# self.config['SystemDPI'] == 100:
-			style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',13))
-			style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
-			style.configure("reload.TButton", font=('霞鹜文楷等宽',16))
-			# , background='#EEBBBB', foreground='#00CCFF',relief='ridge')
-			# photo = PhotoImage(file="./skin/F5.png").subsample(5, 4)
-			style.configure("F5.TButton", font=('霞鹜文楷等宽',16),# background='#EEBBBB')
-				# image=[photo,style.map("F5.TButton",
-				image=[style.map("F5.TButton",
+			style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',13));
+			style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15));
+			# style.configure("Checkbutton", foreground=[]);
+			style.configure("reload.TButton", font=('霞鹜文楷等宽',16));
+			style.configure("F5.TButton", font=('霞鹜文楷等宽',16),
+				image=[
+					#photo=PhotoImage(file="./skin/F5.png").subsample(5, 4),
+					style.map("F5.TButton",
 					foreground=[('pressed', 'red'), ('active', 'blue')],
 					background=[('pressed', '!disabled', 'black'), ('active', 'white')])
-				])
-			style.configure("close.TButton", font=('霞鹜文楷等宽',16), bg="#EEBBBB")
-			self.font=('霞鹜文楷等宽',16)
-		# elif self.config['SystemDPI'] == 125:
-		# else:
-		# 	style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',11))
-		# 	style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
-		# 	style.configure("reload.TButton", font=('霞鹜文楷等宽',13.5))
-		# 	# , background='#EEBBBB', foreground='#00CCFF',relief='ridge')
-		# 	style.configure("F5.TButton", font=('霞鹜文楷等宽',13.5), bg="#EEBBBB")
-		# 	self.font=('霞鹜文楷等宽',13.5)
-		# style.configure("Treeview", foreground=fixed_map("foreground"), background=fixed_map("background"))
-		# style.configure("Treeview", background="#EFEFEF", foreground="#050505", fieldbackground="red")
-		if isTKroot == True:
-			root.title("同步音律喵赛克Steam端本地存档分析")
-			root['background'] = '#efefef'
-		self.saveFilePathVar = StringVar()
-		self.saveFilePathVar.set('Input SaveFile or AnalyzeFile Path (savedata.sav)or(SavAnalyze.json)')
-		self.analyzeFilePathVar = StringVar()
-		self.analyzeFilePathVar.set('Input Analyze File Dir (or not)')
-		self.windowInfo = [root.winfo_x(),root.winfo_y(),root.winfo_width(),root.winfo_height()]
-		self.saveCount = 0
-		self.totalSync = 0
-		self.excludeCount = 0
-		self.dataSortMethodsort = [None,True]
-		self.dataSelectMethod = None
-		self.treeviewColumns = ["SpeedStall",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","Status"]
-		self.difficute = 3
-		self.keys = 0
-		self.isDLC = 0
-		self.wh = [0,0]
-		self.checkGameStartEvent = threading.Event()
-		self.CheckGameIsStartThread = None
+				]);
+			style.configure("close.TButton", font=('霞鹜文楷等宽',16), bg="#EEBBBB");
+			self.font:tuple = ('霞鹜文楷等宽',16);
+		self.saveFilePathVar:StringVar = StringVar();
+		self.saveFilePathVar.set('Input SaveFile or AnalyzeFile Path (savedata.sav)or(SavAnalyze.json)');
+		self.windowInfo:list[int] = [root.winfo_x(), root.winfo_y(), root.winfo_width(), root.winfo_height()];
+		self.oldWindowInfo:list[int] = [0, 0];
+		self.saveCount:int = 0;
+		self.totalSync:int = 0;
+		self.excludeCount:int = 0;
+		self.dataSortMethodsort:list[bool] = [None, True];
+		self.dataSelectMethod:str = None;
+		self.treeviewColumns:list[str] = ["SongId",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","Status"];
+		self.difficute:DiffcuteEnum = DiffcuteEnum.All;
+		self.keys:KeysEnum = KeysEnum.All;
+		self.songSelect:SongSelectEnum = SongSelectEnum.All;
+		self.checkGameStartEvent = threading.Event();
+		self.CheckGameIsStartThread = None;
+		self.UpdateEnum();
 
-		root.protocol("WM_DELETE_WINDOW", self.on_closing)
+		root.protocol("WM_DELETE_WINDOW", self.Closing);
 
 	##Controller##
 		self.deleteAnalyzeFile = ttk.Button(self.root, text="解码并刷新",command=self.DeleteAnalyzeFile,style='F5.TButton')
@@ -105,9 +98,8 @@ class MusyncSavDecodeGUI(object):
 		self.saveData = ttk.Treeview(self.root, show="headings", columns = self.treeviewColumns)
 		self.VScroll1 = Scrollbar(self.saveData, orient='vertical', command=self.saveData.yview)
 		self.saveData.configure(yscrollcommand=self.VScroll1.set)
-		# self.saveData.tag_configure("NotDLCSong",background='#BBDDFF')
-		# self.saveData.tag_configure("NotDLCSong",background='#FF0000',foreground='blue')
-		# self.saveData.tag_configure("IsDLCSong",background='#FDFFAE',foreground='blue')
+		# self.saveData.tag_configure("BuiltinSong",background='#FF0000',foreground='blue')
+		# self.saveData.tag_configure("DLCSong",background='#FDFFAE',foreground='blue')
 
 		self.developer = Label(self.root, text=f'Version {self.preVersion if isPreRelease else self.version} | Develop By Ginsakura', font=self.font, relief="groove")
 		self.gitHubLink = Button(self.root, text='点击打开GitHub仓库	点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNXSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
@@ -117,7 +109,7 @@ class MusyncSavDecodeGUI(object):
 
 		# self.closeWindow = ttk.Button(self.root, text="关闭",command=lambda : self.root.destroy(),style='close.TButton')
 		# self.closeWindow.place(x=100,y=88,width=90,height=30)
-		self.difficuteScoreAnalyze = Button(self.root, text="成绩分布",command=lambda:dsa.Analyze(), font=self.font)
+		self.difficuteScoreAnalyze = Button(self.root, text="成绩分布",command=lambda:Analyze(), font=self.font)
 		self.difficuteScoreAnalyze.place(x=775,y=88,width=90,height=30)
 
 		self.totalSyncFrameLabel = Label(self.root, text='', relief="groove")
@@ -132,7 +124,8 @@ class MusyncSavDecodeGUI(object):
 		self.selectFrame.place(x=180,y=50,width=380,height=70)
 		self.selectLabel0 = Label(self.selectFrame, text="筛选\n控件", anchor="w", font=self.font, relief="flat")
 		self.selectLabel0.place(x=0,y=5,width=50,height=60)
-		self.selectPlayedButton = Button(self.selectFrame, text='已游玩', command=lambda:self.SelectMethod('Played'), anchor="w", font=self.font)
+		self.selectPlayedButton = Checkbutton(self.selectFrame, text='已游玩', command=lambda:self.SelectMethod('Played'), anchor="w", font=self.font)
+		# self.selectPlayedButton = Button(self.selectFrame, text='已游玩', command=lambda:self.SelectMethod('Played'), anchor="w", font=self.font)
 		self.selectPlayedButton.place(x=50,y=0,width=75,height=30)
 		self.selectUnplayButton = Button(self.selectFrame, text='未游玩', command=lambda:self.SelectMethod('Unplay'), anchor="w", font=self.font)
 		self.selectUnplayButton.place(x=50,y=35,width=75,height=30)
@@ -157,12 +150,12 @@ class MusyncSavDecodeGUI(object):
 		self.selectExFrame.place(x=570,y=50,width=200,height=70)
 		self.selectLabel1 = Label(self.selectExFrame, text="额外\n筛选", anchor="w", font=self.font, relief="flat")
 		self.selectLabel1.place(x=0,y=5,width=50,height=60)
-		self.selectDLCSong = Button(self.selectExFrame, text=['所\n有','本\n体','扩\n展'][self.isDLC], command=lambda:self.SelectDLCSong(), anchor='w', font=self.font)
+		self.selectDLCSong = Button(self.selectExFrame, text=self.songSelect.text, command=lambda:self.SelectDLCSong(), anchor='w', font=self.font)
 		self.selectDLCSong.place(x=48,y=0,width=30,height=65)
-		self.selectKeys = Button(self.selectExFrame, text=['4 & 6 Keys','4 Keys','6 Keys'][self.keys], command=lambda:self.SelectKeys(), anchor='w', font=self.font)
-		self.selectKeys.place(x=80,y=0,width=[112,72,72][self.keys],height=30)
-		self.selectDifficute = Button(self.selectExFrame, text=['Easy','Hard',"Inferno",'所有难度'][self.difficute], command=lambda:self.SelectDifficute(), anchor='w', font=self.font)
-		self.selectDifficute.place(x=80,y=35,width=[52,52,82,92][self.difficute],height=30)
+		self.selectKeys = Button(self.selectExFrame, text=self.keys.text, command=lambda:self.SelectKeys(), anchor='w', font=self.font)
+		self.selectKeys.place(x=80,y=0,width=self.keys.width,height=30)
+		self.selectDifficute = Button(self.selectExFrame, text=self.difficute.text, command=lambda:self.SelectDifficute(), anchor='w', font=self.font)
+		self.selectDifficute.place(x=80,y=35,width=92,height=30)
 
 	##AutoRun##
 		self.InitLabel('初始化函数执行中......')
@@ -187,7 +180,7 @@ class MusyncSavDecodeGUI(object):
 							self.isGameRunning["text"] = "游戏未启动"
 							self.isGameRunning["bg"] = "#FF8080"
 					except Exception as e:
-						print(repr(e))
+						print("CheckGameIsStart"+repr(e))
 					endTime = time.perf_counter_ns()
 					print("CheckGameIsStart Run Time: %f ms"%((endTime - startTime)/1000000))
 					count = 0
@@ -200,13 +193,11 @@ class MusyncSavDecodeGUI(object):
 		self.CheckGameIsStartThread.start()
 		threading.Thread(target=self.CheckJsonUpdate).start()
 
-		if self.config['DisableCheckUpdate']:
-			self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页')
-		else:
+		if self.config.CheckUpdate:
 			threading.Thread(target=self.CheckUpdate).start()
-		if not os.path.isfile('./musync_data/SaveFilePath.sfp'):
-			self.GetSaveFile()
 		else:
+			self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页')
+		if os.path.isfile('./musync_data/SaveFilePath.sfp'):
 			self.InitLabel(text="正在读取存档路径……")
 			with open('./musync_data/SaveFilePath.sfp','r+',encoding='utf8') as sfp:
 				sfpr = sfp.read()
@@ -218,21 +209,23 @@ class MusyncSavDecodeGUI(object):
 				self.GetSaveFile()
 			else:
 				self.saveFilePathVar.set(sfpr)
-		if self.config['EnableAnalyzeWhenStarting']:
+		else:
+			self.GetSaveFile()
+		if self.config.AnalyzeWhenStarting:
 			self.DeleteAnalyzeFile()
 		self.CheckFile()
-		if self.config['EnableDLLInjection']:
+		if self.config.DLLInjection:
 			self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelay, font=self.font,bg='#FF5959')
 			self.hitDelay.place(x=775,y=50,width=90,height=30)
 		if os.path.isfile('./musync_data/SavAnalyze.json'):
 			self.DataLoad()
 		elif os.path.isfile('./musync_data/SavDecode.decode'):
 			self.InitLabel('解码存档中......')
-			MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
+			MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
 		self.DataLoad()
 
 # TK事件重载
-	def on_closing(self):
+	def Closing(self):
 		self.checkGameStartEvent.clear()
 		self.CheckGameIsStartThread.join()
 		self.root.destroy()
@@ -253,21 +246,20 @@ class MusyncSavDecodeGUI(object):
 
 # select功能组
 	def SelectKeys(self):
-		self.keys = (self.keys+1)%3
-		self.selectKeys.configure(text=['4 & 6Keys','4 Keys','6 Keys'][self.keys])
-		self.selectKeys.place(width=[102,72,72][self.keys])
+		self.keys = KeysEnum((self.keys.value+1)%3);
+		self.selectKeys.configure(text=self.keys.text)
+		self.selectKeys.place(width=self.keys.width)
 		self.DataLoad()
 		self.root.update()
 	def SelectDifficute(self):
-		self.difficute = (self.difficute+1)%4
-		self.selectDifficute.configure(text=['Easy','Hard',"Inferno",'所有难度'][self.difficute])
-		self.selectDifficute.place(width=[52,52,82,92][self.difficute])
+		self.difficute = DiffcuteEnum((self.difficute.value+1)%4);
+		self.selectDifficute.configure(text=self.difficute.text)
 		self.DataLoad()
 		self.root.update()
 	def SelectDLCSong(self):
-		self.isDLC = (self.isDLC+1)%3
-		self.selectDLCSong.configure(text=['所\n有','本\n体','扩\n展'][self.isDLC])
-		self.selectDLCSong.configure(bg=['#F0F0F0','#FF9B9B','#98E22B'][self.isDLC])
+		self.songSelect = SongSelectEnum((self.songSelect.value+1)%3);
+		self.selectDLCSong.configure(text=self.songSelect.text)
+		self.selectDLCSong.configure(bg=self.songSelect.background)
 		self.DataLoad()
 		self.root.update()
 	def SelectMethod(self,method):
@@ -453,9 +445,9 @@ class MusyncSavDecodeGUI(object):
 			with open('./musync_data/SaveFilePath.sfp','w',encoding="utf8") as sfp:
 				sfp.write(saveFilePath+'SavesDir/savedata.sav')
 			self.saveFilePathVar.set(saveFilePath+'SavesDir/savedata.sav')
-			if self.config['MainExecPath'] != saveFilePath:
-				self.config['MainExecPath'] = saveFilePath
-				json.dump(self.config,open('./musync_data/ExtraFunction.cfg','w',encoding='utf8'),indent="",ensure_ascii=False)
+			if self.config.MainExecPath != saveFilePath:
+				self.config.MainExecPath = saveFilePath
+				self.config.SaveConfig();
 		else:
 			self.InitLabel("搜索不到存档文件.")
 		endTime = time.perf_counter_ns()
@@ -464,8 +456,6 @@ class MusyncSavDecodeGUI(object):
 	def DeleteAnalyzeFile(self):
 		if os.path.isfile("./musync_data/SavAnalyze.json"):
 			os.remove("./musync_data/SavAnalyze.json")
-		if os.path.isfile("./musync_data/SavAnalyze.analyze"):
-			os.remove("./musync_data/SavAnalyze.analyze")
 		if os.path.isfile("./musync_data/SavDecode.decode"):
 			os.remove("./musync_data/SavDecode.decode")
 		self.DataLoad()
@@ -489,71 +479,67 @@ class MusyncSavDecodeGUI(object):
 			elif sync < 122:return "红Ex"
 			else:return "黑Ex"
 
-		if os.path.isfile('./musync_data/SavAnalyze.json'):
-			pass
-		elif os.path.isfile('./musync_data/SavDecode.decode'):
-			MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
+		if os.path.isfile('./musync_data/SavDecode.decode'):
+			MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
 		else:
 			if self.saveFilePathVar.get() == 'Input SaveFile or AnalyzeFile Path (savedata.sav)or(SavAnalyze.json)':
 				self.SelectPath()
-			MusyncSavDecode.MUSYNCSavProcess(savFile=self.saveFilePathVar.get()).Main()
-
-		saveData = open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8')
-		saveDataJson = json.load(saveData)
-		saveData.close()
+			MUSYNCSavProcess(savFile=self.saveFilePathVar.get()).Main()
 
 		self.InitLabel('正在分析存档文件中……')
-		with open(f'./musync_data/SavAnalyze.json','r',encoding='utf8') as saveData:
-			saveDataJson = json.load(saveData)
-			with open("./musync_data/SongName.json",'r',encoding='utf8') as snj:
-				songNameJson = json.load(snj)
-			self.root.title(f'同步音律喵赛克Steam端本地存档分析   LastPlay: {saveDataJson["LastPlay"]}')
-			[self.saveData.delete(ids) for ids in self.saveData.get_children()]
-			self.saveCount = 0
-			self.totalSync = 0
-			for saveLine in saveDataJson['SaveData']:
-				if not saveLine['SongName'] is None:
-					if (self.keys==1) and (saveLine['SongName'][1]=='6Key'):continue
-					elif (self.keys==2) and (saveLine['SongName'][1]=='4Key'):continue
-					if (self.difficute==0) and (not saveLine['SongName'][2]=='Easy'):continue
-					elif (self.difficute==1) and (not saveLine['SongName'][2]=='Hard'):continue
-					elif (self.difficute==2) and (not saveLine['SongName'][2]=='Inferno'):continue
-					if (self.isDLC==1) and (not saveLine['SongName'][0] in songNameJson["NotDLCSong"]):continue
-					elif (self.isDLC==2) and (saveLine['SongName'][0] in songNameJson["NotDLCSong"]):continue
-				if self.dataSelectMethod == "Played":
-					if (saveLine["PlayCount"] == 0) and (float(saveLine["SyncNumber"][0:-1]) == 0):continue
-				elif self.dataSelectMethod == "Unplay":
-					if not ((saveLine["PlayCount"] == 0) and (float(saveLine["SyncNumber"][0:-1]) == 0)):continue
-				elif self.dataSelectMethod == "IsFav":
-					if saveLine["Status"] != 'Favo':continue
-				elif self.dataSelectMethod == "Sync122":
-					if float(saveLine["SyncNumber"][0:-1]) < 122:continue
-				elif self.dataSelectMethod == "Sync120":
-					if (float(saveLine["SyncNumber"][0:-1]) < 120) or (float(saveLine["SyncNumber"][0:-1]) > 122):continue
-				elif self.dataSelectMethod == "RankEX":
-					if float(saveLine["SyncNumber"][0:-1]) < 117:continue
-				elif self.dataSelectMethod == "RankS":
-					if (float(saveLine["SyncNumber"][0:-1]) < 110) or (float(saveLine["SyncNumber"][0:-1]) >= 117):continue
-				elif self.dataSelectMethod == "RankA":
-					if (float(saveLine["SyncNumber"][0:-1]) < 95) or (float(saveLine["SyncNumber"][0:-1]) >= 110):continue
-				elif self.dataSelectMethod == "RankB":
-					if (float(saveLine["SyncNumber"][0:-1]) < 75) or (float(saveLine["SyncNumber"][0:-1]) >= 95):continue
-				elif self.dataSelectMethod == "RankC":
-					if (float(saveLine["SyncNumber"][0:-1]) == 0) or (float(saveLine["SyncNumber"][0:-1]) >= 75):continue
-				if saveLine["Status"] in ['    ', 'Favo']:
-					self.saveCount += 1
-					self.totalSync += float(saveLine["UploadScore"][0:-1])
-				else:
-					self.excludeCount += 1
-				self.saveData.insert('', END, values=(saveLine["SpeedStall"], #谱面号
-					("" if saveLine["SongName"] is None else saveLine["SongName"][0]), #曲名
-					("" if saveLine["SongName"] is None else saveLine["SongName"][1]), #键数
-					("" if saveLine["SongName"] is None else saveLine["SongName"][2]), #难度
-					("" if saveLine["SongName"] is None else ("" if saveLine["SongName"][3]=="00" else saveLine["SongName"][3])), #等级
-					saveLine["SyncNumber"], #本地同步率
-					("" if ((saveLine["PlayCount"] == 0) and (saveLine["UploadScore"] == "0.00000000000000%")) else Rank(saveLine["SyncNumber"])), #Rank
-					saveLine["UploadScore"], saveLine["PlayCount"], saveLine["Status"]))
-			# print(songNameJson["NotDLCSong"])
+		saveDataJson = SaveDataInfo();
+		songNameJson = SongName().SongNameData;
+		self.root.title(f'同步音律喵赛克Steam端本地存档分析   LastPlay: {saveDataJson.selectSongName}')
+		[self.saveData.delete(ids) for ids in self.saveData.get_children()]
+		self.saveCount = 0
+		self.totalSync = 0
+		for saveInfo in saveDataJson.saveInfoList:
+			# 无名谱面筛选
+			if saveInfo.SongName is None: continue;
+			# 键数筛选
+			if ((self.keys != KeysEnum.All) and (self.keys.text != saveInfo.SongKeys)): continue;
+			# 难度筛选
+			if (self.difficute != DiffcuteEnum.All) and (self.difficute.text != saveInfo.SongDifficulty): continue;
+			# 内置曲目筛选
+			if ((self.songSelect != SongSelectEnum.All) and (saveInfo.SongIsBuiltin != (self.songSelect == SongSelectEnum.Builtin))): continue;
+			# 互斥筛选
+			if (self.dataSelectMethod == "Played"):
+				if ((saveInfo.PlayCount == 0) and (saveInfo.SyncNumber == 0)): continue;
+			elif (self.dataSelectMethod == "Unplay"):
+				if ((saveInfo.PlayCount != 0) and (saveInfo.SyncNumber != 0)): continue;
+			elif (self.dataSelectMethod == "IsFav"):
+				if (saveInfo.State != 'Favo'): continue;
+			elif (self.dataSelectMethod == "Sync122"):
+				if (saveInfo.SyncNumber//100 < 122): continue;
+			elif (self.dataSelectMethod == "Sync120"):
+				if ((saveInfo.SyncNumber//100 < 120) or (saveInfo.SyncNumber//100 >= 122)): continue;
+			elif (self.dataSelectMethod == "RankEX"):
+				if (saveInfo.SyncNumber//100 < 117): continue;
+			elif (self.dataSelectMethod == "RankS"):
+				if ((saveInfo.SyncNumber//100 < 110) or (saveInfo.SyncNumber//100 >= 117)): continue;
+			elif (self.dataSelectMethod == "RankA"):
+				if ((saveInfo.SyncNumber//100 < 95) or (saveInfo.SyncNumber//100 >= 110)): continue;
+			elif (self.dataSelectMethod == "RankB"):
+				if ((saveInfo.SyncNumber//100 < 75) or (saveInfo.SyncNumber//100 >= 95)): continue;
+			elif (self.dataSelectMethod == "RankC"):
+				if ((saveInfo.SyncNumber//100 == 0) or (saveInfo.SyncNumber//100 >= 75)): continue;
+			if (saveInfo.State in ['    ', 'Favo']):
+				self.saveCount += 1;
+				self.totalSync += saveInfo.UploadScore;
+			else:
+				self.excludeCount += 1;
+			self.saveData.insert('', END, values=(saveInfo.SongId, #谱面号
+				("" if saveInfo.SongName is None else saveInfo.SongName), #曲名
+				("" if saveInfo.SongKeys is None else saveInfo.SongKeys), #键数
+				("" if saveInfo.SongDifficulty is None else saveInfo.SongDifficulty), #难度
+				("" if saveInfo.SongDifficultyNumber is None else "%02s"%(saveInfo.SongDifficultyNumber)), #难度等级
+				f"{saveInfo.SyncNumber/10000:%}", #本地同步率
+				("" if ((saveInfo.PlayCount == 0) and (saveInfo.UploadScore == 0)) else Rank(saveInfo.SyncNumber)), #Rank
+				f"{saveInfo.UploadScore:%}", #云端同步率
+				saveInfo.PlayCount, #游玩计数
+				saveInfo.State #谱面状态
+				))
+		# print(songNameJson["NotDLCSong"])
 		if not self.dataSortMethodsort[0] is None:
 			self.SortClick(self.dataSortMethodsort)
 		self.InitLabel('数据展示生成完成.',close=True)
@@ -563,7 +549,7 @@ class MusyncSavDecodeGUI(object):
 
 # 控件更新功能组
 	def TreeviewColumnUpdate(self):
-		self.saveData.heading("SpeedStall",anchor="center",text="谱面号"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SpeedStall' else ''))
+		self.saveData.heading("SongId",anchor="center",text="谱面号"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SpeedStall' else ''))
 		self.saveData.heading("SongName",anchor="center",text="曲名"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SongName' else ''))
 		self.saveData.heading("Keys",anchor="center",text="键数"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='Keys' else ''))
 		self.saveData.heading("Difficulty",anchor="center",text="难度"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='Difficulty' else ''))
@@ -576,7 +562,7 @@ class MusyncSavDecodeGUI(object):
 		self.root.update()
 
 	def TreeviewWidthUptate(self):
-		self.saveData.column("SpeedStall",anchor="e",width=90)
+		self.saveData.column("SongId",anchor="e",width=90)
 		self.saveData.column("SongName",anchor="w",width=self.windowInfo[2]-771)
 		self.saveData.column("Keys",anchor="center",width=60)
 		self.saveData.column("Difficulty",anchor="w",width=65)
@@ -587,14 +573,14 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.column("PlayCount",anchor="e",width=90)
 		self.saveData.column("Status",anchor="w",width=80)
 
-	def UpdateWindowInfo(self):
+	def UpdateWindowInfo(self,event=None):
 
 		self.windowInfo = ['root.winfo_x()','root.winfo_y()',self.root.winfo_width(),self.root.winfo_height()]
 
 		self.saveFilePathEntry.place(x=170,y=10,width=(self.windowInfo[2]-260),height=30)
 		self.getSaveFilePath.place(x=(self.windowInfo[2]-90),y=10,width=90,height=30)
 		self.saveData.place(x=0 ,y=130 ,width=(self.windowInfo[2]-1) ,height=(self.windowInfo[3]-160))
-		if not self.wh == self.windowInfo[2:]:
+		if not self.oldWindowInfo == self.windowInfo[2:]:
 			self.TreeviewWidthUptate()
 			self.VScroll1.place(x=self.windowInfo[2]-22, y=1, width=20, height=self.windowInfo[3]-162)
 		# self.saveCountVar.set()
@@ -607,17 +593,41 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.bind("<Double-1>",self.DoubleClick)
 		self.saveData.bind("<ButtonRelease-1>",self.SortClick)
 		self.root.bind("<F5>", self.F5Key)
-		self.wh = self.windowInfo[2:]
+		self.oldWindowInfo = self.windowInfo[2:]
 		self.root.update()
 		# if self.after == False:
 		# 	self.after = True
 		# 	self.root.after(100,self.UpdateWindowInfo)
 
+	def UpdateEnum(self)->None:
+		DiffcuteEnum.Easy.text = "简单难度";
+		DiffcuteEnum.Easy.stext = "EZ";
+		DiffcuteEnum.Hard.text = "困难难度";
+		DiffcuteEnum.Hard.stext = "HD";
+		DiffcuteEnum.Inferno.text = "地狱难度";
+		DiffcuteEnum.Inferno.stext = "IN";
+		DiffcuteEnum.All.text = "所有难度";
+		DiffcuteEnum.All.stext = "ALL";
+		KeysEnum.Key4.text = "4Key";
+		KeysEnum.Key4.stext = "4K";
+		KeysEnum.Key4.width = 72;
+		KeysEnum.Key6.text = "6Key";
+		KeysEnum.Key6.stext = "6K";
+		KeysEnum.Key6.width = 72;
+		KeysEnum.All.text = "4&6Key";
+		KeysEnum.All.stext = "ALL";
+		KeysEnum.All.width = 112;
+		SongSelectEnum.Builtin.text = "本\n体";
+		SongSelectEnum.DLC.text = "扩\n展";
+		SongSelectEnum.All.text = "所\n有";
+		SongSelectEnum.Builtin.background = '#FF9B9B';
+		SongSelectEnum.DLC.background = '#98E22B';
+		SongSelectEnum.All.background = '#F0F0F0';
 class SubWindow(object):
 	def __init__(self, nroot, songID, songName, songDifficute):
 		##Init##
 		nroot.iconbitmap('./musync_data/Musync.ico')
-		super(SubWindow, self).__init__()
+		# super(SubWindow, self).__init__()
 		self.font=('霞鹜文楷等宽',16)
 		nroot.geometry(f'1000x630+500+300')
 		style = ttk.Style()
@@ -633,7 +643,7 @@ class SubWindow(object):
 
 		self.TIPS = Label(self.root, text="这里还没有被实现鸭——", relief="groove", font=('霞鹜文楷等宽',15))
 		self.TIPS.place(x=10,y=10,width=300,height=30)
-		
+
 		##AutoRun##
 		self.UpdateWindow()
 
@@ -653,6 +663,28 @@ class SubWindow(object):
 
 		self.VScroll.place(x=self.windowInfo[2]-40, y=1, width=20, relheight=1)
 
+@unique
+class DiffcuteEnum(Enum):
+	"难度枚举"
+	Easy = 0;
+	Hard = 1;
+	Inferno = 2;
+	All = 3;
+
+@unique
+class KeysEnum(Enum):
+	"键数枚举"
+	Key4 = 0;
+	Key6 = 1;
+	All = 2;
+
+@unique
+class SongSelectEnum(Enum):
+	'曲目筛选枚举'
+	Builtin = 0;
+	DLC = 1;
+	All = 2;
+
 
 if __name__ == '__main__':
 	version = '0.0.0rc0'
@@ -662,13 +694,12 @@ if __name__ == '__main__':
 	root = Tk()
 	ctypes.windll.shcore.SetProcessDpiAwareness(1)
 	fonts = list(font.families())
-	Functions.CheckFileBeforeStarting(fonts)
+	Toolkit.CheckResources(fonts)
 	del fonts
-	Functions.CheckConfig()
-	with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as cfg:
-		cfg = json.load(cfg)
-	if cfg['ChangeConsoleStyle']:
-		Functions.ChangeConsoleStyle()
+	Toolkit.CheckConfig()
+	config:Config = Config();
+	if config.ChangeConsoleStyle:
+		Toolkit.ChangeConsoleStyle()
 	root.tk.call('tk', 'scaling', 1.25)
 	root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
 	window = MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease)

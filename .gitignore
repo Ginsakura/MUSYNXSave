@@ -6,6 +6,7 @@
 /Releases
 /venv
 /dist
+/logs
 
 SavDecode/.vs
 SavDecode/gcm.cache

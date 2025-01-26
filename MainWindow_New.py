@@ -28,7 +28,7 @@ class MusyncSavDecodeGUI(object):
 		with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as confFile:
 			self.config = json.load(confFile)
 		root.iconbitmap('./musync_data/Musync.ico')
-		super(MusyncSavDecodeGUI, self).__init__()
+		# super(MusyncSavDecodeGUI, self).__init__()
 		self.isTKroot = isTKroot
 		root.geometry(f'1000x670+500+300')
 		if self.config['TransparentColor']:
@@ -387,8 +387,10 @@ class MusyncSavDecodeGUI(object):
 			elif sync < 122:return "红Ex"
 			else:return "黑Ex"
 
-		if os.path.isfile('./musync_data/SavAnalyze.json'):pass
-		elif os.path.isfile('./musync_data/SavDecode.decode'):MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
+		if os.path.isfile('./musync_data/SavAnalyze.json'):
+			pass
+		elif os.path.isfile('./musync_data/SavDecode.decode'):
+			MusyncSavDecode.MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
 		else:
 			if self.saveFilePathVar.get() == 'Input SaveFile or AnalyzeFile Path (savedata.sav)or(SavAnalyze.json)':
 				self.SelectPath()
@@ -518,7 +520,7 @@ class SubWindow(object):
 	def __init__(self, nroot, songID, songName, songDifficute):
 		##Init##
 		nroot.iconbitmap('./musync_data/Musync.ico')
-		super(SubWindow, self).__init__()
+		# super(SubWindow, self).__init__()
 		self.font=('霞鹜文楷等宽',16)
 		nroot.geometry(f'1000x630+500+300')
 		style = ttk.Style()

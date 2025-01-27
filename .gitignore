@@ -7,15 +7,10 @@
 /venv
 /dist
 /logs
+/SavDecode
 
-SavDecode/.vs
-SavDecode/gcm.cache
-SavDecode/x64
-SavDecode/**
-
-ExtraFunction.cfg
 LXGW.ttf
-SavAnalyze.json
+SaveDataInfo.json
 
 *.analyze
 *.b64

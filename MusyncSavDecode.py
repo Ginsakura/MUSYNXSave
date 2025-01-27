@@ -1,3 +1,4 @@
+import threading
 import clr
 import logging
 import os
@@ -27,8 +28,8 @@ except Exception:
 
 class MUSYNCSavProcess(object):
 	"""docstring for MUSYNCSavProcess""";
-	def __init__(self, savFile=''):
-		# super(MUSYNCSavProcess, self).__init__()
+	def __init__(self, savFile:str=''):
+		super(MUSYNCSavProcess, self).__init__()
 		self.savPath:str = savFile;
 		self.userMemory:SaveDataInfo = SaveDataInfo();
 		self.saveDataDict:dict[str,any] = dict();
@@ -182,12 +183,12 @@ class MUSYNCSavProcess(object):
 
 		allSongData:dict[str,list] = SongName.SongNameData;
 		removeIndexList:list[int] = list();
-		self.__logger.debug("|  SongID  | SpeedStall | SyncNumber |     UploadScore     | PlayCount |  state  |")
+		self.__logger.debug("|  SongID  | SpeedStall | SyncNumber |         UploadScore        | PlayCount |  State  |")
 		# 遍历列表
 		for saveIndex in range(len(self.userMemory.saveInfoList)):
 			mapData:MapDataInfo = self.userMemory.saveInfoList[saveIndex];
 			mapInfo:MapInfo = GetSongName(mapData.SongId);
-			if mapData.SongInfo is None:
+			if mapData.SongName is None:
 				mapData.State = "NoName";
 				removeIndexList.insert(0,saveIndex);
 			elif mapData.Isfav:
@@ -198,7 +199,7 @@ class MUSYNCSavProcess(object):
 			elif NoCopyright(mapData.SongId):
 				mapData.State = "NoCR";
 
-			self.__logger.debug(f'| {"%08X"%mapData.SongId:>8} | {"%08X"%mapData.SpeedStall:^10} | {"%f%%"%(mapData.SyncNumber/100):>10} | {"%f%%"%(mapData.UploadScore*100):>19} | {mapData.PlayCount:>9} | {mapData.State:>7} |');
+			self.__logger.debug(f'| {"%08X"%mapData.SongId:>8} | {"%08X"%mapData.SpeedStall:^10} | {"%.2f%%"%(mapData.SyncNumber/100):>10} | {"%.21f%%"%(mapData.UploadScore*100):>26} | {mapData.PlayCount:>9} | {mapData.State:>7} |');
 			mapData.SongInfo = mapInfo;
 			self.userMemory.saveInfoList[saveIndex] = mapData;
 		for removeIndex in removeIndexList:
@@ -210,7 +211,7 @@ class MUSYNCSavProcess(object):
 		"修复收藏仅应用于每首歌的4KEZ谱面的问题";
 		startTime = time.perf_counter_ns()
 		self.__logger.debug("FavFix Start.");
-		allSongData:dict[str,list] = SongName.SongNameData;
+		allSongData:dict[str,list] = SongName.SongNameData();
 		self.__logger.debug(f"Favorites List：{self.FavSong}");
 		for index in range(len(self.userMemory.saveInfoList)):
 			if self.userMemory.saveInfoList[index].name in self.FavSong:

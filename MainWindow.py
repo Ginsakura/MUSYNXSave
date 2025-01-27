@@ -33,20 +33,17 @@ class MusyncSavDecodeGUI(object):
 		self.logger:logging.Logger = Logger().GetLogger(name="MusyncSavDecodeGUI");
 		self.version:str = version;
 		self.preVersion:str = preVersion;
-		self.config:Config = Config();
 		self.isTKroot:bool = isTKroot;
 		root.iconbitmap('./musync_data/Musync.ico');
 		root.geometry(f'1000x670+500+300');
 		root.title("同步音律喵赛克Steam端本地存档分析");
 		root['background'] = '#efefef';
-		# 监听窗口大小改变
-		root.bind('<Configure>', self.UpdateWindowInfo);
 		self.root:Tk = root;
 		self.root.minsize(500, 460);
 		# def fixed_map(option):
 		# 	return [elm for elm in style.map("Treeview", query_opt=option) if elm[:2] != ("!disabled", "!selected")]
 		style:ttk.Style = ttk.Style();
-		if 1 :# self.config['SystemDPI'] == 100:
+		if 1 :# Config['SystemDPI'] == 100:
 			style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',13));
 			style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15));
 			# style.configure("Checkbutton", foreground=[]);
@@ -74,30 +71,30 @@ class MusyncSavDecodeGUI(object):
 		self.keys:KeysEnum = KeysEnum.All;
 		self.songSelect:SongSelectEnum = SongSelectEnum.All;
 		self.checkGameStartEvent = threading.Event();
-		self.CheckGameIsStartThread = None;
+		self.checkGameIsStartThread = None;
 		self.UpdateEnum();
 
 		root.protocol("WM_DELETE_WINDOW", self.Closing);
 
 	##Controller##
-		self.deleteAnalyzeFile = ttk.Button(self.root, text="解码并刷新",command=self.DeleteAnalyzeFile,style='F5.TButton')
-		self.deleteAnalyzeFile.place(x=10,y=10,width=160,height=30)
+		self.DecodeSaveFile = ttk.Button(self.root, text="解码并刷新",command=self.DeleteAnalyzeFile,style='F5.TButton')
+		self.DecodeSaveFile.place(x=10,y=10,width=160,height=30)
 		self.isGameRunning = Label(self.root, text="游戏未启动", font=self.font,bg='#FF8080')
 		self.isGameRunning.place(x=30,y=85,width=110,height=30)
 
-		self.CountFrameLanel = Label(self.root,text="", relief="groove")
-		self.CountFrameLanel.place(x=8,y=48,width=164,height=34)
-		self.PrintLabel0 = Label(self.root, text='显示计数: ', font=self.font, relief="flat")
-		self.PrintLabel0.place(x=10,y=50,width=100,height=30)
-		self.saveCountLabel = Label(self.root, text=str(self.saveCount+self.excludeCount), font=self.font, relief="flat")
-		self.saveCountLabel.place(x=110,y=50,width=60,height=30)
+		self.countFrameLanel = Label(self.root,text="", relief="groove")
+		self.countFrameLanel.place(x=8,y=48,width=164,height=34)
+		self.countLabel = Label(self.countFrameLanel, text='显示计数: ', font=self.font, relief="flat")
+		self.countLabel.place(x=0,y=0,width=100,height=30)
+		self.saveCountLabel = Label(self.countFrameLanel, text=str(self.saveCount+self.excludeCount), font=self.font, relief="flat")
+		self.saveCountLabel.place(x=100,y=0,width=60,height=30)
 
 		self.saveFilePathEntry = Entry(self.root, textvariable=self.saveFilePathVar, font=self.font, relief="sunken")
 		self.getSaveFilePath = Button(self.root, text='打开存档', command=self.SelectPath, font=self.font)
 
 		self.saveData = ttk.Treeview(self.root, show="headings", columns = self.treeviewColumns)
-		self.VScroll1 = Scrollbar(self.saveData, orient='vertical', command=self.saveData.yview)
-		self.saveData.configure(yscrollcommand=self.VScroll1.set)
+		self.saveInfoScroll = Scrollbar(self.saveData, orient='vertical', command=self.saveData.yview)
+		self.saveData.configure(yscrollcommand=self.saveInfoScroll.set)
 		# self.saveData.tag_configure("BuiltinSong",background='#FF0000',foreground='blue')
 		# self.saveData.tag_configure("DLCSong",background='#FDFFAE',foreground='blue')
 
@@ -124,8 +121,8 @@ class MusyncSavDecodeGUI(object):
 		self.selectFrame.place(x=180,y=50,width=380,height=70)
 		self.selectLabel0 = Label(self.selectFrame, text="筛选\n控件", anchor="w", font=self.font, relief="flat")
 		self.selectLabel0.place(x=0,y=5,width=50,height=60)
-		self.selectPlayedButton = Checkbutton(self.selectFrame, text='已游玩', command=lambda:self.SelectMethod('Played'), anchor="w", font=self.font)
-		# self.selectPlayedButton = Button(self.selectFrame, text='已游玩', command=lambda:self.SelectMethod('Played'), anchor="w", font=self.font)
+		# self.selectPlayedButton = Checkbutton(self.selectFrame, text='已游玩', command=lambda:self.SelectMethod('Played'), anchor="w", font=self.font)
+		self.selectPlayedButton = Button(self.selectFrame, text='已游玩', command=lambda:self.SelectMethod('Played'), anchor="w", font=self.font)
 		self.selectPlayedButton.place(x=50,y=0,width=75,height=30)
 		self.selectUnplayButton = Button(self.selectFrame, text='未游玩', command=lambda:self.SelectMethod('Unplay'), anchor="w", font=self.font)
 		self.selectUnplayButton.place(x=50,y=35,width=75,height=30)
@@ -163,94 +160,67 @@ class MusyncSavDecodeGUI(object):
 		self.TreeviewWidthUptate()
 		self.TreeviewColumnUpdate()
 
-		def CheckGameIsStart(event):
-			count = 0
-			while event.is_set():
-				if count%10 == 0:
-					startTime = time.perf_counter_ns()
-					# print("Checking Game Is Start?")
-					try:
-						for ids in psutil.pids():
-							if psutil.Process(pid=ids).name() == "MUSYNX.exe":
-								# self.config["MainExecPath"]
-								self.isGameRunning["text"] = "游戏已启动"
-								self.isGameRunning["bg"] = "#98E22B"
-								break
-						else:
-							self.isGameRunning["text"] = "游戏未启动"
-							self.isGameRunning["bg"] = "#FF8080"
-					except Exception as e:
-						print("CheckGameIsStart"+repr(e))
-					endTime = time.perf_counter_ns()
-					print("CheckGameIsStart Run Time: %f ms"%((endTime - startTime)/1000000))
-					count = 0
-				time.sleep(0.5)
-				count += 1
-			print("Stop Thread: CheckGameIsStart.")
+		def CheckGameRunning():
+			logger:logging.Logger = Logger.GetLogger("MusyncSavDecodeGUI.CheckGameRunning")
+			logger.info("Start Thread: CheckGameIsStart.");
+			while self.checkGameStartEvent.is_set():
+				startTime = time.perf_counter_ns()
+				try:
+					for ids in psutil.pids():
+						if psutil.Process(pid=ids).name() == "MUSYNX.exe":
+							# Config["MainExecPath"]
+							self.isGameRunning["text"] = "游戏已启动";
+							self.isGameRunning["bg"] = "#98E22B";
+							logger.debug("Game is Running.");
+							break;
+					else:
+						self.isGameRunning["text"] = "游戏未启动";
+						self.isGameRunning["bg"] = "#FF8080";
+						logger.debug("Game is not Running.");
+				except Exception:
+					logger.exception("CheckGameRunning has Exception: ");
+				logger.info("CheckGameIsStart Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000));
+				time.sleep(5);
+			logger.warning("Stop Thread: CheckGameIsStart.");
 
-		self.checkGameStartEvent.set()
-		self.CheckGameIsStartThread = threading.Thread(target=CheckGameIsStart, args=(self.checkGameStartEvent, ))
-		self.CheckGameIsStartThread.start()
-		threading.Thread(target=self.CheckJsonUpdate).start()
+		self.checkGameStartEvent.set();
+		self.checkGameIsStartThread = threading.Thread(target=CheckGameRunning);
+		self.checkGameIsStartThread.start();
+		threading.Thread(target=self.CheckJsonUpdate).start();
 
-		if self.config.CheckUpdate:
-			threading.Thread(target=self.CheckUpdate).start()
+		if Config.CheckUpdate:
+			self.logger.info("Check Updating...");
+			threading.Thread(target=self.CheckUpdate).start();
 		else:
-			self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页')
-		if os.path.isfile('./musync_data/SaveFilePath.sfp'):
-			self.InitLabel(text="正在读取存档路径……")
-			with open('./musync_data/SaveFilePath.sfp','r+',encoding='utf8') as sfp:
-				sfpr = sfp.read()
-			if not sfpr:
-				self.GetSaveFile()
-			elif (not os.path.isfile(sfpr)):
-				self.InitLabel(text="正在删除存档路径.")
-				os.remove('./musync_data/SaveFilePath.sfp')
-				self.GetSaveFile()
-			else:
-				self.saveFilePathVar.set(sfpr)
+			self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页');
+			self.logger.warning("Check update is Disable");
+		self.InitLabel(text="正在读取存档路径……");
+		if (not os.path.isfile(Config.MainExecPath+"SavesDir\\savedata.sav")):
+			self.GetSaveFile();
 		else:
-			self.GetSaveFile()
-		if self.config.AnalyzeWhenStarting:
-			self.DeleteAnalyzeFile()
-		self.CheckFile()
-		if self.config.DLLInjection:
-			self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelay, font=self.font,bg='#FF5959')
-			self.hitDelay.place(x=775,y=50,width=90,height=30)
-		if os.path.isfile('./musync_data/SavAnalyze.json'):
-			self.DataLoad()
-		elif os.path.isfile('./musync_data/SavDecode.decode'):
-			self.InitLabel('解码存档中......')
-			MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
-		self.DataLoad()
+			self.saveFilePathVar.set(Config.MainExecPath+"SavesDir\\savedata.sav");
+		if Config.DLLInjection:
+			self.logger.warning("DLL Injection is Enable.");
+			self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelay, font=self.font,bg='#FF5959');
+			self.hitDelay.place(x=775,y=50,width=90,height=30);
+		MUSYNCSavProcess(savFile=self.saveFilePathVar.get()).Main();
+		self.DataLoad();
 
 # TK事件重载
 	def Closing(self):
-		self.checkGameStartEvent.clear()
-		self.CheckGameIsStartThread.join()
-		self.root.destroy()
-
-# json文件检查
-	def CheckFile(self):
-		saveData=None
-		if os.path.isfile('./musync_data/SavAnalyze.json'):
-			try:
-				with open(f'./musync_data/SavAnalyze.json','r+',encoding='utf8') as saveData:
-					saveDataJson = json.load(saveData)
-			except Exception as e:
-				messagebox.showerror("Error", f'SavAnalyze.json文件打开失败\n错误的Json文件格式\n{e}')
-				os.remove("./musync_data/SavAnalyze.json")
-			else:
-				if len(saveDataJson['SaveData']) == 0:
-					os.remove("./musync_data/SavAnalyze.json")
+		self.checkGameStartEvent.clear();
+		self.checkGameIsStartThread.join();
+		self.root.destroy();
+		Config.SaveConfig();
+		SaveDataInfo.DumpToJson();
 
 # select功能组
 	def SelectKeys(self):
 		self.keys = KeysEnum((self.keys.value+1)%3);
-		self.selectKeys.configure(text=self.keys.text)
-		self.selectKeys.place(width=self.keys.width)
-		self.DataLoad()
-		self.root.update()
+		self.selectKeys.configure(text=self.keys.text);
+		self.selectKeys.place(width=self.keys.width);
+		self.DataLoad();
+		self.root.update();
 	def SelectDifficute(self):
 		self.difficute = DiffcuteEnum((self.difficute.value+1)%4);
 		self.selectDifficute.configure(text=self.difficute.text)
@@ -300,7 +270,7 @@ class MusyncSavDecodeGUI(object):
 		path_ = askopenfilename(title="打开存档文件", filetypes=(("Sav Files", "*.sav"),("All Files","*.*"),))
 		if path_ == "":
 			# 当打开文件路径选择框后点击"取消" 输入框会清空路径，所以使用get()方法再获取一次路径
-			self.saveFilePathVar.get() 
+			self.saveFilePathVar.get()
 		else:
 			# 实际在代码中执行的路径为“\“ 所以替换一下
 			path_ = path_.replace("/", "\\")
@@ -312,7 +282,7 @@ class MusyncSavDecodeGUI(object):
 		itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
 		# state = e.item(itemID,"text")						# 取得text参数
 		songData = e.item(itemID,"values")					# 取得values参数
-		print(songData)
+		self.logger.debug(songData)
 		# nroot = Toplevel(self.root)
 		# nroot.resizable(True, True)
 		# newWindow = SubWindow(nroot, songData[0], songData[1], songData[2])
@@ -372,7 +342,7 @@ class MusyncSavDecodeGUI(object):
 				with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
 					snju.write(githubVersion)
 		except Exception as e:
-			messagebox.showerror("Error", f'发生错误: {e}')
+			messagebox.showerror("Error", f'发生错误: {e}');
 			if messagebox.askyesno("无法获取谱面信息更新", f'是否前往网页查看是否存在更新？\n(请比对 SongName.update 中的时间是否比本地文件中的时间更大)'):
 				webbrowser.open("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
 		endTime = time.perf_counter_ns()
@@ -426,32 +396,30 @@ class MusyncSavDecodeGUI(object):
 			self.initLabel.place(x=-1,width=0)
 
 # 数据分析功能组
-	def GetSaveFile(self):
-		startTime = time.perf_counter_ns()
-		self.InitLabel("正在搜索存档文件中……")
-		saveFilePath = None
+	def GetSaveFile(self)->None:
+		startTime:int = time.perf_counter_ns();
+		self.InitLabel("正在搜索存档文件中……");
+		self.logger.debug("正在搜索存档文件中……");
+		saveFilePath:str = None;
 		for ids in "DEFCGHIJKLMNOPQRSTUVWXYZAB":
-			if os.path.isfile(f'{ids}:/Program Files/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav'):
-				saveFilePath = f"{ids}:/Program Files/steam/steamapps/common/MUSYNX/"
+			if os.path.isfile(f'{ids}:\\Program Files\\steam\\steamapps\\common\\MUSYNX\\SavesDir\\savedata.sav'):
+				saveFilePath = f"{ids}:\\Program Files\\steam\\steamapps\\common\\MUSYNX\\"
 				break
-			elif os.path.isfile(f'{ids}:/SteamLibrary/steamapps/common/MUSYNX/SavesDir/savedata.sav'):
-				saveFilePath = f"{ids}:/SteamLibrary/steamapps/common/MUSYNX/"
+			elif os.path.isfile(f'{ids}:\\SteamLibrary\\steamapps\\common\\MUSYNX\\SavesDir\\savedata.sav'):
+				saveFilePath = f"{ids}:\\SteamLibrary\\steamapps\\common\\MUSYNX\\"
 				break
-			elif os.path.isfile(f'{ids}:/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav'):
-				saveFilePath = f"{ids}:/steam/steamapps/common/MUSYNX/"
+			elif os.path.isfile(f'{ids}:\\steam\\steamapps\\common\\MUSYNX\\SavesDir\\savedata.sav'):
+				saveFilePath = f"{ids}:\\steam\\steamapps\\common\\MUSYNX\\"
 				break
-		print("savefilepath:",saveFilePath)
-		if not saveFilePath == None:
-			with open('./musync_data/SaveFilePath.sfp','w',encoding="utf8") as sfp:
-				sfp.write(saveFilePath+'SavesDir/savedata.sav')
-			self.saveFilePathVar.set(saveFilePath+'SavesDir/savedata.sav')
-			if self.config.MainExecPath != saveFilePath:
-				self.config.MainExecPath = saveFilePath
-				self.config.SaveConfig();
 		else:
-			self.InitLabel("搜索不到存档文件.")
-		endTime = time.perf_counter_ns()
-		print("GetSaveFile Run Time: %f ms"%((endTime - startTime)/1000000))
+			self.InitLabel("搜索不到存档文件.");
+			self.logger.error("搜索不到存档文件.");
+			self.logger.info("GetSaveFile Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000));
+			return;
+		self.logger.debug(f"SaveFilePath: {saveFilePath}");
+		self.saveFilePathVar.set(saveFilePath+'SavesDir\\savedata.sav');
+		Config.MainExecPath = saveFilePath;
+		Config.SaveConfig();
 
 	def DeleteAnalyzeFile(self):
 		if os.path.isfile("./musync_data/SavAnalyze.json"):
@@ -479,16 +447,9 @@ class MusyncSavDecodeGUI(object):
 			elif sync < 122:return "红Ex"
 			else:return "黑Ex"
 
-		if os.path.isfile('./musync_data/SavDecode.decode'):
-			MUSYNCSavProcess(decodeFile='./musync_data/SavDecode.decode').Main('decode')
-		else:
-			if self.saveFilePathVar.get() == 'Input SaveFile or AnalyzeFile Path (savedata.sav)or(SavAnalyze.json)':
-				self.SelectPath()
-			MUSYNCSavProcess(savFile=self.saveFilePathVar.get()).Main()
-
 		self.InitLabel('正在分析存档文件中……')
-		saveDataJson = SaveDataInfo();
-		songNameJson = SongName().SongNameData;
+		saveDataJson = SaveDataInfo;
+		# songNameJson = SongName.SongNameData();
 		self.root.title(f'同步音律喵赛克Steam端本地存档分析   LastPlay: {saveDataJson.selectSongName}')
 		[self.saveData.delete(ids) for ids in self.saveData.get_children()]
 		self.saveCount = 0
@@ -582,7 +543,7 @@ class MusyncSavDecodeGUI(object):
 		self.saveData.place(x=0 ,y=130 ,width=(self.windowInfo[2]-1) ,height=(self.windowInfo[3]-160))
 		if not self.oldWindowInfo == self.windowInfo[2:]:
 			self.TreeviewWidthUptate()
-			self.VScroll1.place(x=self.windowInfo[2]-22, y=1, width=20, height=self.windowInfo[3]-162)
+			self.saveInfoScroll.place(x=self.windowInfo[2]-22, y=1, width=20, height=self.windowInfo[3]-162)
 		# self.saveCountVar.set()
 		self.saveCountLabel.configure(text=str(self.saveCount+self.excludeCount))
 		self.avgSyncLabel.configure(text=f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount)):.6f}%')
@@ -608,6 +569,7 @@ class MusyncSavDecodeGUI(object):
 		DiffcuteEnum.Inferno.stext = "IN";
 		DiffcuteEnum.All.text = "所有难度";
 		DiffcuteEnum.All.stext = "ALL";
+
 		KeysEnum.Key4.text = "4Key";
 		KeysEnum.Key4.stext = "4K";
 		KeysEnum.Key4.width = 72;
@@ -617,12 +579,14 @@ class MusyncSavDecodeGUI(object):
 		KeysEnum.All.text = "4&6Key";
 		KeysEnum.All.stext = "ALL";
 		KeysEnum.All.width = 112;
+
 		SongSelectEnum.Builtin.text = "本\n体";
 		SongSelectEnum.DLC.text = "扩\n展";
 		SongSelectEnum.All.text = "所\n有";
 		SongSelectEnum.Builtin.background = '#FF9B9B';
 		SongSelectEnum.DLC.background = '#98E22B';
 		SongSelectEnum.All.background = '#F0F0F0';
+
 class SubWindow(object):
 	def __init__(self, nroot, songID, songName, songDifficute):
 		##Init##

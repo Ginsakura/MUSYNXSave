@@ -1,6 +1,7 @@
 ﻿
 import logging
 import os
+import shutil
 import sqlite3 as sql
 import sys
 import winreg
@@ -83,7 +84,7 @@ class Toolkit(object):
 		if not os.path.isfile('./musync_data/MUSYNC.ico'):
 			Toolkit.EnsureResourceInRuntimeDirectory("musync_data/MUSYNC.ico");
 		# 检查SongName.json是否存在
-		if (not os.path.isfile('./musync_data/SongName.json') or (SongNameJsonUpdate > SongName().Update)):
+		if (not os.path.isfile('./musync_data/SongName.json') or (SongNameJsonUpdate > SongName.Update())):
 			Toolkit.EnsureResourceInRuntimeDirectory('musync_data/SongName.json');
 		# 检查字体文件是否存在
 		if not os.path.isfile('./musync_data/LXGW.ttf'):

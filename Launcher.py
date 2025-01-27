@@ -8,12 +8,13 @@ from MainWindow import MusyncSavDecodeGUI
 from Resources import Config, Logger
 from Toolkit import Toolkit
 
-version = '1.3.0rc1'
+version = '2.0.0rc1'
 isPreRelease = True
-preVersion = "1.3.0pre1"
+preVersion = "2.0.0pre1"
 isPreRelease = False
 
 logger:logging.Logger = Logger().GetLogger(name="Launcher");
+Config.Version = preVersion.replace("pre",".") if (isPreRelease) else version.replace("rc",".");
 
 def Launcher():
 	root:Tk = Tk();
@@ -21,12 +22,12 @@ def Launcher():
 	fonts:list[str] = list(font.families());
 	Toolkit.CheckResources(fonts);
 	# del fonts
-	if Config().ChangeConsoleStyle:
+	if Config.ChangeConsoleStyle:
 		Toolkit.ChangeConsoleStyle();
 	root.tk.call('tk', 'scaling', 1.25);
 	root.resizable(False, True); #允许改变窗口高度，不允许改变窗口宽度
 	# 强制仅旧版UI
-	window = MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease);
+	MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease);
 	# if cfg['EnableFramelessWindow']:
 	# 	root.overrideredirect(1)
 	# 	window = NewStyle.MusyncSavDecodeGUI(root=root)

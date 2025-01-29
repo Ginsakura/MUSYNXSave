@@ -89,15 +89,11 @@
     <Content Include="musync_data\Assembly-CSharp.dll" />
     <Content Include="musync_data\bootcfg.json" />
     <Content Include="musync_data\HitDelayHistory.sql" />
-    <Content Include="musync_data\HitDelayHistory_v2.db" />
     <Content Include="musync_data\how to use.psd" />
     <Content Include="musync_data\ico.rc" />
     <Content Include="musync_data\ico.res" />
     <Content Include="musync_data\LXGW.ttf" />
     <Content Include="musync_data\Musync.ico" />
-    <Content Include="musync_data\SavAnalyze.analyze" />
-    <Content Include="musync_data\SavAnalyze.json" />
-    <Content Include="musync_data\SavDecode.decode" />
     <Content Include="musync_data\SaveFilePath.sfp" />
     <Content Include="musync_data\songname.json" />
     <Content Include="musync_data\songname.update" />

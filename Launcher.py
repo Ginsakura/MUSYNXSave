@@ -5,18 +5,25 @@ import os
 from tkinter import Tk,font
 from MainWindow import MusyncSavDecodeGUI
 #from .MainWindow_New import MusyncSavDecodeGUI
-from Resources import Config, Logger
+from Resources import Config, Logger, SaveDataInfo, SongName
 from Toolkit import Toolkit
 
 version = '2.0.0rc1'
 isPreRelease = True
 preVersion = "2.0.0pre1"
-isPreRelease = False
+# isPreRelease = False
 
-logger:logging.Logger = Logger().GetLogger(name="Launcher");
-Config.Version = preVersion.replace("pre",".") if (isPreRelease) else version.replace("rc",".");
+logger:logging.Logger = Logger.GetLogger(name="Launcher");
+
 
 def Launcher():
+	# Init
+	Config();
+	SongName();
+	SaveDataInfo();
+	Config.Version = preVersion.replace("pre",".") if (isPreRelease) else version.replace("rc",".");
+
+	# Launcher
 	root:Tk = Tk();
 	ctypes.windll.shcore.SetProcessDpiAwareness(1);
 	fonts:list[str] = list(font.families());

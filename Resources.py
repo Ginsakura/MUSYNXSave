@@ -4,50 +4,9 @@ import logging
 import os
 import shutil
 import threading
+from Resources import *
 
 
-class SongName(object):
-	"存储SongName.json,单例";
-	__instance = None;
-	__lock:threading.Lock		= threading.Lock();
-	__data:dict[str,list|int]	= None;
-	__filePath:str				= os.getcwd()+"\\musync_data\\SongName.json";
-	__logger:logging.Logger		= None;
-
-	def __new__(cls):
-		with cls.__lock:
-			if not cls.__instance:
-				cls.__instance = super(SongName, cls).__new__(cls);
-				cls.__logger = Logger().GetLogger("Resources.SongName");
-				cls.__logger.info("creating an instance in Resources.SongName");
-				cls.LoadFile();
-		return cls.__instance
-
-	@classmethod
-	def SongNameData(cls)->str: return cls.__data;
-
-	@classmethod
-	def Update(cls)->int|None: return None if (cls.__data is None) else cls.__data["update"];
-
-	@classmethod
-	def FilePath(cls)->str: return cls.__filePath;
-	# @FilePath.setter
-	# def FilePath(self, value:str): self.__filePath = value; self.LoadFile();
-
-	@classmethod
-	def LoadFile(cls)->None:
-		"加载配置文件,自动执行";
-		if not os.path.isfile(cls.__filePath):
-			cls.__logger.error(f"file: \"{cls.__filePath}\" not exists.");
-			cls.__data = None;
-			return;
-		with open(cls.__filePath,'r',encoding='utf8') as songNameFile:
-			try:
-				cls.__data:dict[str,list] = json.load(songNameFile);
-			except Exception:
-				cls.__logger.exception(f"file: \"{cls.__filePath}\" load failure.");
-			else:
-				cls.__logger.info(f"file: \"{cls.__filePath}\" loaded.");
 
 class Config(object):
 	"从bootcfg.json读取配置信息,单例";
@@ -65,29 +24,52 @@ class Config(object):
 				shutil.copyfileobj(f_in, f_out);
 		# 清理 log.txt 文件
 		os.remove(logsDir+logName);
+
+	__logLevelMapping={
+		"DEBUG": logging.DEBUG,
+		"INFO": logging.INFO,
+		"WARN": logging.WARNING,
+		"WARNING": logging.WARNING,
+		"ERROR": logging.ERROR,
+		"FATAL": logging.CRITICAL,
+		"CRITICAL": logging.CRITICAL,
+		};
 	__instance						= None;
 	__lock:threading.Lock			= threading.Lock();
 	if (os.path.isfile(".\\log.txt")): CompressLogFile();
 	__logger:logging.Logger			= logging.getLogger("Resources.Config");
 	__filePath:str					= os.getcwd()+"\\musync_data\\bootcfg.json";
-	Version:str						= None;
-	LoggerFilter:str				= "Info";
-	Acc_Sync:bool					= False;
-	CheckUpdate:bool				= True;
-	DLLInjection:bool				= False;
-	SystemDPI:int					= 100;
-	DonutChartinHitDelay:bool		= True;
-	DonutChartinAllHitAnalyze:bool	= True;
-	NarrowDelayInterval:bool		= True;
-	ConsoleAlpha:int				= 75;
-	ConsoleFont:str					= "霞鹜文楷等宽";
-	ConsoleFontSize:int				= 36;
-	MainExecPath:str				= None;
-	ChangeConsoleStyle:bool			= True;
-	FramelessWindow:bool			= False;
-	TransparentColor:str			= "#FFFFFF";
-	Default4Keys:bool				= False;
-	DefaultDiffcute:int				= 0;
+	__config:dict[str,any]			= dict();
+	if not os.path.isfile(__filePath):
+		__logger.error(f"file: \"{__filePath}\" not exists.");
+	else:
+		with open(__filePath,'r',encoding='utf8') as configFile:
+			try:
+				__config = json.load(configFile);
+			except Exception:
+				__logger.exception(f"file: \"{__filePath}\" load failure.");
+			else:
+				__logger.info(f"file: \"{__filePath}\" loaded.");
+
+	Version:str						= __config.get("Version"					, None);
+	LoggerFilterString:str			= __config.get("LoggerFilterString"			, "INFO");
+	LoggerFilter:int				= __logLevelMapping.get(LoggerFilterString, logging.INFO);
+	Acc_Sync:bool					= __config.get("Acc_Sync"					, False);
+	CheckUpdate:bool				= __config.get("CheckUpdate"				, True);
+	DLLInjection:bool				= __config.get("DLLInjection"				, False);
+	SystemDPI:int					= __config.get("SystemDPI"					, 100);
+	DonutChartinHitDelay:bool		= __config.get("DonutChartinHitDelay"		, True);
+	DonutChartinAllHitAnalyze:bool	= __config.get("DonutChartinAllHitAnalyze"	, True);
+	NarrowDelayInterval:bool		= __config.get("NarrowDelayInterval"		, True);
+	ConsoleAlpha:int				= __config.get("ConsoleAlpha"				, 75);
+	ConsoleFont:str					= __config.get("ConsoleFont"				, "霞鹜文楷等宽");
+	ConsoleFontSize:int				= __config.get("ConsoleFontSize"			, 36);
+	MainExecPath:str				= __config.get("MainExecPath"				, None);
+	ChangeConsoleStyle:bool			= __config.get("ChangeConsoleStyle"			, True);
+	FramelessWindow:bool			= __config.get("FramelessWindow"			, False);
+	TransparentColor:str			= __config.get("TransparentColor"			, "#FFFFFF");
+	Default4Keys:bool				= __config.get("Default4Keys"				, False);
+	DefaultDiffcute:int				= __config.get("DefaultDiffcute"			, 0);
 
 	def __new__(cls):
 		with cls.__lock:
@@ -124,7 +106,8 @@ class Config(object):
 				config:dict[str,any] = json.load(configFile);
 				# 动态将字典的键值对赋值给类的属性
 				for key, value in config.items():
-					setattr(cls, key, value)
+					setattr(cls, key, value);
+					cls.LoggerFilter:int = cls.__logLevelMapping.get(cls.LoggerFilterString, logging.INFO);
 			except Exception:
 				cls.__logger.exception(f"file: \"{cls.__filePath}\" load failure.");
 			else:
@@ -164,6 +147,74 @@ class Config(object):
 			cls.__logger.info(f"Configuration saved to \"{cls.__filePath}\" successfully.");
 		except Exception as e:
 			cls.__logger.exception(f"Failed to save configuration to \"{cls.__filePath}\": {e}");
+
+class Logger(object):
+	"用于记录和生成logging.Logger"
+	__formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s');
+	__file = logging.FileHandler(".\\log.txt");
+	__console = logging.StreamHandler();
+	__loggerFilter:int = Config.LoggerFilter;
+
+	@classmethod
+	def GetLogger(cls, name:str)->logging.Logger:
+		"获取Logger"
+		cls.__file.setLevel(cls.__loggerFilter);
+		cls.__file.setFormatter(cls.__formatter);
+		cls.__console.setLevel(cls.__loggerFilter);
+		cls.__console.setFormatter(cls.__formatter);
+
+		logger:logging.Logger = logging.getLogger(name);
+		logger.setLevel(level = cls.__loggerFilter)
+		if not logger.hasHandlers():
+			logger.addHandler(cls.__file);
+			logger.addHandler(cls.__console);
+		return logger;
+
+class SongName(object):
+	"存储SongName.json,单例";
+	__instance = None;
+	__lock:threading.Lock		= threading.Lock();
+	__data:dict[str,list|int]	= None;
+	__filePath:str				= os.getcwd()+"\\musync_data\\SongName.json";
+	__logger:logging.Logger		= None;
+	__logger = Logger.GetLogger("Resources.SongName");
+	__logger.info("creating an instance in Resources.SongName");
+
+	def __new__(cls):
+		with cls.__lock:
+			if not cls.__instance:
+				cls.__instance = super(SongName, cls).__new__(cls);
+				cls.LoadFile();
+		return cls.__instance
+
+	@classmethod
+	def SongNameData(cls)->dict[str,list|int]:
+		return cls.__data;
+
+	@classmethod
+	def Version(cls)->int:
+		return 0 if (cls.__data is None) else cls.__data["version"];
+
+	@classmethod
+	def FilePath(cls)->str:
+		return cls.__filePath;
+	# @FilePath.setter
+	# def FilePath(self, value:str): self.__filePath = value; self.LoadFile();
+
+	@classmethod
+	def LoadFile(cls)->None:
+		"加载配置文件,自动执行";
+		if not os.path.isfile(cls.__filePath):
+			cls.__logger.error(f"file: \"{cls.__filePath}\" not exists.");
+			cls.__data = None;
+			return;
+		with open(cls.__filePath,'r',encoding='utf8') as songNameFile:
+			try:
+				cls.__data:dict[str,list] = json.load(songNameFile);
+			except Exception:
+				cls.__logger.exception(f"file: \"{cls.__filePath}\" load failure.");
+			else:
+				cls.__logger.info(f"file: \"{cls.__filePath}\" loaded.");
 
 class MapInfo(object):
 	"存储谱面信息"
@@ -221,21 +272,35 @@ class MapDataInfo(MapInfo):
 			f"CrcInt:{self.CrcInt}, "\
 			f"State:{self.State})";
 
-	def SetSongInfo(self, *args, **kwargs):
-		"设置SongInfo字段";
+	def SetSongInfo(self, *args, **kwargs) -> None:
 		if len(args) == 1 and isinstance(args[0], list):
+			# 通过 List 设置 SongInfo 字段
 			info = args[0];
+			if (info is None): return;
 			self.SongName			  = str(info[0]);
 			self.SongKeys			  = "4Key" if info[1] == 4 else "6Key";
 			self.SongDifficulty		  = str(["Easy", "Hard", "Inferno"][info[2]]);
 			self.SongDifficultyNumber = f"{info[3]:02d}";
-		elif len(kwargs) == 4:
-			self.SongName			  = kwargs.get("name");
-			self.SongKeys			  = kwargs.get("keys");
-			self.SongDifficulty		  = kwargs.get("difficulty");
-			self.SongDifficultyNumber = kwargs.get("difficultyNumber");
+			self.SongIsBuiltin		  = kwargs.get('isBuiltin', False);
+		elif len(args) == 1 and isinstance(args[0], MapInfo):
+			# 通过 MapInfo 设置 SongInfo 字段
+			mapInfo = args[0];
+			if (mapInfo is None): return;
+			self.SongName			  = mapInfo.SongName;
+			self.SongKeys			  = mapInfo.SongKeys;
+			self.SongDifficulty		  = mapInfo.SongDifficulty;
+			self.SongDifficultyNumber = mapInfo.SongDifficultyNumber;
+			self.SongIsBuiltin		  = mapInfo.SongIsBuiltin;
+		elif len(args) == 1 and args[0] is None:
+			# 如果传入的 MapInfo 为 None，处理这种情况
+			# Config.__logger.warning("MapInfo is None.");
+			return;
+		elif len(args) == 4 and all(isinstance(arg, str) for arg in args):
+			# 通过逐个条目设置 SongInfo 字段
+			self.SongName, self.SongKeys, self.SongDifficulty, self.SongDifficultyNumber = args;
+			self.SongIsBuiltin = kwargs.get('isBuiltin', False);
 		else:
-			raise ValueError("Invalid arguments");
+			raise TypeError("Invalid arguments for SetSongInfo");
 
 	def SetSongFrom(self,isBuiltin=False)->None:
 		"设置曲目是否为内置曲目"
@@ -308,7 +373,7 @@ class SaveDataInfo(object):
 		with cls.__lock:
 			if not cls.__instance:
 				cls.__instance = super(SaveDataInfo, cls).__new__(cls);
-				cls.__logger = Logger().GetLogger(name="Resources.SaveDataInfo");
+				cls.__logger = Logger.GetLogger(name="Resources.SaveDataInfo");
 				cls.__logger.info("creating an instance in Resources.SaveDataInfo");
 		return cls.__instance
 
@@ -358,7 +423,7 @@ class SaveDataInfo(object):
 			f"\tfps:{cls.fps})";
 
 	@classmethod
-	def ToDict(cls)->dict[str,any]:
+	def ToDict(cls,debug=False)->dict[str,any]:
 		"格式化为dict类型";
 		tempDict = dict(
 			Version					 = cls.version,
@@ -402,8 +467,11 @@ class SaveDataInfo(object):
 			Fps = cls.fps,
 			);
 		tempDict["SaveInfoList"] = list();
-		for saveInfo in cls.saveInfoList:
-			tempDict["SaveInfoList"].append(saveInfo.ToDict());
+		if (debug):
+			tempDict["SaveInfoList"].append("DEBUG");
+		else:
+			for saveInfo in cls.saveInfoList:
+				tempDict["SaveInfoList"].append(saveInfo.ToDict());
 		return tempDict;
 
 	@classmethod
@@ -417,31 +485,3 @@ class SaveDataInfo(object):
 			cls.__logger.info(f"Data successfully saved to {filePath}")
 		except Exception:
 			cls.__logger.exception(f"Failed to save data to {filePath}")
-
-class Logger(object):
-	"用于记录和生成logging.Logger"
-	__formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s');
-	__file = logging.FileHandler(".\\log.txt");
-	__console = logging.StreamHandler();
-	__loggerFilter = logging.INFO;
-
-	@classmethod
-	def GetLogger(cls, name:str, logFilter:str = Config().LoggerFilter)->logging.Logger:
-		"获取Logger"
-		match logFilter.lower():
-			case "debug": cls.loggerFilter		= logging.DEBUG;
-			case "warning": cls.loggerFilter	= logging.WARNING;
-			case "error": cls.loggerFilter		= logging.ERROR;
-			case "fatal": cls.loggerFilter		= logging.FATAL;
-			case _: cls.loggerFilter			= logging.INFO;
-		cls.__file.setLevel(cls.__loggerFilter);
-		cls.__file.setFormatter(cls.__formatter);
-		cls.__console.setLevel(cls.__loggerFilter);
-		cls.__console.setFormatter(cls.__formatter);
-
-		logger:logging.Logger = logging.getLogger(name);
-		logger.setLevel(level = cls.loggerFilter)
-		if not logger.hasHandlers():
-			logger.addHandler(cls.__file);
-			logger.addHandler(cls.__console);
-		return logger;

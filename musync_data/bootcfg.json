@@ -1,6 +1,6 @@
 {
   "Version": "2.0.0.0",
-  "LoggerFilter": "DEBUG",
+  "LoggerFilterString": "DEBUG",
   "Acc_Sync": true,
   "CheckUpdate": false,
   "DLLInjection": true,

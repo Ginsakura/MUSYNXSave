@@ -1,7 +1,7 @@
 import ctypes;
 import json;
 import logging;
-import os;
+import os
 import psutil;
 import requests;
 import threading;
@@ -20,9 +20,8 @@ from tkinter.filedialog import askopenfilename;
 from Difficulty_ScoreAnalyze import Analyze;
 from HitDelay import HitDelayCheck,HitDelayText;
 from MusyncSavDecode import MUSYNCSavProcess;
-from Resources import Config, MapDataInfo, SaveDataInfo, SongName, Logger;
+from Resources import Config, SaveDataInfo, SongName, Logger;
 from Toolkit import Toolkit
-
 
 
 class MusyncSavDecodeGUI(object):
@@ -30,9 +29,10 @@ class MusyncSavDecodeGUI(object):
 	def __init__(self, version:str, preVersion:str, isPreRelease:bool=False, root:Tk=None, isTKroot:bool=True):
 	##Init##
 		# super(MusyncSavDecodeGUI, self).__init__();
-		self.logger:logging.Logger = Logger().GetLogger(name="MusyncSavDecodeGUI");
+		self.logger:logging.Logger = Logger.GetLogger(name="MusyncSavDecodeGUI");
 		self.version:str = version;
 		self.preVersion:str = preVersion;
+		self.isPreRelease:bool = isPreRelease;
 		self.isTKroot:bool = isTKroot;
 		root.iconbitmap('./musync_data/Musync.ico');
 		root.geometry(f'1000x670+500+300');
@@ -77,7 +77,7 @@ class MusyncSavDecodeGUI(object):
 		root.protocol("WM_DELETE_WINDOW", self.Closing);
 
 	##Controller##
-		self.DecodeSaveFile = ttk.Button(self.root, text="解码并刷新",command=self.DeleteAnalyzeFile,style='F5.TButton')
+		self.DecodeSaveFile = ttk.Button(self.root, text="解码并刷新",command=self.DataLoad,style='F5.TButton')
 		self.DecodeSaveFile.place(x=10,y=10,width=160,height=30)
 		self.isGameRunning = Label(self.root, text="游戏未启动", font=self.font,bg='#FF8080')
 		self.isGameRunning.place(x=30,y=85,width=110,height=30)
@@ -149,8 +149,8 @@ class MusyncSavDecodeGUI(object):
 		self.selectLabel1.place(x=0,y=5,width=50,height=60)
 		self.selectDLCSong = Button(self.selectExFrame, text=self.songSelect.text, command=lambda:self.SelectDLCSong(), anchor='w', font=self.font)
 		self.selectDLCSong.place(x=48,y=0,width=30,height=65)
-		self.selectKeys = Button(self.selectExFrame, text=self.keys.text, command=lambda:self.SelectKeys(), anchor='w', font=self.font)
-		self.selectKeys.place(x=80,y=0,width=self.keys.width,height=30)
+		self.selectKeys = Button(self.selectExFrame, text=self.keys.text, command=lambda:self.SelectKeys(), anchor='center', font=self.font)
+		self.selectKeys.place(x=80,y=0,width=92,height=30)
 		self.selectDifficute = Button(self.selectExFrame, text=self.difficute.text, command=lambda:self.SelectDifficute(), anchor='w', font=self.font)
 		self.selectDifficute.place(x=80,y=35,width=92,height=30)
 
@@ -163,34 +163,38 @@ class MusyncSavDecodeGUI(object):
 		def CheckGameRunning():
 			logger:logging.Logger = Logger.GetLogger("MusyncSavDecodeGUI.CheckGameRunning")
 			logger.info("Start Thread: CheckGameIsStart.");
-			while self.checkGameStartEvent.is_set():
+			def Checking()->None:
+				if not self.checkGameStartEvent.is_set(): return;
 				startTime = time.perf_counter_ns()
 				try:
-					for ids in psutil.pids():
-						if psutil.Process(pid=ids).name() == "MUSYNX.exe":
-							# Config["MainExecPath"]
-							self.isGameRunning["text"] = "游戏已启动";
-							self.isGameRunning["bg"] = "#98E22B";
-							logger.debug("Game is Running.");
-							break;
-					else:
-						self.isGameRunning["text"] = "游戏未启动";
-						self.isGameRunning["bg"] = "#FF8080";
-						logger.debug("Game is not Running.");
+						for ids in psutil.pids():
+							if psutil.Process(pid=ids).name() == "MUSYNX.exe":
+								# Config["MainExecPath"]
+								self.isGameRunning["text"] = "游戏已启动";
+								self.isGameRunning["bg"] = "#98E22B";
+								logger.debug("Game is Running.");
+								break;
+						else:
+							self.isGameRunning["text"] = "游戏未启动";
+							self.isGameRunning["bg"] = "#FF8080";
+							logger.debug("Game is not Running.");
+				except RuntimeError:
+						pass
 				except Exception:
-					logger.exception("CheckGameRunning has Exception: ");
+						# logger.exception("CheckGameRunning has Exception: ");
+						pass
 				logger.info("CheckGameIsStart Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000));
-				time.sleep(5);
+				self.root.after(5000, Checking);
+			self.root.after(5000, Checking);
 			logger.warning("Stop Thread: CheckGameIsStart.");
 
 		self.checkGameStartEvent.set();
-		self.checkGameIsStartThread = threading.Thread(target=CheckGameRunning);
-		self.checkGameIsStartThread.start();
-		threading.Thread(target=self.CheckJsonUpdate).start();
+		CheckGameRunning();
+		self.root.after(0, self.CheckJsonUpdate);
 
 		if Config.CheckUpdate:
 			self.logger.info("Check Updating...");
-			threading.Thread(target=self.CheckUpdate).start();
+			self.root.after(0,self.CheckUpdate);
 		else:
 			self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页');
 			self.logger.warning("Check update is Disable");
@@ -203,7 +207,6 @@ class MusyncSavDecodeGUI(object):
 			self.logger.warning("DLL Injection is Enable.");
 			self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelay, font=self.font,bg='#FF5959');
 			self.hitDelay.place(x=775,y=50,width=90,height=30);
-		MUSYNCSavProcess(savFile=self.saveFilePathVar.get()).Main();
 		self.DataLoad();
 
 # TK事件重载
@@ -218,7 +221,6 @@ class MusyncSavDecodeGUI(object):
 	def SelectKeys(self):
 		self.keys = KeysEnum((self.keys.value+1)%3);
 		self.selectKeys.configure(text=self.keys.text);
-		self.selectKeys.place(width=self.keys.width);
 		self.DataLoad();
 		self.root.update();
 	def SelectDifficute(self):
@@ -322,63 +324,33 @@ class MusyncSavDecodeGUI(object):
 			messagebox.showinfo("Info", '游戏已启动')
 
 	def F5Key(self,event):
-		self.DeleteAnalyzeFile()
+		self.DataLoad()
 
 # update功能组
 	def CheckJsonUpdate(self):
 		startTime = time.perf_counter_ns()
 		try:
-			response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
-			githubVersion = response.content.decode('utf8')
-			with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
-				localVersion = snju.read()
-			print(f"   Local Json Version: {localVersion}")
-			print(f"  Terget Json Version: {githubVersion}")
-			if githubVersion>localVersion:
-				response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.json")
-				songNameJson = response.json()
-				with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
-					json.dump(songNameJson,snj,indent="",ensure_ascii=False)
-				with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
-					snju.write(githubVersion)
+			response:requests.Response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update");
+			localVersion:int = int(SongName.Version());
+			self.logger.info(f"   Local Json Version: {localVersion}");
+			if response.status_code == 200:
+				githubVersion = int(response.content.decode('utf8'));
+				self.logger.info(f"  Terget Json Version: {githubVersion}");
+				if githubVersion>localVersion:
+					response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.json")
+					songNameJson = response.json()
+					with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
+						json.dump(songNameJson,snj,indent="",ensure_ascii=False)
+					SongName.LoadFile();
+			else:
+				self.logger.error("Can't get \"songname.update\", HTTP status code: %d."%(response.status_code));
 		except Exception as e:
+			self.logger.exception("谱面信息更新发生错误: ");
 			messagebox.showerror("Error", f'发生错误: {e}');
 			if messagebox.askyesno("无法获取谱面信息更新", f'是否前往网页查看是否存在更新？\n(请比对 SongName.update 中的时间是否比本地文件中的时间更大)'):
 				webbrowser.open("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
 		endTime = time.perf_counter_ns()
-		print("CheckJsonUpdate Run Time: %f ms"%((endTime - startTime)/1000000))
-
-	def CheckUpdate(self):
-		startTime = time.perf_counter_ns()
-		localVersion = float(self.version.replace(".","").replace("rc","."))
-		try:
-			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
-			# print(response.json())
-			resJson = response.json()
-			if "tag_name" in resJson:
-				tagVersion = response.json()["tag_name"]
-				tergetVersion = float(tagVersion.replace(".","").replace("rc","."))
-			elif "message" in resJson:
-				if resJson["message"][:23] == "API rate limit exceeded":
-					if messagebox.askyesno("GitHub公共API访问速率已达上限", "是否前往发布页查看是否存在更新？"):
-						webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases/latest")
-					return
-		except Exception as e:
-			messagebox.showerror("Error", f'发生错误: {e}')
-			tergetVersion = localVersion
-		# print(localVersion,tergetVersion)
-		print('  Terget Version : %s'%tagVersion.replace("rc","."))
-		print('   Local Version : %s'%self.version.replace("rc","."))
-		print("Local PreVersion : %s"%self.preVersion.replace("pre","."))
-		if (tergetVersion > localVersion):
-			self.gitHubLink.configure(text=f'有新版本啦——点此打开下载页面	NewVersion: {tagVersion}', anchor="center")
-			self.gitHubLink.configure(command=lambda:webbrowser.open(f"https://github.com/Ginsakura/MUSYNCSave/releases/tag/{tagVersion}"))
-			self.UpdateTip()
-		else:
-			self.gitHubLink.configure(text='点击打开GitHub仓库	点个Star吧，秋梨膏', anchor="center")
-			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"))
-		endTime = time.perf_counter_ns()
-		print("CheckUpdate Run Time: %f ms"%((endTime - startTime)/1000000))
+		self.logger.info("CheckJsonUpdate Run Time: %f ms"%((endTime - startTime)/1000000));
 
 	def UpdateTip(self):
 		if self.gitHubLink.cget('fg') == '#C4245C':
@@ -386,6 +358,43 @@ class MusyncSavDecodeGUI(object):
 		else:
 			self.gitHubLink.configure(fg='#C4245C')
 		self.root.after(500,self.UpdateTip)
+
+	def CheckUpdate(self):
+		def CheckVersion(local:str, target:str)->bool:
+			localVer:list[str] = local.replace("pre" if self.isPreRelease else "rc",".").split(".");
+			targetVer:list[str] =  target.replace("rc",".").split(".");
+			if (targetVer[0] > localVer[0]): return True;
+			if (targetVer[1] > localVer[1]): return True;
+			if (targetVer[2] > localVer[2]): return True;
+			if (targetVer[3] > localVer[3]): return True;
+			else: return False;
+		startTime:int = time.perf_counter_ns()
+		try:
+			response:requests.Response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
+			resJson = response.json()
+			if "tag_name" in resJson:
+				tergetVersion:str = response.json()["tag_name"].replace("rc",".")
+			elif "message" in resJson:
+				if resJson["message"][:23] == "API rate limit exceeded":
+					if messagebox.askyesno("GitHub公共API访问速率已达上限", "是否前往发布页查看是否存在更新？"):
+						webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases/latest")
+					return
+		except Exception as e:
+			self.logger.exception("更新信息发生错误: ");
+			messagebox.showerror("Error", f'发生错误: {e}')
+		# print(localVersion,tergetVersion)
+		self.logger.info('  Terget Version : %s'%tergetVersion.replace("rc","."))
+		self.logger.info('   Local Version : %s'%self.version.replace("rc","."))
+		self.logger.info("Local PreVersion : %s"%self.preVersion.replace("pre","."))
+		if (CheckVersion(self.preVersion if self.isPreRelease else self.version, tergetVersion)):
+			self.gitHubLink.configure(text=f'有新版本啦——点此打开下载页面	NewVersion: {tergetVersion}', anchor="center")
+			self.gitHubLink.configure(command=lambda:webbrowser.open(f"https://github.com/Ginsakura/MUSYNCSave/releases/tag/{tergetVersion}"))
+			self.UpdateTip()
+		else:
+			self.gitHubLink.configure(text='点击打开GitHub仓库	点个Star吧，秋梨膏', anchor="center")
+			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"))
+		endTime = time.perf_counter_ns()
+		self.logger.info("CheckUpdate Run Time: %f ms"%((endTime - startTime)/1000000))
 
 # 初始化提示框
 	def InitLabel(self,text,close=False):
@@ -421,40 +430,38 @@ class MusyncSavDecodeGUI(object):
 		Config.MainExecPath = saveFilePath;
 		Config.SaveConfig();
 
-	def DeleteAnalyzeFile(self):
-		if os.path.isfile("./musync_data/SavAnalyze.json"):
-			os.remove("./musync_data/SavAnalyze.json")
-		if os.path.isfile("./musync_data/SavDecode.decode"):
-			os.remove("./musync_data/SavDecode.decode")
-		self.DataLoad()
 	def HitDelay(self):
 		if not HitDelayCheck().DLLCheck():
-			messagebox.showerror("Error", f'DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁')
+			messagebox.showerror("Error", f'DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁');
+			self.logger.error("DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁")
 		else:
-			nroot = Toplevel(self.root)
+			nroot:Toplevel = Toplevel(self.root)
 			nroot.resizable(True, True)
 			HitDelayText(nroot)
-	def DataLoad(self):
-		startTime = time.perf_counter_ns()
-		self.InitLabel(text="正在分析存档文件中……")
-		def Rank(sync):
-			sync = float(sync[0:-1])
-			if sync < 75:return "C"
-			elif sync < 95:return "B"
-			elif sync < 110:return "A"
-			elif sync < 117:return "S"
-			elif sync < 120:return "蓝Ex"
-			elif sync < 122:return "红Ex"
-			else:return "黑Ex"
 
-		self.InitLabel('正在分析存档文件中……')
-		saveDataJson = SaveDataInfo;
+	def DataLoad(self):
+		self.logger.debug("DataLoad Start");
+		startTime = time.perf_counter_ns();
+		self.InitLabel(text="正在分析存档文件中……");
+		self.logger.debug("正在分析存档文件中……");
+
+		def Rank(sync:int):
+			if	 (sync == 0)	: return "";
+			if	 (sync < 7500)	: return "C";
+			elif (sync < 9500)	: return "B";
+			elif (sync < 11000)	: return "A";
+			elif (sync < 11700)	: return "S";
+			elif (sync < 12000)	: return "蓝Ex";
+			elif (sync < 12200)	: return "红Ex";
+			else				: return "黑Ex";
+
 		# songNameJson = SongName.SongNameData();
-		self.root.title(f'同步音律喵赛克Steam端本地存档分析   LastPlay: {saveDataJson.selectSongName}')
+		MUSYNCSavProcess(savFile=self.saveFilePathVar.get()).Main();
+		self.root.title(f'同步音律喵赛克Steam端本地存档分析   LastPlay: {SaveDataInfo.selectSongName}')
 		[self.saveData.delete(ids) for ids in self.saveData.get_children()]
 		self.saveCount = 0
 		self.totalSync = 0
-		for saveInfo in saveDataJson.saveInfoList:
+		for saveInfo in SaveDataInfo.saveInfoList:
 			# 无名谱面筛选
 			if saveInfo.SongName is None: continue;
 			# 键数筛选
@@ -489,14 +496,14 @@ class MusyncSavDecodeGUI(object):
 				self.totalSync += saveInfo.UploadScore;
 			else:
 				self.excludeCount += 1;
-			self.saveData.insert('', END, values=(saveInfo.SongId, #谱面号
-				("" if saveInfo.SongName is None else saveInfo.SongName), #曲名
-				("" if saveInfo.SongKeys is None else saveInfo.SongKeys), #键数
-				("" if saveInfo.SongDifficulty is None else saveInfo.SongDifficulty), #难度
-				("" if saveInfo.SongDifficultyNumber is None else "%02s"%(saveInfo.SongDifficultyNumber)), #难度等级
-				f"{saveInfo.SyncNumber/10000:%}", #本地同步率
-				("" if ((saveInfo.PlayCount == 0) and (saveInfo.UploadScore == 0)) else Rank(saveInfo.SyncNumber)), #Rank
-				f"{saveInfo.UploadScore:%}", #云端同步率
+			self.saveData.insert('', END, values=("%d"%saveInfo.SongId, #谱面号
+				("" if (saveInfo.SongName is None) else saveInfo.SongName), #曲名
+				("" if (saveInfo.SongKeys is None) else saveInfo.SongKeys), #键数
+				("" if (saveInfo.SongDifficulty is None) else saveInfo.SongDifficulty), #难度
+				("" if (saveInfo.SongDifficultyNumber is None) else saveInfo.SongDifficultyNumber), #难度等级
+				f"{saveInfo.SyncNumber/10000:.2%}", #本地同步率
+				(Rank(saveInfo.SyncNumber)), #Rank
+				f"{saveInfo.UploadScore:.21%}", #云端同步率
 				saveInfo.PlayCount, #游玩计数
 				saveInfo.State #谱面状态
 				))
@@ -570,15 +577,13 @@ class MusyncSavDecodeGUI(object):
 		DiffcuteEnum.All.text = "所有难度";
 		DiffcuteEnum.All.stext = "ALL";
 
-		KeysEnum.Key4.text = "4Key";
+		KeysEnum.Key4.text = "4 Key";
 		KeysEnum.Key4.stext = "4K";
 		KeysEnum.Key4.width = 72;
-		KeysEnum.Key6.text = "6Key";
+		KeysEnum.Key6.text = "6 Key";
 		KeysEnum.Key6.stext = "6K";
-		KeysEnum.Key6.width = 72;
-		KeysEnum.All.text = "4&6Key";
+		KeysEnum.All.text = "4&6 Key";
 		KeysEnum.All.stext = "ALL";
-		KeysEnum.All.width = 112;
 
 		SongSelectEnum.Builtin.text = "本\n体";
 		SongSelectEnum.DLC.text = "扩\n展";

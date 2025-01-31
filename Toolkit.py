@@ -131,8 +131,6 @@ class Toolkit(object):
 		Toolkit.DatabaseUpdate(Toolkit.CheckDatabaseVersion());
 		# 检查GameLib
 		logger.debug("Check DLLInjection...");
-		if Config.DLLInjection:
-			Toolkit.GameLibCheck();
 
 	def GameLibCheck(cls)->int:
 		"""

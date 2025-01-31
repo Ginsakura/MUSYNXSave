@@ -1,7 +1,7 @@
 import ctypes
 from Difficulty_ScoreAnalyze import Analyze
 from enum import Enum, unique
-from HitDelay import HitDelayCheck,HitDelayText
+from HitDelay import HitDelayText
 import json
 import logging
 from MusyncSavDecode import MUSYNCSavProcess
@@ -76,7 +76,7 @@ class MusyncSavDecodeGUI(object):
 		self.checkGameIsStartThread = None;
 		self.UpdateEnum();
 
-		root.protocol("WM_DELETE_WINDOW", self.Closing);
+		self.root.protocol("WM_DELETE_WINDOW", self.Closing);
 
 	##Controller##
 		self.DecodeSaveFile = ttk.Button(self.root, text="解码并刷新",command=self.DataLoad,style='F5.TButton')
@@ -433,13 +433,18 @@ class MusyncSavDecodeGUI(object):
 		Config.SaveConfig();
 
 	def HitDelay(self):
-		if not HitDelayCheck().DLLCheck():
+		if Config.DLLInjection:
+			result:int = Toolkit.GameLibCheck();
+		if (result == 0):
 			messagebox.showerror("Error", f'DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁');
 			self.logger.error("DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁")
+			return;
 		else:
-			nroot:Toplevel = Toplevel(self.root)
-			nroot.resizable(True, True)
-			HitDelayText(nroot)
+			self.logger.debug(f"return: {result}.");
+			self.logger.info("DLL Injection Success.");
+		nroot:Toplevel = Toplevel(self.root);
+		nroot.resizable(True, True);
+		HitDelayText(nroot);
 
 	def DataLoad(self):
 		self.logger.debug("DataLoad Start");

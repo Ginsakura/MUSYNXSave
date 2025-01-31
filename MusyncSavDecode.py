@@ -2,20 +2,24 @@ from base64 import b64decode
 import clr
 import logging
 import os
-from Resources import Config, SongName, SaveDataInfo, MapDataInfo, MapInfo, Logger
+from Resources import Logger
+import sys
 import time
 from tkinter import messagebox
 
-
 logger:logging.Logger = Logger.GetLogger(name="MUSYNCSavDecode");
-
-# Load C# Lib
-# clr.AddReference("System.Runtime.Serialization.Formatters.Binary")
-clr.AddReference("mscorlib")
-from System import Reflection
-from System.IO import MemoryStream
-from System.Reflection import Assembly
-from System.Runtime.Serialization.Formatters.Binary import BinaryFormatter
+try:
+	from Resources import Config, SongName, SaveDataInfo, MapDataInfo, MapInfo
+	# Load C# Lib
+	# clr.AddReference("System.Runtime.Serialization.Formatters.Binary")
+	clr.AddReference("mscorlib")
+	from System import Reflection
+	from System.IO import MemoryStream
+	from System.Reflection import Assembly
+	from System.Runtime.Serialization.Formatters.Binary import BinaryFormatter
+except Exception:
+	logger.exception("Import Error.");
+	sys.exit(101)
 
 class MUSYNCSavProcess(object):
 	"""docstring for MUSYNCSavProcess""";

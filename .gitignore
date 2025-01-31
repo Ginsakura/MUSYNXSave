@@ -8,7 +8,7 @@
 /dist
 /logs
 /SavDecode
-./MusyncSaveDecode
+/MusyncSaveDecode
 
 LXGW.ttf
 SaveDataInfo.json

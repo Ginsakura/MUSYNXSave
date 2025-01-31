@@ -1,19 +1,25 @@
+import sys
 import ctypes
 import logging
 import os
-# from tkinter import *
 from tkinter import Tk,font
-from MainWindow import MusyncSavDecodeGUI
-#from .MainWindow_New import MusyncSavDecodeGUI
-from Resources import Config, Logger, SaveDataInfo, SongName
-from Toolkit import Toolkit
+from Resources import Logger
+logger:logging.Logger = Logger.GetLogger(name="Launcher");
+try:
+	# from tkinter import *
+	from MainWindow import MusyncSavDecodeGUI
+	#from .MainWindow_New import MusyncSavDecodeGUI
+	from Resources import Config, SaveDataInfo, SongName
+	from Toolkit import Toolkit
+except:
+	logger.exception("Import Error.");
+	sys.exit(101)
 
 version = '2.0.0rc1'
 isPreRelease = True
 preVersion = "2.0.0pre3"
 # isPreRelease = False
 
-logger:logging.Logger = Logger.GetLogger(name="Launcher");
 
 
 def Launcher()->None:
@@ -43,10 +49,9 @@ def Launcher()->None:
 	root.update();
 	root.mainloop();
 
-
 if __name__ == '__main__':
 	try:
 		Launcher();
 	except Exception:
 		logger.exception("Launcher Exception.");
-	# os.system("pause");
+	os.system("pause");

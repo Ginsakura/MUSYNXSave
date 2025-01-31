@@ -8,10 +8,6 @@ on:
     - 'main'
 
 env:
-  Version: Init
-  Release: Init
-  isPreRelease: true
-  ChangeLog: Init
   CommitMessage: Init
 
 jobs:
@@ -21,27 +17,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
-
-    - name: Get Version & Set GITHUB_ENV
-      run: |
-        $vc = "${{ github.event.head_commit.message }}" -split "  "
-        echo "$vc"
-        echo "Version=$($vc[0])" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        echo "CommitMessage=$($vc[1])" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-        if ( $vc[2] -eq 'Release' ){
-          $release = $vc[0] -replace "rc"," Release "
-          echo 'isPreRelease=false' | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo (Get-Content ./changelog.md)
-        }elseif( $vc[2] -eq 'NotRelease' ){
-          $release = $vc[0] -replace "pre"," NotRelease "
-          # echo "NotSkip=false" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        }else{
-          $release = $vc[0] -replace "pre"," PreRelease "
-          echo (Get-Content ./changelog.md)
-        }
-        echo "Release=$release" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        echo $release
 
     - name: Cache Python Environment
       uses: actions/cache@v2
@@ -58,23 +33,18 @@ jobs:
       with:
         python-version: '3.11.5'
 
-    # - name: Python Pip Install
-    #   uses: logikal-code/pip-install@v1.0.0
     - name: Install requirements
       run: |
         pip3 install -r requirements.txt
 
     - name: Dist ${{ env.Version }}
-      # if: ${{ env.NotSkip == 'true'}}
       run: |
-        pyinstaller build.spec --distpath ./MusyncSaveDecode --clean;
-        Compress-Archive -LiteralPath ./MusyncSaveDecodeCLI/ -DestinationPath ("./MusyncSavDecode_NoConsole_${{ env.Version }}.zip");
-        Rename-Item -Path ./MusyncSaveDecode.exe -NewName ("MusyncSavDecode_NoConsole_${{ env.Version }}_AllInOne.exe");
-        Compress-Archive -LiteralPath ./MusyncSaveDecodeNoCLI/ -DestinationPath ("./MusyncSavDecode_WithConsole_${{ env.Version }}.zip");
-        Rename-Item -Path ./MusyncSaveDecode.exe -NewName ("MusyncSavDecode_WithConsole_${{ env.Version }}_AllInOne.exe");
+        $vc = "${{ github.event.head_commit.message }}" -split "  "
+        echo "$vc"
+        echo "CommitMessage=$($vc[1])" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        powershell.exe buildLauncher.ps1
 
     - name: Commit Release
-      # if: ${{ env.NotSkip == 'true'}}
       id: create_release
       uses: softprops/action-gh-release@v1
       env:

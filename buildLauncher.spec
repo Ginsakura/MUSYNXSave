@@ -2,12 +2,11 @@
 
 a = Analysis(
     ["Launcher.py", "MainWindow.py", "Difficulty_ScoreAnalyze.py", "HitDelay.py",
-        "MusyncSavDecode.py", "Resources.py", "Toolkit.py", "FileExport.py"],
+        "MusyncSavDecode.py", "Resources.py", "Toolkit.py"],
     pathex=["F:\Files\Project_File\Program_Project\Python\MUSYNCSavDecode"],
     binaries=[],
     datas=[],
-    hiddenimports=["MainWindow", "Difficulty_ScoreAnalyze", "HitDelay", "MusyncSavDecode",
-        "Resources", "Toolkit", "FileExport"],
+    hiddenimports=["MainWindow", "Difficulty_ScoreAnalyze", "HitDelay", "MusyncSavDecode", "Resources", "Toolkit"],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

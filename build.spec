@@ -1,22 +1,13 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 a = Analysis(
-    ['Launcher.py'],
-    pathex=[],
-    binaries=[
-        ('mscorlib.dll', '.'),
-        ('musync_data/Musync.ico', 'musync_data'),
-        ('musync_data/LXGW.ttf', 'musync_data'),
-        ('musync_data/Assembly-CSharp.dll', 'musync_data')
-    ],
-    datas=[
-        ('README.md', '.'),
-        ('LICENSE', '.'),
-        ('How_to_use.zh.md', '.'),
-        ('changelog.md', '.'),
-        ('musync_data/songname.update', 'musync_data')
-    ],
-    hiddenimports=[],
+    ["Launcher.py", "MainWindow.py", "Difficulty_ScoreAnalyze.py", "HitDelay.py",
+        "MusyncSavDecode.py", "Resources.py", "Toolkit.py", "FileExport.py"],
+    pathex=["F:\Files\Project_File\Program_Project\Python\MUSYNCSavDecode"],
+    binaries=[],
+    datas=[],
+    hiddenimports=["MainWindow", "Difficulty_ScoreAnalyze", "HitDelay", "MusyncSavDecode",
+        "Resources", "Toolkit", "FileExport"],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -30,7 +21,7 @@ WithConsole = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='MusyncSaveDecode',
+    name='MusyncSaveDecodeCLI',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -50,7 +41,7 @@ WithConsoleColl = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='MusyncSaveDecode',
+    name='MusyncSaveDecodeCLI',
 )
 
 WithConsoleAllInOne = EXE(
@@ -60,7 +51,7 @@ WithConsoleAllInOne = EXE(
     a.datas,
     [],
     exclude_binaries=False,
-    name='MusyncSaveDecode',
+    name='MusyncSaveDecodeCLI',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -81,7 +72,7 @@ WithoutConsole = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='MusyncSaveDecode',
+    name='MusyncSaveDecodeNoCLI',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -101,7 +92,7 @@ WithoutConsoleColl = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='MusyncSaveDecode',
+    name='MusyncSaveDecodeNoCLI',
 )
 
 WithoutConsoleAllInOne = EXE(
@@ -111,7 +102,7 @@ WithoutConsoleAllInOne = EXE(
     a.datas,
     [],
     exclude_binaries=False,
-    name='MusyncSaveDecode',
+    name='MusyncSaveDecodeNoCLI',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

@@ -1,6 +1,6 @@
 name: Auto Release Action
-on: 
-  push: 
+on:
+  push:
     branches:
     - 'main'
   pull_request:
@@ -13,10 +13,9 @@ env:
   isPreRelease: true
   ChangeLog: Init
   CommitMessage: Init
-  NotSkip: true
 
 jobs:
-  AutoRelease: 
+  AutoRelease:
     name: Auto Release
     runs-on: windows-2019
     steps:
@@ -44,11 +43,6 @@ jobs:
         echo "Release=$release" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         echo $release
 
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11.5'
-
     - name: Cache Python Environment
       uses: actions/cache@v2
       env:
@@ -59,32 +53,25 @@ jobs:
         restore-keys: |
           ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
 
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11.5'
+
     # - name: Python Pip Install
     #   uses: logikal-code/pip-install@v1.0.0
     - name: Install requirements
       run: |
         pip3 install -r requirements.txt
 
-
-    # - name: Clean up PATH
-    #   uses: egor-tensin/cleanup-path@v3
-    # - name: Set up MinGW
-    #   id: setup
-    #   uses: egor-tensin/setup-mingw@v2
-    #   with:
-    #     version: '12.2.0'
-    # - name: Build SavDecode.dll
-    #   run: |
-    #     & '${{ steps.setup.outputs.gxx }}' --version
-
     - name: Dist ${{ env.Version }}
       # if: ${{ env.NotSkip == 'true'}}
       run: |
-        pyinstaller build.spec --distpath ./NoCLI/ --clean
-        Compress-Archive -LiteralPath ./NoCLI/MusyncSaveDecode/ -DestinationPath ("./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}.zip")
-        Rename-Item -Path ./MusyncSaveDecode.exe -NewName ("MusyncSavDecodeGUI_NoConsole_${{ env.Version }}_AllInOne.exe")
-        Compress-Archive -LiteralPath ./WithCLI/MusyncSaveDecode/ -DestinationPath ("./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}.zip")
-        Rename-Item -Path ./MusyncSaveDecode.exe -NewName ("MusyncSavDecodeGUI_WithConsole_${{ env.Version }}_AllInOne.exe")
+        pyinstaller build.spec --distpath ./MusyncSaveDecode --clean;
+        Compress-Archive -LiteralPath ./MusyncSaveDecodeCLI/ -DestinationPath ("./MusyncSavDecode_NoConsole_${{ env.Version }}.zip");
+        Rename-Item -Path ./MusyncSaveDecode.exe -NewName ("MusyncSavDecode_NoConsole_${{ env.Version }}_AllInOne.exe");
+        Compress-Archive -LiteralPath ./MusyncSaveDecodeNoCLI/ -DestinationPath ("./MusyncSavDecode_WithConsole_${{ env.Version }}.zip");
+        Rename-Item -Path ./MusyncSaveDecode.exe -NewName ("MusyncSavDecode_WithConsole_${{ env.Version }}_AllInOne.exe");
 
     - name: Commit Release
       # if: ${{ env.NotSkip == 'true'}}

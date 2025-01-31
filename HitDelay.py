@@ -1,65 +1,30 @@
-import json
-import matplotlib.gridspec as gridspec
-import matplotlib.pyplot as plt
-import os
-import pyperclip
-import sqlite3 as sql
-import uiautomation as uiauto
-
-from tkinter import *
-from tkinter import Tk,ttk,font,Text,messagebox
-from matplotlib.pyplot import MultipleLocator
-from datetime import datetime as dt
-from hashlib import md5
-
-import FileExport
+import logging
 from AllHitAnalyze import AllHitAnalyze
 # from AllHitAnalyze_New import AllHitAnalyze
+from datetime import datetime as dt
+import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plt
+from matplotlib.pyplot import MultipleLocator
+import os
+import pyperclip
+from Resources import Config, Logger
+import sqlite3 as sql
+from tkinter import *
+from tkinter import Tk, ttk, messagebox
+import uiautomation as uiauto
 
 uiauto.SetGlobalSearchTimeout(1)
-
-class HitDelayCheck(object):
-	"""docstring for HitDelayWindow"""
-	def __init__(self):
-		self.md5l = FileExport.ChangedDLL # Changed Assembly-CSharp.dll
-		self.md5o = FileExport.SourceDLL # Source  Assembly-CSharp.dll
-
-		with open('./musync_data/ExtraFunction.cfg','r',encoding='utf8') as confFile:
-			config = json.load(confFile)
-		self.spfr = config['MainExecPath']+'MUSYNX_Data/Managed/Assembly-CSharp.dll'
-		del config
-		self.DLLCheck()
-
-	def DLLCheck(self):
-		# 'D41D8CD98F00B204E9800998ECF8427E' is a Null file
-		with open(self.spfr,'rb') as spfrb:
-			md5o = md5(spfrb.read()).hexdigest().upper()
-		if (md5o != "D41D8CD98F00B204E9800998ECF8427E") and (md5o == self.md5o) and (not md5o == self.md5l):
-			self.DLLInjection()
-			return 1
-		elif (md5o == self.md5l):
-			return 1
-		elif (md5o == "D41D8CD98F00B204E9800998ECF8427E"):
-			self.DLLInjection()
-			return 1
-		else:
-			return 0
-
-	def DLLInjection(self):
-		if os.path.isfile(self.spfr+'.old'):
-			os.remove(self.spfr+'.old')
-		os.rename(self.spfr,self.spfr+'.old')
-		FileExport.WriteHitDelayFix(self.spfr)
 
 class HitDelayText(object):
 	"""docstring for DrawHDLine"""
 	def __init__(self,subroot):
-		if os.path.isfile('./musync_data/HitDelayHistory_v2.db'):
-			self.db = sql.connect('./musync_data/HitDelayHistory_v2.db')
-			self.cur = self.db.cursor()
+		self.__logger:logging.Logger = Logger.GetLogger("HitDelay.HitDelayText");
+		if os.path.isfile('./musync_data/HitDelayHistory.db'):
+			self.db = sql.connect('./musync_data/HitDelayHistory.db');
+			self.cur = self.db.cursor();
 		else:
-			self.db = sql.connect('./musync_data/HitDelayHistory_v2.db')
-			self.cur = self.db.cursor()
+			self.db = sql.connect('./musync_data/HitDelayHistory.db');
+			self.cur = self.db.cursor();
 			self.cur.execute("""CREATE table HitDelayHistory (
 				SongMapName text Not Null,
 				RecordTime text Not Null,
@@ -67,21 +32,17 @@ class HitDelayText(object):
 				AllKeys int,
 				AvgAcc float,
 				HitMap text,
-				PRIMARY KEY ("SongMapName", "RecordTime"))""")
-		self.subroot = subroot
-		self.font=('霞鹜文楷等宽',16)
-		self.subroot.iconbitmap('./musync_data/Musync.ico')
-		self.subroot.geometry(f'1000x600+600+400')
-		self.subroot.title("高精度延迟分析")
-		self.subroot['background'] = '#efefef'
+				PRIMARY KEY ("SongMapName", "RecordTime"))""");
+		self.subroot = subroot;
+		self.font=('霞鹜文楷等宽',16);
+		self.subroot.iconbitmap('./musync_data/Musync.ico');
+		self.subroot.geometry(f'1000x600+600+400');
+		self.subroot.title("高精度延迟分析");
+		self.subroot['background'] = '#efefef';
 		self.tipLabel = Label(self.subroot,font=self.font, relief="groove",text='↓将您用来辨识谱面的方式填入右侧文本框，然后点击右侧红色按钮进行结果分析↓',fg='#F9245E')
-		self.tipLabel.place(x=0,y=0,height=40,relwidth=1)
-		self.style = ttk.Style()
-		self.cursorHistory = ''
-
-		with open('./musync_data/ExtraFunction.cfg', 'r',encoding='utf8') as confFile:
-			config = json.load(confFile)
-
+		self.tipLabel.place(x=0,y=0,height=40,relwidth=1);
+		self.style = ttk.Style();
+		self.cursorHistory = '';
 		self.hitAnalyzeButton = Button(self.subroot,text='All\nHit',command=lambda :AllHitAnalyze().Show(),font=self.font, relief="groove")
 		self.hitAnalyzeButton.place(x=0,y=40,height=90,relwidth=0.05)
 		self.nameDelayLabel = Label(self.subroot,font=self.font, relief="groove",text='↓请在下面输入曲名与谱面难度↓这只是用来标记你玩的哪个谱面而已，\n没有任何要求                    ↓右侧水绿色按钮选择难度和键数↓')
@@ -94,16 +55,16 @@ class HitDelayText(object):
 		self.delayHistory.configure(yscrollcommand=self.VScroll1.set)
 
 		self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
-		if config['EnableAcc-Sync']:
+		if Config.Acc_Sync:
 			self.logButton.place(relx=0.7,y=70,height=60,relwidth=0.3)
 			self.txtButton = Button(self.subroot,text='生成Acc-Sync图表',command=self.OpenTxt,font=self.font)
 			self.txtButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
 		else:
 			self.logButton.place(relx=0.7,y=40,height=90,relwidth=0.3)
-		self.keys = config['DefaultKeys'] # F=4, T=6
-		self.keysButton = Button(self.subroot,font=self.font, text=("6Key" if self.keys else "4Key"), command=self.ChangeKeys, bg="#4AA4C9")
+		self.keys = Config.Default4Keys # T=4, F=6
+		self.keysButton = Button(self.subroot,font=self.font, text=("4Key" if self.keys else "6Key"), command=self.ChangeKeys, bg="#4AA4C9")
 		self.keysButton.place(relx=0.5,y=100,height=30,relwidth=0.1)
-		self.diffcute = config['DefaultDiffcute']
+		self.diffcute = Config.DefaultDiffcute
 		self.diffcuteButton = Button(self.subroot,font=self.font, text=["Easy","Hard","Inferno"][self.diffcute], command=self.ChangeDiffcute, bg="#4AA4C9")
 		self.diffcuteButton.place(relx=0.6,y=100,height=30,relwidth=0.1)
 
@@ -136,37 +97,20 @@ class HitDelayText(object):
 		self.historyDeleteButton = ttk.Button(self.historyFrame, text='删除记录', style="delete.TButton",command=self.DeleteCursorHistory)
 		self.historyDeleteButton.place(relx=0.5,y=210,height=30,relwidth=0.5)
 
-		self.delayInterval = 90
-		if config['EnableNarrowDelayInterval']:
-			self.delayInterval = 45
-		del config
-
-		self.history = list()
+		self.delayInterval:int = 45 if Config.NarrowDelayInterval else 90;
+		self.history:list = list()
 		self.HistoryUpdate()
 		self.UpdateWindowInfo()
 
 	def ChangeKeys(self):
 		self.keys = not self.keys
-		self.keysButton.configure(text=("6Key" if self.keys else "4Key"))
+		self.keysButton.configure(text=("4Key" if self.keys else "6Key"))
 	def ChangeDiffcute(self):
 		self.diffcute = (self.diffcute+1)%3
 		self.diffcuteButton.configure(text=["Easy","Hard","Inferno"][self.diffcute])
-	def ChangeConfig(self):
-		with open('./musync_data/ExtraFunction.cfg', 'r',encoding='utf8') as confFile:
-			config = json.load(confFile)
-		isChange = False
-		if config["DefaultKeys"] != self.keys:
-			config["DefaultKeys"] = self.keys
-			isChange = True
-		if config["DefaultDiffcute"] != self.diffcute:
-			config["DefaultDiffcute"] = self.diffcute
-			isChange = True
-		if isChange:
-			json.dump(config,open('./musync_data/ExtraFunction.cfg','w',encoding='utf8'),indent="",ensure_ascii=False)
 
 	def TestEntryString(self):
 		string = self.nameDelayEntry.get()
-		# print(type(string),string,reason)
 		if string == '':
 			self.nameDelayEntry.insert(0, "→→在这里输入谱面标识←←")
 		elif string == '→→在这里输入谱面标识←←':
@@ -186,7 +130,8 @@ class HitDelayText(object):
 		self.UpdateWindowInfo()
 
 	def Draw(self):
-		self.ChangeConfig()
+		Config.Default4Keys = self.keys;
+		Config.DefaultDiffcute = self.diffcute;
 		consoleFind = False
 		try:
 			win = uiauto.WindowControl(searchDepth=1,Name='MUSYNX Delay',searchInterval=1).DocumentControl(serchDepth=1,Name='Text Area',searchInterval=1)
@@ -233,7 +178,6 @@ class HitDelayText(object):
 
 	def OpenTxt(self):
 		os.system('start notepad ./musync_data/Acc-Sync.json')
-		# print(os.getcwd())
 		# os.system(f'start explorer {os.getcwd()}')
 		import AvgAcc_SynxAnalyze
 		AvgAcc_SynxAnalyze.Analyze()
@@ -247,10 +191,10 @@ class HitDelayText(object):
 			isChange = False
 			historyName = historyItem[0].replace("\'",'’')
 			recordTime = historyItem[1]
-			print("ShowHistoryInfo:",historyItem)
+			self.__logger.debug("ShowHistoryInfo:",historyItem)
 			data = self.cur.execute(f"select * from HitDelayHistory where SongMapName=\'{historyName}\'  and RecordTime=\'{recordTime}\'")
 			data = data.fetchone()
-			# print(data[:4])
+			self.__logger.debug(data[:4])
 			self.cursorHistory = data[0]
 			self.historyNameEntry.delete(0, 'end')
 			self.historyNameEntry.insert(0, data[0])
@@ -261,7 +205,7 @@ class HitDelayText(object):
 			del data
 
 	def DeleteCursorHistory(self):
-		print(f"delete history {self.cursorHistory}")
+		self.__logger.info(f"delete history {self.cursorHistory}")
 		if self.cursorHistory == '':
 			messagebox.showerror('Error','请输入谱面标识')
 		else:
@@ -274,7 +218,7 @@ class HitDelayText(object):
 	def UpdateCursorHistory(self):
 		nowHistoryName = self.historyNameEntry.get().replace("\'","’")
 		if self.cursorHistory != nowHistoryName:
-			print(f"change history name \nfrom {self.cursorHistory} \nto {nowHistoryName} \nwhen time is {self.historyRecordTimeValueLabel['text']}")
+			self.__logger.debug(f"change history name \nfrom {self.cursorHistory} \nto {nowHistoryName} \nwhen time is {self.historyRecordTimeValueLabel['text']}")
 			self.cur.execute(f'update HitDelayHistory set SongMapName=\'{nowHistoryName}\' where SongMapName=\'{self.cursorHistory}\' and RecordTime=\'{self.historyRecordTimeValueLabel["text"]}\'')
 			self.db.commit()
 			self.HistoryUpdate()
@@ -284,12 +228,11 @@ class HitDelayText(object):
 		itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
 		# state = e.item(itemID,"text")						# 取得text参数
 		historyItem = e.item(itemID,"values")				# 取得values参数
-		# print(e.item(itemID))
+		self.__logger.debug(e.item(itemID))
 		if not self.history == []:
 			data = self.cur.execute(f'select * from HitDelayHistory where SongMapName=\'{historyItem[0]}\' and RecordTime=\'{historyItem[1]}\'')
 			data = data.fetchone()
 			HitDelayDraw(data,isHistory=True)
-			# print(self.history[historyItem[0]])
 
 	def UpdateWindowInfo(self):
 		self.delayHistory.heading("Name",anchor="center",text="曲名")
@@ -306,7 +249,7 @@ class HitDelayText(object):
 		self.delayHistory.bind("<ButtonPress-1>",self.ShowHistoryInfo)
 		self.historyRecordTimeValueLabel['text'] = dt.now()
 
-		print("VScroll1.get",self.VScroll1.get())
+		self.__logger.debug("VScroll1.get",self.VScroll1.get())
 		self.delayHistory.place(x=0,y=130,height=self.subroot.winfo_height()-130,relwidth=0.684)
 		self.VScroll1.place(relx=0.684,y=132,height=self.subroot.winfo_height()-133,relwidth=0.015)
 		self.subroot.update()
@@ -316,7 +259,8 @@ class HitDelayText(object):
 class HitDelayDraw(object):
 	"""docstring for ClassName"""
 	def __init__(self, dataList,isHistory=False):
-		print('Name:%s\nRecordTime:%s'%(dataList[0],dataList[1]))
+		self.__logger:logging.Logger = Logger.GetLogger("HitDelay.HitDelayDraw");
+		self.__logger.info('Name:%s\nRecordTime:%s'%(dataList[0],dataList[1]));
 		self.avgDelay = dataList[2]
 		self.allKeys = dataList[3]
 		self.avgAcc = dataList[4]
@@ -344,14 +288,11 @@ class HitDelayDraw(object):
 			else: self.sum[4] += 1
 		self.sum[0] = sum(self.exCount)
 		self.exCount = self.exCount + self.sum[1:]
-		print("HitDelayDraw:",self.sum,self.exCount)
+		self.__logger.debug("HitDelayDraw:",self.sum,self.exCount);
 
-		self.DrawLine()
-		with open('./musync_data/ExtraFunction.cfg', 'r',encoding='utf8') as confFile:
-			config = json.load(confFile)
-		if config['EnableDonutChartinHitDelay']:
-			self.DrawBarPie()
-		plt.show()
+		self.DrawLine();
+		if Config.DonutChartinHitDelay: self.DrawBarPie();
+		plt.show();
 
 	def DrawLine(self):
 		fig = plt.figure(f'AvgDelay: {"%.4fms"%self.avgDelay}    ' \
@@ -361,7 +302,7 @@ class HitDelayDraw(object):
 		ax = fig.add_subplot()
 		plt.rcParams['font.serif'] = ["LXGW WenKai Mono"]
 		plt.rcParams["font.sans-serif"] = ["LXGW WenKai Mono"]
-		print(f'AvgDelay: {self.avgDelay}\tAllKeys: {self.allKeys}\tAvgAcc: {self.avgAcc}')
+		self.__logger.info(f'AvgDelay: {self.avgDelay}\tAllKeys: {self.allKeys}\tAvgAcc: {self.avgAcc}')
 		ax.text(0,5,"Slower→", ha='right',color='#c22472',rotation=90, fontdict={'size':15})
 		ax.text(0,-5,"←Faster", ha='right',va='top',color='#288328',rotation=90, fontdict={'size':15})
 

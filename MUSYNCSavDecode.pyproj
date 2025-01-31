@@ -33,8 +33,8 @@
     <Compile Include="AvgAcc_SynxAnalyze.py" />
     <Compile Include="Difficulty_ScoreAnalyze.py" />
     <Compile Include="File2Base64.py" />
-    <Compile Include="FileExport.py" />
     <Compile Include="FormatSongName.py" />
+    <Compile Include="setup.py" />
     <Compile Include="Toolkit.py" />
     <Compile Include="HitDelay.py" />
     <Compile Include="Launcher.py" />
@@ -74,7 +74,6 @@
     <Content Include="CSharp Code\ConsoleWindow.cs" />
     <Content Include="CSharp Code\GloHasConsole.cs" />
     <Content Include="CSharp Code\JudgeGrade.cs" />
-    <Content Include="distCPP.bat" />
     <Content Include="How_to_use.zh.md" />
     <Content Include="Launcher.cpp" />
     <Content Include="Launcher.exe" />

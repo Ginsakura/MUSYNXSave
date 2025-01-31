@@ -1,60 +1,131 @@
+﻿import gzip
+from hashlib import md5
+import io
+import json
 import os
-import pyperclip
+import struct
+# from base64 import b64encode
 
-from base64 import b64encode,b64decode
+FillSize:int = 512;
+# Source Assembly-CSharp.dll
+SourceDLL:str = 'F907C60B143794B86D1DB4F368FBF00F';
+SongNameVersion:int = 20250126;
 
-def EncodeIcon():
-	with open("./musync_data/MUSYNC.ico", 'rb+') as icon:
-		with open("./musync_data/icon.b64", 'w') as iconEncode:
-			data:str = b64encode(icon.read()).decode("ascii")
-			iconEncode.write("[")
-			for i in range(len(data)//128+1):
-				iconEncode.write(f"\t\"{data[i*128:i*128+128]}\",\n")
-			iconEncode.write("];")
+def GetHash(filePath:str=None)->str:
+	if (filePath is None): return "";
+	with open(filePath,'rb') as fileBytes:
+		return md5(fileBytes.read()).hexdigest().upper();
 
-def EncodeTTF():
-	with open("./musync_data/LXGW.ttf", 'rb+') as ttf:
-		with open("./musync_data/ttf.b64", 'w') as ttfEncode:
-			data = b64encode(ttf.read()).decode("ascii")
-			ttfEncode.write("[")
-			for i in range(len(data)//128+1):
-				ttfEncode.write(f"\t\"{data[i*128:i*128+128]}\",\n")
-			ttfEncode.write("];")
+def CompressAndEncode(filePath: str) -> bytes:
+	"""
+	压缩一个二进制文件。
+	参数:
+		filePath (str): 要压缩的文件路径。
+	返回:
+		bytes: 压缩后的二进制数据。
+	"""
+	# 打开文件并读取二进制内容
+	with open(filePath, 'rb') as file:
+		fileData:bytes = file.read();
 
-def EncodeJson():
-	with open("./musync_data/songname.json", 'rb+') as snj:
-		with open("./musync_data/songname.b64", 'w') as snjEncode:
-			data = b64encode(snj.read()).decode("ascii")
-			snjEncode.write("[")
-			for i in range(len(data)//128+1):
-				snjEncode.write(f"\t\"{data[i*128:i*128+128]}\",\n")
-			snjEncode.write("];")
+	# 使用 gzip 压缩数据
+	compressedData:io.BytesIO = io.BytesIO();
+	with gzip.GzipFile(fileobj=compressedData, mode='wb') as gzipFile:
+		gzipFile.write(fileData);
 
-def EncodeDLL():
-	with open('./musync_data/Assembly-CSharp.dll','rb') as hdf:
-		with open('./musync_data/Assembly-CSharp.b64','w') as hdfE:
-			data = b64encode(hdf.read()).decode("ascii")
-			hdfE.write("[")
-			for i in range(len(data)//128+1):
-				hdfE.write(f"\t\"{data[i*128:i*128+128]}\",\n")
-			hdfE.write("];")
+	# 获取压缩后的数据
+	compressedData:bytes = compressedData.getvalue();
+	return compressedData;
+	# 将压缩后的数据转换为 Base64 字符串
+	# return b64encode(compressedData).decode('utf-8');
 
-def EncodeLicense():
-	with open('./LICENSE', 'rb') as license:
-		with open('./musync_data/LICENSE.b64','w') as licenseE:
-			data:str = b64encode(license.read()).decode("ascii")
-			licenseE.write("[")
-			for i in range(len(data)//128+1):
-				licenseE.write(f"\t\"{data[i*128:i*128+128]}\",\n")
-			licenseE.write("];")
-			
+def CompressAndEncodeToFile(readFilePath:str, writeFilePath:str)->(bytes|None):
+	"""
+	编码文件
+	参数:
+		readFilePath (str): 读文件路径;
+		writeFilePath (str): 写文件路径;
+	返回:
+		(bytes | None): 压缩后的二进制数据。
+	"""
+	if (os.path.isfile(readFilePath)):
+		with open(writeFilePath, 'wb') as iconEncode:
+			data:bytes = CompressAndEncode(readFilePath);
+			iconEncode.write(data);
+		return data;
+	return None;
+
 if __name__ == '__main__':
-	if not os.path.isfile("./musync_data/ttf.b64"):
-		EncodeTTF()
-	if not os.path.isfile('./musync_data/icon.b64'):
-		EncodeIcon()
-	EncodeJson()
-	if not os.path.isfile('./musync_data/Assembly-CSharp.b64'):
-		EncodeDLL()
-	if not os.path.isfile('./musync_data/LICENSE.b64'):
-		EncodeLicense()
+	fileList:list[dict[str,str]] = [
+		{
+			"Source": "./musync_data/MUSYNC.ico",
+			"Target": "./musync_data/Icon.bin",
+			"Tag": "Icon",
+		},
+		{
+			"Source": "./musync_data/LXGW.ttf",
+			"Target": "./musync_data/Font.bin",
+			"Tag": "Font",
+		},
+		{
+			"Source": "./musync_data/songname.json",
+			"Target": "./musync_data/SongName.bin",
+			"Tag": "SongName",
+		},
+		{
+			"Source": "./musync_data/Assembly-CSharp.dll",
+			"Target": "./musync_data/Assembly-CSharp.bin",
+			"Tag": "GameLib",
+		},
+		{
+			"Source": "./mscorlib.dll",
+			"Target": "./musync_data/mscorlib.bin",
+			"Tag": "CoreLib",
+		},
+		{
+			"Source": "./LICENSE",
+			"Target": "./musync_data/LICENSE.bin",
+			"Tag": "License",
+		},
+		];
+
+	binaryInfo:dict[str,dict[str,any]] = dict();
+	binaryFile:io.TextIOWrapper = open("./musync_data/Resources.bin",'wb');
+	binaryOffset:int = FillSize;
+	binaryData:bytes = b'';
+
+	for file in fileList:
+		# 编码
+		print(f"Encoding: {file['Source']} -> {file['Target']}");
+		# if (os.path.isfile(file['Target'])): continue;
+		encodeString:str = CompressAndEncodeToFile(file['Source'], file['Target']);
+		if (encodeString is None): continue;
+		# 整合
+		binaryInfo[file["Tag"]] = dict(
+			offset = binaryOffset,
+			lenth = len(encodeString),
+			hash = GetHash(file['Source']),
+			);
+		binaryOffset += len(encodeString);
+		with open(file['Target'],"rb") as fileContext:
+			binaryData += encodeString;
+
+	# 修复文件结构
+	binaryInfo["GameLib"]["SourceHash"] = SourceDLL;
+	binaryInfo["SongName"]["Version"] = SongNameVersion;
+	# 封装文件
+	# 创建一个BytesIO对象，用于存储压缩后的数据
+	# 使用gzip.GzipFile进行压缩
+	buffer:io.BytesIO = io.BytesIO();
+	with gzip.GzipFile(fileobj=buffer, mode='wb') as gzFile:
+		gzFile.write(json.dumps(binaryInfo).encode("ASCII"));
+	# 获取压缩后的字节数据
+	compressData = buffer.getvalue()
+	# 写入文件结构大小, 4 Bytes
+	binaryFile.write(struct.pack('I', len(compressData)));
+	# 写入文件结构
+	binaryFile.write(compressData.ljust(FillSize-4, b'\x00'));
+	# 写入文件数据
+	binaryFile.write(binaryData);
+
+	print("success encode resources");

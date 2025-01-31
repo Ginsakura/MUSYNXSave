@@ -1,19 +1,34 @@
-﻿
+﻿import gzip
+from hashlib import md5
+import io
+import json
 import logging
 import os
-import shutil
+from Resources import Config, Logger, SongName
 import sqlite3 as sql
-import sys
-import winreg
+import struct
+from tkinter import messagebox;
 from win32 import win32gui, win32print
 from win32.lib import win32con
 from win32.win32api import GetSystemMetrics
-from Resources import Config, Logger, SongName
+import winreg
 
 logger:logging.Logger = Logger().GetLogger("Toolkit");
-SongNameJsonUpdate:int = 20250126;
 
 class Toolkit(object):
+	logger.debug("加载资源文件: \"./musync_data/Resources.bin\".");
+	try:
+		__resourceFile:io.TextIOWrapper = open("./musync_data/Resources.bin", "wb");
+		__resourceFile.seek(0);
+		__infoSize:int = struct.unpack('I', __resourceFile.read(4))[0];
+		__compressedStream:io.BytesIO = io.BytesIO(__resourceFile.read(__infoSize));
+		with gzip.GzipFile(fileobj=__compressedStream, mode='rb') as gz_file:
+			decompressedData:bytes = gz_file.read()
+		__resourceFileInfo:dict[str,dict[str,any]] = json.loads(decompressedData.decode('ASCII'));
+	except Exception:
+		logger.exception("资源文件加载失败.");
+		messagebox.showerror("资源文件\"./musync_data/Resources.bin\"加载失败!");
+
 	def GetDpi()->int:
 		hDC:any = win32gui.GetDC(0);
 		relWidth:int = win32print.GetDeviceCaps(hDC, win32con.DESKTOPHORZRES);
@@ -43,65 +58,114 @@ class Toolkit(object):
 		winreg.SetValueEx(regkey,'FontSize',0,winreg.REG_DWORD,(config.ConsoleFontSize << 16));
 		regkey.Close();
 
-	def GetResourcePath(relativePath:str)->str:
-		"""获取资源文件在临时目录中的绝对路径"""
-		try:
-			# 如果是打包后的单文件模式，使用 _MEIPASS
-			base_path:str = sys._MEIPASS;
-		except AttributeError:
-			# 如果是正常运行模式，使用当前文件夹
-			base_path:str = os.path.abspath(".");
-		return os.path.join(base_path, relativePath);
+	def GetHash(filePath:str=None)->str:
+		if (filePath is None): return "";
+		with open(filePath,'rb') as fileBytes:
+			return md5(fileBytes.read()).hexdigest().upper();
 
-	def EnsureResourceInRuntimeDirectory(relativePath:str)->None:
-		"""确保资源文件存在于运行目录中"""
-		sourcePath:str = Toolkit.GetResourcePath(relativePath);  # 获取临时目录中的资源路径
-		destinationPath:str = os.path.join(os.getcwd(), relativePath);  # 获取运行目录中的目标路径
+	def ResourceReleases(cls, offset:int, lenth:int, releasePath:str=None)->bytes:
+		"""
+		资源释放函数
+		传入:
+			offset      (int): 资源偏移;
+			lenth       (int): 资源长度;
+			releasePath (str): 资源释放地址;
+		传出:
+			bytes: 解压的资源;
+		"""
+		cls.__resourceFile.seek(offset);
+		__compressedStream:io.BytesIO = io.BytesIO(cls.__resourceFile.read(lenth));
+		with gzip.GzipFile(fileobj=__compressedStream, mode='rb') as gz_file:
+			decompressedData:bytes = gz_file.read()
+		with open(releasePath,"wb") as file:
+			file.write(decompressedData);
+		return decompressedData;
 
-		# 检查资源文件是否已经存在于运行目录
-		if not os.path.exists(destinationPath):
-			logger.info(f"资源文件 {relativePath} 不存在于运行目录，正在复制...");
-			# 确保目标目录存在
-			os.makedirs(os.path.dirname(destinationPath), exist_ok=True);
-			# 复制文件
-			shutil.copy2(sourcePath, destinationPath);
-			logger.info(f"资源文件已复制到 {destinationPath}");
-		else:
-			logger.info(f"资源文件 {relativePath} 已存在于运行目录，无需复制");
-
-	def CheckResources(fonts)->None:
+	def CheckResources(cls, fonts:list[str])->None:
 		"运行前环境检查"
 		# 检查旧版数据文件夹
-		if os.path.exists('./musync/'):
+		logger.debug("Check \"musync\\\" is exists...");
+		if os.path.exists(''):
 			os.rename('./musync/','./musync_data/');
 		# 检查数据文件夹是否存在
-		if not os.path.exists('./musync_data/'):
-			os.makedirs('./musync_data/');
+		logger.debug("Check \"musync_data\\\" is not exists...");
+		os.makedirs('./musync_data/', exist_ok=True);
 		# 检查日志存档文件夹
-		if not os.path.isdir("./logs/"):
-			os.makedirs("./logs/");
+		logger.debug("Check \"log\\\" is not exists...");
+		os.makedirs("./logs/", exist_ok=True);
+		# 检查mscorlib.dll是否存在
+		logger.debug("Check \"./LICENSE\" is not exists...");
+		if (not os.path.isfile("./LICENSE") or (Toolkit.GetHash('./LICENSE') != cls.__resourceFileInfo["License"])):
+			info:dict[str,any] = cls.__resourceFileInfo["License"];
+			Toolkit.ResourceReleases(info["offset"], info["lenth"], "./LICENSE");
 		# 检查图标文件是否存在
-		if not os.path.isfile('./musync_data/MUSYNC.ico'):
-			Toolkit.EnsureResourceInRuntimeDirectory("musync_data/MUSYNC.ico");
+		logger.debug("Check \"musync_data\\MUSYNC.ico\" is not exists...");
+		if (not os.path.isfile('./musync_data/MUSYNC.ico') or (Toolkit.GetHash('./musync_data/MUSYNC.ico') != cls.__resourceFileInfo["Icon"])):
+			info:dict[str,any] = cls.__resourceFileInfo["Icon"];
+			Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/MUSYNC.ico');
 		# 检查SongName.json是否存在
-		if (not os.path.isfile('./musync_data/SongName.json') or (SongNameJsonUpdate > SongName.Version())):
-			Toolkit.EnsureResourceInRuntimeDirectory('musync_data/SongName.json');
+		logger.debug("Check \"musync_data\\SongName.json\" is not exists...");
+		if (not os.path.isfile('./musync_data/SongName.json') or (cls.__resourceFileInfo["SongName"]["Version"] > SongName.Version)):
+			info:dict[str,any] = cls.__resourceFileInfo["SongName"];
+			Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/SongName.json');
+		# 检查mscorlib.dll是否存在
+		logger.debug("Check \"mscorlib.dll\" is not exists...");
+		if (not os.path.isfile("./mscorlib.dll") or (Toolkit.GetHash('./mscorlib.dll') != cls.__resourceFileInfo["CoreLib"])):
+			info:dict[str,any] = cls.__resourceFileInfo["CoreLib"];
+			Toolkit.ResourceReleases(info["offset"], info["lenth"], "./mscorlib.dll");
 		# 检查字体文件是否存在
-		if not os.path.isfile('./musync_data/LXGW.ttf'):
-			Toolkit.EnsureResourceInRuntimeDirectory("musync_data/LXGW.ttf");
+		logger.debug("Check \"musync_data\\LXGW.ttf\" is not exists...");
+		if not os.path.isfile('./musync_data/LXGW.ttf' or (Toolkit.GetHash('./musync_data/LXGW.ttf') != cls.__resourceFileInfo["Font"])):
+			info:dict[str,any] = cls.__resourceFileInfo["Font"];
+			Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/LXGW.ttf');
 		# 检查字体是否安装
+		logger.debug("Check \"霞鹜文楷等宽\" is not installed...");
 		if not '霞鹜文楷等宽' in fonts:
 			os.system(f'{os.getcwd()}/musync_data/LXGW.ttf');
 		# 检查皮肤文件夹是否存在
+		logger.debug("Check \"skin\\\" is not exists...");
 		if not os.path.exists("./skin/"):
 			os.makedirs('./skin/');
 		# 检查数据库文件版本
+		logger.debug("Check Database version...");
 		Toolkit.DatabaseUpdate(Toolkit.CheckDatabaseVersion());
+		# 检查GameLib
+		logger.debug("Check DLLInjection...");
+		if Config.DLLInjection:
+			Toolkit.GameLibCheck();
 
-	def CheckDatabaseVersion()->int:
+	def GameLibCheck(cls)->int:
+		"""
+		游戏脚本检查
+		传出:
+			0: 无法修补
+			1: 已修补
+			2: 未修补,但已经完成修补
+		"""
+		def DLLInjection():
+			if os.path.isfile(f'{dllPath}.old'): os.remove(f'{dllPath}.old');
+			os.rename(dllPath, f'{dllPath}.old');
+			info:dict[str,any] = cls.__resourceFileInfo["GameLib"];
+			Toolkit.ResourceReleases(info["offset"], info["lenth"], dllPath);
+		dllPath = Config.MainExecPath+'MUSYNX_Data/Managed/Assembly-CSharp.dll';
+		nowHash = Toolkit.GetHash(dllPath);
+		sourceHash = cls.__resourceFileInfo["GameLib"]["SourceHash"];
+		fixHash = cls.__resourceFileInfo["GameLib"]["hash"];
+		# 'D41D8CD98F00B204E9800998ECF8427E' is 0 Byte file
+		logger.debug(f"     Now Assembly-CSharp.dll: {nowHash}");
+		# 当前文件哈希 等于 修改文件哈希
+		if (nowHash == fixHash):
+			return 1
+		# 当前文件哈希为空文件 或者 为原始文件哈希
+		elif (sourceHash == "D41D8CD98F00B204E9800998ECF8427E") or (sourceHash == nowHash) and (sourceHash != fixHash):
+			DLLInjection()
+			return 1
+		# 其他情况, 无法覆盖文件
+		else:
+			return 0
+
+	def CheckDatabaseVersion(cls)->int:
 		"数据库版本检查"
-		def ResourceRelease()->None:
-			db.close();
 		if os.path.isfile("./musync_data/HitDelayHistory_v2.db"):
 			db:sql.Connection = sql.connect('./musync_data/HitDelayHistory_v2.db')
 			cursor:sql.Cursor = db.cursor();
@@ -112,12 +176,12 @@ class Toolkit(object):
 			if (columnCount==6):
 				logger.debug("存在文件 HitDelayHistory_v2.db 且 列数为6, 判定数据库版本为 v2");
 				logger.info("Database Version: 2");
-				ResourceRelease();
+				db.close();
 				return 2;
 			else:
 				logger.debug("存在文件 HitDelayHistory_v2.db 且 列数不为6, 判定数据库版本为 v1");
 				logger.info("Database Version: 1");
-				ResourceRelease();
+				db.close();
 				return 1;
 		elif os.path.isfile("./musync_data/HitDelayHistory.db"):
 			db:sql.Connection = sql.connect('./musync_data/HitDelayHistory.db')
@@ -127,17 +191,17 @@ class Toolkit(object):
 			if (tableCount==1):
 				logger.debug("存在文件 HitDelayHistory.db 且 仅有一张数据表, 判定数据库版本为 v1");
 				logger.info("Database Version: 1");
-				ResourceRelease();
+				db.close();
 				return 1;
 			else:
 				cursor.execute("SELECT Value FROM Infos WHERE Key='Version';");
 				version:int = int(cursor.fetchone()[0]);
 				logger.debug(f"存在文件\"HitDelayHistory.db\"且\"Infos.Version={version}\", 判定数据库版本为 v{version}");
 				logger.info(f"Database Version: {version}");
-				ResourceRelease();
+				db.close();
 				return version;
 
-	def DatabaseUpdate(nowVersion:int)->None:
+	def DatabaseUpdate(cls, nowVersion:int)->None:
 		"数据库版本更新"
 		# 链接数据库
 		if (nowVersion==2):

@@ -10,13 +10,13 @@ from Toolkit import Toolkit
 
 version = '2.0.0rc1'
 isPreRelease = True
-preVersion = "2.0.0pre1"
+preVersion = "2.0.0pre3"
 # isPreRelease = False
 
 logger:logging.Logger = Logger.GetLogger(name="Launcher");
 
 
-def Launcher():
+def Launcher()->None:
 	# Init
 	Config();
 	SongName();

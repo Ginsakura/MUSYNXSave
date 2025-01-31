@@ -9,33 +9,3 @@
 4. 1.2.7 环境更新：`matplotlib 3.7.2->3.9.2`,`numpy 1.25.2->2.0.1`
 5. 2.0.0 重构程序
 
-### Version 1.2.8
-#### Release 4
-1. 更新
-    1. 25年1月3日 本体Assembly-CSharp.dll更新
-#### Release 3
-1. 更新
-    1. #### ***更新12月24日喵赛克新增曲目 (圣诞节更新)***
-        - Kirakira Noel Story!! (EZ HD IN)
-2. 修复
-    1. 修复能够获取版本号时出现Json解析错误的bug
-    2. 尝试修复如果4K/6K模式没有一次游玩记录时`Difficulty_ScoreAnalyze`无法加载的bug
-    3. 修复最小值赋值错误的bug
-3. 优化
-    1. 微调难度分布曲线中文本的位置
-    2. 修改文件在程序中的存储与释放算法
-#### Release 2
-2. 修复
-    1. ***修复新用户释放资源时，图标文件名称错误的bug***
-#### Release 1
-1. 更新
-    1. #### ***更新09月30日喵赛克新增曲目 (国庆节更新)***
-        - Sky Fragment (EZ HD IN)
-        - Bright red hertz (EZ HD IN)
-        - Zheichour (EZ HD)
-        - 双生のネビュラ (EZ HD IN)
-    2. 重新修补`Assembly-CSharp.dll`文件
-3. 优化
-    1. 优化进程查找
-    2. 优化文件数据的内部存储方式
-    3. 优化文件数据的内部存储编码方式

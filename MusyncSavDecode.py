@@ -1,11 +1,10 @@
-import threading
+from base64 import b64decode
 import clr
 import logging
 import os
-import time
-from base64 import b64decode
-from tkinter import messagebox
 from Resources import Config, SongName, SaveDataInfo, MapDataInfo, MapInfo, Logger
+import time
+from tkinter import messagebox
 
 
 logger:logging.Logger = Logger.GetLogger(name="MUSYNCSavDecode");

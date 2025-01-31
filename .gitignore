@@ -8,16 +8,14 @@
 /dist
 /logs
 /SavDecode
+./MusyncSaveDecode
 
 LXGW.ttf
 SaveDataInfo.json
 
-*.analyze
-*.b64
 *.bat
-!distCPP.bat
+*.bin
 *.db
-*.decode
 *.dll
 *.exe
 *.log

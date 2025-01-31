@@ -1,27 +1,29 @@
-import ctypes;
-import json;
-import logging;
+import ctypes
+from Difficulty_ScoreAnalyze import Analyze
+from enum import Enum, unique
+from HitDelay import HitDelayCheck,HitDelayText
+import json
+import logging
+from MusyncSavDecode import MUSYNCSavProcess
 import os
-import psutil;
-import requests;
-import threading;
-import time;
-import webbrowser;
-#import win32api;
-#import win32con;
-#import win32gui_struct;
-#import win32gui;
 # from PIL import Image as PILImage;
 # from PIL import ImageTk;
-from enum import Enum, unique
-from tkinter import *;
-from tkinter import Tk,ttk,font,messagebox;
-from tkinter.filedialog import askopenfilename;
-from Difficulty_ScoreAnalyze import Analyze;
-from HitDelay import HitDelayCheck,HitDelayText;
-from MusyncSavDecode import MUSYNCSavProcess;
-from Resources import Config, SaveDataInfo, SongName, Logger;
+import psutil
+import requests
+from Resources import Config, SaveDataInfo, SongName, Logger
+import threading
+import time
+import tkinter
+from tkinter import Label,Entry,Button,Scrollbar,Frame
+from tkinter import font,messagebox,StringVar
+from tkinter import Tk,ttk,Toplevel
+from tkinter.filedialog import askopenfilename
 from Toolkit import Toolkit
+import webbrowser
+#import win32api
+#import win32con
+#import win32gui_struct
+#import win32gui
 
 
 class MusyncSavDecodeGUI(object):
@@ -412,13 +414,13 @@ class MusyncSavDecodeGUI(object):
 		saveFilePath:str = None;
 		for ids in "DEFCGHIJKLMNOPQRSTUVWXYZAB":
 			if os.path.isfile(f'{ids}:\\Program Files\\steam\\steamapps\\common\\MUSYNX\\SavesDir\\savedata.sav'):
-				saveFilePath = f"{ids}:\\Program Files\\steam\\steamapps\\common\\MUSYNX\\"
+				saveFilePath:str = f"{ids}:\\Program Files\\steam\\steamapps\\common\\MUSYNX\\"
 				break
 			elif os.path.isfile(f'{ids}:\\SteamLibrary\\steamapps\\common\\MUSYNX\\SavesDir\\savedata.sav'):
-				saveFilePath = f"{ids}:\\SteamLibrary\\steamapps\\common\\MUSYNX\\"
+				saveFilePath:str = f"{ids}:\\SteamLibrary\\steamapps\\common\\MUSYNX\\"
 				break
 			elif os.path.isfile(f'{ids}:\\steam\\steamapps\\common\\MUSYNX\\SavesDir\\savedata.sav'):
-				saveFilePath = f"{ids}:\\steam\\steamapps\\common\\MUSYNX\\"
+				saveFilePath:str = f"{ids}:\\steam\\steamapps\\common\\MUSYNX\\"
 				break
 		else:
 			self.InitLabel("搜索不到存档文件.");
@@ -496,7 +498,7 @@ class MusyncSavDecodeGUI(object):
 				self.totalSync += saveInfo.UploadScore;
 			else:
 				self.excludeCount += 1;
-			self.saveData.insert('', END, values=("%d"%saveInfo.SongId, #谱面号
+			self.saveData.insert('', tkinter.END, values=("%d"%saveInfo.SongId, #谱面号
 				("" if (saveInfo.SongName is None) else saveInfo.SongName), #曲名
 				("" if (saveInfo.SongKeys is None) else saveInfo.SongKeys), #键数
 				("" if (saveInfo.SongDifficulty is None) else saveInfo.SongDifficulty), #难度
@@ -660,17 +662,28 @@ if __name__ == '__main__':
 	isPreRelease = True
 	preVersion = "9.9.9pre9"
 
-	root = Tk()
-	ctypes.windll.shcore.SetProcessDpiAwareness(1)
-	fonts = list(font.families())
-	Toolkit.CheckResources(fonts)
-	del fonts
-	Toolkit.CheckConfig()
-	config:Config = Config();
-	if config.ChangeConsoleStyle:
-		Toolkit.ChangeConsoleStyle()
-	root.tk.call('tk', 'scaling', 1.25)
-	root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
-	window = MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease)
-	root.update()
-	root.mainloop()
+	# Init
+	Config();
+	SongName();
+	SaveDataInfo();
+	Config.Version = preVersion.replace("pre",".") if (isPreRelease) else version.replace("rc",".");
+
+	# Launcher
+	root:Tk = Tk();
+	ctypes.windll.shcore.SetProcessDpiAwareness(1);
+	fonts:list[str] = list(font.families());
+	Toolkit.CheckResources(fonts=fonts);
+	# del fonts
+	if Config.ChangeConsoleStyle:
+		Toolkit.ChangeConsoleStyle();
+	root.tk.call('tk', 'scaling', 1.25);
+	root.resizable(False, True); #允许改变窗口高度，不允许改变窗口宽度
+	# 强制仅旧版UI
+	MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease);
+	# if cfg['EnableFramelessWindow']:
+	# 	root.overrideredirect(1)
+	# 	window = NewStyle.MusyncSavDecodeGUI(root=root)
+	# else:
+	# 	window = OldStyle.MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease)
+	root.update();
+	root.mainloop();

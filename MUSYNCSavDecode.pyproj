@@ -44,6 +44,7 @@
     <Compile Include="Resources.py" />
     <Compile Include="SavDecode\setup.py" />
     <Compile Include="uiautomation.py" />
+    <Compile Include="Version.py" />
     <Compile Include="__init__.py" />
   </ItemGroup>
   <ItemGroup>

@@ -144,8 +144,8 @@ function Create-Archive {
     )
 
     # 确保目标ZIP文件的目录存在
-    $destinationDir = [System.IO.Path]::GetDirectoryName($DestinationZip)
-    CheckDir -Dir $destinationDir;
+    # $destinationDir = [System.IO.Path]::GetDirectoryName($DestinationZip)
+    # CheckDir -Dir $DestinationZip;
 
     # 打包文件和文件夹
     try {
@@ -157,32 +157,78 @@ function Create-Archive {
     }
 }
 
+# 清理目录
+function Clear-Directory {
+    <#
+    .SYNOPSIS
+    清除指定目录中的所有文件和子目录。
+
+    .DESCRIPTION
+    此函数会删除指定目录中的所有文件和子目录，但不会删除目标目录本身。
+    对于每个文件和目录，会给出不同的提示信息。
+
+    .PARAMETER TargetDirectory
+    要清理的目标目录路径。
+
+    .EXAMPLE
+    Clear-Directory -TargetDirectory "C:\MyDirectory"
+    #>
+    param (
+        [Parameter(Mandatory = $true)]
+        [string]$TargetDirectory
+    )
+
+    # 获取目标目录中的所有项目（文件和子目录）
+    $items = Get-ChildItem -Path $TargetDirectory -Recurse
+
+    # 遍历每个项目
+    foreach ($item in $items) {
+        if ($item.PSIsContainer) {
+            # 如果是目录
+            Remove-Item -Path "$($item.FullName)" -Force -Recurse -ErrorAction SilentlyContinue
+            Write-Host "已删除目录：$($item.FullName)" -ForegroundColor Yellow
+        } else {
+            # 如果是文件
+            Remove-Item -Path "$($item.FullName)" -Force -ErrorAction SilentlyContinue
+            Write-Host "已删除文件：$($item.FullName)" -ForegroundColor Green
+        }
+    }
+
+    Write-Host "目标目录 $TargetDirectory 中的所有内容已清除！" -ForegroundColor Cyan
+}
+
 # 定义变量
-$isPreRelease = [bool]::Parse(py -c "import Launcher;print(Launcher.isPreRelease)");
+$isPreRelease = python -c "import Version;print(Version.isPreRelease)";
+$isPreReleaseBool = [bool]::Parse($isPreRelease);
 # 根据布尔值调用不同的属性并赋值给 $version
 if ($isPreReleaseBool) {
-    $version = py -c "import Launcher; print(Launcher.preVersion)"
+    $version = py -c "import Version; print(Version.preVersion)";
 } else {
-    $version = py -c "import Launcher; print(Launcher.version)"
+    $version = py -c "import Version; print(Version.version)";
 }
-$resourceFiles = @("Resources.bin", "songname.json", "songname.update", "Musync.ico"); # 资源文件
-$archive_CLI = @("logs", "musync_data", "MusyncSaveDecodeCLI.exe")# CLI all in one archive files
-$archive_NCLI = @("logs", "musync_data", "MusyncSaveDecodeNoCLI.exe"); # NoCLI all in one archive files
-$destinationZip_AC = "MusyncSaveDecode_WithConsole_${version}_AllInOne.zip"  # 输出的ZIP文件名
-$destinationZip_ANC = "MusyncSavDecode_NoConsole_${version}_AllInOne.zip"  # 输出的ZIP文件名
-$destinationZip_C = "MusyncSaveDecode_WithConsole_${version}.zip"  # 输出的ZIP文件名
-$destinationZip_NC = "MusyncSavDecode_NoConsole_${version}.zip"  # 输出的ZIP文件名
+$resourceFiles = @("Resources.bin", "songname.json", "songname.update", "Musync.ico");  # 资源文件
+$archive_AC = @("logs", "musync_data", "MusyncSaveDecodeCLI.exe");                     # CLI all in one archive files
+$archive_ANC = @("logs", "musync_data", "MusyncSaveDecodeNoCLI.exe");                  # NoCLI all in one archive files
+$archive_C = @("logs", "musync_data", "_internal", "MusyncSaveDecodeCLI.exe");
+$archive_NC = @("logs", "musync_data", "_internal", "MusyncSaveDecodeNoCLI.exe");
+$destinationZip_AC = "MusyncSaveDecode_WithConsole_${version}_AllInOne.zip"
+$destinationZip_ANC = "MusyncSaveDecode_NoConsole_${version}_AllInOne.zip"
+$destinationZip_C = "../MusyncSaveDecode_WithConsole_${version}.zip";
+$destinationZip_NC = "../MusyncSaveDecode_NoConsole_${version}.zip";
 
 Clear-Host;
 Write-Host "==== 任务开始 ====";
+
+# Step 0: 清理生成目录
+Clear-Directory -TargetDirectory "./MusyncSaveDecode";
 
 # Step 1: 编译图标资源
 BuildIcon;
 
 # Step 2: 检查构建目录
 CheckDir -Dir "MusyncSaveDecode/";
-CheckDir -Dir "MusyncSaveDecode/MusyncSaveDecodeCLI/";
-CheckDir -Dir "MusyncSaveDecode/MusyncSaveDecodeNoCLI/";
+# CheckDir -Dir "MusyncSaveDecode/MusyncSaveDecodeCLI/";
+# CheckDir -Dir "MusyncSaveDecode/MusyncSaveDecodeNoCLI/";
 
 # Step 3: Pyinstaller编译
 & pyinstaller "buildLauncher.spec" --distpath "./MusyncSaveDecode" --clean;
@@ -216,10 +262,24 @@ Copy-Resources -SourceDirectory "../musync_data" -TargetDirectory "MusyncSaveDec
 Copy-Resources -SourceDirectory "../musync_data" -TargetDirectory "MusyncSaveDecodeNoCLI/musync_data/" -ResourceFiles $resourceFiles;
 
 # Step 6: 打包生成文件
-Create-Archive -SourceItems $archive_CLI -DestinationZip $destinationZip_AC
-Create-Archive -SourceItems $archive_NCLI -DestinationZip $destinationZip_ANC
-Create-Archive -SourceItems "MusyncSaveDecodeCLI" -DestinationZip $destinationZip_C
-Create-Archive -SourceItems "MusyncSaveDecodeNoCLI" -DestinationZip $destinationZip_NC
+Create-Archive -SourceItems $archive_AC -DestinationZip $destinationZip_AC;
+Create-Archive -SourceItems $archive_ANC -DestinationZip $destinationZip_ANC;
+Set-Location -Path "MusyncSaveDecodeCLI";
+Create-Archive -SourceItems $archive_C -DestinationZip $destinationZip_C;
+Set-Location -Path "../MusyncSaveDecodeNoCLI";
+Create-Archive -SourceItems $archive_NC -DestinationZip $destinationZip_NC;
+
+# Step 7: 清理生成文件
+Clear-Directory -TargetDirectory "./logs";
+Clear-Directory -TargetDirectory "./musync_data";
+Clear-Directory -TargetDirectory "./MusyncSaveDecodeCLI";
+Clear-Directory -TargetDirectory "./MusyncSaveDecodeNoCLI";
+Remove-Item -Path "./logs" -Force -Recurse -ErrorAction SilentlyContinue
+Remove-Item -Path "./musync_data" -Force -Recurse -ErrorAction SilentlyContinue
+Remove-Item -Path "./MusyncSaveDecodeCLI" -Force -Recurse -ErrorAction SilentlyContinue
+Remove-Item -Path "./MusyncSaveDecodeNoCLI" -Force -Recurse -ErrorAction SilentlyContinue
+Remove-Item -Path "./MusyncSaveDecodeCLI.exe" -Force -ErrorAction SilentlyContinue
+Remove-Item -Path "./MusyncSaveDecodeNoCLI.exe" -Force -ErrorAction SilentlyContinue
 
 # Step 7: 编译启动器
 # & g++ -o $path+"Launcher" .\Launcher.cpp $path+$resPath;

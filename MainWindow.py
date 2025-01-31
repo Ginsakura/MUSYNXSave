@@ -19,6 +19,7 @@ from tkinter import font,messagebox,StringVar
 from tkinter import Tk,ttk,Toplevel
 from tkinter.filedialog import askopenfilename
 from Toolkit import Toolkit
+import Version
 import webbrowser
 #import win32api
 #import win32con
@@ -28,13 +29,13 @@ import webbrowser
 
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
-	def __init__(self, version:str, preVersion:str, isPreRelease:bool=False, root:Tk=None, isTKroot:bool=True):
+	def __init__(self, root:Tk=None, isTKroot:bool=True):
 	##Init##
 		# super(MusyncSavDecodeGUI, self).__init__();
 		self.logger:logging.Logger = Logger.GetLogger(name="MusyncSavDecodeGUI");
-		self.version:str = version;
-		self.preVersion:str = preVersion;
-		self.isPreRelease:bool = isPreRelease;
+		self.version:str = Version.version;
+		self.preVersion:str = Version.preVersion;
+		self.isPreRelease:bool = Version.isPreRelease;
 		self.isTKroot:bool = isTKroot;
 		root.iconbitmap('./musync_data/Musync.ico');
 		root.geometry(f'1000x670+500+300');
@@ -663,9 +664,7 @@ class SongSelectEnum(Enum):
 
 
 if __name__ == '__main__':
-	version = '0.0.0rc0'
-	isPreRelease = True
-	preVersion = "9.9.9pre9"
+	from Version import *
 
 	# Init
 	Config();
@@ -676,8 +675,8 @@ if __name__ == '__main__':
 	# Launcher
 	root:Tk = Tk();
 	ctypes.windll.shcore.SetProcessDpiAwareness(1);
-	fonts:list[str] = list(font.families());
-	Toolkit.CheckResources(fonts=fonts);
+	fontlist:list[str] = list(font.families());
+	Toolkit.CheckResources(fonts=fontlist);
 	# del fonts
 	if Config.ChangeConsoleStyle:
 		Toolkit.ChangeConsoleStyle();

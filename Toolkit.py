@@ -27,7 +27,7 @@ class Toolkit(object):
 		__resourceFileInfo:dict[str,dict[str,any]] = json.loads(decompressedData.decode('ASCII'));
 	except Exception:
 		logger.exception("资源文件加载失败.");
-		messagebox.showerror("资源文件\"./musync_data/Resources.bin\"加载失败!");
+		messagebox.showerror("Error","资源文件\"./musync_data/Resources.bin\"加载失败!");
 
 	def GetDpi()->int:
 		hDC:any = win32gui.GetDC(0);
@@ -63,6 +63,7 @@ class Toolkit(object):
 		with open(filePath,'rb') as fileBytes:
 			return md5(fileBytes.read()).hexdigest().upper();
 
+	@classmethod
 	def ResourceReleases(cls, offset:int, lenth:int, releasePath:str=None)->bytes:
 		"""
 		资源释放函数
@@ -81,6 +82,7 @@ class Toolkit(object):
 			file.write(decompressedData);
 		return decompressedData;
 
+	@classmethod
 	def CheckResources(cls, fonts:list[str])->None:
 		"运行前环境检查"
 		# 检查旧版数据文件夹
@@ -132,6 +134,7 @@ class Toolkit(object):
 		# 检查GameLib
 		logger.debug("Check DLLInjection...");
 
+	@classmethod
 	def GameLibCheck(cls)->int:
 		"""
 		游戏脚本检查
@@ -162,6 +165,7 @@ class Toolkit(object):
 		else:
 			return 0
 
+	@classmethod
 	def CheckDatabaseVersion(cls)->int:
 		"数据库版本检查"
 		if os.path.isfile("./musync_data/HitDelayHistory_v2.db"):
@@ -199,6 +203,7 @@ class Toolkit(object):
 				db.close();
 				return version;
 
+	@classmethod
 	def DatabaseUpdate(cls, nowVersion:int)->None:
 		"数据库版本更新"
 		# 链接数据库

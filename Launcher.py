@@ -4,6 +4,7 @@ import logging
 import os
 from tkinter import Tk,font
 from Resources import Logger
+from Version import *
 logger:logging.Logger = Logger.GetLogger(name="Launcher");
 try:
 	# from tkinter import *
@@ -15,13 +16,6 @@ except:
 	logger.exception("Import Error.");
 	sys.exit(101)
 
-version = '2.0.0rc1'
-isPreRelease = True
-preVersion = "2.0.0pre3"
-# isPreRelease = False
-
-
-
 def Launcher()->None:
 	# Init
 	Config();
@@ -32,8 +26,8 @@ def Launcher()->None:
 	# Launcher
 	root:Tk = Tk();
 	ctypes.windll.shcore.SetProcessDpiAwareness(1);
-	fonts:list[str] = list(font.families());
-	Toolkit.CheckResources(fonts);
+	fontlist:list[str] = list(font.families());
+	Toolkit.CheckResources(fontlist);
 	# del fonts
 	if Config.ChangeConsoleStyle:
 		Toolkit.ChangeConsoleStyle();

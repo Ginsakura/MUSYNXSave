@@ -54,7 +54,7 @@ class Config(object):
 
 	Version:str						= __config.get("Version"					, None);
 	LoggerFilterString:str			= __config.get("LoggerFilterString"			, "INFO");
-	LoggerFilter:int				= __logLevelMapping.get(LoggerFilterString, logging.INFO);
+	LoggerFilter:int				= __logLevelMapping.get(LoggerFilterString	, logging.DEBUG);
 	Acc_Sync:bool					= __config.get("Acc_Sync"					, False);
 	CheckUpdate:bool				= __config.get("CheckUpdate"				, True);
 	DLLInjection:bool				= __config.get("DLLInjection"				, False);

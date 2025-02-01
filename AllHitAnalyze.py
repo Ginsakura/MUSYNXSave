@@ -7,6 +7,8 @@ import sqlite3 as sql
 
 from matplotlib.pyplot import MultipleLocator
 
+from Resources import Config
+
 class AllHitAnalyze(object):
 	"""docstring for HitAnalyze"""
 	def __init__(self):
@@ -87,9 +89,6 @@ class AllHitAnalyze(object):
 		print('cyan Exact:',self.avgEX,self.varEX,self.stdEX,self.sumYnumEX)
 
 	def Show(self):
-		with open('./musync_data/ExtraFunction.cfg', 'r',encoding='utf8') as confFile:
-			config = json.load(confFile)
-
 		fig = plt.figure(f"HitAnalyze (Total:{self.sumYnum},  CyanEx:{self.rate[0]},  BlueEx:{self.rate[1]},  Great:{self.rate[2]},  Right:{self.rate[3]},  Miss:{self.rate[4]})", figsize=(16, 9))
 		fig.clear()
 		# fig.subplots_adjust(**{"left":0,"bottom":0,"right":1,"top":1})
@@ -107,7 +106,7 @@ class AllHitAnalyze(object):
 
 		ax1 = fig.add_subplot(grid[:,:])
 		self.Line(ax1)
-		if config['EnableDonutChartinAllHitAnalyze']:
+		if Config.DonutChartinAllHitAnalyze:
 			ax2 = fig.add_subplot(grid[0:2,3:])
 			ax2.add_patch(patches.Rectangle((-1.5, -1.5), 3, 3, color="white"))
 			# print(ax2.get_subplotspec())

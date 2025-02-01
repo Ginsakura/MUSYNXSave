@@ -53,7 +53,7 @@ class Config(object):
 				__logger.info(f"file: \"{__filePath}\" loaded.");
 
 	Version:str						= __config.get("Version"					, None);
-	LoggerFilterString:str			= __config.get("LoggerFilterString"			, "INFO");
+	LoggerFilterString:str			= __config.get("LoggerFilterString"			, "DEBUG");
 	LoggerFilter:int				= __logLevelMapping.get(LoggerFilterString	, logging.DEBUG);
 	Acc_Sync:bool					= __config.get("Acc_Sync"					, False);
 	CheckUpdate:bool				= __config.get("CheckUpdate"				, True);
@@ -153,7 +153,7 @@ class Config(object):
 		# 保存为 JSON 文件
 		try:
 			with open(cls.__filePath, 'w', encoding='utf8') as configFile:
-				json.dump(config_data, configFile, ensure_ascii=False, indent=4);
+				json.dump(config_data, configFile, ensure_ascii=False, indent=2);
 			cls.__logger.info(f"Configuration saved to \"{cls.__filePath}\" successfully.");
 		except Exception as e:
 			cls.__logger.exception(f"Failed to save configuration to \"{cls.__filePath}\": {e}");
@@ -491,7 +491,7 @@ class SaveDataInfo(object):
 		filePath:str = ".\\musync_data\\SaveDataInfo.json";
 		try:
 			with open(filePath, "w", encoding="utf-8") as json_file:
-				json.dump(dataDict, json_file, indent=4, ensure_ascii=False)
+				json.dump(dataDict, json_file, ensure_ascii=False, indent=2)
 			cls.__logger.info(f"Data successfully saved to {filePath}")
 		except Exception:
 			cls.__logger.exception(f"Failed to save data to {filePath}")

@@ -1,6 +1,6 @@
 {
-    "Version": "2.0.0.5",
-    "LoggerFilter": "INFO",
+    "Version": "2.0.0.7",
+    "LoggerFilter": "DEBUG",
     "Acc_Sync": true,
     "CheckUpdate": false,
     "DLLInjection": true,
@@ -15,6 +15,6 @@
     "ChangeConsoleStyle": true,
     "FramelessWindow": false,
     "TransparentColor": "#FFFFFF",
-    "Default4Keys": false,
-    "DefaultDiffcute": 1
+    "Default4Keys": true,
+    "DefaultDiffcute": 0
 }

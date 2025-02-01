@@ -61,10 +61,9 @@ class HitDelayText(object):
 			self.txtButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
 		else:
 			self.logButton.place(relx=0.7,y=40,height=90,relwidth=0.3)
-		self.keys = Config.Default4Keys # T=4, F=6
-		self.keysButton = Button(self.subroot,font=self.font, text=("4Key" if self.keys else "6Key"), command=self.ChangeKeys, bg="#4AA4C9")
+		self.keysButton = Button(self.subroot,font=self.font, text=("4Key" if Config.Default4Keys else "6Key"), command=self.ChangeKeys, bg="#4AA4C9")
 		self.keysButton.place(relx=0.5,y=100,height=30,relwidth=0.1)
-		self.diffcute = Config.DefaultDiffcute
+		self.diffcute = Config.DefaultDiffcute;
 		self.diffcuteButton = Button(self.subroot,font=self.font, text=["Easy","Hard","Inferno"][self.diffcute], command=self.ChangeDiffcute, bg="#4AA4C9")
 		self.diffcuteButton.place(relx=0.6,y=100,height=30,relwidth=0.1)
 
@@ -103,11 +102,12 @@ class HitDelayText(object):
 		self.UpdateWindowInfo()
 
 	def ChangeKeys(self):
-		self.keys = not self.keys
-		self.keysButton.configure(text=("4Key" if self.keys else "6Key"))
+		Config.Default4Keys = not Config.Default4Keys;
+		self.keysButton.configure(text=("4Key" if Config.Default4Keys else "6Key"));
 	def ChangeDiffcute(self):
-		self.diffcute = (self.diffcute+1)%3
-		self.diffcuteButton.configure(text=["Easy","Hard","Inferno"][self.diffcute])
+		self.diffcute = (self.diffcute + 1) % 3;
+		Config.DefaultDiffcute = self.diffcute;
+		self.diffcuteButton.configure(text=["Easy","Hard","Inferno"][self.diffcute]);
 
 	def TestEntryString(self):
 		string = self.nameDelayEntry.get()
@@ -130,8 +130,6 @@ class HitDelayText(object):
 		self.UpdateWindowInfo()
 
 	def Draw(self):
-		Config.Default4Keys = self.keys;
-		Config.DefaultDiffcute = self.diffcute;
 		consoleFind = False
 		try:
 			win = uiauto.WindowControl(searchDepth=1,Name='MUSYNX Delay',searchInterval=1).DocumentControl(serchDepth=1,Name='Text Area',searchInterval=1)
@@ -145,36 +143,37 @@ class HitDelayText(object):
 				win.SendKeys('{Ctrl}C',waitTime=0.1)
 				consoleFind = True
 			except Exception as e:
-				messagebox.showerror("Error", f'控制台窗口未找到\n请确认控制台窗口已开启\n{e}')
+				self.__logger.exception("控制台窗口未找到,请确认控制台窗口已开启");
+				messagebox.showerror("Error", f'控制台窗口未找到\n请确认控制台窗口已开启\n{e}');
 		if consoleFind:
-			data = pyperclip.paste().split('\n')
-			dataList=list()
-			n = self.nameDelayEntry.get().replace("\'","’")
-			k = "6K" if self.keys else "4K"
-			d = ["EZ","HD","IN"][self.diffcute]
-			name = f"{n} {k}{d}"
-			time = f"{dt.now()}"
+			data = pyperclip.paste().split('\n');
+			dataList=list();
+			n = self.nameDelayEntry.get().replace("\'","’");
+			k = "4K" if Config.Default4Keys else "6K";
+			d = ["EZ","HD","IN"][self.diffcute];
+			name = f"{n} {k}{d}";
+			time = f"{dt.now()}";
 			if data[-1] == "": #如果最后一行是空行，则去除
-				data.pop(-1)
+				data.pop(-1);
 			for ids in range(1,len(data)): # 去除第一行
-				dataList.append(float(data[ids][13:-3]))
-			allKeys = len(dataList)
-			sumNums,sumKeys = 0,0
+				dataList.append(float(data[ids][13:-3]));
+			allKeys = len(dataList);
+			sumNums,sumKeys = 0,0;
 			for ids in dataList:
 				if (ids < self.delayInterval) and (ids > -self.delayInterval):
-					sumNums += ids
-					sumKeys += 1
-			avgDelay = sumNums/sumKeys
-			avgAcc = sum([abs(i) for i in dataList])/allKeys
-			self.delayHistory.insert('', END, values=(name,allKeys,'%.6f ms'%avgDelay,'%.6f ms'%avgAcc))
-			dataListStr = ""
+					sumNums += ids;
+					sumKeys += 1;
+			avgDelay = sumNums/sumKeys;
+			avgAcc = sum([abs(i) for i in dataList])/allKeys;
+			self.delayHistory.insert('', END, values=(name,allKeys,'%.6f ms'%avgDelay,'%.6f ms'%avgAcc));
+			dataListStr = "";
 			for i in dataList:
-				dataListStr += f'{i}|'
-			self.cur.execute("INSERT into HitDelayHistory values(?,?,?,?,?,?)",(name,time,avgDelay,allKeys,avgAcc,dataListStr[:-1]))
-			self.db.commit()
-			self.HistoryUpdate()
-			dataList = [name,time,avgDelay,allKeys,avgAcc,dataList]
-			HitDelayDraw(dataList,isHistory=False)
+				dataListStr += f'{i}|';
+			self.cur.execute("INSERT into HitDelayHistory values(?,?,?,?,?,?)",(name,time,avgDelay,allKeys,avgAcc,dataListStr[:-1]));
+			self.db.commit();
+			self.HistoryUpdate();
+			dataList = [name,time,avgDelay,allKeys,avgAcc,dataList];
+			HitDelayDraw(dataList,isHistory=False);
 
 	def OpenTxt(self):
 		os.system('start notepad ./musync_data/Acc-Sync.json')
@@ -191,7 +190,7 @@ class HitDelayText(object):
 			isChange = False
 			historyName = historyItem[0].replace("\'",'’')
 			recordTime = historyItem[1]
-			self.__logger.debug("ShowHistoryInfo:",historyItem)
+			self.__logger.debug(f"ShowHistoryInfo: {historyItem}")
 			data = self.cur.execute(f"select * from HitDelayHistory where SongMapName=\'{historyName}\'  and RecordTime=\'{recordTime}\'")
 			data = data.fetchone()
 			self.__logger.debug(data[:4])
@@ -249,7 +248,7 @@ class HitDelayText(object):
 		self.delayHistory.bind("<ButtonPress-1>",self.ShowHistoryInfo)
 		self.historyRecordTimeValueLabel['text'] = dt.now()
 
-		self.__logger.debug("VScroll1.get",self.VScroll1.get())
+		self.__logger.debug(f"VScroll1.get:{self.VScroll1.get()}")
 		self.delayHistory.place(x=0,y=130,height=self.subroot.winfo_height()-130,relwidth=0.684)
 		self.VScroll1.place(relx=0.684,y=132,height=self.subroot.winfo_height()-133,relwidth=0.015)
 		self.subroot.update()
@@ -260,7 +259,7 @@ class HitDelayDraw(object):
 	"""docstring for ClassName"""
 	def __init__(self, dataList,isHistory=False):
 		self.__logger:logging.Logger = Logger.GetLogger("HitDelay.HitDelayDraw");
-		self.__logger.info('Name:%s\nRecordTime:%s'%(dataList[0],dataList[1]));
+		self.__logger.info(f'Name:{dataList[0]}\nRecordTime:{dataList[1]}');
 		self.avgDelay = dataList[2]
 		self.allKeys = dataList[3]
 		self.avgAcc = dataList[4]
@@ -277,7 +276,7 @@ class HitDelayDraw(object):
 		self.exCount = [0,0,0,0]
 		for ids in self.dataList:
 			ids = abs(ids)
-			if ids < 45: 
+			if ids < 45:
 				if ids < 5:self.exCount[0] += 1
 				elif ids < 10:self.exCount[1] += 1
 				elif ids < 20:self.exCount[2] += 1
@@ -288,15 +287,14 @@ class HitDelayDraw(object):
 			else: self.sum[4] += 1
 		self.sum[0] = sum(self.exCount)
 		self.exCount = self.exCount + self.sum[1:]
-		self.__logger.debug("HitDelayDraw:",self.sum,self.exCount);
+		self.__logger.debug(f"HitDelayDraw: {self.sum}, {self.exCount}");
 
 		self.DrawLine();
 		if Config.DonutChartinHitDelay: self.DrawBarPie();
 		plt.show();
 
 	def DrawLine(self):
-		fig = plt.figure(f'AvgDelay: {"%.4fms"%self.avgDelay}    ' \
-			f'AllKeys: {self.allKeys}    AvgAcc: {"%.4fms"%self.avgAcc}',figsize=(9, 4))
+		fig = plt.figure(f'AvgDelay: {self.avgDelay:.4f}ms    AllKeys: {self.allKeys}    AvgAcc: {self.avgAcc:.4f}ms',figsize=(9, 4))
 		fig.clear()
 		fig.subplots_adjust(**{"left":0.045,"bottom":0.055,"right":1,"top":1})
 		ax = fig.add_subplot()

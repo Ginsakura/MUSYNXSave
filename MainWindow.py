@@ -163,33 +163,6 @@ class MusyncSavDecodeGUI(object):
 		self.TreeviewWidthUptate()
 		self.TreeviewColumnUpdate()
 
-		def CheckGameRunning(self):
-			logger:logging.Logger = Logger.GetLogger("MusyncSavDecodeGUI.CheckGameRunning")
-			logger.info("Start Thread: CheckGameIsStart.");
-			def UpdateUI(text:str, bg:str)->None:
-				self.isGameRunning["text"] = text;"游戏未启动";
-				self.isGameRunning["bg"] = bg;"#FF8080";
-			while self.checkGameStartEvent.is_set():
-				startTime = time.perf_counter_ns()
-				try:
-					for ids in psutil.pids():
-						if psutil.Process(pid=ids).name() == "MUSYNX.exe":
-							# Config["MainExecPath"]
-							self.root.after(100, UpdateUI("游戏已启动", "#98E22B"));
-							logger.debug("Game is Running.");
-							break;
-					else:
-						self.root.after(100, UpdateUI("游戏未启动", "#FF8080"));
-						logger.debug("Game is not Running.");
-				except RuntimeError:
-					pass
-				except Exception:
-					# logger.exception("CheckGameRunning has Exception: ");
-					pass
-				logger.info("CheckGameIsStart Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000));
-				time.sleep(5);
-			logger.warning("Stop Thread: CheckGameIsStart.");
-
 		self.checkGameStartEvent.set();
 		self.checkGameIsStartThread:threading.Thread = threading.Thread(target=self.CheckGameRunning);
 		self.checkGameIsStartThread.start();
@@ -461,6 +434,7 @@ class MusyncSavDecodeGUI(object):
 		startTime = time.perf_counter_ns();
 		self.InitLabel(text="正在分析存档文件中……");
 		self.logger.debug("正在分析存档文件中……");
+		time.sleep(0.1);
 
 		def Rank(sync:int):
 			if	 (sync == 0)	: return "";
@@ -473,22 +447,22 @@ class MusyncSavDecodeGUI(object):
 			else				: return "黑Ex";
 
 		# songNameJson = SongName.SongNameData();
-		self.root.title(f'同步音律喵赛克Steam端本地存档分析   LastPlay: {SaveDataInfo.selectSongName}')
-		[self.saveData.delete(ids) for ids in self.saveData.get_children()]
-		self.saveCount = 0
-		self.totalSync = 0
+		self.root.title(f'同步音律喵赛克Steam端本地存档分析   LastPlay: {SaveDataInfo.selectSongName}');
+		[self.saveData.delete(ids) for ids in self.saveData.get_children()];
+		self.saveCount = 0;
+		self.totalSync = 0;
 		for saveInfo in SaveDataInfo.saveInfoList:
 			# 无名谱面筛选
 			if saveInfo.SongName is None: continue;
 			# 键数筛选
-			if ((self.keys != KeysEnum.All) and (self.keys.text != saveInfo.SongKeys)): continue;
+			if ((self.keys != KeysEnum.All) and (self.keys.stext != saveInfo.SongKeys)): continue;
 			# 难度筛选
-			if (self.difficute != DiffcuteEnum.All) and (self.difficute.text != saveInfo.SongDifficulty): continue;
+			if (self.difficute != DiffcuteEnum.All) and (self.difficute.stext != saveInfo.SongDifficulty): continue;
 			# 内置曲目筛选
 			if ((self.songSelect != SongSelectEnum.All) and (saveInfo.SongIsBuiltin != (self.songSelect == SongSelectEnum.Builtin))): continue;
 			# 互斥筛选
 			if (self.dataSelectMethod == "Played"):
-				if ((saveInfo.PlayCount == 0) or (saveInfo.SyncNumber == 0)): continue;
+				if ((saveInfo.PlayCount == 0) and (saveInfo.SyncNumber == 0)): continue;
 			elif (self.dataSelectMethod == "Unplay"):
 				if ((saveInfo.PlayCount != 0) or (saveInfo.SyncNumber != 0)): continue;
 			elif (self.dataSelectMethod == "IsFav"):
@@ -532,6 +506,33 @@ class MusyncSavDecodeGUI(object):
 		self.UpdateWindowInfo()
 
 # 控件更新功能组
+	def CheckGameRunning(self):
+		logger:logging.Logger = Logger.GetLogger("MusyncSavDecodeGUI.CheckGameRunning")
+		logger.info("Start Thread: CheckGameIsStart.");
+		def UpdateUI(text:str, bg:str)->None:
+			self.isGameRunning["text"] = text;"游戏未启动";
+			self.isGameRunning["bg"] = bg;"#FF8080";
+		while self.checkGameStartEvent.is_set():
+			startTime = time.perf_counter_ns()
+			try:
+				for ids in psutil.pids():
+					if psutil.Process(pid=ids).name() == "MUSYNX.exe":
+						# Config["MainExecPath"]
+						self.root.after(100, UpdateUI("游戏已启动", "#98E22B"));
+						logger.debug("Game is Running.");
+						break;
+				else:
+					self.root.after(100, UpdateUI("游戏未启动", "#FF8080"));
+					logger.debug("Game is not Running.");
+			except RuntimeError:
+				pass
+			except Exception:
+				# logger.exception("CheckGameRunning has Exception: ");
+				pass
+			logger.info("CheckGameIsStart Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000));
+			time.sleep(5);
+		logger.warning("Stop Thread: CheckGameIsStart.");
+
 	def TreeviewColumnUpdate(self):
 		self.saveData.heading("SongId",anchor="center",text="谱面号"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SpeedStall' else ''))
 		self.saveData.heading("SongName",anchor="center",text="曲名"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SongName' else ''))
@@ -569,7 +570,7 @@ class MusyncSavDecodeGUI(object):
 			self.saveInfoScroll.place(x=self.windowInfo[2]-22, y=1, width=20, height=self.windowInfo[3]-162)
 		# self.saveCountVar.set()
 		self.saveCountLabel.configure(text=str(self.saveCount+self.excludeCount))
-		self.avgSyncLabel.configure(text=f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount)):.6f}%')
+		self.avgSyncLabel.configure(text=f'{(self.totalSync * 100 / (1 if self.saveCount==0 else self.saveCount)):.6f}%')
 		self.developer.place(x=0,y=self.windowInfo[3]-30,width=420,height=30)
 		self.gitHubLink.place(x=420,y=self.windowInfo[3]-30,width=self.windowInfo[2]-420,height=30)
 
@@ -585,19 +586,19 @@ class MusyncSavDecodeGUI(object):
 
 	def UpdateEnum(self)->None:
 		DiffcuteEnum.Easy.text = "简单难度";
-		DiffcuteEnum.Easy.stext = "EZ";
+		DiffcuteEnum.Easy.stext = "Easy";
 		DiffcuteEnum.Hard.text = "困难难度";
-		DiffcuteEnum.Hard.stext = "HD";
+		DiffcuteEnum.Hard.stext = "Hard";
 		DiffcuteEnum.Inferno.text = "地狱难度";
-		DiffcuteEnum.Inferno.stext = "IN";
+		DiffcuteEnum.Inferno.stext = "Inferno";
 		DiffcuteEnum.All.text = "所有难度";
 		DiffcuteEnum.All.stext = "ALL";
 
 		KeysEnum.Key4.text = "4 Key";
-		KeysEnum.Key4.stext = "4K";
+		KeysEnum.Key4.stext = "4Key";
 		KeysEnum.Key4.width = 72;
 		KeysEnum.Key6.text = "6 Key";
-		KeysEnum.Key6.stext = "6K";
+		KeysEnum.Key6.stext = "6Key";
 		KeysEnum.All.text = "4&6 Key";
 		KeysEnum.All.stext = "ALL";
 

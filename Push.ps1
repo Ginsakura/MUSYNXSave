@@ -7,13 +7,13 @@ echo ======Release======;
 echo $message[-1];
 echo ===================;
 if ($message[-1].Trim() -eq 'rc'){
-  $version = (py -c "import Version;print(Version.version)");
+  $version = (py -c "import Version;print(Version.version);");
   $release = 'Release';
 }elseif($message[-1].Trim() -eq 'pre'){
-  $version = (py -c "import Version;print(Version.preVersion)");
+  $version = (py -c "import Version;print(Version.preVersion);");
   $release = 'PreRelease';
 }else{
-  $version = (py -c "import Version;print(Version.preVersion)");
+  $version = (py -c "import Version;print(Version.preVersion);");
   $release = '[no ci]';
 }
 if ($message[0].Trim() -eq ""){

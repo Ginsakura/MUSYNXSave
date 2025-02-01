@@ -10,7 +10,7 @@ FillSize:int = 512;
 FixDLL:str = "F39E7D866C2EF4F6A40E573EF5B0D2A8";
 # Source Assembly-CSharp.dll
 SourceDLL:str = '043799056B15948930F9BFCDDC6E5FEE';
-SongNameVersion:int = 20250126;
+SongNameVersion:int = 20250201;
 
 def GetHash(filePath:str=None)->str:
 	if (filePath is None): return "";
@@ -114,6 +114,7 @@ if __name__ == '__main__':
 	# 修复文件结构
 	binaryInfo["GameLib"]["SourceHash"] = SourceDLL;
 	binaryInfo["SongName"]["Version"] = SongNameVersion;
+	print(json.dumps(binaryInfo, ensure_ascii=False, indent=4));
 	# 封装文件
 	# 创建一个BytesIO对象，用于存储压缩后的数据
 	# 使用gzip.GzipFile进行压缩

@@ -184,7 +184,7 @@ Write-Host "==== 任务开始 ====";
 # Write-Host "已删除目录：./MusyncSaveDecode" -ForegroundColor Yellow;
 
 # Step 1: 编译图标资源
-BuildIcon;
+# BuildIcon;
 
 # Step 2: 检查构建目录
 # CheckDir -Dir "MusyncSaveDecode/";

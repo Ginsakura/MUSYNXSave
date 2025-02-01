@@ -35,14 +35,14 @@ jobs:
 
     - name: Install requirements
       run: |
-        pip3 install -r requirements.txt
+        pip3 install -r ./requirements.txt
 
     - name: Dist Packages
       run: |
         $vc = "${{ github.event.head_commit.message }}" -split "  "
         echo "$vc"
         echo "CommitMessage=$($vc[1])" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        powershell.exe buildLauncher.ps1
+        powershell.exe ./buildLauncher.ps1
 
     - name: Commit Release
       id: create_release
@@ -55,4 +55,4 @@ jobs:
         draft: false
         body_path: ${{ github.workspace }}/changelog.md
         prerelease: ${{ env.isPreRelease }}
-        files: MusyncSaveDecode/Archive/*
+        files: ./MusyncSaveDecode/Archive/*

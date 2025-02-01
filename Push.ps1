@@ -1,11 +1,11 @@
 Clear-Host;
 $message = Read-Host -Prompt "Input Commit Message";
-$message = $message.Split("//");
-echo ==== Message ====;
+$message = $message.Split("///");
+echo ======Message======;
 echo $message[0];
-echo ==== Release ====;
+echo ======Release======;
 echo $message[-1];
-echo ====         ====;
+echo ===================;
 if ($message[-1] -eq 'rc'){
   $version = (py -c "import Version;print(Version.version)");
   $release = 'Release';

@@ -74,13 +74,12 @@ class MusyncSavDecodeGUI(object):
 		self.keys:KeysEnum = KeysEnum.All;
 		self.songSelect:SongSelectEnum = SongSelectEnum.All;
 		self.checkGameStartEvent = threading.Event();
-		self.checkGameIsStartThread = None;
 		self.UpdateEnum();
 
 		self.root.protocol("WM_DELETE_WINDOW", self.Closing);
 
 	##Controller##
-		self.DecodeSaveFile = ttk.Button(self.root, text="解码并刷新",command=self.DataLoad,style='F5.TButton')
+		self.DecodeSaveFile = ttk.Button(self.root, text="解码并刷新",command=self.RefreshSave,style='F5.TButton')
 		self.DecodeSaveFile.place(x=10,y=10,width=160,height=30)
 		self.isGameRunning = Label(self.root, text="游戏未启动", font=self.font,bg='#FF8080')
 		self.isGameRunning.place(x=30,y=85,width=110,height=30)
@@ -101,7 +100,7 @@ class MusyncSavDecodeGUI(object):
 		# self.saveData.tag_configure("BuiltinSong",background='#FF0000',foreground='blue')
 		# self.saveData.tag_configure("DLCSong",background='#FDFFAE',foreground='blue')
 
-		self.developer = Label(self.root, text=f'Version {self.preVersion if isPreRelease else self.version} | Develop By Ginsakura', font=self.font, relief="groove")
+		self.developer = Label(self.root, text=f'Version {self.preVersion if self.isPreRelease else self.version} | Develop By Ginsakura', font=self.font, relief="groove")
 		self.gitHubLink = Button(self.root, text='点击打开GitHub仓库	点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNXSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
 
 		self.initLabel = Label(self.root, text='启动中......', anchor="w", font=self.font, relief="groove")
@@ -210,12 +209,11 @@ class MusyncSavDecodeGUI(object):
 			self.logger.warning("DLL Injection is Enable.");
 			self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelay, font=self.font,bg='#FF5959');
 			self.hitDelay.place(x=775,y=50,width=90,height=30);
+		MUSYNCSavProcess(savFile=self.saveFilePathVar.get()).Main();
 		self.DataLoad();
 
 # TK事件重载
 	def Closing(self):
-		self.checkGameStartEvent.clear();
-		self.checkGameIsStartThread.join();
 		self.root.destroy();
 		Config.SaveConfig();
 		SaveDataInfo.DumpToJson();
@@ -408,7 +406,13 @@ class MusyncSavDecodeGUI(object):
 			self.initLabel.place(x=-1,width=0)
 
 # 数据分析功能组
+	def RefreshSave(self)->None:
+		"刷新存档"
+		MUSYNCSavProcess(savFile=self.saveFilePathVar.get()).Main();
+		self.DataLoad();
+
 	def GetSaveFile(self)->None:
+		"搜索预设存档目录"
 		startTime:int = time.perf_counter_ns();
 		self.InitLabel("正在搜索存档文件中……");
 		self.logger.debug("正在搜索存档文件中……");
@@ -434,6 +438,7 @@ class MusyncSavDecodeGUI(object):
 		Config.SaveConfig();
 
 	def HitDelay(self):
+		"DLL注入功能"
 		if Config.DLLInjection:
 			result:int = Toolkit.GameLibCheck();
 		if (result == 0):
@@ -448,6 +453,7 @@ class MusyncSavDecodeGUI(object):
 		HitDelayText(nroot);
 
 	def DataLoad(self):
+		"存档数据解析"
 		self.logger.debug("DataLoad Start");
 		startTime = time.perf_counter_ns();
 		self.InitLabel(text="正在分析存档文件中……");
@@ -464,7 +470,6 @@ class MusyncSavDecodeGUI(object):
 			else				: return "黑Ex";
 
 		# songNameJson = SongName.SongNameData();
-		MUSYNCSavProcess(savFile=self.saveFilePathVar.get()).Main();
 		self.root.title(f'同步音律喵赛克Steam端本地存档分析   LastPlay: {SaveDataInfo.selectSongName}')
 		[self.saveData.delete(ids) for ids in self.saveData.get_children()]
 		self.saveCount = 0
@@ -480,9 +485,9 @@ class MusyncSavDecodeGUI(object):
 			if ((self.songSelect != SongSelectEnum.All) and (saveInfo.SongIsBuiltin != (self.songSelect == SongSelectEnum.Builtin))): continue;
 			# 互斥筛选
 			if (self.dataSelectMethod == "Played"):
-				if ((saveInfo.PlayCount == 0) and (saveInfo.SyncNumber == 0)): continue;
+				if ((saveInfo.PlayCount == 0) or (saveInfo.SyncNumber == 0)): continue;
 			elif (self.dataSelectMethod == "Unplay"):
-				if ((saveInfo.PlayCount != 0) and (saveInfo.SyncNumber != 0)): continue;
+				if ((saveInfo.PlayCount != 0) or (saveInfo.SyncNumber != 0)): continue;
 			elif (self.dataSelectMethod == "IsFav"):
 				if (saveInfo.State != 'Favo'): continue;
 			elif (self.dataSelectMethod == "Sync122"):
@@ -683,7 +688,7 @@ if __name__ == '__main__':
 	root.tk.call('tk', 'scaling', 1.25);
 	root.resizable(False, True); #允许改变窗口高度，不允许改变窗口宽度
 	# 强制仅旧版UI
-	MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease);
+	MusyncSavDecodeGUI(root=root);
 	# if cfg['EnableFramelessWindow']:
 	# 	root.overrideredirect(1)
 	# 	window = NewStyle.MusyncSavDecodeGUI(root=root)

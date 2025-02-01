@@ -11,7 +11,7 @@ class AllHitAnalyze(object):
 	"""docstring for HitAnalyze"""
 	def __init__(self):
 		# super(AllHitAnalyze, self).__init__()
-		db = sql.connect('./musync_data/HitDelayHistory_v2.db')
+		db = sql.connect('./musync_data/HitDelayHistory.db')
 		cur = db.cursor()
 		res = cur.execute('select HitMap from HitDelayHistory')
 		res = res.fetchall()

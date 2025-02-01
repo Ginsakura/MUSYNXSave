@@ -18,16 +18,16 @@ logger:logging.Logger = Logger().GetLogger("Toolkit");
 class Toolkit(object):
 	logger.debug("加载资源文件: \"./musync_data/Resources.bin\".");
 	try:
-		__resourceFile:io.TextIOWrapper = open("./musync_data/Resources.bin", "wb");
+		__resourceFile:io.TextIOWrapper = open("./musync_data/Resources.bin", "rb");
 		__resourceFile.seek(0);
 		__infoSize:int = struct.unpack('I', __resourceFile.read(4))[0];
 		__compressedStream:io.BytesIO = io.BytesIO(__resourceFile.read(__infoSize));
 		with gzip.GzipFile(fileobj=__compressedStream, mode='rb') as gz_file:
 			decompressedData:bytes = gz_file.read()
 		__resourceFileInfo:dict[str,dict[str,any]] = json.loads(decompressedData.decode('ASCII'));
-	except Exception:
+	except Exception as ex:
 		logger.exception("资源文件加载失败.");
-		messagebox.showerror("Error","资源文件\"./musync_data/Resources.bin\"加载失败!");
+		messagebox.showerror("Error",f"资源文件\"./musync_data/Resources.bin\"加载失败!\n{ex}");
 
 	def GetDpi()->int:
 		hDC:any = win32gui.GetDC(0);
@@ -107,7 +107,7 @@ class Toolkit(object):
 			Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/MUSYNC.ico');
 		# 检查SongName.json是否存在
 		logger.debug("Check \"musync_data\\SongName.json\" is not exists...");
-		if (not os.path.isfile('./musync_data/SongName.json') or (cls.__resourceFileInfo["SongName"]["Version"] > SongName.Version)):
+		if (not os.path.isfile('./musync_data/SongName.json') or (cls.__resourceFileInfo["SongName"]["Version"] > SongName.Version())):
 			info:dict[str,any] = cls.__resourceFileInfo["SongName"];
 			Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/SongName.json');
 		# 检查mscorlib.dll是否存在

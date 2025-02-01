@@ -157,46 +157,6 @@ function Create-Archive {
     }
 }
 
-# 清理目录
-function Clear-Directory {
-    <#
-    .SYNOPSIS
-    清除指定目录中的所有文件和子目录。
-
-    .DESCRIPTION
-    此函数会删除指定目录中的所有文件和子目录，但不会删除目标目录本身。
-    对于每个文件和目录，会给出不同的提示信息。
-
-    .PARAMETER TargetDirectory
-    要清理的目标目录路径。
-
-    .EXAMPLE
-    Clear-Directory -TargetDirectory "C:\MyDirectory"
-    #>
-    param (
-        [Parameter(Mandatory = $true)]
-        [string]$TargetDirectory
-    )
-
-    # 获取目标目录中的所有项目（文件和子目录）
-    $items = Get-ChildItem -Path $TargetDirectory -Recurse
-
-    # 遍历每个项目
-    foreach ($item in $items) {
-        if ($item.PSIsContainer) {
-            # 如果是目录
-            Remove-Item -Path "$($item.FullName)" -Force -Recurse -ErrorAction SilentlyContinue
-            Write-Host "已删除目录：$($item.FullName)" -ForegroundColor Yellow
-        } else {
-            # 如果是文件
-            Remove-Item -Path "$($item.FullName)" -Force -ErrorAction SilentlyContinue
-            Write-Host "已删除文件：$($item.FullName)" -ForegroundColor Green
-        }
-    }
-
-    Write-Host "目标目录 $TargetDirectory 中的所有内容已清除！" -ForegroundColor Cyan
-}
-
 # 定义变量
 $isPreRelease = python -c "import Version;print(Version.isPreRelease)";
 $isPreReleaseBool = [bool]::Parse($isPreRelease);
@@ -211,22 +171,24 @@ $archive_AC = @("logs", "musync_data", "MusyncSaveDecodeCLI.exe");              
 $archive_ANC = @("logs", "musync_data", "MusyncSaveDecodeNoCLI.exe");                  # NoCLI all in one archive files
 $archive_C = @("logs", "musync_data", "_internal", "MusyncSaveDecodeCLI.exe");
 $archive_NC = @("logs", "musync_data", "_internal", "MusyncSaveDecodeNoCLI.exe");
-$destinationZip_AC = "MusyncSaveDecode_WithConsole_${version}_AllInOne.zip"
-$destinationZip_ANC = "MusyncSaveDecode_NoConsole_${version}_AllInOne.zip"
-$destinationZip_C = "../MusyncSaveDecode_WithConsole_${version}.zip";
-$destinationZip_NC = "../MusyncSaveDecode_NoConsole_${version}.zip";
+$destinationZip_AC = "Archive/MusyncSaveDecode_WithConsole_${version}_AllInOne.zip"
+$destinationZip_ANC = "Archive/MusyncSaveDecode_NoConsole_${version}_AllInOne.zip"
+$destinationZip_C = "../Archive/MusyncSaveDecode_WithConsole_${version}.zip";
+$destinationZip_NC = "../Archive/MusyncSaveDecode_NoConsole_${version}.zip";
 
 Clear-Host;
 Write-Host "==== 任务开始 ====";
 
 # Step 0: 清理生成目录
-Clear-Directory -TargetDirectory "./MusyncSaveDecode";
+# Remove-Item -Path "./MusyncSaveDecode" -Force -Recurse -ErrorAction SilentlyContinue;
+# Write-Host "已删除目录：./MusyncSaveDecode" -ForegroundColor Yellow;
 
 # Step 1: 编译图标资源
 BuildIcon;
 
 # Step 2: 检查构建目录
-CheckDir -Dir "MusyncSaveDecode/";
+# CheckDir -Dir "MusyncSaveDecode/";
+CheckDir -Dir "MusyncSaveDecode/Archive/";
 # CheckDir -Dir "MusyncSaveDecode/MusyncSaveDecodeCLI/";
 # CheckDir -Dir "MusyncSaveDecode/MusyncSaveDecodeNoCLI/";
 
@@ -268,18 +230,21 @@ Set-Location -Path "MusyncSaveDecodeCLI";
 Create-Archive -SourceItems $archive_C -DestinationZip $destinationZip_C;
 Set-Location -Path "../MusyncSaveDecodeNoCLI";
 Create-Archive -SourceItems $archive_NC -DestinationZip $destinationZip_NC;
+Set-Location -Path "..";
 
 # Step 7: 清理生成文件
-Clear-Directory -TargetDirectory "./logs";
-Clear-Directory -TargetDirectory "./musync_data";
-Clear-Directory -TargetDirectory "./MusyncSaveDecodeCLI";
-Clear-Directory -TargetDirectory "./MusyncSaveDecodeNoCLI";
 Remove-Item -Path "./logs" -Force -Recurse -ErrorAction SilentlyContinue
+Write-Host "已移除目录：./logs" -ForegroundColor Yellow;
 Remove-Item -Path "./musync_data" -Force -Recurse -ErrorAction SilentlyContinue
+Write-Host "已移除目录：./musync_data" -ForegroundColor Yellow;
 Remove-Item -Path "./MusyncSaveDecodeCLI" -Force -Recurse -ErrorAction SilentlyContinue
+Write-Host "已移除目录：./MusyncSaveDecodeCLI" -ForegroundColor Yellow;
 Remove-Item -Path "./MusyncSaveDecodeNoCLI" -Force -Recurse -ErrorAction SilentlyContinue
+Write-Host "已移除目录：./MusyncSaveDecodeNoCLI" -ForegroundColor Yellow;
 Remove-Item -Path "./MusyncSaveDecodeCLI.exe" -Force -ErrorAction SilentlyContinue
+Write-Host "已删除文件：./MusyncSaveDecodeNoCLI" -ForegroundColor Yellow;
 Remove-Item -Path "./MusyncSaveDecodeNoCLI.exe" -Force -ErrorAction SilentlyContinue
+Write-Host "已删除文件：./MusyncSaveDecodeNoCLI" -ForegroundColor Yellow;
 
 # Step 7: 编译启动器
 # & g++ -o $path+"Launcher" .\Launcher.cpp $path+$resPath;

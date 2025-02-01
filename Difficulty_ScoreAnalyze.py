@@ -1,37 +1,36 @@
-import json
 import matplotlib.pyplot as plt
-
 from matplotlib.pyplot import MultipleLocator
+from Resources import MapDataInfo, SaveDataInfo
 
 def Analyze():
 	diff = [[],[]]
 	score = [[],[]]
 	diffSocre = [dict(),dict()]
-	for ids in range(1,16):
-		diffSocre[0]['%02d'%ids] = []
-		diffSocre[1]['%02d'%ids] = []
+	for mapData in range(1,16):
+		diffSocre[0]['%02d'%mapData] = []
+		diffSocre[1]['%02d'%mapData] = []
 	# print(diffSocre)
 
-	with open('./musync_data/SavAnalyze.json','r',encoding='utf8') as file:
-		data = json.load(file)
-	for ids in data["SaveData"]:
-		if float(ids["SyncNumber"][:-1]) != 0:
-			diffcute = int(ids["SongName"][3])
-			if ids["SongName"][1]=="4Key":
+	data:list[MapDataInfo] = SaveDataInfo.saveInfoList;
+	for mapData in data:
+		syncNumber:float = mapData.SyncNumber/100.0;
+		if (syncNumber > 0.0):
+			diffcute:int = int(mapData.SongDifficultyNumber)
+			if (mapData.SongKeys == "4Key"):
 				diff[0].append(diffcute-0.15)
-				score[0].append(float(ids["SyncNumber"][:-1]))
-				diffSocre[0]['%02d'%diffcute] += [float(ids["SyncNumber"][:-1])]
+				score[0].append(syncNumber)
+				diffSocre[0]['%02d'%diffcute] += [syncNumber]
 			else: # 6Key Mode
 				diff[1].append(diffcute+0.15)
-				score[1].append(float(ids["SyncNumber"][:-1]))
-				diffSocre[1]['%02d'%diffcute] += [float(ids["SyncNumber"][:-1])]
+				score[1].append(syncNumber)
+				diffSocre[1]['%02d'%diffcute] += [syncNumber]
 	# print(diffSocre)
 
 	diffSocreTrim = [dict(),dict()]
-	for ids in range(0,2):
-		for idx in diffSocre[ids].keys():
-			if len(diffSocre[ids][idx]) != 0:
-				diffSocreTrim[ids][idx] = [round(sum(diffSocre[ids][idx])/len(diffSocre[ids][idx]),3),len(diffSocre[ids][idx])]
+	for mapData in range(0,2):
+		for idx in diffSocre[mapData].keys():
+			if len(diffSocre[mapData][idx]) != 0:
+				diffSocreTrim[mapData][idx] = [round(sum(diffSocre[mapData][idx])/len(diffSocre[mapData][idx]),3),len(diffSocre[mapData][idx])]
 			# else:
 			# 	diffSocre.pop(ids, None)
 	# print(diffSocreTrim)
@@ -52,21 +51,21 @@ def Analyze():
 	axR.set_ylim(minScore-1,125)
 
 	labels = []
-	for ids in diffSocreTrim[0].keys():
-		labels.append(f"难度: 4K {ids} Avg:{'%.3f'%diffSocreTrim[0][ids][0]:0>7s}% 计数:{diffSocreTrim[0][ids][1]:0=2d}")
+	for mapData in diffSocreTrim[0].keys():
+		labels.append(f"难度: 4K {mapData} Avg:{'%.3f'%diffSocreTrim[0][mapData][0]:0>7s}% 计数:{diffSocreTrim[0][mapData][1]:0=2d}")
 	labels.append("")
-	for ids in diffSocreTrim[1].keys():
-		labels.append(f"难度: 6K {ids} Avg:{'%.3f'%diffSocreTrim[1][ids][0]:0>7s}% 计数:{diffSocreTrim[1][ids][1]:0=2d}")
+	for mapData in diffSocreTrim[1].keys():
+		labels.append(f"难度: 6K {mapData} Avg:{'%.3f'%diffSocreTrim[1][mapData][0]:0>7s}% 计数:{diffSocreTrim[1][mapData][1]:0=2d}")
 	print("\n".join(labels))
 
-	for ids in range(1,16):
-		ax.plot([ids]*(125-minScore+2),[ids for ids in range(minScore-1,126)],linestyle='--',alpha=0.6,linewidth=1)
+	for mapData in range(1,16):
+		ax.plot([mapData]*(125-minScore+2),[ids for ids in range(minScore-1,126)],linestyle='--',alpha=0.6,linewidth=1)
 	# diffSocreTrim:[{'diff':[avg,count]}, {'diff':[avg,count]}]
 	# [4K, 6K]
-	for ids in range(0,2): #ids <= [4K, 6K]
-		for idx in diffSocreTrim[ids].keys(): #idx <= diff
-			ax.plot([i for i in range(int(idx)+1)] if ids else [i for i in range(int(idx),17)], # '6k=>' if ids else '<=4K'
-				[diffSocreTrim[ids][idx][0]]*(int(idx)+1) if ids else [diffSocreTrim[ids][idx][0]]*(17-int(idx)), # '6k=>' if ids else '<=4K'
+	for mapData in range(0,2): #ids <= [4K, 6K]
+		for idx in diffSocreTrim[mapData].keys(): #idx <= diff
+			ax.plot([i for i in range(int(idx)+1)] if mapData else [i for i in range(int(idx),17)], # '6k=>' if ids else '<=4K'
+				[diffSocreTrim[mapData][idx][0]]*(int(idx)+1) if mapData else [diffSocreTrim[mapData][idx][0]]*(17-int(idx)), # '6k=>' if ids else '<=4K'
 				linestyle='--',alpha=1,linewidth=1)
 
 	if minScore < 122:

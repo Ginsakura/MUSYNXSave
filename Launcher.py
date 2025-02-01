@@ -34,7 +34,7 @@ def Launcher()->None:
 	root.tk.call('tk', 'scaling', 1.25);
 	root.resizable(False, True); #允许改变窗口高度，不允许改变窗口宽度
 	# 强制仅旧版UI
-	MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease);
+	MusyncSavDecodeGUI(root=root);
 	# if cfg['EnableFramelessWindow']:
 	# 	root.overrideredirect(1)
 	# 	window = NewStyle.MusyncSavDecodeGUI(root=root)

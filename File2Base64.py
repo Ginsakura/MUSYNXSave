@@ -7,8 +7,9 @@ import struct
 # from base64 import b64encode
 
 FillSize:int = 512;
+FixDLL:str = "F39E7D866C2EF4F6A40E573EF5B0D2A8";
 # Source Assembly-CSharp.dll
-SourceDLL:str = 'F907C60B143794B86D1DB4F368FBF00F';
+SourceDLL:str = '043799056B15948930F9BFCDDC6E5FEE';
 SongNameVersion:int = 20250126;
 
 def GetHash(filePath:str=None)->str:

@@ -26,6 +26,7 @@ class Config(object):
 		os.remove(logsDir+logName);
 
 	__logLevelMapping={
+		"NOTSET": logging.NOTSET,
 		"DEBUG": logging.DEBUG,
 		"INFO": logging.INFO,
 		"WARN": logging.WARNING,
@@ -116,13 +117,22 @@ class Config(object):
 	@classmethod
 	def SaveConfig(cls) -> None:
 		"保存配置文件,手动执行";
+		# Fix Filter
+		logLevelMapping:dict[int,str] = {
+			0: "NOTSET",
+			10: "DEBUG",
+			20: "INFO",
+			30: "WARNING",
+			40: "ERROR",
+			50: "FATAL",
+			};
+		loggerFilterStr:str = logLevelMapping[cls.LoggerFilter]
 		# 获取所有需要保存的属性
 		config_data = {
 			"Version": cls.Version,
-			"LoggerFilter" : cls.LoggerFilter,
+			"LoggerFilter" : loggerFilterStr,
 			"Acc_Sync": cls.Acc_Sync,
 			"CheckUpdate": cls.CheckUpdate,
-			"AnalyzeWhenStarting": cls.AnalyzeWhenStarting,
 			"DLLInjection": cls.DLLInjection,
 			"SystemDPI": cls.SystemDPI,
 			"DonutChartinHitDelay": cls.DonutChartinHitDelay,

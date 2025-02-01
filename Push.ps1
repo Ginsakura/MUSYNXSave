@@ -7,13 +7,13 @@ echo ==== Release ====;
 echo $message[-1];
 echo ====         ====;
 if ($message[-1] -eq 'rc'){
-  $version = (py -c "import Launcher;print(Launcher.version)");
+  $version = (py -c "import Version;print(Version.version)");
   $release = 'Release';
 }elseif($message[-1] -eq 'pre'){
-  $version = (py -c "import Launcher;print(Launcher.preVersion)");
+  $version = (py -c "import Version;print(Version.preVersion)");
   $release = 'PreRelease';
 }else{
-  $version = (py -c "import Launcher;print(Launcher.preVersion)");
+  $version = (py -c "import Version;print(Version.preVersion)");
   $release = '[no ci]';
 }
 if ($message[0] -eq ""){

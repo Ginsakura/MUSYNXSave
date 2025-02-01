@@ -37,7 +37,7 @@ jobs:
       run: |
         pip3 install -r requirements.txt
 
-    - name: Dist ${{ env.Version }}
+    - name: Dist Packages
       run: |
         $vc = "${{ github.event.head_commit.message }}" -split "  "
         echo "$vc"
@@ -55,8 +55,4 @@ jobs:
         draft: false
         body_path: ${{ github.workspace }}/changelog.md
         prerelease: ${{ env.isPreRelease }}
-        files: |
-          ./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}.zip
-          ./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}_AllInOne.exe
-          ./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}.zip
-          ./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}_AllInOne.exe
+        files: MusyncSaveDecode/Archive/*

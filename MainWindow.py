@@ -73,7 +73,8 @@ class MusyncSavDecodeGUI(object):
 		self.difficute:DiffcuteEnum = DiffcuteEnum.All;
 		self.keys:KeysEnum = KeysEnum.All;
 		self.songSelect:SongSelectEnum = SongSelectEnum.All;
-		self.checkGameStartEvent = threading.Event();
+		self.checkGameStartEvent:threading.Event = threading.Event();
+		self.checkGameIsStartThread:threading.Thread = None;
 		self.UpdateEnum();
 
 		self.root.protocol("WM_DELETE_WINDOW", self.Closing);
@@ -162,41 +163,41 @@ class MusyncSavDecodeGUI(object):
 		self.TreeviewWidthUptate()
 		self.TreeviewColumnUpdate()
 
-		def CheckGameRunning():
+		def CheckGameRunning(self):
 			logger:logging.Logger = Logger.GetLogger("MusyncSavDecodeGUI.CheckGameRunning")
 			logger.info("Start Thread: CheckGameIsStart.");
-			def Checking()->None:
-				if not self.checkGameStartEvent.is_set(): return;
+			def UpdateUI(text:str, bg:str)->None:
+				self.isGameRunning["text"] = text;"游戏未启动";
+				self.isGameRunning["bg"] = bg;"#FF8080";
+			while self.checkGameStartEvent.is_set():
 				startTime = time.perf_counter_ns()
 				try:
-						for ids in psutil.pids():
-							if psutil.Process(pid=ids).name() == "MUSYNX.exe":
-								# Config["MainExecPath"]
-								self.isGameRunning["text"] = "游戏已启动";
-								self.isGameRunning["bg"] = "#98E22B";
-								logger.debug("Game is Running.");
-								break;
-						else:
-							self.isGameRunning["text"] = "游戏未启动";
-							self.isGameRunning["bg"] = "#FF8080";
-							logger.debug("Game is not Running.");
+					for ids in psutil.pids():
+						if psutil.Process(pid=ids).name() == "MUSYNX.exe":
+							# Config["MainExecPath"]
+							self.root.after(100, UpdateUI("游戏已启动", "#98E22B"));
+							logger.debug("Game is Running.");
+							break;
+					else:
+						self.root.after(100, UpdateUI("游戏未启动", "#FF8080"));
+						logger.debug("Game is not Running.");
 				except RuntimeError:
-						pass
+					pass
 				except Exception:
-						# logger.exception("CheckGameRunning has Exception: ");
-						pass
+					# logger.exception("CheckGameRunning has Exception: ");
+					pass
 				logger.info("CheckGameIsStart Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000));
-				self.root.after(5000, Checking);
-			self.root.after(5000, Checking);
+				time.sleep(5);
 			logger.warning("Stop Thread: CheckGameIsStart.");
 
 		self.checkGameStartEvent.set();
-		CheckGameRunning();
-		self.root.after(0, self.CheckJsonUpdate);
+		self.checkGameIsStartThread:threading.Thread = threading.Thread(target=self.CheckGameRunning);
+		self.checkGameIsStartThread.start();
+		threading.Thread(target=self.CheckJsonUpdate).start();
 
 		if Config.CheckUpdate:
 			self.logger.info("Check Updating...");
-			self.root.after(0,self.CheckUpdate);
+			threading.Thread(target=self.CheckUpdate).start();
 		else:
 			self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页');
 			self.logger.warning("Check update is Disable");
@@ -214,6 +215,8 @@ class MusyncSavDecodeGUI(object):
 
 # TK事件重载
 	def Closing(self):
+		self.checkGameStartEvent.clear();
+		self.checkGameIsStartThread.join();
 		self.root.destroy();
 		Config.SaveConfig();
 		SaveDataInfo.DumpToJson();

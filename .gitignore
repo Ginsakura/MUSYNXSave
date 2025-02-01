@@ -15,6 +15,7 @@ SaveDataInfo.json
 
 *.bat
 *.bin
+!Resources.bin
 *.db
 *.dll
 *.exe

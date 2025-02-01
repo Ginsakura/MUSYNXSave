@@ -150,7 +150,7 @@ function Create-Archive {
     # 打包文件和文件夹
     try {
         Compress-Archive -Path $SourceItems -DestinationPath $DestinationZip -Force
-        Write-Host "打包成功！输出文件：$DestinationZip" -ForegroundColor Green
+        Write-Host "打包成功！输出文件：${DestinationZip}" -ForegroundColor Green
     }
     catch {
         Write-Host "打包失败：$($_.Exception.Message)" -ForegroundColor Red
@@ -233,18 +233,18 @@ Create-Archive -SourceItems $archive_NC -DestinationZip $destinationZip_NC;
 Set-Location -Path "..";
 
 # Step 7: 清理生成文件
-Remove-Item -Path "./logs" -Force -Recurse -ErrorAction SilentlyContinue
-Write-Host "已移除目录：./logs" -ForegroundColor Yellow;
-Remove-Item -Path "./musync_data" -Force -Recurse -ErrorAction SilentlyContinue
-Write-Host "已移除目录：./musync_data" -ForegroundColor Yellow;
-Remove-Item -Path "./MusyncSaveDecodeCLI" -Force -Recurse -ErrorAction SilentlyContinue
-Write-Host "已移除目录：./MusyncSaveDecodeCLI" -ForegroundColor Yellow;
-Remove-Item -Path "./MusyncSaveDecodeNoCLI" -Force -Recurse -ErrorAction SilentlyContinue
-Write-Host "已移除目录：./MusyncSaveDecodeNoCLI" -ForegroundColor Yellow;
-Remove-Item -Path "./MusyncSaveDecodeCLI.exe" -Force -ErrorAction SilentlyContinue
-Write-Host "已删除文件：./MusyncSaveDecodeNoCLI" -ForegroundColor Yellow;
-Remove-Item -Path "./MusyncSaveDecodeNoCLI.exe" -Force -ErrorAction SilentlyContinue
-Write-Host "已删除文件：./MusyncSaveDecodeNoCLI" -ForegroundColor Yellow;
+# Remove-Item -Path "./logs" -Force -Recurse -ErrorAction SilentlyContinue
+# Write-Host "已移除目录：./logs" -ForegroundColor Yellow;
+# Remove-Item -Path "./musync_data" -Force -Recurse -ErrorAction SilentlyContinue
+# Write-Host "已移除目录：./musync_data" -ForegroundColor Yellow;
+# Remove-Item -Path "./MusyncSaveDecodeCLI" -Force -Recurse -ErrorAction SilentlyContinue
+# Write-Host "已移除目录：./MusyncSaveDecodeCLI" -ForegroundColor Yellow;
+# Remove-Item -Path "./MusyncSaveDecodeNoCLI" -Force -Recurse -ErrorAction SilentlyContinue
+# Write-Host "已移除目录：./MusyncSaveDecodeNoCLI" -ForegroundColor Yellow;
+# Remove-Item -Path "./MusyncSaveDecodeCLI.exe" -Force -ErrorAction SilentlyContinue
+# Write-Host "已删除文件：./MusyncSaveDecodeNoCLI" -ForegroundColor Yellow;
+# Remove-Item -Path "./MusyncSaveDecodeNoCLI.exe" -Force -ErrorAction SilentlyContinue
+# Write-Host "已删除文件：./MusyncSaveDecodeNoCLI" -ForegroundColor Yellow;
 
 # Step 7: 编译启动器
 # & g++ -o $path+"Launcher" .\Launcher.cpp $path+$resPath;

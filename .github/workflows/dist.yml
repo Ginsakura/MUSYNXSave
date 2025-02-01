@@ -8,6 +8,7 @@ on:
     - 'main'
 
 env:
+  Version: Init
   CommitMessage: Init
 
 jobs:
@@ -19,7 +20,7 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Cache Python Environment
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       env:
         cache-name: cache-python-environment
       with:
@@ -37,7 +38,18 @@ jobs:
       run: |
         pip3 install -r ./requirements.txt
 
-    - name: Dist Packages
+    - name: Fix Environment
+      run: |
+        $isPreRelease = python -c "import Version;print(Version.isPreRelease)";
+        $isPreReleaseBool = [bool]::Parse($isPreRelease);
+        if ($isPreReleaseBool) { # 根据布尔值调用不同的属性并赋值给 $version
+            $version = py -c "import Version; print(Version.preVersion)";
+        } else {
+            $version = py -c "import Version; print(Version.version)";
+        }
+        echo "Version=${version}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+    - name: Dist ${{ env.Version }}
       run: |
         $vc = "${{ github.event.head_commit.message }}" -split "  "
         echo "$vc"

@@ -23,9 +23,7 @@ SaveDataInfo.json
 *.psd
 *.pyd
 *.sav
-*.split
 *.sfp
-*.split
 *.sql
 *.sublime*
 *.tmp

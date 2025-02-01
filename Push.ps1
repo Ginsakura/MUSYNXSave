@@ -6,20 +6,20 @@ echo $message[0];
 echo ======Release======;
 echo $message[-1];
 echo ===================;
-if ($message[-1] -eq 'rc'){
+if ($message[-1].Trim() -eq 'rc'){
   $version = (py -c "import Version;print(Version.version)");
   $release = 'Release';
-}elseif($message[-1] -eq 'pre'){
+}elseif($message[-1].Trim() -eq 'pre'){
   $version = (py -c "import Version;print(Version.preVersion)");
   $release = 'PreRelease';
 }else{
   $version = (py -c "import Version;print(Version.preVersion)");
   $release = '[no ci]';
 }
-if ($message[0] -eq ""){
+if ($message[0].Trim() -eq ""){
   $message[0] = "null";
 }
-$str = $version+'  '+$message[0]+'  '+$release;
+$str = "${version}  $($message[0])  ${release}";
 
 echo $str;
 git add .;

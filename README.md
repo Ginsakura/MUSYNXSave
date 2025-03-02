@@ -45,6 +45,7 @@ C#重构版本: [MUSYNCSaveCSharp](https://github.com/Ginsakura/MUSYNCSaveCSharp
 - [ ] 提供全球排行榜显示功能 (需要调用SteamAPI)
 - [ ] 将提供一个文档来演示使用方法 (在写了,咕咕咕)
 - [ ] 使用文件夹内指定文件名的方式自定义美化UI
+- [ ] 主程序目录通过exe文件进行判断
 ### 已完成的计划
 - [x] 一键获取上次谱面游玩结果
 - [x] 使用GitHub Action workflow实现自动分发
@@ -53,6 +54,7 @@ C#重构版本: [MUSYNCSaveCSharp](https://github.com/Ginsakura/MUSYNCSaveCSharp
 - [x] 隐藏cmd窗口
 - [x] 将像Windows资源管理器一样使用列标题栏进行排序
 - [x] 将高级功能整合为`ExtraFunction.cfg`配置文件
+- [x] 日志工具提上日程
 
 ## Release版本说明
 NoConsole版本为没有命令提示符界面，适合正常使用
@@ -122,8 +124,6 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 3. 优化
     1. xxx
 -->
-[ ] 主程序目录通过exe文件进行判断
-[ ] 日志工具提上日程
 ### Version 2.0.0
 #### PreRelease
 1. 更新
@@ -141,6 +141,7 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
     1. 修复存档解析方案，使用C#实现存档的解析
 3. 优化
     1. 重构程序
+    2. 优化CI配置文件
 ### Version 1.2.8
 #### Release 5
 1. 修复

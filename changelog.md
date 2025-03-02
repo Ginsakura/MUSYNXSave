@@ -9,3 +9,21 @@
 4. 1.2.7 环境更新：`matplotlib 3.7.2->3.9.2`,`numpy 1.25.2->2.0.1`
 5. 2.0.0 重构程序
 
+### Version 2.0.0
+#### PreRelease
+1. 更新
+    1. #### ***更新2025年01月27日喵赛克新增曲目 (新春联动大更新)***
+        - Glazed Color (EZ HD)
+        - ENDRUiD (EZ HD IN)
+        - Super Nova Project (EZ HD IN)
+        - Steel Core Bullet (EZ HD IN)
+        - Random (EZ HD IN)
+        - Phonon (EZ HD IN)
+    2. #### ***更新2025年02月28日喵赛克新增曲目***
+        - Awaken In Ruins (EZ HD)
+        - Xenolith (EZ HD IN)
+2. 修复
+    1. 修复存档解析方案，使用C#实现存档的解析
+3. 优化
+    1. 重构程序
+    2. 优化CI配置文件

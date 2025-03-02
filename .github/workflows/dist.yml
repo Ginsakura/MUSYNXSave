@@ -8,6 +8,7 @@ on:
     - 'main'
 
 env:
+  RCVersion: < 0.0.0 PreRelease 0>
   isPreRelease: true
   Version: Init
   CommitMessage: Init
@@ -43,13 +44,16 @@ jobs:
       run: |
         $isPreRelease = python -c "import Version;print(Version.isPreRelease)";
         $isPreReleaseBool = [bool]::Parse($isPreRelease);
-        if ($isPreReleaseBool) { # 根据布尔值调用不同的属性并赋值给 $version
+        if ($isPreReleaseBool) { 
             $version = py -c "import Version; print(Version.preVersion)";
+            $rcVsersion = $rcVersion -replace "pre", " PreRelease ";
         } else {
             $version = py -c "import Version; print(Version.version)";
+            $rcVsersion = $rcVersion -replace "rc", " Release ";
         }
         echo "isPreRelease=${isPreReleaseBool}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         echo "Version=${version}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        echo "RCVersion=< ${rcVersion} >" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Dist ${{ env.Version }}
       run: |

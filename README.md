@@ -134,6 +134,9 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
         - Steel Core Bullet (EZ HD IN)
         - Random (EZ HD IN)
         - Phonon (EZ HD IN)
+    2. #### ***更新2025年02月28日喵赛克新增曲目***
+        - Awaken In Ruins (EZ HD)
+        - Xenolith (EZ HD IN)
 2. 修复
     1. 修复存档解析方案，使用C#实现存档的解析
 3. 优化

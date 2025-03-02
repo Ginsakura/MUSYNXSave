@@ -1,4 +1,4 @@
-﻿m base64 import b64decode
+﻿from base64 import b64decode
 import clr
 import logging
 import os

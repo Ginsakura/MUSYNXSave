@@ -2,7 +2,7 @@ import sys
 import ctypes
 import logging
 import os
-from tkinter import Tk,font
+from tkinter import Tk, font
 from Resources import Logger
 from Version import *
 logger:logging.Logger = Logger.GetLogger(name="Launcher");

@@ -9,8 +9,8 @@ import struct
 FillSize:int = 512;
 FixDLL:str = "F39E7D866C2EF4F6A40E573EF5B0D2A8";
 # Source Assembly-CSharp.dll
-SourceDLL:str = '043799056B15948930F9BFCDDC6E5FEE';
-SongNameVersion:int = 20250201;
+SourceDLL:str = '6968CEE6E5F671B9DDB3F6AB0769396E';
+SongNameVersion:int = 20250303;
 
 def GetHash(filePath:str=None)->str:
 	if (filePath is None): return "";

@@ -5,6 +5,7 @@ namespace BMSLib
 	// Token: 0x0200001F RID: 31
 	public class JudgeGrade
 	{
+		public static ConsoleInput ci = new ConsoleInput();
 		public static void Reset()
 		{
 			//JudgeGrade.baseAccuracy = 0f;
@@ -35,16 +36,15 @@ namespace BMSLib
 
 		public static int GetJudgeGrade(long knockDistance)
 		{
-			//int result = -1;
-			//bool flag = knockDistance < 0L;
 			if (knockDistance >= -1500000L)
 			{
 				JudgeGrade.ci.kD = (float)knockDistance / 10000f;
 				JudgeGrade.ci.OnEnter();
 			}
-		//	knockDistance = Math.Abs(knockDistance);
-		//	if (knockDistance < 450000L){}
+			//int result = -1;
+			//bool flag = knockDistance < 0L;
+			//knockDistance = Math.Abs(knockDistance);
+			//if (knockDistance < 450000L){}
 		}
-		public static ConsoleInput ci = new ConsoleInput();
 	}
 }

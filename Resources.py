@@ -12,15 +12,15 @@ class Config(object):
 	"从bootcfg.json读取配置信息,单例";
 	def CompressLogFile()->None:
 		logsDir:str		= ".\\logs\\";
-		logsName:str	= "log.gz";
+		# 获取已有的压缩文件数量
+		nextIndex:int = len([f for f in os.listdir(logsDir)]);
+		logsName:str	= f"log.{nextIndex}.gz";
 		logName:str		= "log.txt";
 		# 移动压缩文件到 logs 目录
 		shutil.move(f".\\{logName}", logsDir+logName);
-		# 获取已有的压缩文件数量
-		nextIndex:int = len([f for f in os.listdir(logsDir)]);
 		# 压缩 log.txt 文件
 		with open(logsDir+logName, 'rb') as f_in:
-			with gzip.open(f"{logsDir}{logsName}.{nextIndex}", 'wb') as f_out:
+			with gzip.open(f"{logsDir}{logsName}", 'wb') as f_out:
 				shutil.copyfileobj(f_in, f_out);
 		# 清理 log.txt 文件
 		os.remove(logsDir+logName);

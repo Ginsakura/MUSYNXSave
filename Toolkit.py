@@ -7,6 +7,7 @@ import os
 from Resources import Config, Logger, SongName
 import sqlite3 as sql
 import struct
+import time
 from tkinter import messagebox;
 from win32 import win32gui, win32print
 from win32.lib import win32con
@@ -30,21 +31,29 @@ class Toolkit(object):
 		messagebox.showerror("Error",f"资源文件\"./musync_data/Resources.bin\"加载失败!\n{ex}");
 
 	def GetDpi()->int:
+		startTime:int = time.perf_counter_ns();
 		hDC:any = win32gui.GetDC(0);
 		relWidth:int = win32print.GetDeviceCaps(hDC, win32con.DESKTOPHORZRES);
 		# relHeight:int = win32print.GetDeviceCaps(hDC, win32con.DESKTOPVERTRES);
-		width:int = GetSystemMetrics (0);
+		width:int = GetSystemMetrics(0);
 		# height:int = GetSystemMetrics (1);
 		# real_resolution = [relw,relh];
 		# screen_size = [w,h];
 		dpi:int = int(round(relWidth[0] / width[0], 2) * 100);
 		logger.debug(f"Get DPI:{dpi}");
+		logger.debug(f"GetDPI Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
 		return dpi;
 
 	def ChangeConsoleStyle()->None:
 		"修改控制台样式"
+		startTime:int = time.perf_counter_ns();
 		logger.info('Changing Console Style...');
 		config:Config = Config();
+		if config.MainExecPath:
+			Toolkit.GetSaveFile();
+		if config.MainExecPath:
+			logger.error('Not Have Config.MainExecPath!');
+			return;
 		execPath = config.MainExecPath.replace('/','_')+'musynx.exe';
 		logger.debug(f"execPath: {execPath}");
 		regkey:winreg.HKEYType = winreg.OpenKey(winreg.HKEY_CURRENT_USER, 'Console',reserved=0, access=winreg.KEY_WRITE);
@@ -57,11 +66,14 @@ class Toolkit(object):
 		winreg.SetValueEx(regkey,'FaceName',0,winreg.REG_SZ,'霞鹜文楷等宽');
 		winreg.SetValueEx(regkey,'FontSize',0,winreg.REG_DWORD,(config.ConsoleFontSize << 16));
 		regkey.Close();
+		logger.debug(f"ChangeConsoleStyle() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
 
 	def GetHash(filePath:str=None)->str:
+		startTime:int = time.perf_counter_ns();
 		if (filePath is None): return "";
 		with open(filePath,'rb') as fileBytes:
 			return md5(fileBytes.read()).hexdigest().upper();
+		logger.debug(f"GetHash() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
 
 	@classmethod
 	def ResourceReleases(cls, offset:int, lenth:int, releasePath:str=None)->bytes:
@@ -74,17 +86,20 @@ class Toolkit(object):
 		传出:
 			bytes: 解压的资源;
 		"""
+		startTime:int = time.perf_counter_ns();
 		cls.__resourceFile.seek(offset);
 		__compressedStream:io.BytesIO = io.BytesIO(cls.__resourceFile.read(lenth));
 		with gzip.GzipFile(fileobj=__compressedStream, mode='rb') as gz_file:
 			decompressedData:bytes = gz_file.read()
 		with open(releasePath,"wb") as file:
 			file.write(decompressedData);
+		logger.debug(f"ResourceReleases() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
 		return decompressedData;
 
 	@classmethod
 	def CheckResources(cls, fonts:list[str])->None:
 		"运行前环境检查"
+		startTime:int = time.perf_counter_ns();
 		# 检查旧版数据文件夹
 		logger.debug("Check \"musync\\\" is exists...");
 		if os.path.exists(''):
@@ -133,6 +148,34 @@ class Toolkit(object):
 		Toolkit.DatabaseUpdate(Toolkit.CheckDatabaseVersion());
 		# 检查GameLib
 		logger.debug("Check DLLInjection...");
+		if Config.DLLInjection:
+			Toolkit.GameLibCheck();
+		logger.debug(f"CheckResources() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
+
+	@classmethod
+	def GetSaveFile(self)->str:
+		"搜索预设存档目录"
+		startTime:int = time.perf_counter_ns();
+		logger.debug("正在搜索存档文件中……");
+		saveFilePath:str = None;
+		for ids in "DEFCGHIJKLMNOPQRSTUVWXYZAB":
+			if os.path.isfile(f'{ids}:\\Program Files\\steam\\steamapps\\common\\MUSYNX\\musynx.exe'):
+				saveFilePath:str = f"{ids}:\\Program Files\\steam\\steamapps\\common\\MUSYNX\\"
+				break
+			elif os.path.isfile(f'{ids}:\\SteamLibrary\\steamapps\\common\\MUSYNX\\musynx.exe'):
+				saveFilePath:str = f"{ids}:\\SteamLibrary\\steamapps\\common\\MUSYNX\\"
+				break
+			elif os.path.isfile(f'{ids}:\\steam\\steamapps\\common\\MUSYNX\\musynx.exe'):
+				saveFilePath:str = f"{ids}:\\steam\\steamapps\\common\\MUSYNX\\"
+				break
+		else:
+			logger.error("搜索不到存档文件.");
+			logger.info("GetSaveFile() Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000));
+			return;
+		logger.debug(f"SaveFilePath: {saveFilePath}");
+		Config.MainExecPath = saveFilePath;
+		Config.SaveConfig();
+		return saveFilePath;
 
 	@classmethod
 	def GameLibCheck(cls)->int:
@@ -143,6 +186,7 @@ class Toolkit(object):
 			1: 已修补
 			2: 未修补,但已经完成修补
 		"""
+		startTime:int = time.perf_counter_ns();
 		def DLLInjection():
 			if os.path.isfile(f'{dllPath}.old'): os.remove(f'{dllPath}.old');
 			os.rename(dllPath, f'{dllPath}.old');
@@ -155,19 +199,22 @@ class Toolkit(object):
 		# 'D41D8CD98F00B204E9800998ECF8427E' is 0 Byte file
 		logger.debug(f"     Now Assembly-CSharp.dll: {nowHash}");
 		# 当前文件哈希 等于 修改文件哈希
+		# 其他情况, 无法覆盖文件
+		rtcode:int = 0;
 		if (nowHash == fixHash):
-			return 1
+			rtcode = 1;
 		# 当前文件哈希为空文件 或者 为原始文件哈希
 		elif (sourceHash == "D41D8CD98F00B204E9800998ECF8427E") or (sourceHash == nowHash) and (sourceHash != fixHash):
-			DLLInjection()
-			return 1
-		# 其他情况, 无法覆盖文件
-		else:
-			return 0
+			DLLInjection();
+			rtcode = 1;
+		logger.debug(f"GameLibCheck() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
+		return rtcode;
 
 	@classmethod
 	def CheckDatabaseVersion(cls)->int:
 		"数据库版本检查"
+		startTime:int = time.perf_counter_ns();
+		rtcode:int = -1;
 		if os.path.isfile("./musync_data/HitDelayHistory_v2.db"):
 			db:sql.Connection = sql.connect('./musync_data/HitDelayHistory_v2.db')
 			cursor:sql.Cursor = db.cursor();
@@ -179,12 +226,12 @@ class Toolkit(object):
 				logger.debug("存在文件 HitDelayHistory_v2.db 且 列数为6, 判定数据库版本为 v2");
 				logger.info("Database Version: 2");
 				db.close();
-				return 2;
+				rtcode = 2;
 			else:
 				logger.debug("存在文件 HitDelayHistory_v2.db 且 列数不为6, 判定数据库版本为 v1");
 				logger.info("Database Version: 1");
 				db.close();
-				return 1;
+				rtcode = 1;
 		elif os.path.isfile("./musync_data/HitDelayHistory.db"):
 			db:sql.Connection = sql.connect('./musync_data/HitDelayHistory.db')
 			cursor:sql.Cursor = db.cursor();
@@ -194,23 +241,46 @@ class Toolkit(object):
 				logger.debug("存在文件 HitDelayHistory.db 且 仅有一张数据表, 判定数据库版本为 v1");
 				logger.info("Database Version: 1");
 				db.close();
-				return 1;
+				rtcode = 1;
 			else:
 				cursor.execute("SELECT Value FROM Infos WHERE Key='Version';");
 				version:int = int(cursor.fetchone()[0]);
 				logger.debug(f"存在文件\"HitDelayHistory.db\"且\"Infos.Version={version}\", 判定数据库版本为 v{version}");
 				logger.info(f"Database Version: {version}");
 				db.close();
-				return version;
+				rtcode = version;
+		else:
+			logger.warning(f"无数据库文件存在.");
+			rtcode = 0;
+		if (rtcode == -1):
+			logger.fatal(f"CheckDatabaseVersion()函数出现严重异常! 函数未能完成执行!");
+		logger.debug(f"CheckDatabaseVersion() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
+		return rtcode;
 
 	@classmethod
 	def DatabaseUpdate(cls, nowVersion:int)->None:
 		"数据库版本更新"
+		startTime:int = time.perf_counter_ns();
+		LastVersion:int = 3;
 		# 链接数据库
 		if (nowVersion==2):
 			os.rename("./musync_data/HitDelayHistory_v2.db", "./musync_data/HitDelayHistory.db");
 		db:sql.Connection = sql.connect('./musync_data/HitDelayHistory.db');
 		cursor:sql.Cursor = db.cursor();
+		if (nowVersion == 0):
+			logger.info(f"创建v{LastVersion}版本数据库中...");
+			cursor.execute("""CREATE table HitDelayHistory (
+				SongMapName text Not Null,
+				RecordTime text Not Null,
+				AvgDelay float,
+				AllKeys int,
+				AvgAcc float,
+				HitMap text,
+				PRIMARY KEY ("SongMapName", "RecordTime"));""");
+			cursor.execute("CREATE Table Infos (Key Text PRIMARY KEY, Value Text Default None);");
+			cursor.execute("INSERT Into Infos Values(?, ?)", ("Version","%d"%LastVersion));
+			db.commit();
+			return;
 		if (nowVersion == 1):
 			logger.info(f"记录数据迁移中... v1->v2");
 			cursor.execute("ALTER TABLE HitDelayHistory RENAME TO HitDelayHistoryV1;");
@@ -232,7 +302,7 @@ class Toolkit(object):
 				hitMap:str = ids[4];
 				logger.debug("正在迁移%s  %s"%(name,recordTime));
 				cursor.execute("INSERT Into HitDelayHistory values(?,?,?,?,?,?)", (name,recordTime,avgDelay,allKeys,avgAcc,hitMap))
-			cursor.execute("ALTER TABLE HitDelayHistory RENAME TO HitDelayHistoryV1;");
+			# cursor.execute("ALTER TABLE HitDelayHistory RENAME TO HitDelayHistoryV1;");
 			db.commit();
 			nowVersion=2;
 		if (nowVersion == 2):
@@ -245,6 +315,7 @@ class Toolkit(object):
 			db.commit();
 			db.close();
 			logger.info("记录数据无需迁移.");
+		logger.debug(f"DatabaseUpdate() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
 
 if __name__ == '__main__':
 	print(Toolkit.GetDpi())

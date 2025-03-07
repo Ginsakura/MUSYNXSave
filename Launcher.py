@@ -14,7 +14,7 @@ try:
 	from Toolkit import Toolkit
 except:
 	logger.exception("Import Error.");
-	sys.exit(101)
+	sys.exit(101);
 
 def Launcher()->None:
 	# Init
@@ -27,6 +27,7 @@ def Launcher()->None:
 	root:Tk = Tk();
 	ctypes.windll.shcore.SetProcessDpiAwareness(1);
 	fontlist:list[str] = list(font.families());
+	Toolkit.GetSaveFile();
 	Toolkit.CheckResources(fontlist);
 	# del fonts
 	if Config.ChangeConsoleStyle:
@@ -44,8 +45,13 @@ def Launcher()->None:
 	root.mainloop();
 
 if __name__ == '__main__':
+	from datetime import datetime as dt
 	try:
+		logger.info(" ====> Launcher() start <====");
 		Launcher();
+		logger.info(" ====> Launcher() end <====");
 	except Exception:
 		logger.exception("Launcher Exception.");
-	os.system("pause");
+	logger.info("====> Software Exiting <====");
+	# os.system("pause");
+	sys.exit(0);

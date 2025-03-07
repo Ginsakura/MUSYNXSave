@@ -26,7 +26,6 @@ import webbrowser
 #import win32gui_struct
 #import win32gui
 
-
 class MusyncSavDecodeGUI(object):
 	"""docstring for MusyncSavDecodeGUI"""
 	def __init__(self, root:Tk=None, isTKroot:bool=True):
@@ -62,6 +61,8 @@ class MusyncSavDecodeGUI(object):
 			self.font:tuple = ('霞鹜文楷等宽',16);
 		self.saveFilePathVar:StringVar = StringVar();
 		self.saveFilePathVar.set('Input SaveFile or AnalyzeFile Path (savedata.sav)or(SavAnalyze.json)');
+		self.gitHubUrlVar:StringVar = StringVar();
+		self.gitHubUrlVar.set("点击打开GitHub仓库	点个Star吧，秋梨膏");
 		self.windowInfo:list[int] = [root.winfo_x(), root.winfo_y(), root.winfo_width(), root.winfo_height()];
 		self.oldWindowInfo:list[int] = [0, 0];
 		self.saveCount:int = 0;
@@ -102,7 +103,7 @@ class MusyncSavDecodeGUI(object):
 		# self.saveData.tag_configure("DLCSong",background='#FDFFAE',foreground='blue')
 
 		self.developer = Label(self.root, text=f'Version {self.preVersion if self.isPreRelease else self.version} | Develop By Ginsakura', font=self.font, relief="groove")
-		self.gitHubLink = Button(self.root, text='点击打开GitHub仓库	点个Star吧，秋梨膏', command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNXSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
+		self.gitHubLink = Button(self.root, textvariable=self.gitHubUrlVar, command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNXSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
 
 		self.initLabel = Label(self.root, text='启动中......', anchor="w", font=self.font, relief="groove")
 		self.initLabel.place(x=250,y=300,width=500,height=30)
@@ -158,41 +159,48 @@ class MusyncSavDecodeGUI(object):
 		self.selectDifficute.place(x=80,y=35,width=92,height=30)
 
 	##AutoRun##
-		self.InitLabel('初始化函数执行中......')
-		self.UpdateWindowInfo()
-		self.TreeviewWidthUptate()
-		self.TreeviewColumnUpdate()
-
-		self.checkGameStartEvent.set();
-		self.checkGameIsStartThread:threading.Thread = threading.Thread(target=self.CheckGameRunning);
-		self.checkGameIsStartThread.start();
-		threading.Thread(target=self.CheckJsonUpdate).start();
-
-		if Config.CheckUpdate:
-			self.logger.info("Check Updating...");
-			threading.Thread(target=self.CheckUpdate).start();
-		else:
-			self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页');
-			self.logger.warning("Check update is Disable");
-		self.InitLabel(text="正在读取存档路径……");
-		if (not os.path.isfile(Config.MainExecPath+"SavesDir\\savedata.sav")):
-			self.GetSaveFile();
-		else:
-			self.saveFilePathVar.set(Config.MainExecPath+"SavesDir\\savedata.sav");
-		if Config.DLLInjection:
-			self.logger.warning("DLL Injection is Enable.");
-			self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelay, font=self.font,bg='#FF5959');
-			self.hitDelay.place(x=775,y=50,width=90,height=30);
-		MUSYNCSavProcess(savFile=self.saveFilePathVar.get()).Main();
-		self.DataLoad();
+		try:
+			self.InitLabel('初始化函数执行中......')
+			self.UpdateWindowInfo()
+			self.TreeviewWidthUptate()
+			self.TreeviewColumnUpdate()
+	
+			self.checkGameStartEvent.set();
+			self.checkGameIsStartThread:threading.Thread = threading.Thread(target=self.CheckGameRunning);
+			self.checkGameIsStartThread.start();
+			threading.Thread(target=self.CheckJsonUpdate).start();
+	
+			if Config().CheckUpdate:
+				self.logger.info("Check Updating...");
+				threading.Thread(target=self.CheckUpdate).start();
+			else:
+				self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页');
+				self.logger.warning("Check update is Disable");
+			self.InitLabel(text="正在读取存档路径……");
+			if Config().MainExecPath and os.path.isfile(Config().MainExecPath):
+				self.saveFilePathVar.set(Config().MainExecPath+"SavesDir\\savedata.sav");
+			else:
+				self.saveFilePathVar.set(Toolkit.GetSaveFile()+"SavesDir\\savedata.sav");
+			if Config().DLLInjection:
+				self.logger.warning("DLL Injection is Enable.");
+				self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelay, font=self.font,bg='#FF5959');
+				self.hitDelay.place(x=775,y=50,width=90,height=30);
+			MUSYNCSavProcess(savFile=self.saveFilePathVar.get()).Main();
+			self.DataLoad();
+		except Exception as e:
+			self.logger.exception("Software has some Exception:");
+			self.Closing();
+			raise e;
 
 # TK事件重载
 	def Closing(self):
+		self.logger.info("Software Closing...");
 		self.checkGameStartEvent.clear();
 		self.checkGameIsStartThread.join();
 		self.root.destroy();
 		Config.SaveConfig();
 		SaveDataInfo.DumpToJson();
+		self.logger.info("Software Closed.");
 
 # select功能组
 	def SelectKeys(self):
@@ -315,9 +323,9 @@ class MusyncSavDecodeGUI(object):
 				self.logger.info(f"  Terget Json Version: {githubVersion}");
 				if githubVersion>localVersion:
 					response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.json")
-					songNameJson = response.json()
+					songNameJson = response.content
 					with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
-						json.dump(songNameJson,snj,indent="",ensure_ascii=False)
+						snj.write(songNameJson);
 					SongName.LoadFile();
 			else:
 				self.logger.error("Can't get \"songname.update\", HTTP status code: %d."%(response.status_code));
@@ -334,7 +342,7 @@ class MusyncSavDecodeGUI(object):
 			self.gitHubLink.configure(fg='#4BB1DA')
 		else:
 			self.gitHubLink.configure(fg='#C4245C')
-		self.root.after(500,self.UpdateTip)
+		self.root.after(500, self.UpdateTip)
 
 	def CheckUpdate(self):
 		def CheckVersion(local:str, target:str)->bool:
@@ -353,23 +361,27 @@ class MusyncSavDecodeGUI(object):
 				tergetVersion:str = response.json()["tag_name"].replace("rc",".")
 			elif "message" in resJson:
 				if resJson["message"][:23] == "API rate limit exceeded":
-					if messagebox.askyesno("GitHub公共API访问速率已达上限", "是否前往发布页查看是否存在更新？"):
-						webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases/latest")
-					return
+					messageHead:str = "GitHub公共API访问速率已达上限";
+					message:str = "是否前往发布页查看是否存在更新？";
+					url:str = "https://github.com/Ginsakura/MUSYNCSave/releases/latest";
+					self.root.after(0, lambda _:(webbrowser.open(url) if messagebox.askyesno(messageHead, message) else _ ));
+					return;
 		except Exception as e:
 			self.logger.exception("更新信息发生错误: ");
-			messagebox.showerror("Error", f'发生错误: {e}')
+			self.root.after(0, lambda _:messagebox.showerror("Error", f'发生错误: {e}'));
 		# print(localVersion,tergetVersion)
-		self.logger.info('  Terget Version : %s'%tergetVersion.replace("rc","."))
-		self.logger.info('   Local Version : %s'%self.version.replace("rc","."))
-		self.logger.info("Local PreVersion : %s"%self.preVersion.replace("pre","."))
+		self.logger.info('  Terget Version : %s'%tergetVersion.replace("rc","."));
+		self.logger.info('   Local Version : %s'%self.version.replace("rc","."));
+		self.logger.info("Local PreVersion : %s"%self.preVersion.replace("pre","."));
+		labelUrl:str = "";
 		if (CheckVersion(self.preVersion if self.isPreRelease else self.version, tergetVersion)):
-			self.gitHubLink.configure(text=f'有新版本啦——点此打开下载页面	NewVersion: {tergetVersion}', anchor="center")
-			self.gitHubLink.configure(command=lambda:webbrowser.open(f"https://github.com/Ginsakura/MUSYNCSave/releases/tag/{tergetVersion}"))
-			self.UpdateTip()
-		else:
-			self.gitHubLink.configure(text='点击打开GitHub仓库	点个Star吧，秋梨膏', anchor="center")
-			self.gitHubLink.configure(command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNCSave"))
+			self.gitHubUrlVar = f'有新版本啦——点此打开下载页面	NewVersion: {tergetVersion}'
+			labelUrl = f"https://github.com/Ginsakura/MUSYNCSave/releases/tag/{tergetVersion}";
+			self.UpdateTip();
+		# else:
+		# 	self.gitHubUrlVar = "点击打开GitHub仓库	点个Star吧，秋梨膏"
+		# 	labelUrl = "https://github.com/Ginsakura/MUSYNCSave";
+		self.root.after(0, lambda _:self.gitHubLink.configure(command=lambda:webbrowser.open(labelUrl)));
 		endTime = time.perf_counter_ns()
 		self.logger.info("CheckUpdate Run Time: %f ms"%((endTime - startTime)/1000000))
 
@@ -387,35 +399,9 @@ class MusyncSavDecodeGUI(object):
 		MUSYNCSavProcess(savFile=self.saveFilePathVar.get()).Main();
 		self.DataLoad();
 
-	def GetSaveFile(self)->None:
-		"搜索预设存档目录"
-		startTime:int = time.perf_counter_ns();
-		self.InitLabel("正在搜索存档文件中……");
-		self.logger.debug("正在搜索存档文件中……");
-		saveFilePath:str = None;
-		for ids in "DEFCGHIJKLMNOPQRSTUVWXYZAB":
-			if os.path.isfile(f'{ids}:\\Program Files\\steam\\steamapps\\common\\MUSYNX\\SavesDir\\savedata.sav'):
-				saveFilePath:str = f"{ids}:\\Program Files\\steam\\steamapps\\common\\MUSYNX\\"
-				break
-			elif os.path.isfile(f'{ids}:\\SteamLibrary\\steamapps\\common\\MUSYNX\\SavesDir\\savedata.sav'):
-				saveFilePath:str = f"{ids}:\\SteamLibrary\\steamapps\\common\\MUSYNX\\"
-				break
-			elif os.path.isfile(f'{ids}:\\steam\\steamapps\\common\\MUSYNX\\SavesDir\\savedata.sav'):
-				saveFilePath:str = f"{ids}:\\steam\\steamapps\\common\\MUSYNX\\"
-				break
-		else:
-			self.InitLabel("搜索不到存档文件.");
-			self.logger.error("搜索不到存档文件.");
-			self.logger.info("GetSaveFile Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000));
-			return;
-		self.logger.debug(f"SaveFilePath: {saveFilePath}");
-		self.saveFilePathVar.set(saveFilePath+'SavesDir\\savedata.sav');
-		Config.MainExecPath = saveFilePath;
-		Config.SaveConfig();
-
 	def HitDelay(self):
 		"DLL注入功能"
-		if Config.DLLInjection:
+		if Config().DLLInjection:
 			result:int = Toolkit.GameLibCheck();
 		if (result == 0):
 			messagebox.showerror("Error", f'DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁');
@@ -502,7 +488,7 @@ class MusyncSavDecodeGUI(object):
 			self.SortClick(self.dataSortMethodsort)
 		self.InitLabel('数据展示生成完成.',close=True)
 		endTime = time.perf_counter_ns()
-		print("DataLoad Run Time: %f ms"%((endTime - startTime)/1000000))
+		self.logger.debug("DataLoad Run Time: %f ms"%((endTime - startTime)/1000000))
 		self.UpdateWindowInfo()
 
 # 控件更新功能组
@@ -510,9 +496,16 @@ class MusyncSavDecodeGUI(object):
 		logger:logging.Logger = Logger.GetLogger("MusyncSavDecodeGUI.CheckGameRunning")
 		logger.info("Start Thread: CheckGameIsStart.");
 		def UpdateUI(text:str, bg:str)->None:
-			self.isGameRunning["text"] = text;"游戏未启动";
-			self.isGameRunning["bg"] = bg;"#FF8080";
+			self.isGameRunning["text"] = text; #"游戏未启动";
+			self.isGameRunning["bg"] = bg; #"#FF8080";
+		threadInvert:int = 50; # 100ms
+		counter:int = threadInvert;
 		while self.checkGameStartEvent.is_set():
+			if (counter): # counter != 0
+				counter -= 1;
+				time.sleep(0.1);
+				continue;
+			counter = threadInvert;
 			startTime = time.perf_counter_ns()
 			try:
 				for ids in psutil.pids():
@@ -525,12 +518,11 @@ class MusyncSavDecodeGUI(object):
 					self.root.after(100, UpdateUI("游戏未启动", "#FF8080"));
 					logger.debug("Game is not Running.");
 			except RuntimeError:
-				pass
+				logger.debug("Checking has RuntimeError");
 			except Exception:
-				# logger.exception("CheckGameRunning has Exception: ");
+				logger.debug("Checking has Unknown Exception");
 				pass
 			logger.info("CheckGameIsStart Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000));
-			time.sleep(5);
 		logger.warning("Stop Thread: CheckGameIsStart.");
 
 	def TreeviewColumnUpdate(self):
@@ -679,7 +671,7 @@ if __name__ == '__main__':
 	Config();
 	SongName();
 	SaveDataInfo();
-	Config.Version = preVersion.replace("pre",".") if (isPreRelease) else version.replace("rc",".");
+	Config().Version = preVersion.replace("pre",".") if (isPreRelease) else version.replace("rc",".");
 
 	# Launcher
 	root:Tk = Tk();
@@ -687,7 +679,7 @@ if __name__ == '__main__':
 	fontlist:list[str] = list(font.families());
 	Toolkit.CheckResources(fonts=fontlist);
 	# del fonts
-	if Config.ChangeConsoleStyle:
+	if Config().ChangeConsoleStyle:
 		Toolkit.ChangeConsoleStyle();
 	root.tk.call('tk', 'scaling', 1.25);
 	root.resizable(False, True); #允许改变窗口高度，不允许改变窗口宽度

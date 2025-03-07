@@ -1,63 +1,69 @@
-# ¶¨Òåº¯Êı
-# ¹¹½¨Í¼±ê×ÊÔ´
+ï»¿# Step 0: æ£€æŸ¥å‚æ•°åˆ—è¡¨
+[CmdletBinding()]
+param (
+    [switch]$noarchive
+)
+
+# å®šä¹‰å‡½æ•°
+# æ„å»ºå›¾æ ‡èµ„æº
 function BuildIcon{
     <#
     .SYNOPSIS
-    ¹¹½¨C/C++Í¼±ê×ÊÔ´
+    æ„å»ºC/C++å›¾æ ‡èµ„æº
     .DESCRIPTION
-    ¹¹½¨C/C++Í¼±ê×ÊÔ´
+    æ„å»ºC/C++å›¾æ ‡èµ„æº
     .PARAMETER None
-    ÎŞ²ÎÊı
+    æ— å‚æ•°
     .EXAMPLE
     BuildIcon
     .NOTES
-    Ìá¹©ÆäËûÖØÒªĞÅÏ¢£¬Èç×¢ÒâÊÂÏî¡¢ÏŞÖÆÌõ¼ş¡¢ÒÑÖªÎÊÌâµÈ¡£
+    æä¾›å…¶ä»–é‡è¦ä¿¡æ¯ï¼Œå¦‚æ³¨æ„äº‹é¡¹ã€é™åˆ¶æ¡ä»¶ã€å·²çŸ¥é—®é¢˜ç­‰ã€‚
     .INPUTS
-    ÃèÊöº¯Êı¿ÉÒÔ½ÓÊÕµÄÊäÈëÀàĞÍ£¬Í¨³£ÓÃÓÚÖ§³Ö¹ÜµÀÊäÈëµÄº¯Êı¡£
+    æè¿°å‡½æ•°å¯ä»¥æ¥æ”¶çš„è¾“å…¥ç±»å‹ï¼Œé€šå¸¸ç”¨äºæ”¯æŒç®¡é“è¾“å…¥çš„å‡½æ•°ã€‚
     .OUTPUTS
-    ÃèÊöº¯ÊıµÄÊä³öÀàĞÍºÍÄÚÈİ¡£
+    æè¿°å‡½æ•°çš„è¾“å‡ºç±»å‹å’Œå†…å®¹ã€‚
     #>
-    $resPath = "ico.res";   # C++Í¼±êres×ÊÔ´
-    $rcPath = "ico.rc";     # C++Í¼±êrc×ÊÔ´
+    $resPath = "ico.res";   # C++å›¾æ ‡resèµ„æº
+    $rcPath = "ico.rc";     # C++å›¾æ ‡rcèµ„æº
     Set-Location -Path "musync_data/";
     if (-not (Test-Path -Path $resPath)) {
         & windres $rcPath -O coff -o $resPath;
-        Write-Host "Í¼±ê×ÊÔ´ ${path}${resPath} ´´½¨³É¹¦£¡" -ForegroundColor Green;
+        Write-Host "å›¾æ ‡èµ„æº ${path}${resPath} åˆ›å»ºæˆåŠŸï¼" -ForegroundColor Green;
     } else {
-        Write-Host "Í¼±ê×ÊÔ´ ${path}${resPath} ÒÑ´æÔÚ¡£" -ForegroundColor Yellow;
+        Write-Host "å›¾æ ‡èµ„æº ${path}${resPath} å·²å­˜åœ¨ã€‚" -ForegroundColor Yellow;
     }
     Set-Location -Path ..;
 }
 
-# Ä¿Â¼¼ì²é
+# ç›®å½•æ£€æŸ¥
 function CheckDir {
     <#
     .SYNOPSIS
-    ¼ì²éÄ¿Â¼ÊÇ·ñ´æÔÚ£¬Èç¹û²»´æÔÚÔò´´½¨¸ÃÄ¿Â¼¡£
+    æ£€æŸ¥ç›®å½•æ˜¯å¦å­˜åœ¨ï¼Œå¦‚æœä¸å­˜åœ¨åˆ™åˆ›å»ºè¯¥ç›®å½•ã€‚
 
     .DESCRIPTION
-    ´Ëº¯Êı¼ì²éÖ¸¶¨µÄÄ¿Â¼ÊÇ·ñ´æÔÚ¡£Èç¹ûÄ¿Â¼²»´æÔÚ£¬½«´´½¨¸ÃÄ¿Â¼£¬²¢·µ»Ø³É¹¦ÏûÏ¢¡£
-    Èç¹ûÄ¿Â¼ÒÑ´æÔÚ£¬Ôò·µ»ØÏàÓ¦µÄÌáÊ¾ÏûÏ¢¡£
+    æ­¤å‡½æ•°æ£€æŸ¥æŒ‡å®šçš„ç›®å½•æ˜¯å¦å­˜åœ¨ã€‚å¦‚æœç›®å½•ä¸å­˜åœ¨ï¼Œå°†åˆ›å»ºè¯¥ç›®å½•ï¼Œå¹¶è¿”å›æˆåŠŸæ¶ˆæ¯ã€‚
+    å¦‚æœç›®å½•å·²å­˜åœ¨ï¼Œåˆ™è¿”å›ç›¸åº”çš„æç¤ºæ¶ˆæ¯ã€‚
 
     .PARAMETER Dir
-    Ö¸¶¨Òª¼ì²éµÄÄ¿Â¼Â·¾¶¡£
+    æŒ‡å®šè¦æ£€æŸ¥çš„ç›®å½•è·¯å¾„ã€‚
 
     .EXAMPLE
     CheckDir -Dir "C:\tempdir"
-    ¼ì²éÄ¿Â¼ "C:\tempdir" ÊÇ·ñ´æÔÚ£¬Èç¹û²»´æÔÚÔò´´½¨¸ÃÄ¿Â¼¡£
+    æ£€æŸ¥ç›®å½• "C:\tempdir" æ˜¯å¦å­˜åœ¨ï¼Œå¦‚æœä¸å­˜åœ¨åˆ™åˆ›å»ºè¯¥ç›®å½•ã€‚
 
     .EXAMPLE
     "C:\tempdir" | CheckDir
-    Í¨¹ı¹ÜµÀÊäÈëÄ¿Â¼Â·¾¶£¬¼ì²éÄ¿Â¼ÊÇ·ñ´æÔÚ£¬Èç¹û²»´æÔÚÔò´´½¨¸ÃÄ¿Â¼¡£
+    é€šè¿‡ç®¡é“è¾“å…¥ç›®å½•è·¯å¾„ï¼Œæ£€æŸ¥ç›®å½•æ˜¯å¦å­˜åœ¨ï¼Œå¦‚æœä¸å­˜åœ¨åˆ™åˆ›å»ºè¯¥ç›®å½•ã€‚
 
     .NOTES
-    ´Ëº¯ÊıÊÊÓÃÓÚĞèÒªÈ·±£Ä¿Â¼´æÔÚµÄ³¡¾°¡£Èç¹ûÄ¿Â¼Â·¾¶ÎŞĞ§£¨ÀıÈç°üº¬·Ç·¨×Ö·û£©£¬¿ÉÄÜ»áµ¼ÖÂ´íÎó¡£
+    æ­¤å‡½æ•°é€‚ç”¨äºéœ€è¦ç¡®ä¿ç›®å½•å­˜åœ¨çš„åœºæ™¯ã€‚å¦‚æœç›®å½•è·¯å¾„æ— æ•ˆï¼ˆä¾‹å¦‚åŒ…å«éæ³•å­—ç¬¦ï¼‰ï¼Œå¯èƒ½ä¼šå¯¼è‡´é”™è¯¯ã€‚
 
     .INPUTS
-    ´Ëº¯Êı½ÓÊÜ×Ö·û´®ÀàĞÍµÄÄ¿Â¼Â·¾¶×÷ÎªÊäÈë¡£Ö§³ÖÍ¨¹ı¹ÜµÀÊäÈë¡£
+    æ­¤å‡½æ•°æ¥å—å­—ç¬¦ä¸²ç±»å‹çš„ç›®å½•è·¯å¾„ä½œä¸ºè¾“å…¥ã€‚æ”¯æŒé€šè¿‡ç®¡é“è¾“å…¥ã€‚
 
     .OUTPUTS
-    ´Ëº¯Êı²»·µ»ØÈÎºÎÊä³ö£¬µ«»áÍ¨¹ı Write-Host Êä³ö×´Ì¬ÏûÏ¢¡£
+    æ­¤å‡½æ•°ä¸è¿”å›ä»»ä½•è¾“å‡ºï¼Œä½†ä¼šé€šè¿‡ Write-Host è¾“å‡ºçŠ¶æ€æ¶ˆæ¯ã€‚
     #>
     [CmdletBinding()]
     param (
@@ -68,14 +74,14 @@ function CheckDir {
     process {
         if (-not (Test-Path -Path $Dir)) {
             New-Item -ItemType Directory -Path $Dir -ErrorAction Stop | Out-Null
-            Write-Host "Ä¿Â¼ ${Dir} ´´½¨³É¹¦£¡" -ForegroundColor Green
+            Write-Host "ç›®å½• ${Dir} åˆ›å»ºæˆåŠŸï¼" -ForegroundColor Green
         } else {
-            Write-Host "Ä¿Â¼ ${Dir} ÒÑ´æÔÚ¡£" -ForegroundColor Yellow
+            Write-Host "ç›®å½• ${Dir} å·²å­˜åœ¨ã€‚" -ForegroundColor Yellow
         }
     }
 }
 
-# ¸´ÖÆ×ÊÔ´ÎÄ¼ş
+# å¤åˆ¶èµ„æºæ–‡ä»¶
 function Copy-Resources {
     <#
     .SYNOPSIS
@@ -110,27 +116,27 @@ function Copy-Resources {
 
         if (Test-Path -Path $sourceFile) {
             Copy-Item -Path $sourceFile -Destination $destinationFile
-            Write-Host "ÎÄ¼ş ${file} ÒÑ¿½±´µ½ ${TargetDirectory}" -ForegroundColor Green
+            Write-Host "æ–‡ä»¶ ${file} å·²æ‹·è´åˆ° ${TargetDirectory}" -ForegroundColor Green
         } else {
-            Write-Host "ÎÄ¼ş ${file} ²»´æÔÚÓÚ ${SourceDirectory}£¬Ìø¹ı¿½±´¡£" -ForegroundColor Yellow
+            Write-Host "æ–‡ä»¶ ${file} ä¸å­˜åœ¨äº ${SourceDirectory}ï¼Œè·³è¿‡æ‹·è´ã€‚" -ForegroundColor Yellow
         }
     }
 }
 
-# ¶¨Òå´ò°üº¯Êı
+# å®šä¹‰æ‰“åŒ…å‡½æ•°
 function Create-Archive {
     <#
     .SYNOPSIS
-    ´´½¨ZIPÎÄ¼ş£¬½«Ö¸¶¨µÄÎÄ¼şºÍÎÄ¼ş¼Ğ´ò°ü¡£
+    åˆ›å»ºZIPæ–‡ä»¶ï¼Œå°†æŒ‡å®šçš„æ–‡ä»¶å’Œæ–‡ä»¶å¤¹æ‰“åŒ…ã€‚
 
     .DESCRIPTION
-    ´Ëº¯Êı¸ù¾İÌá¹©µÄÎÄ¼şÁĞ±íºÍÄ¿±êÂ·¾¶£¬Ê¹ÓÃCompress-ArchiveÃüÁî´´½¨ZIPÎÄ¼ş¡£
+    æ­¤å‡½æ•°æ ¹æ®æä¾›çš„æ–‡ä»¶åˆ—è¡¨å’Œç›®æ ‡è·¯å¾„ï¼Œä½¿ç”¨Compress-Archiveå‘½ä»¤åˆ›å»ºZIPæ–‡ä»¶ã€‚
 
     .PARAMETER SourceItems
-    Òª´ò°üµÄÎÄ¼şºÍÎÄ¼ş¼ĞÂ·¾¶Êı×é¡£
+    è¦æ‰“åŒ…çš„æ–‡ä»¶å’Œæ–‡ä»¶å¤¹è·¯å¾„æ•°ç»„ã€‚
 
     .PARAMETER DestinationZip
-    Êä³öµÄZIPÎÄ¼şÂ·¾¶¡£
+    è¾“å‡ºçš„ZIPæ–‡ä»¶è·¯å¾„ã€‚
 
     .EXAMPLE
     Create-Archive -SourceItems @("logs", "musync_data", "MusyncSaveDecodeCLI.exe") -DestinationZip "MusyncSaveDecode_WithConsole_1.0.0_AllInOne.zip"
@@ -143,30 +149,30 @@ function Create-Archive {
         [string]$DestinationZip
     )
 
-    # È·±£Ä¿±êZIPÎÄ¼şµÄÄ¿Â¼´æÔÚ
+    # ç¡®ä¿ç›®æ ‡ZIPæ–‡ä»¶çš„ç›®å½•å­˜åœ¨
     # $destinationDir = [System.IO.Path]::GetDirectoryName($DestinationZip)
     # CheckDir -Dir $DestinationZip;
 
-    # ´ò°üÎÄ¼şºÍÎÄ¼ş¼Ğ
+    # æ‰“åŒ…æ–‡ä»¶å’Œæ–‡ä»¶å¤¹
     try {
         Compress-Archive -Path $SourceItems -DestinationPath $DestinationZip -Force
-        Write-Host "´ò°ü³É¹¦£¡Êä³öÎÄ¼ş£º${DestinationZip}" -ForegroundColor Green
+        Write-Host "æ‰“åŒ…æˆåŠŸï¼è¾“å‡ºæ–‡ä»¶ï¼š${DestinationZip}" -ForegroundColor Green
     }
     catch {
-        Write-Host "´ò°üÊ§°Ü£º$($_.Exception.Message)" -ForegroundColor Red
+        Write-Host "æ‰“åŒ…å¤±è´¥ï¼š$($_.Exception.Message)" -ForegroundColor Red
     }
 }
 
-# ¶¨Òå±äÁ¿
+# å®šä¹‰å˜é‡
 $isPreRelease = python -c "import Version;print(Version.isPreRelease)";
 $isPreReleaseBool = [bool]::Parse($isPreRelease);
-# ¸ù¾İ²¼¶ûÖµµ÷ÓÃ²»Í¬µÄÊôĞÔ²¢¸³Öµ¸ø $version
+# æ ¹æ®å¸ƒå°”å€¼è°ƒç”¨ä¸åŒçš„å±æ€§å¹¶èµ‹å€¼ç»™ $version
 if ($isPreReleaseBool) {
     $version = py -c "import Version; print(Version.preVersion)";
 } else {
     $version = py -c "import Version; print(Version.version)";
 }
-$resourceFiles = @("Resources.bin", "songname.json", "songname.update", "Musync.ico");  # ×ÊÔ´ÎÄ¼ş
+$resourceFiles = @("Resources.bin", "songname.json", "songname.update", "Musync.ico");  # èµ„æºæ–‡ä»¶
 $archive_AC = @("logs", "musync_data", "MusyncSaveDecodeCLI.exe");                     # CLI all in one archive files
 $archive_ANC = @("logs", "musync_data", "MusyncSaveDecodeNoCLI.exe");                  # NoCLI all in one archive files
 $archive_C = @("logs", "musync_data", "_internal", "MusyncSaveDecodeCLI.exe");
@@ -177,39 +183,35 @@ $destinationZip_C = "../Archive/MusyncSaveDecode_WithConsole_${version}.zip";
 $destinationZip_NC = "../Archive/MusyncSaveDecode_NoConsole_${version}.zip";
 
 Clear-Host;
-Write-Host "==== ÈÎÎñ¿ªÊ¼ ====";
+Write-Host "==== ä»»åŠ¡å¼€å§‹ ====";
+# Step 1: æ¸…ç†ç”Ÿæˆç›®å½•
+Remove-Item -Path "./MusyncSaveDecode" -Force -Recurse -ErrorAction SilentlyContinue;
+Write-Host "å·²åˆ é™¤ç›®å½•ï¼š./MusyncSaveDecode" -ForegroundColor Yellow;
 
-# Step 0: ÇåÀíÉú³ÉÄ¿Â¼
-# Remove-Item -Path "./MusyncSaveDecode" -Force -Recurse -ErrorAction SilentlyContinue;
-# Write-Host "ÒÑÉ¾³ıÄ¿Â¼£º./MusyncSaveDecode" -ForegroundColor Yellow;
-
-# Step 1: ±àÒëÍ¼±ê×ÊÔ´
-# BuildIcon;
-
-# Step 2: ¼ì²é¹¹½¨Ä¿Â¼
-# CheckDir -Dir "MusyncSaveDecode/";
+# Step 2: æ£€æŸ¥æ„å»ºç›®å½•
+CheckDir -Dir "MusyncSaveDecode/";
 CheckDir -Dir "MusyncSaveDecode/Archive/";
 # CheckDir -Dir "MusyncSaveDecode/MusyncSaveDecodeCLI/";
 # CheckDir -Dir "MusyncSaveDecode/MusyncSaveDecodeNoCLI/";
 
-# Step 3: Pyinstaller±àÒë
+# Step 3: Pyinstallerç¼–è¯‘
 & pyinstaller "buildLauncher.spec" --distpath "./MusyncSaveDecode" --clean;
 if ($?) {
-    Write-Host "Pyinstaller±àÒë³É¹¦£¡" -ForegroundColor Green;
+    Write-Host "Pyinstallerç¼–è¯‘æˆåŠŸï¼" -ForegroundColor Green;
 } else {
-    Write-Host "Pyinstaller±àÒëÊ§°Ü£¡" -ForegroundColor Red;
+    Write-Host "Pyinstallerç¼–è¯‘å¤±è´¥ï¼" -ForegroundColor Red;
     exit 1;
 }
-# Write-Host "ÕıÔÚ±àÒëCythonÄ£¿é ..."
+# Write-Host "æ­£åœ¨ç¼–è¯‘Cythonæ¨¡å— ..."
 # & python setup.py build_ext --inplace
 # if ($?) {
-#     Write-Host "CythonÄ£¿é±àÒë³É¹¦£¡" -ForegroundColor Green;
+#     Write-Host "Cythonæ¨¡å—ç¼–è¯‘æˆåŠŸï¼" -ForegroundColor Green;
 # } else {
-#     Write-Host "CythonÄ£¿é±àÒëÊ§°Ü£¡" -ForegroundColor Red;
+#     Write-Host "Cythonæ¨¡å—ç¼–è¯‘å¤±è´¥ï¼" -ForegroundColor Red;
 #     exit 1;
 # }
 
-# Step 4: ¼ì²é×ÊÔ´Ä¿Â¼
+# Step 4: æ£€æŸ¥èµ„æºç›®å½•
 Set-Location -Path "MusyncSaveDecode";
 CheckDir -Dir "logs/";
 CheckDir -Dir "musync_data/";
@@ -218,48 +220,54 @@ CheckDir -Dir "MusyncSaveDecodeCLI/logs/";
 CheckDir -Dir "MusyncSaveDecodeNoCLI/musync_data/";
 CheckDir -Dir "MusyncSaveDecodeNoCLI/logs/";
 
-# Step 5: ¿½±´×ÊÔ´ÎÄ¼ş
+# Step 5: æ‹·è´èµ„æºæ–‡ä»¶
 Copy-Resources -SourceDirectory "../musync_data" -TargetDirectory "musync_data" -ResourceFiles $resourceFiles;
 Copy-Resources -SourceDirectory "../musync_data" -TargetDirectory "MusyncSaveDecodeCLI/musync_data/" -ResourceFiles $resourceFiles;
 Copy-Resources -SourceDirectory "../musync_data" -TargetDirectory "MusyncSaveDecodeNoCLI/musync_data/" -ResourceFiles $resourceFiles;
 
-# Step 6: ´ò°üÉú³ÉÎÄ¼ş
-Create-Archive -SourceItems $archive_AC -DestinationZip $destinationZip_AC;
-Create-Archive -SourceItems $archive_ANC -DestinationZip $destinationZip_ANC;
-Set-Location -Path "MusyncSaveDecodeCLI";
-Create-Archive -SourceItems $archive_C -DestinationZip $destinationZip_C;
-Set-Location -Path "../MusyncSaveDecodeNoCLI";
-Create-Archive -SourceItems $archive_NC -DestinationZip $destinationZip_NC;
+# Step 6: æ‰“åŒ…ç”Ÿæˆæ–‡ä»¶
+if ($noarchive){
+    Write-Host "Skip Archive Zip File";
+} else {
+    Create-Archive -SourceItems $archive_AC -DestinationZip $destinationZip_AC;
+    Create-Archive -SourceItems $archive_ANC -DestinationZip $destinationZip_ANC;
+    Set-Location -Path "MusyncSaveDecodeCLI";
+    Create-Archive -SourceItems $archive_C -DestinationZip $destinationZip_C;
+    Set-Location -Path "../MusyncSaveDecodeNoCLI";
+    Create-Archive -SourceItems $archive_NC -DestinationZip $destinationZip_NC;
+    Set-Location -Path "..";
+}
 Set-Location -Path "..";
 
-# Step 7: ÇåÀíÉú³ÉÎÄ¼ş
+# Step 7: æ¸…ç†ç”Ÿæˆæ–‡ä»¶
 # Remove-Item -Path "./logs" -Force -Recurse -ErrorAction SilentlyContinue
-# Write-Host "ÒÑÒÆ³ıÄ¿Â¼£º./logs" -ForegroundColor Yellow;
+# Write-Host "å·²ç§»é™¤ç›®å½•ï¼š./logs" -ForegroundColor Yellow;
 # Remove-Item -Path "./musync_data" -Force -Recurse -ErrorAction SilentlyContinue
-# Write-Host "ÒÑÒÆ³ıÄ¿Â¼£º./musync_data" -ForegroundColor Yellow;
+# Write-Host "å·²ç§»é™¤ç›®å½•ï¼š./musync_data" -ForegroundColor Yellow;
 # Remove-Item -Path "./MusyncSaveDecodeCLI" -Force -Recurse -ErrorAction SilentlyContinue
-# Write-Host "ÒÑÒÆ³ıÄ¿Â¼£º./MusyncSaveDecodeCLI" -ForegroundColor Yellow;
+# Write-Host "å·²ç§»é™¤ç›®å½•ï¼š./MusyncSaveDecodeCLI" -ForegroundColor Yellow;
 # Remove-Item -Path "./MusyncSaveDecodeNoCLI" -Force -Recurse -ErrorAction SilentlyContinue
-# Write-Host "ÒÑÒÆ³ıÄ¿Â¼£º./MusyncSaveDecodeNoCLI" -ForegroundColor Yellow;
+# Write-Host "å·²ç§»é™¤ç›®å½•ï¼š./MusyncSaveDecodeNoCLI" -ForegroundColor Yellow;
 # Remove-Item -Path "./MusyncSaveDecodeCLI.exe" -Force -ErrorAction SilentlyContinue
-# Write-Host "ÒÑÉ¾³ıÎÄ¼ş£º./MusyncSaveDecodeNoCLI" -ForegroundColor Yellow;
+# Write-Host "å·²åˆ é™¤æ–‡ä»¶ï¼š./MusyncSaveDecodeNoCLI" -ForegroundColor Yellow;
 # Remove-Item -Path "./MusyncSaveDecodeNoCLI.exe" -Force -ErrorAction SilentlyContinue
-# Write-Host "ÒÑÉ¾³ıÎÄ¼ş£º./MusyncSaveDecodeNoCLI" -ForegroundColor Yellow;
+# Write-Host "å·²åˆ é™¤æ–‡ä»¶ï¼š./MusyncSaveDecodeNoCLI" -ForegroundColor Yellow;
 
-# Step 7: ±àÒëÆô¶¯Æ÷
+# Step 7: ç¼–è¯‘å¯åŠ¨å™¨
 # & g++ -o $path+"Launcher" .\Launcher.cpp $path+$resPath;
 # try {
-#     # ±àÒëÆô¶¯Æ÷
+#     # ç¼–è¯‘å¯åŠ¨å™¨
 #     & g++ -o ./MusyncSaveDecode/Launcher Launcher.cpp -I"D:\Program Files\Python3.11\include" -L"D:\Program Files\Python3.11\libs" -lpython311;
-#     # ¼ì²é±àÒëÊÇ·ñ³É¹¦
+#     # æ£€æŸ¥ç¼–è¯‘æ˜¯å¦æˆåŠŸ
 #     if (-not $?) {
-#         throw "±àÒëÆô¶¯Æ÷Ê§°Ü£¡";
+#         throw "ç¼–è¯‘å¯åŠ¨å™¨å¤±è´¥ï¼";
 #     }
-#     Write-Host "Æô¶¯Æ÷±àÒë³É¹¦£¡" -ForegroundColor Green;
+#     Write-Host "å¯åŠ¨å™¨ç¼–è¯‘æˆåŠŸï¼" -ForegroundColor Green;
 # }
 # catch {
-#     Write-Host "±àÒëÆô¶¯Æ÷Ê±·¢Éú´íÎó£º$($_.Exception.Message)" -ForegroundColor Red;
+#     Write-Host "ç¼–è¯‘å¯åŠ¨å™¨æ—¶å‘ç”Ÿé”™è¯¯ï¼š$($_.Exception.Message)" -ForegroundColor Red;
 #     exit 1;
 # }
 
-Write-Host "==== ËùÓĞÈÎÎñÍê³É ====";
+Write-Host "==== æ‰€æœ‰ä»»åŠ¡å®Œæˆ ====";
+# Read-Host "Input Enter Key to Exit";

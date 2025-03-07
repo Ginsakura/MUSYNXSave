@@ -46,10 +46,10 @@ jobs:
         $isPreReleaseBool = [bool]::Parse($isPreRelease);
         if ($isPreReleaseBool) { 
             $version = py -c "import Version; print(Version.preVersion)";
-            $rcVsersion = $rcVersion -replace "pre", " PreRelease ";
+            $rcVersion = $version -replace "pre", " PreRelease ";
         } else {
             $version = py -c "import Version; print(Version.version)";
-            $rcVsersion = $rcVersion -replace "rc", " Release ";
+            $rcVersion = $version -replace "rc", " Release ";
         }
         echo "isPreRelease=${isPreReleaseBool}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
         echo "Version=${version}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append

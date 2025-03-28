@@ -436,6 +436,7 @@ class MusyncSavDecodeGUI(object):
 		self.root.title(f'同步音律喵赛克Steam端本地存档分析   LastPlay: {SaveDataInfo.selectSongName}');
 		[self.saveData.delete(ids) for ids in self.saveData.get_children()];
 		self.saveCount = 0;
+		self.excludeCount = 0;
 		self.totalSync = 0;
 		for saveInfo in SaveDataInfo.saveInfoList:
 			# 无名谱面筛选

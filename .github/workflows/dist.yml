@@ -1,11 +1,13 @@
 name: Auto Release Action
-on: 
-  push: 
+on:
+  push:
     branches:
     - 'main'
+    - 'v1'
   pull_request:
     branches:
     - 'main'
+    - 'v1'
 
 env:
   Version: Init

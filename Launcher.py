@@ -12,7 +12,7 @@ import Functions
 import MainWindowOldStyle as OldStyle
 # import MusyncSavDecodeGUI as NewStyle
 
-version = '1.2.9rc1'
+version = '1.2.9rc2'
 isPreRelease = True
 preVersion = "1.2.9pre2"
 isPreRelease = False

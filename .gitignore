@@ -5,6 +5,11 @@
 /saveFile
 /Releases
 /venv
+/dist
+/logs
+/SavDecode
+/MusyncSaveDecode
+
 
 SavDecode/.vs
 SavDecode/gcm.cache
@@ -14,11 +19,14 @@ SavDecode/**
 ExtraFunction.cfg
 LXGW.ttf
 SavAnalyze.json
+SaveDataInfo.json
 
 *.analyze
 *.b64
 *.bat
 !distCPP.bat
+*.bin
+!Resources.bin
 *.db
 *.decode
 *.dll

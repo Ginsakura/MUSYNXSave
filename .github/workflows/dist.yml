@@ -3,9 +3,11 @@ on:
   push:
     branches:
     - 'main'
+    - 'v1'
   pull_request:
     branches:
     - 'main'
+    - 'v1'
 
 env:
   RCVersion: < 0.0.0 PreRelease 0>

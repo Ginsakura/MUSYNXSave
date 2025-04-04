@@ -11,11 +11,17 @@
 /MusyncSaveDecode
 
 LXGW.ttf
+SavAnalyze.analyze
+SavAnalyze.json
 SaveDataInfo.json
+SavDecode.decode
 
 *.bat
+*.b64
 *.bin
 !Resources.bin
+*.cfg
+
 *.db
 *.dll
 *.exe

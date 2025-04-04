@@ -53,7 +53,7 @@ class Config(object):
 				__logger.info(f"file: \"{__filePath}\" loaded.");
 
 	Version:str						= __config.get("Version"					, None);
-	LoggerFilterString:str			= __config.get("LoggerFilterString"			, "INFO");
+	LoggerFilterString:str			= __config.get("LoggerFilterString"			, "DEBUG");
 	LoggerFilter:int				= __logLevelMapping.get(LoggerFilterString	, logging.INFO);
 	Acc_Sync:bool					= __config.get("Acc_Sync"					, False);
 	CheckUpdate:bool				= __config.get("CheckUpdate"				, True);

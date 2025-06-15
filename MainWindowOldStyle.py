@@ -173,6 +173,8 @@ class MusyncSavDecodeGUI(object):
 		self.TreeviewWidthUptate()
 		self.TreeviewColumnUpdate()
 
+
+
 		def CheckGameIsStart(event):
 			count = 0
 			while event.is_set():
@@ -183,12 +185,10 @@ class MusyncSavDecodeGUI(object):
 						for ids in psutil.pids():
 							if psutil.Process(pid=ids).name() == "MUSYNX.exe":
 								# self.config["MainExecPath"]
-								self.isGameRunning["text"] = "游戏已启动"
-								self.isGameRunning["bg"] = "#98E22B"
-								break
+								self.root.after(0,self.ChangeGameRunningLabel);
+								break;
 						else:
-							self.isGameRunning["text"] = "游戏未启动"
-							self.isGameRunning["bg"] = "#FF8080"
+							self.root.after(0,self.ChangeGameNotRunningLabel);
 					except Exception as e:
 						print(repr(e))
 					endTime = time.perf_counter_ns()
@@ -239,6 +239,24 @@ class MusyncSavDecodeGUI(object):
 		self.checkGameStartEvent.clear()
 		self.CheckGameIsStartThread.join()
 		self.root.destroy()
+
+# Threads UI Operator
+	def ChangeGameRunningLabel(self):
+		self.isGameRunning["text"] = "游戏已启动"
+		self.isGameRunning["bg"] = "#98E22B"
+		pass
+	def ChangeGameNotRunningLabel(self):
+		self.isGameRunning["text"] = "游戏未启动"
+		self.isGameRunning["bg"] = "#FF8080"
+		pass
+	def MapInfoMessageBox(self):
+		if messagebox.askyesno("无法获取谱面信息更新", f'是否前往网页查看是否存在更新？\n(请比对 SongName.update 中的时间是否比本地文件中的时间更大)'):
+			webbrowser.open("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
+		pass;
+	def UpdateMessageBox(self):
+		if messagebox.askyesno("GitHub公共API访问速率已达上限", "是否前往发布页查看是否存在更新？"):
+			webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases/latest")
+		pass;
 
 # json文件检查
 	def CheckFile(self):
@@ -384,8 +402,7 @@ class MusyncSavDecodeGUI(object):
 					snju.write(githubVersion)
 		except Exception as e:
 			messagebox.showerror("Error", f'发生错误: {e}')
-			if messagebox.askyesno("无法获取谱面信息更新", f'是否前往网页查看是否存在更新？\n(请比对 SongName.update 中的时间是否比本地文件中的时间更大)'):
-				webbrowser.open("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
+			self.root.after(0,self.MapInfoMessageBox);
 		endTime = time.perf_counter_ns()
 		print("CheckJsonUpdate Run Time: %f ms"%((endTime - startTime)/1000000))
 
@@ -401,9 +418,8 @@ class MusyncSavDecodeGUI(object):
 				tergetVersion = float(tagVersion.replace(".","").replace("rc","."))
 			elif "message" in resJson:
 				if resJson["message"][:23] == "API rate limit exceeded":
-					if messagebox.askyesno("GitHub公共API访问速率已达上限", "是否前往发布页查看是否存在更新？"):
-						webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases/latest")
-					return
+					self.root.after(0,self.UpdateMessageBox);
+					return;
 		except Exception as e:
 			messagebox.showerror("Error", f'发生错误: {e}')
 			tergetVersion = localVersion

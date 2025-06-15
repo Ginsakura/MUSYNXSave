@@ -1,5 +1,5 @@
-﻿# 同步音律喵赛克 Steam端 存档解析工具
-MUSYNX Steam Client Savefile Decode & Analyze Tool
+﻿# 同步音律喵赛克 Steam端 存档解析工具 v1 (停止功能更新)
+MUSYNX Steam Client Savefile Decode & Analyze Tool v1 (Stop feature updates)
 
 [down_svg]: https://img.shields.io/github/downloads/ginsakura/MUSYNCSave/total?label=All%20Downloads
 [all_release]: https://github.com/Ginsakura/MUSYNCSave/releases
@@ -107,6 +107,7 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
     该值越小,就说明您击打的越精准,(在该值小于45ms时，您的)分值就会越高.
 
 ## 更新日志
+该版本将停止功能更新，但仍然对其进行漏洞修复
 <!--
 ### Version 
 #### PreRelease 
@@ -117,8 +118,10 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 3. 优化
     1. xxx
 -->
-[ ] 主程序目录通过exe文件进行判断
-[ ] 日志工具提上日程
+### Version 1.3.0
+#### Release 1
+1. 修复`RuntimeError: main thread is not in main loop`
+
 ### Version 1.2.8
 #### PreRelease
 #### Release 4

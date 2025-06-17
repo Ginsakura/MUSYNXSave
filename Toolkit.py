@@ -269,7 +269,7 @@ class Toolkit(object):
 		cursor:sql.Cursor = db.cursor();
 		if (nowVersion == 0):
 			logger.info(f"创建v{LastVersion}版本数据库中...");
-			cursor.execute("""CREATE table HitDelayHistory (
+			cursor.execute("""CREATE table IF NOT EXISTS HitDelayHistory (
 				SongMapName text Not Null,
 				RecordTime text Not Null,
 				AvgDelay float,
@@ -277,14 +277,14 @@ class Toolkit(object):
 				AvgAcc float,
 				HitMap text,
 				PRIMARY KEY ("SongMapName", "RecordTime"));""");
-			cursor.execute("CREATE Table Infos (Key Text PRIMARY KEY, Value Text Default None);");
+			cursor.execute("CREATE Table IF NOT EXISTS Infos (Key Text PRIMARY KEY, Value Text Default None);");
 			cursor.execute("INSERT Into Infos Values(?, ?)", ("Version","%d"%LastVersion));
 			db.commit();
 			return;
 		if (nowVersion == 1):
 			logger.info(f"记录数据迁移中... v1->v2");
 			cursor.execute("ALTER TABLE HitDelayHistory RENAME TO HitDelayHistoryV1;");
-			cursor.execute("""CREATE table HitDelayHistory (
+			cursor.execute("""CREATE table IF NOT EXISTS HitDelayHistory (
 				SongMapName text Not Null,
 				RecordTime text Not Null,
 				AvgDelay float,
@@ -307,7 +307,7 @@ class Toolkit(object):
 			nowVersion=2;
 		if (nowVersion == 2):
 			logger.info(f"记录数据迁移中... v2->v3");
-			cursor.execute("CREATE Table Infos (Key Text PRIMARY KEY, Value Text Default None);");
+			cursor.execute("CREATE Table IF NOT EXISTS Infos (Key Text PRIMARY KEY, Value Text Default None);");
 			cursor.execute("INSERT Into Infos Values(?, ?)", ("Version","3"));
 			db.commit();
 			nowVersion = 3;

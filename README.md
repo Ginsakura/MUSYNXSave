@@ -118,6 +118,12 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 3. 优化
     1. xxx
 -->
+### Version 1.3.1
+#### Release 1
+1. 修复`RuntimeError: main thread is not in main loop`
+2. 修复更多逻辑异常点
+3. 修改构建脚本
+
 ### Version 1.3.0
 #### Release 1
 1. 修复`RuntimeError: main thread is not in main loop`

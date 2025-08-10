@@ -86,6 +86,7 @@ class MusyncSavDecodeGUI(object):
 		self.wh = [0,0]
 		self.checkGameStartEvent = threading.Event()
 		self.CheckGameIsStartThread = None
+		self.errorInfo = "";
 
 		root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
@@ -257,6 +258,9 @@ class MusyncSavDecodeGUI(object):
 		if messagebox.askyesno("GitHub公共API访问速率已达上限", "是否前往发布页查看是否存在更新？"):
 			webbrowser.open("https://github.com/Ginsakura/MUSYNCSave/releases/latest")
 		pass;
+	def ErrorMessageBox(self):
+		messagebox.showerror("Error", self.errorInfo);
+		pass
 
 # json文件检查
 	def CheckFile(self):
@@ -398,10 +402,12 @@ class MusyncSavDecodeGUI(object):
 				songNameJson = response.json()
 				with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
 					json.dump(songNameJson,snj,indent="",ensure_ascii=False)
-				with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
+				with open("./musync_data/SongName.update",'w',encoding='utf8') as snju:
 					snju.write(githubVersion)
 		except Exception as e:
-			messagebox.showerror("Error", f'发生错误: {e}')
+			print(f'CheckJsonUpdate发生错误: {e}');
+			self.errorInfo = f'发生错误: {e}';
+			self.root.after(10,self.ErrorMessageBox);
 			self.root.after(0,self.MapInfoMessageBox);
 		endTime = time.perf_counter_ns()
 		print("CheckJsonUpdate Run Time: %f ms"%((endTime - startTime)/1000000))
@@ -421,7 +427,9 @@ class MusyncSavDecodeGUI(object):
 					self.root.after(0,self.UpdateMessageBox);
 					return;
 		except Exception as e:
-			messagebox.showerror("Error", f'发生错误: {e}')
+			print(f'CheckUpdate发生错误: {e}');
+			self.errorInfo = f'发生错误: {e}';
+			self.root.after(10,self.ErrorMessageBox);
 			tergetVersion = localVersion
 		# print(localVersion,tergetVersion)
 		print('  Terget Version : %s'%tagVersion.replace("rc","."))

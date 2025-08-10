@@ -155,24 +155,23 @@ class MUSYNCSavProcess():
 			SongID = int.from_bytes(self.saveData[0:4], 'little')
 			Unknown0 = ''.join(['%02X' % b for b in self.saveData[4:8]])
 			temp = ''.join(['%02X' % b for b in self.saveData[8:12]])
-			SpeedStall = temp[6:]+temp[4:6]+temp[2:4]+temp[0:2]
+			SpeedStall = int(temp[6:]+temp[4:6]+temp[2:4]+temp[0:2], 16)
 			Unknown1 = ''.join(['%02X' % b for b in self.saveData[12:16]])
 			SyncNumber = str(int.from_bytes(self.saveData[16:20], 'little'))
 			UploadScore = unpack('<f',bytes.fromhex(self.Bytes2HexString(self.saveData[20:24])))[0]
 			PlayCount = int.from_bytes(self.saveData[24:28], 'little')
 
-			if self.saveData[28]==1:
+			songName = GetSongName(SpeedStall)
+			if (self.saveData[28]==1) and (songName is not None):
 				statu = "Favo"
 				# FavSong.write(songName[0]+"\n")
 				self.FavSong.append(songName[0])
 			else:
 				statu = '    '
-
 			if NoCopyright(SpeedStall):
 				statu = "NoCR"
 			if OldAprilFoolsDay(SpeedStall):
 				statu = "Fool"
-			songName = GetSongName(SpeedStall)
 			if songName is None:
 				statu = "NoName"
 

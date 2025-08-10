@@ -31,6 +31,7 @@ SavDecode.decode
 *.pyd
 *.sav
 *.sfp
+*.spec
 *.sql
 *.sublime*
 *.tmp

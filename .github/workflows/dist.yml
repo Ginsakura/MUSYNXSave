@@ -34,7 +34,8 @@ jobs:
     steps:
       - name: Create Build Variable
         run: |
-          tree /f;
+          cd C:/a/MUSYNXSave/MUSYNXSave;
+          Get-ChildItem;
           $isPreRelease = python -c "import Version;print(Version.isPreRelease)";
           $isPreReleaseBool = [bool]::Parse($isPreRelease);
           if ($isPreReleaseBool) { 

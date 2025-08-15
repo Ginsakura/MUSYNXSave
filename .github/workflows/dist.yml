@@ -82,21 +82,21 @@ jobs:
     - name: Dist NoConsole ${{ env.Version }} Compress Version
       # if: ${{ env.NotSkip == 'true'}}
       run: |
-        pyinstaller --distpath ./NoCLI/ -D -i ./musync_data/Musync.ico ./Launcher.py -w --clean -n MusyncSavDecodeGUI_NoConsole
+        pyinstaller --distpath ./NoCLI/ -D -i ./musync_data/Musync.ico ./Launcher.py -w --clean -n "MusyncSavDecodeGUI_NoConsole"
         Compress-Archive -LiteralPath ./NoCLI/MusyncSavDecodeGUI_NoConsole/ -DestinationPath ("./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}.zip")
     - name: Dist NoConsole ${{ env.Version }} AllInOne Version
       # if: ${{ env.NotSkip == 'true'}}
       run: |
-        pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./Launcher.py -w -n MusyncSavDecodeGUI_NoConsole_${{ env.Version }}_AllInOne.exe
+        pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./Launcher.py -w -n "MusyncSavDecodeGUI_NoConsole_${{ env.Version }}_AllInOne.exe"
     - name: Dist WithConsole ${{ env.Version }} Compress Version
       # if: ${{ env.NotSkip == 'true'}}
       run: |
-        pyinstaller --distpath ./WithCLI/ -D -i ./musync_data/Musync.ico ./Launcher.py -n MusyncSavDecodeGUI_WithConsole
+        pyinstaller --distpath ./WithCLI/ -D -i ./musync_data/Musync.ico ./Launcher.py -n "MusyncSavDecodeGUI_WithConsole"
         Compress-Archive -LiteralPath ./WithCLI/MusyncSavDecodeGUI_WithConsole/ -DestinationPath ("./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}.zip")
     - name: Dist WithConsole ${{ env.Version }} AllInOne Version
       # if: ${{ env.NotSkip == 'true'}}
       run: |
-        pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./Launcher.py -n MusyncSavDecodeGUI_WithConsole_${{ env.Version }}_AllInOne.exe
+        pyinstaller --distpath ./ -F -i ./musync_data/Musync.ico ./Launcher.py -n "MusyncSavDecodeGUI_WithConsole_${{ env.Version }}_AllInOne.exe"
 
     - name: Commit Release
       # if: ${{ env.NotSkip == 'true'}}
@@ -111,7 +111,7 @@ jobs:
         body_path: ${{ github.workspace }}/changelog.md
         prerelease: ${{ env.isPreRelease }}
         files: |
-          ./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}.zip
-          ./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}_AllInOne.exe
-          ./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}.zip
-          ./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}_AllInOne.exe
+          "./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}.zip"
+          "./MusyncSavDecodeGUI_NoConsole_${{ env.Version }}_AllInOne.exe"
+          "./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}.zip"
+          "./MusyncSavDecodeGUI_WithConsole_${{ env.Version }}_AllInOne.exe"

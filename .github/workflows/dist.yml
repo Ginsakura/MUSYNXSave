@@ -34,6 +34,7 @@ jobs:
     steps:
       - name: Create Build Variable
         run: |
+          tree /f;
           $isPreRelease = python -c "import Version;print(Version.isPreRelease)";
           $isPreReleaseBool = [bool]::Parse($isPreRelease);
           if ($isPreReleaseBool) { 

@@ -30,7 +30,7 @@ jobs:
   Build_Variable:
     name: Create Build Variable
     runs-on: windows-2025
-    need: Install_Environment
+    needs: Install_Environment
     steps:
       - name: Create Build Variable
         run: |
@@ -51,7 +51,7 @@ jobs:
   Build_Application:
     name: Build Application
     runs-on: windows-2025
-    need: Build_Variable
+    needs: Build_Variable
     steps:
       - name: Build ${{ env.Version }}
         run: |
@@ -63,7 +63,7 @@ jobs:
   Commit_Build_File:
     name: Commit Build File
     runs-on: windows-2025
-    need: Build_Application
+    needs: Build_Application
     steps:
       - uses: softprops/action-gh-release@v2
       - name: Commit Build File

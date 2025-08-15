@@ -21,6 +21,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
       - name: Cache and Setup Python Environment
+        uses: ./
         with:
           python-version: '3.11.5'
           cache: 'pip' # caching pip dependencies
@@ -31,6 +32,7 @@ jobs:
     name: Create Build Variable
     runs-on: windows-2025
     steps:
+      name: Create Build Variable
       run: |
         $isPreRelease = python -c "import Version;print(Version.isPreRelease)";
         $isPreReleaseBool = [bool]::Parse($isPreRelease);
@@ -47,9 +49,10 @@ jobs:
         echo "RCVersion=< ${rcVersion} >" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append;
 
   Build Application:
-    name: Build ${{ env.Version }}
+    name: Build Application
     runs-on: windows-2025
     steps:
+      name: Build ${{ env.Version }}
       run: |
         $vc = "${{ github.event.head_commit.message }}" -split "  ";
         echo "$vc";
@@ -58,14 +61,14 @@ jobs:
 
   Commit Build File:
     name: Commit Build File
-    id: create_release
-    uses: softprops/action-gh-release@v2
-    env:
-      GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-    with:
-      name: ${{ env.RCVersion }}  ${{ env.CommitMessage }}  < Auto Release >
-      tag_name: ${{ env.Version }}
-      draft: false
-      body_path: ${{ github.workspace }}/changelog.md
-      prerelease: ${{ env.isPreRelease }}
-      files: ./MusyncSaveDecode/Archive/*
+    steps:
+      uses: softprops/action-gh-release@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+      with:
+        name: ${{ env.RCVersion }}  ${{ env.CommitMessage }}  < Auto Release >
+        tag_name: ${{ env.Version }}
+        draft: false
+        body_path: ${{ github.workspace }}/changelog.md
+        prerelease: ${{ env.isPreRelease }}
+        files: ./MusyncSaveDecode/Archive/*

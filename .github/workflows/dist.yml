@@ -58,13 +58,14 @@ jobs:
 
   Commit Build File:
     name: Commit Build File
-      uses: softprops/action-gh-release@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
-      with:
-        name: ${{ env.RCVersion }}  ${{ env.CommitMessage }}  < Auto Release >
-        tag_name: ${{ env.Version }}
-        draft: false
-        body_path: ${{ github.workspace }}/changelog.md
-        prerelease: ${{ env.isPreRelease }}
-        files: ./MusyncSaveDecode/Archive/*
+    id: create_release
+    uses: softprops/action-gh-release@v2
+    env:
+      GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+    with:
+      name: ${{ env.RCVersion }}  ${{ env.CommitMessage }}  < Auto Release >
+      tag_name: ${{ env.Version }}
+      draft: false
+      body_path: ${{ github.workspace }}/changelog.md
+      prerelease: ${{ env.isPreRelease }}
+      files: ./MusyncSaveDecode/Archive/*

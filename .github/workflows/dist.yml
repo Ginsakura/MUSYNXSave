@@ -3,11 +3,9 @@ on:
   push:
     branches:
     - 'main'
-    - 'v1'
   pull_request:
     branches:
     - 'main'
-    - 'v1'
 
 env:
   RCVersion: < 0.0.0 PreRelease 0>
@@ -20,29 +18,18 @@ jobs:
     name: Auto Release
     runs-on: windows-2025
     steps:
-    - name: Checkout
+    - name: Cache and Install Python Environment
       uses: actions/checkout@v3
-
-    - name: Cache Python Environment
-      uses: actions/cache@v4
-      env:
-        cache-name: cache-python-environment
-      with:
-        path: c:\hostedtoolcache\windows\python
-        key: ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
-        restore-keys: |
-          ${{ env.pythonLocation }}-${{ hashFiles('requirements.txt') }}
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11.5'
+        cache: 'pip' # caching pip dependencies
 
     - name: Install requirements
       run: |
         pip3 install -r ./requirements.txt
 
-    - name: Fix Environment
+    - name: Build Environment
       run: |
         $isPreRelease = python -c "import Version;print(Version.isPreRelease)";
         $isPreReleaseBool = [bool]::Parse($isPreRelease);

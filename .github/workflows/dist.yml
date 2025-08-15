@@ -65,6 +65,7 @@ jobs:
     steps:
       - uses: softprops/action-gh-release@v2
       - name: Commit Build File
+        uses: ./
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:

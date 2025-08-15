@@ -32,7 +32,7 @@ jobs:
     name: Create Build Variable
     runs-on: windows-2025
     steps:
-      name: Create Build Variable
+      - name: Create Build Variable
         run: |
           $isPreRelease = python -c "import Version;print(Version.isPreRelease)";
           $isPreReleaseBool = [bool]::Parse($isPreRelease);
@@ -52,7 +52,7 @@ jobs:
     name: Build Application
     runs-on: windows-2025
     steps:
-      name: Build ${{ env.Version }}
+      - name: Build ${{ env.Version }}
         run: |
           $vc = "${{ github.event.head_commit.message }}" -split "  ";
           echo "$vc";
@@ -63,8 +63,8 @@ jobs:
     name: Commit Build File
     runs-on: windows-2025
     steps:
-      uses: softprops/action-gh-release@v2
-      name: Commit Build File
+      - uses: softprops/action-gh-release@v2
+      - name: Commit Build File
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:

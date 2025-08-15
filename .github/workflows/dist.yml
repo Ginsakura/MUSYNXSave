@@ -14,22 +14,23 @@ env:
   CommitMessage: Init
 
 jobs:
-  AutoRelease:
-    name: Auto Release
+  Install Environment:
+    name: Install Environment
     runs-on: windows-2025
     steps:
-    - name: Cache and Install Python Environment
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-      with:
-        python-version: '3.11.5'
-        cache: 'pip' # caching pip dependencies
+      - name: Cache and Setup Python Environment
+        with:
+          python-version: '3.11.5'
+          cache: 'pip' # caching pip dependencies
+      - name: Install requirements
+        run: pip3 install -r ./requirements.txt
 
-    - name: Install requirements
-      run: |
-        pip3 install -r ./requirements.txt
-
-    - name: Build Environment
+  Build Environment:
+    name: Create Build Variable
+    runs-on: windows-2025
+    steps:
       run: |
         $isPreRelease = python -c "import Version;print(Version.isPreRelease)";
         $isPreReleaseBool = [bool]::Parse($isPreRelease);
@@ -45,16 +46,20 @@ jobs:
         echo "Version=${version}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append;
         echo "RCVersion=< ${rcVersion} >" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append;
 
-    - name: Dist ${{ env.Version }}
+  Build Application:
+    name: Build ${{ env.Version }}
+    runs-on: windows-2025
+    steps:
       run: |
         $vc = "${{ github.event.head_commit.message }}" -split "  ";
         echo "$vc";
         echo "CommitMessage=$($vc[1])" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append;
         powershell.exe ./buildLauncher.ps1;
 
-    - name: Commit Release
+  Commit Build File:
+    name: Commit Build File
       id: create_release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       env:
         GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
       with:

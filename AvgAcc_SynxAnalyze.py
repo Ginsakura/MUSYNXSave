@@ -7,8 +7,11 @@ def Analyze() -> None:
 	with open('./musync_data/Acc-Sync.json') as f:
 		rows = [line.strip().split(',') for line in f];
 	for row in rows:
-		acc.append(float(row[0]));
-		sync.append(float(row[1]));
+		try:
+			acc.append(float(row[0]));
+			sync.append(float(row[1]));
+		except Exception as e:
+			continue;
 	
 	fig = plt.figure('AvgAcc与SYNC.Rate散点图', figsize=(10, 10));
 	fig.clear();

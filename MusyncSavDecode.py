@@ -27,7 +27,7 @@ class MUSYNCSavProcess(object):
 		super(MUSYNCSavProcess, self).__init__();
 		self.__assembly_loaded = False
 		try:
-			assembly = Assembly.LoadFrom(Config.MainExecPath+'MUSYNX_Data/Managed/Assembly-CSharp.dll')
+			assembly = Assembly.LoadFrom(os.path.join(Config.MainExecPath, 'MUSYNX_Data', 'Managed', 'Assembly-CSharp.dll'))
 			self.__assembly = assembly
 			self.__assembly_loaded = True
 		except Exception:
@@ -52,7 +52,7 @@ class MUSYNCSavProcess(object):
 		'''加载存档文件并进行base64解码''';
 		startTime:int = time.perf_counter_ns();
 		self.__logger.debug("LoadSaveFile Start.");
-		with open(self.savPath, 'r') as file:
+		with open(self.savPath, 'r', encoding="utf-8") as file:
 			base64_data = file.read()
 		self.Deserialize(b64decode(base64_data));
 		self.__logger.debug("LoadSaveFile End.");
@@ -63,8 +63,11 @@ class MUSYNCSavProcess(object):
 		startTime:int = time.perf_counter_ns();
 		self.__logger.debug("SaveDeserialize Start.");
 		stream:MemoryStream = MemoryStream(data);
-		userMemory = (BinaryFormatter().Deserialize(stream));
-		userMemoryTypeInfo = userMemory.GetType()
+		try:
+			userMemory = (BinaryFormatter().Deserialize(stream));
+		finally:
+			stream.Dispose();
+		userMemoryTypeInfo = userMemory.GetType();
 
 		def GetNonPublicField(field,typeInfo=userMemoryTypeInfo,instance=userMemory)->any:
 			'''获取非公开的字段''';
@@ -217,10 +220,12 @@ class MUSYNCSavProcess(object):
 		self.__logger.info("FavFix Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000));
 
 if __name__ == '__main__':
-	#Config#
-	savPath = "D:/Program Files/steam/steamapps/common/MUSYNX/SavesDir/savedata.sav"
-	# savPath = "C:/Users/Ginsakura/Documents/Tencent Files/2602961063/FileRecv/savedata.sav"
+	import argparse
+	parser = argparse.ArgumentParser()
+	parser.add_argument('savPath', nargs='?', default=None, help='Path to savedata.sav')
+	args = parser.parse_args()
+	
+	savPath = args.savPath or os.path.join(Config.MainExecPath or '.', 'SavesDir', 'savedata.sav')
 
-	#Run#
 	Object = MUSYNCSavProcess(savPath)
 	Object.Main()

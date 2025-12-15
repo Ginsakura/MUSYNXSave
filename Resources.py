@@ -10,6 +10,8 @@ class Config(object):
 	@staticmethod
 	def CompressLogFile()->None:
 		logsDir:str		= ".\\logs\\";
+		# Ensure logs directory exists
+		os.makedirs(logsDir, exist_ok=True);
 		# 获取已有的压缩文件数量
 		nextIndex:int = len([f for f in os.listdir(logsDir)]);
 		logsName:str	= f"log.{nextIndex}.gz";
@@ -35,7 +37,7 @@ class Config(object):
 		};
 	__instance						= None;
 	__lock:threading.Lock			= threading.Lock();
-	if (os.path.isfile(".\\log.txt")): CompressLogFile();
+	# Moved to __new__ or module level
 	__logger:logging.Logger			= logging.getLogger("Resources.Config");
 	__filePath:str					= os.getcwd()+"\\musync_data\\bootcfg.json";
 	__config:dict[str,any]			= dict();
@@ -73,6 +75,8 @@ class Config(object):
 	def __new__(cls):
 		with cls.__lock:
 			if not cls.__instance:
+            	if os.path.isfile(".\\log.txt"):
+            	    cls.CompressLogFile()
 				cls.__instance = super(Config, cls).__new__(cls)
 				__file:logging.FileHandler = logging.FileHandler(".\\log.txt");
 				__file.setLevel(logging.DEBUG);
@@ -106,7 +110,8 @@ class Config(object):
 				# 动态将字典的键值对赋值给类的属性
 				for key, value in config.items():
 					setattr(cls, key, value);
-					cls.LoggerFilter:int = cls.__logLevelMapping.get(cls.LoggerFilterString, logging.INFO);
+				# Update LoggerFilter after all keys are loaded
+				cls.LoggerFilter = cls.__logLevelMapping.get(cls.LoggerFilterString, logging.INFO);
 			except Exception:
 				cls.__logger.exception(f"file: \"{cls.__filePath}\" load failure.");
 			else:
@@ -185,13 +190,13 @@ class SongName(object):
 	__data:dict[str,list|int]	= None;
 	__filePath:str				= os.getcwd()+"\\musync_data\\SongName.json";
 	__logger:logging.Logger		= None;
-	__logger = Logger.GetLogger("Resources.SongName");
-	__logger.info("creating an instance in Resources.SongName");
 
 	def __new__(cls):
 		with cls.__lock:
 			if not cls.__instance:
 				cls.__instance = super(SongName, cls).__new__(cls);
+				cls.__logger = Logger.GetLogger("Resources.SongName");
+				cls.__logger.info("creating an instance in Resources.SongName");
 				cls.LoadFile();
 		return cls.__instance
 
@@ -226,7 +231,7 @@ class SongName(object):
 
 class MapInfo(object):
 	"存储谱面信息"
-	def __init__(self, info:list = None, isBuiltin=False) -> None:
+	def __init__(self, info:list|None = None, isBuiltin:bool=False) -> None:
 		if info is None:
 			self.SongName:str			  = None;
 			self.SongKeys:str			  = None;

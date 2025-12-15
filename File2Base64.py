@@ -4,6 +4,7 @@ import io
 import json
 import os
 import struct
+from Toolkit import Toolkit
 # from base64 import b64encode
 
 FillSize:int = 512;
@@ -11,11 +12,6 @@ FixDLL:str = "83951C09C2402D99018F28F405725D07A9D27807D9147F19AD4F6E089FCB7C9D";
 # Source Assembly-CSharp.dll
 SourceDLL:str = '1F66F70DBF17B37EE1F8B2F67D7938AF9ACF20148F331335F9285502E63B5F4C';
 SongNameVersion:int = 20250303;
-
-def GetHash(filePath:str=None)->str:
-	if (filePath is None): return "";
-	with open(filePath,'rb') as fileBytes:
-		return sha256(fileBytes.read()).hexdigest().upper();
 
 def CompressAndEncode(filePath: str) -> bytes:
 	"""
@@ -105,7 +101,7 @@ if __name__ == '__main__':
 		binaryInfo[file["Tag"]] = dict(
 			offset = binaryOffset,
 			lenth = len(encodeString),
-			hash = GetHash(file['Source']),
+			hash = Toolkit.GetHash(file['Source']),
 			);
 		binaryOffset += len(encodeString);
 		with open(file['Target'],"rb") as fileContext:

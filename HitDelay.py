@@ -132,13 +132,14 @@ class HitDelayText(object):
 	def Draw(self):
 		consoleFind = False
 		try:
-			win = uiauto.WindowControl(searchDepth=1,Name='MUSYNX Delay',searchInterval=1).DocumentControl(serchDepth=1,Name='Text Area',searchInterval=1)
+			win = uiauto.WindowControl(searchDepth=1,Name='MUSYNX Delay',searchInterval=1).DocumentControl(searchDepth=1,Name='Text Area',searchInterval=1)
 			win.SendKeys('{Ctrl}A',waitTime=0.1)
 			win.SendKeys('{Ctrl}C',waitTime=0.1)
 			consoleFind = True
 		except Exception as e:
+				self.__logger.exception("控制台窗口未找到,请确认控制台窗口已开启");
 			try:
-				win = uiauto.WindowControl(searchDepth=1,Name='选择 MUSYNX Delay',searchInterval=1).DocumentControl(serchDepth=1,Name='Text Area',searchInterval=1)
+				win = uiauto.WindowControl(searchDepth=1,Name='选择 MUSYNX Delay',searchInterval=1).DocumentControl(searchDepth=1,Name='Text Area',searchInterval=1)
 				win.SendKeys('{Ctrl}A',waitTime=0.1)
 				win.SendKeys('{Ctrl}C',waitTime=0.1)
 				consoleFind = True
@@ -163,8 +164,8 @@ class HitDelayText(object):
 				if (ids < self.delayInterval) and (ids > -self.delayInterval):
 					sumNums += ids;
 					sumKeys += 1;
-			avgDelay = (sumNums/sumKeys) if sumKeys > 0 else 0;
-			avgAcc = sum([abs(i) for i in dataList])/allKeys;
+			avgDelay = (sumNums / sumKeys) if sumKeys > 0 else 0
+			avgAcc = (sum(abs(i) for i in dataList) / allKeys) if allKeys > 0 else 0
 			self.delayHistory.insert('', END, values=(name,allKeys,'%.6f ms'%avgDelay,'%.6f ms'%avgAcc));
 			dataListStr = "";
 			for i in dataList:
@@ -210,7 +211,10 @@ class HitDelayText(object):
 		else:
 			result = messagebox.askyesno('提示', f'是否删除该谱面游玩记录?\n{self.cursorHistory}')
 			if result:
-				self.cur.execute(f'delete from HitDelayHistory where SongMapName=\'{self.cursorHistory}\' and RecordTime=\'{self.historyRecordTimeValueLabel["text"]}\'')
+				self.cur.execute(
+					"DELETE FROM HitDelayHistory WHERE SongMapName=? AND RecordTime=?",
+					(self.cursorHistory, self.historyRecordTimeValueLabel["text"])
+				)
 				self.db.commit()
 				self.HistoryUpdate()
 
@@ -218,7 +222,10 @@ class HitDelayText(object):
 		nowHistoryName = self.historyNameEntry.get().replace("\'","’")
 		if self.cursorHistory != nowHistoryName:
 			self.__logger.debug(f"change history name \nfrom {self.cursorHistory} \nto {nowHistoryName} \nwhen time is {self.historyRecordTimeValueLabel['text']}")
-			self.cur.execute(f'update HitDelayHistory set SongMapName=\'{nowHistoryName}\' where SongMapName=\'{self.cursorHistory}\' and RecordTime=\'{self.historyRecordTimeValueLabel["text"]}\'')
+			self.cur.execute(
+				"UPDATE HitDelayHistory SET SongMapName=? WHERE SongMapName=? AND RecordTime=?",
+				(nowHistoryName, self.cursorHistory, self.historyRecordTimeValueLabel["text"]),
+			)
 			self.db.commit()
 			self.HistoryUpdate()
 
@@ -229,7 +236,10 @@ class HitDelayText(object):
 		historyItem = e.item(itemID,"values")				# 取得values参数
 		self.__logger.debug(e.item(itemID))
 		if not self.history == []:
-			data = self.cur.execute(f'select * from HitDelayHistory where SongMapName=\'{historyItem[0]}\' and RecordTime=\'{historyItem[1]}\'')
+			data = self.cur.execute(
+			 	"SELECT * FROM HitDelayHistory WHERE SongMapName=? AND RecordTime=?",
+			 	(historyItem[0], historyItem[1]),
+			)
 			data = data.fetchone()
 			HitDelayDraw(data,isHistory=True)
 

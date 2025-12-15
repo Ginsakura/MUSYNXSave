@@ -179,15 +179,24 @@ class AllHitAnalyze(object):
 			x = (x+1)%7;
 
 		##正态分布函数曲线
-		pdfAxis = [PDFx(i) for i in self.xAxis]
+		if self.var > 0:
+    		pdfAxis = [PDFx(i) for i in self.xAxis]
+		else:
+    		pdfAxis = []
 		ax1.plot(self.xAxis,pdfAxis,linestyle='-',alpha=1,linewidth=1,color='grey',
 			label=f'Fitting all data\n(μ={self.avg}\n σ={self.std})');
 
-		pdfExAxis = [PDFxEx(i) for i in self.xAxis]
+		if self.var > 0:
+    		pdfAxis = [PDFxEx(i) for i in self.xAxis]
+		else:
+    		pdfAxis = []
 		ax1.plot(self.xAxis,pdfExAxis,linestyle='-',alpha=1,linewidth=1,color='black',
 			label=f'Fitting only on Exact rate\n(μ={self.avgEx}\n σ={self.stdEx})');
 
-		pdfEXAxis = [PDFxEX(i) for i in self.xAxis]
+		if self.var > 0:
+    		pdfAxis = [PDFxEX(i) for i in self.xAxis]
+		else:
+    		pdfAxis = []
 		ax1.plot(self.xAxis,pdfEXAxis,linestyle='-',alpha=1,linewidth=1,color='blue',
 			label=f'Fitting only on Cyan Exact rate\n(μ={self.avgEX}\n σ={self.stdEX})');
 

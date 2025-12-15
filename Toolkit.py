@@ -49,9 +49,9 @@ class Toolkit(object):
 		startTime:int = time.perf_counter_ns();
 		logger.info('Changing Console Style...');
 		config:Config = Config();
-		if config.MainExecPath:
+		if not config.MainExecPath:
 			Toolkit.GetSaveFile();
-		if config.MainExecPath:
+		if not config.MainExecPath:
 			logger.error('Not Have Config.MainExecPath!');
 			return;
 		execPath = config.MainExecPath.replace('/','_')+'musynx.exe';
@@ -72,8 +72,9 @@ class Toolkit(object):
 		startTime:int = time.perf_counter_ns();
 		if (filePath is None): return "";
 		with open(filePath,'rb') as fileBytes:
-			return sha256(fileBytes.read()).hexdigest().upper();
+			hashResult:str = sha256(fileBytes.read()).hexdigest().upper();
 		logger.debug(f"GetHash() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
+		return hashResult;
 
 	@classmethod
 	def ResourceReleases(cls, offset:int, lenth:int, releasePath:str=None)->bytes:
@@ -102,7 +103,7 @@ class Toolkit(object):
 		startTime:int = time.perf_counter_ns();
 		# 检查旧版数据文件夹
 		logger.debug("Check \"musync\\\" is exists...");
-		if os.path.exists(''):
+		if os.path.exists('./musync/'):
 			os.rename('./musync/','./musync_data/');
 		# 检查数据文件夹是否存在
 		logger.debug("Check \"musync_data\\\" is not exists...");
@@ -153,7 +154,7 @@ class Toolkit(object):
 		logger.debug(f"CheckResources() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
 
 	@classmethod
-	def GetSaveFile(self)->str:
+	def GetSaveFile(cls)->str:
 		"搜索预设存档目录"
 		startTime:int = time.perf_counter_ns();
 		logger.debug("正在搜索存档文件中……");

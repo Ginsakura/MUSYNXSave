@@ -196,7 +196,8 @@ class MusyncSavDecodeGUI(object):
 	def Closing(self):
 		self.logger.info("Software Closing...");
 		self.checkGameStartEvent.clear();
-		self.checkGameIsStartThread.join();
+		if self.checkGameIsStartThread and self.checkGameIsStartThread.is_alive():
+    		self.checkGameIsStartThread.join()
 		self.root.destroy();
 		Config.SaveConfig();
 		SaveDataInfo.DumpToJson();
@@ -323,7 +324,7 @@ class MusyncSavDecodeGUI(object):
 				self.logger.info(f"  Terget Json Version: {githubVersion}");
 				if githubVersion>localVersion:
 					response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.json", timeout=10)
-					songNameJson = response.content
+					songNameJson = response.text
 					with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
 						snj.write(songNameJson);
 					SongName.LoadFile();
@@ -331,9 +332,10 @@ class MusyncSavDecodeGUI(object):
 				self.logger.error("Can't get \"songname.update\", HTTP status code: %d."%(response.status_code));
 		except Exception as e:
 			self.logger.exception("谱面信息更新发生错误: ");
+			# TODO: 修改为root.After
 			messagebox.showerror("Error", f'发生错误: {e}');
-			if messagebox.askyesno("无法获取谱面信息更新", f'是否前往网页查看是否存在更新？\n(请比对 SongName.update 中的时间是否比本地文件中的时间更大)'):
-				webbrowser.open("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update", timeout=10)
+			if messagebox.askyesno("无法获取谱面信息更新", f'是否前往网页查看是否存在更新?\n(请比对 SongName.update 中的时间是否比本地文件中的时间更大)'):
+				webbrowser.open("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
 		endTime = time.perf_counter_ns()
 		self.logger.info("CheckJsonUpdate Run Time: %f ms"%((endTime - startTime)/1000000));
 
@@ -495,6 +497,16 @@ class MusyncSavDecodeGUI(object):
 		self.UpdateWindowInfo()
 
 # 控件更新功能组
+	def ShowMessageBox(self, type:int=0, title:str="", msg:str=""):
+		# TODO: messagebox in root.after
+		if (level==0):
+			pass;
+		elif (level == 1):
+			pass;
+		elif (level == 2):
+			pass;
+
+
 	def CheckGameRunning(self):
 		logger:logging.Logger = Logger.GetLogger("MusyncSavDecodeGUI.CheckGameRunning")
 		logger.info("Start Thread: CheckGameIsStart.");
@@ -665,6 +677,13 @@ class SongSelectEnum(Enum):
 	Builtin = 0;
 	DLC = 1;
 	All = 2;
+
+@unique
+class MessageBoxEnum(Enum):
+	"""messagebox 类型枚举"""
+	# TODO: 补全
+	showerror = 0;
+	askyesno = 1;
 
 
 if __name__ == '__main__':

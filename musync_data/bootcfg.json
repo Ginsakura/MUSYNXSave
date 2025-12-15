@@ -1,5 +1,5 @@
 {
-  "Version": "2.0.1.4",
+  "Version": "2.0.2.1",
   "LoggerFilter": "DEBUG",
   "Acc_Sync": true,
   "CheckUpdate": false,
@@ -11,10 +11,10 @@
   "ConsoleAlpha": 75,
   "ConsoleFont": "霞鹜文楷等宽",
   "ConsoleFontSize": 36,
-  "MainExecPath": "D:\\Program Files\\steam\\steamapps\\common\\MUSYNX\\",
+  "MainExecPath": "I:\\SteamLibrary\\steamapps\\common\\MUSYNX\\",
   "ChangeConsoleStyle": true,
   "FramelessWindow": false,
   "TransparentColor": "#FFFFFF",
   "Default4Keys": true,
-  "DefaultDiffcute": 0
+  "DefaultDiffcute": 1
 }

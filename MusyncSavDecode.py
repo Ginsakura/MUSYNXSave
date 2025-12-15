@@ -25,13 +25,14 @@ class MUSYNCSavProcess(object):
 	"""docstring for MUSYNCSavProcess""";
 	def __init__(self, savFile:str=''):
 		super(MUSYNCSavProcess, self).__init__();
+		self.__assembly_loaded = False
 		try:
 			assembly = Assembly.LoadFrom(Config.MainExecPath+'MUSYNX_Data/Managed/Assembly-CSharp.dll')
-			# 动态获取类的类型
-			UserMemory = assembly.GetType("Assembly-CSharp.UserMemory")
-			SongSaveInfo = assembly.GetType("Assembly-CSharp.SaveInfoList")
+			self.__assembly = assembly
+			self.__assembly_loaded = True
 		except Exception:
 			logger.exception(f"Failed to Load {Config.MainExecPath}MUSYNX_Data/Managed/Assembly-CSharp.dll")
+			raise
 		self.savPath:str = savFile;
 		self.FavSong:list[str] = list();
 		self.__logger:logging.Logger = Logger.GetLogger(name="MUSYNCSavDecode.MUSYNCSavProcess");
@@ -78,7 +79,7 @@ class MUSYNCSavProcess(object):
 			method = propertyInfo.GetGetMethod(nonPublic=True);
 			return method.Invoke(instance, None);
 
-		def NetListToPyList(saveInfoList)->MapDataInfo:
+		def NetListToPyList(saveInfoList)->list[MapDataInfo]:
 			'''将C# List<SongSaveInfo>转换为Python List[SongSaveInfoPy]''';
 			saveInfos:list[MapDataInfo] = list();
 			for songSaveInfo in saveInfoList:

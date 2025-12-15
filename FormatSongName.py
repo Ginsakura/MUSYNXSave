@@ -55,8 +55,10 @@ def FormatSongName20230626(): #2023年6月26日
 		data = json.load(f)
 	for ids in data:
 		data[ids] = data[ids]+[0]
-	json.dump(data,open("./musync_data/SongName.json",'w',encoding='utf8'),ensure_ascii=False)
+	with open("./musync_data/SongName.json",'w',encoding='utf8') as f:
+		json.dump(data, f, ensure_ascii=False)
 		
 if __name__ == '__main__':
 	# Sort()
 	# FormatSongName20230626()
+	pass;

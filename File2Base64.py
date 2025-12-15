@@ -1,5 +1,5 @@
 ﻿import gzip
-from hashlib import md5
+from hashlib import sha256
 import io
 import json
 import os
@@ -7,15 +7,15 @@ import struct
 # from base64 import b64encode
 
 FillSize:int = 512;
-FixDLL:str = "F39E7D866C2EF4F6A40E573EF5B0D2A8";
+FixDLL:str = "83951C09C2402D99018F28F405725D07A9D27807D9147F19AD4F6E089FCB7C9D";
 # Source Assembly-CSharp.dll
-SourceDLL:str = '6968CEE6E5F671B9DDB3F6AB0769396E';
+SourceDLL:str = '1F66F70DBF17B37EE1F8B2F67D7938AF9ACF20148F331335F9285502E63B5F4C';
 SongNameVersion:int = 20250303;
 
 def GetHash(filePath:str=None)->str:
 	if (filePath is None): return "";
 	with open(filePath,'rb') as fileBytes:
-		return md5(fileBytes.read()).hexdigest().upper();
+		return sha256(fileBytes.read()).hexdigest().upper();
 
 def CompressAndEncode(filePath: str) -> bytes:
 	"""
@@ -129,5 +129,6 @@ if __name__ == '__main__':
 	binaryFile.write(compressData.ljust(FillSize-4, b'\x00'));
 	# 写入文件数据
 	binaryFile.write(binaryData);
+	binaryFile.close();
 
 	print("success encode resources");

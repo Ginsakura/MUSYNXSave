@@ -4,7 +4,7 @@ matplotlib==3.9.2
 uiautomation==2.0.18
 pyperclip==1.8.2
 psutil==5.9.5
-Pillow==10.0.0
+Pillow==10.3.0
 requests==2.31.0
 pyinstaller==6.1.0
 pythonnet==3.0.5

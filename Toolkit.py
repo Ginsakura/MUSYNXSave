@@ -1,5 +1,5 @@
 ﻿import gzip
-from hashlib import md5
+from hashlib import sha256
 import io
 import json
 import logging
@@ -72,7 +72,7 @@ class Toolkit(object):
 		startTime:int = time.perf_counter_ns();
 		if (filePath is None): return "";
 		with open(filePath,'rb') as fileBytes:
-			return md5(fileBytes.read()).hexdigest().upper();
+			return sha256(fileBytes.read()).hexdigest().upper();
 		logger.debug(f"GetHash() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
 
 	@classmethod
@@ -132,13 +132,13 @@ class Toolkit(object):
 			Toolkit.ResourceReleases(info["offset"], info["lenth"], "./mscorlib.dll");
 		# 检查字体文件是否存在
 		logger.debug("Check \"musync_data\\LXGW.ttf\" is not exists...");
-		if not os.path.isfile('./musync_data/LXGW.ttf' or (Toolkit.GetHash('./musync_data/LXGW.ttf') != cls.__resourceFileInfo["Font"])):
+		if not os.path.isfile('./musync_data/LXGW.ttf') or (Toolkit.GetHash('./musync_data/LXGW.ttf') != cls.__resourceFileInfo["Font"]):
 			info:dict[str,any] = cls.__resourceFileInfo["Font"];
 			Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/LXGW.ttf');
 		# 检查字体是否安装
 		logger.debug("Check \"霞鹜文楷等宽\" is not installed...");
 		if not '霞鹜文楷等宽' in fonts:
-			os.system(f'{os.getcwd()}/musync_data/LXGW.ttf');
+			os.startfile(os.path.join(os.getcwd(), 'musync_data', 'LXGW.ttf'))
 		# 检查皮肤文件夹是否存在
 		logger.debug("Check \"skin\\\" is not exists...");
 		if not os.path.exists("./skin/"):
@@ -204,7 +204,7 @@ class Toolkit(object):
 		if (nowHash == fixHash):
 			rtcode = 1;
 		# 当前文件哈希为空文件 或者 为原始文件哈希
-		elif (sourceHash == "D41D8CD98F00B204E9800998ECF8427E") or (sourceHash == nowHash) and (sourceHash != fixHash):
+		elif (sourceHash == "D41D8CD98F00B204E9800998ECF8427E") or ((sourceHash == nowHash) and (sourceHash != fixHash)):
 			DLLInjection();
 			rtcode = 1;
 		logger.debug(f"GameLibCheck() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
@@ -221,7 +221,7 @@ class Toolkit(object):
 			# 使用 PRAGMA table_info 获取表的列信息
 			cursor.execute(f"PRAGMA table_info(HitDelayHistory);")
 			# 获取列的数量
-			columnCount = len(cursor.fetchall());
+			columnCount:int = len(cursor.fetchall());
 			if (columnCount==6):
 				logger.debug("存在文件 HitDelayHistory_v2.db 且 列数为6, 判定数据库版本为 v2");
 				logger.info("Database Version: 2");

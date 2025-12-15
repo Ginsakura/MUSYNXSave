@@ -1,4 +1,4 @@
-version = '2.0.2rc1'
+version = '2.1.0rc1'
 isPreRelease = True
-preVersion = "2.0.2pre1"
-isPreRelease = False
+preVersion = "2.1.0pre1"
+# isPreRelease = False

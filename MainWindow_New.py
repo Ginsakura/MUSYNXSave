@@ -254,12 +254,12 @@ class MusyncSavDecodeGUI(object):
 
 	def CheckJsonUpdate(self):
 		try:
-			response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
+			response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update", timeout=10)
 			githubVersion = response.content.decode('utf8')
 			with open("./musync_data/SongName.update",'r',encoding='utf8') as snju:
 				localVersion = snju.read()
 			if githubVersion>localVersion:
-				response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.json")
+				response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.json", timeout=10)
 				songNameJson = response.json()
 				with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
 					json.dump(songNameJson,snj,indent="",ensure_ascii=False)
@@ -271,7 +271,7 @@ class MusyncSavDecodeGUI(object):
 	def CheckUpdate(self):
 		oldVersion,oldRC = int(f'{self.version[0]}{self.version[2]}{self.version[4]}'),int(self.version[7:])
 		try:
-			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
+			response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest", timeout=10)
 			version = response.json()["tag_name"]
 			newVersion,newRC = int(f'{version[0]}{version[2]}{version[4]}'),int(version[7:])
 		except Exception as e:

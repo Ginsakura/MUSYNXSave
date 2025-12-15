@@ -315,14 +315,14 @@ class MusyncSavDecodeGUI(object):
 	def CheckJsonUpdate(self):
 		startTime = time.perf_counter_ns()
 		try:
-			response:requests.Response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update");
+			response:requests.Response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update", timeout=10);
 			localVersion:int = int(SongName.Version());
 			self.logger.info(f"   Local Json Version: {localVersion}");
 			if response.status_code == 200:
 				githubVersion = int(response.content.decode('utf8'));
 				self.logger.info(f"  Terget Json Version: {githubVersion}");
 				if githubVersion>localVersion:
-					response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.json")
+					response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.json", timeout=10)
 					songNameJson = response.content
 					with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
 						snj.write(songNameJson);
@@ -333,7 +333,7 @@ class MusyncSavDecodeGUI(object):
 			self.logger.exception("谱面信息更新发生错误: ");
 			messagebox.showerror("Error", f'发生错误: {e}');
 			if messagebox.askyesno("无法获取谱面信息更新", f'是否前往网页查看是否存在更新？\n(请比对 SongName.update 中的时间是否比本地文件中的时间更大)'):
-				webbrowser.open("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
+				webbrowser.open("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update", timeout=10)
 		endTime = time.perf_counter_ns()
 		self.logger.info("CheckJsonUpdate Run Time: %f ms"%((endTime - startTime)/1000000));
 
@@ -355,7 +355,7 @@ class MusyncSavDecodeGUI(object):
 			else: return False;
 		startTime:int = time.perf_counter_ns()
 		try:
-			response:requests.Response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest")
+			response:requests.Response = requests.get("https://api.github.com/repos/ginsakura/MUSYNCSave/releases/latest", timeout=10)
 			resJson = response.json()
 			if "tag_name" in resJson:
 				tergetVersion:str = response.json()["tag_name"].replace("rc",".")
@@ -366,9 +366,10 @@ class MusyncSavDecodeGUI(object):
 					url:str = "https://github.com/Ginsakura/MUSYNCSave/releases/latest";
 					self.root.after(0, lambda _:(webbrowser.open(url) if messagebox.askyesno(messageHead, message) else _ ));
 					return;
-		except Exception as e:
+		except Exception as ex:
 			self.logger.exception("更新信息发生错误: ");
-			self.root.after(0, lambda _:messagebox.showerror("Error", f'发生错误: {e}'));
+			error_msg = str(ex)
+			self.root.after(0, lambda _: messagebox.showerror("Error", f'发生错误: {error_msg}'));
 		# print(localVersion,tergetVersion)
 		self.logger.info('  Terget Version : %s'%tergetVersion.replace("rc","."));
 		self.logger.info('   Local Version : %s'%self.version.replace("rc","."));
@@ -401,9 +402,10 @@ class MusyncSavDecodeGUI(object):
 
 	def HitDelay(self):
 		"DLL注入功能"
-		if Config().DLLInjection:
-			result:int = Toolkit.GameLibCheck();
-		if (result == 0):
+		if not Config().DLLInjection:
+			return;
+		result:int = Toolkit.GameLibCheck();
+		if result == 0:
 			messagebox.showerror("Error", f'DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁');
 			self.logger.error("DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁")
 			return;
@@ -628,7 +630,7 @@ class SubWindow(object):
 
 	def UpdateWindow(self):
 		self.root.update()
-		self.windowInfo = ['root.winfo_x()','root.winfo_y()',root.winfo_width(),root.winfo_height()]
+		self.windowInfo = ['root.winfo_x()','root.winfo_y()',self.root.winfo_width(),self.root.winfo_height()]
 
 		self.globalSync.place(x=10 ,y=10 ,width=(self.windowInfo[2]-20) ,height=(self.windowInfo[3]-20))
 		self.globalSync.column("SongName",anchor="w",width=100)

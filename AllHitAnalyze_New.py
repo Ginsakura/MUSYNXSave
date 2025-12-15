@@ -106,11 +106,11 @@ class AllHitAnalyze(object):
 	def Show(self) -> None:
 		# init Figure
 		fig:Figure = matplotlib.pyplot.figure(f"HitAnalyze (Total:{self.summation},"\
-			f"  CyanEx:{sum(self.Accurate_Sync_Rate[0:4])},"\
-			f"  BlueEx:{self.Accurate_Sync_Rate[5]},"\
-			f"  Great:{self.Accurate_Sync_Rate[6]},"\
-			f"  Right:{self.Accurate_Sync_Rate[7]},"\
-			f"  Miss:{self.Accurate_Sync_Rate[8]})",
+			f"  CyanEx:{sum(self.Accurate_Sync_Rate[0:3])},"\
+			f"  BlueEx:{self.Accurate_Sync_Rate[4]},"\
+			f"  Great:{self.Accurate_Sync_Rate[5]},"\
+			f"  Right:{self.Accurate_Sync_Rate[6]},"\
+			f"  Miss:{self.Accurate_Sync_Rate[7]})",
 				  figsize=(16.0, 9.0));
 		fig.clear();
 		# init plot config
@@ -126,7 +126,7 @@ class AllHitAnalyze(object):
 			RingAxes.add_patch(matplotlib.patches.Rectangle((-1.5, -1.5), 3, 3, color="white"));
 			self.RingChart(RingAxes);
 		# Show Plots
-		matplotlib.plt.show();
+		matplotlib.pyplot.show();
 
 	def BarChart(self, axes:Axes) -> None:
 		# f(x) = \frac{1}{\sigma\sqrt{2\pi}} e^{-\frac{(x-\mu)^2}{2\sigma^2}}
@@ -139,7 +139,7 @@ class AllHitAnalyze(object):
 			return (E ** (((x - self.avgEX) ** 2) / (-2 * self.stdEX ** 2))) / (((2 * PI) ** 0.5) * self.stdEX) * self.summationEX;
 		# init chart argument
 		colors:list[str] = ['red','orange','yellow','green','cyan','blue','purple'];
-		horizontalLines:list[list[int]] = list(list(int));
+		horizontalLines:list[list[int]] = [];
 		yAxisMax:int = max(self.yAxis);
 		yAxisMaxS:str = "%d"%yAxisMax;
 		yAxisUpperLimit:int = 10 ** len(yAxisMaxS);

@@ -4,12 +4,10 @@ import logging
 import os
 import shutil
 import threading
-from Resources import *
-
-
 
 class Config(object):
-	"从bootcfg.json读取配置信息,单例";
+	"""从bootcfg.json读取配置信息,单例"""
+	@staticmethod
 	def CompressLogFile()->None:
 		logsDir:str		= ".\\logs\\";
 		# 获取已有的压缩文件数量
@@ -159,25 +157,25 @@ class Config(object):
 			cls.__logger.exception(f"Failed to save configuration to \"{cls.__filePath}\": {e}");
 
 class Logger(object):
-	"用于记录和生成logging.Logger"
+	"""用于记录和生成日志"""
 	__formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s');
-	__file = logging.FileHandler(".\\log.txt");
-	__console = logging.StreamHandler();
 	__loggerFilter:int = Config.LoggerFilter;
 
 	@classmethod
 	def GetLogger(cls, name:str)->logging.Logger:
-		"获取Logger"
-		cls.__file.setLevel(cls.__loggerFilter);
-		cls.__file.setFormatter(cls.__formatter);
-		cls.__console.setLevel(cls.__loggerFilter);
-		cls.__console.setFormatter(cls.__formatter);
+		"""获取Logger"""
 
 		logger:logging.Logger = logging.getLogger(name);
 		logger.setLevel(level = cls.__loggerFilter)
 		if not logger.hasHandlers():
-			logger.addHandler(cls.__file);
-			logger.addHandler(cls.__console);
+			file_handler = logging.FileHandler(".\\log.txt")
+			file_handler.setLevel(cls.__loggerFilter)
+			file_handler.setFormatter(cls.__formatter)
+			console_handler = logging.StreamHandler()
+			console_handler.setLevel(cls.__loggerFilter)
+			console_handler.setFormatter(cls.__formatter)
+			logger.addHandler(file_handler)
+			logger.addHandler(console_handler)
 		return logger;
 
 class SongName(object):
@@ -387,7 +385,6 @@ class SaveDataInfo(object):
 				cls.__logger.info("creating an instance in Resources.SaveDataInfo");
 		return cls.__instance
 
-	@classmethod
 	def __str__(cls)->str:
 		return f"SongSaveInfoPy(\n"\
 			f"\tversion:{cls.version}\n"\

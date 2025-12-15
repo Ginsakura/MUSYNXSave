@@ -163,7 +163,7 @@ class HitDelayText(object):
 				if (ids < self.delayInterval) and (ids > -self.delayInterval):
 					sumNums += ids;
 					sumKeys += 1;
-			avgDelay = sumNums/sumKeys;
+			avgDelay = (sumNums/sumKeys) if sumKeys > 0 else 0;
 			avgAcc = sum([abs(i) for i in dataList])/allKeys;
 			self.delayHistory.insert('', END, values=(name,allKeys,'%.6f ms'%avgDelay,'%.6f ms'%avgAcc));
 			dataListStr = "";
@@ -191,7 +191,7 @@ class HitDelayText(object):
 			historyName = historyItem[0].replace("\'",'’')
 			recordTime = historyItem[1]
 			self.__logger.debug(f"ShowHistoryInfo: {historyItem}")
-			data = self.cur.execute(f"select * from HitDelayHistory where SongMapName=\'{historyName}\'  and RecordTime=\'{recordTime}\'")
+			data = self.cur.execute("SELECT * FROM HitDelayHistory WHERE SongMapName=? AND RecordTime=?", (historyName, recordTime))
 			data = data.fetchone()
 			self.__logger.debug(data[:4])
 			self.cursorHistory = data[0]

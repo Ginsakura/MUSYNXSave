@@ -18,6 +18,7 @@ logger:logging.Logger = Logger().GetLogger("Toolkit");
 
 class Toolkit(object):
 	logger.debug("加载资源文件: \"./musync_data/Resources.bin\".");
+	__resourceFileInfo:dict[str,dict[str,any]] = {};
 	try:
 		__resourceFile:io.TextIOWrapper = open("./musync_data/Resources.bin", "rb");
 		__resourceFile.seek(0);
@@ -173,7 +174,7 @@ class Toolkit(object):
 		else:
 			logger.error("搜索不到存档文件.");
 			logger.info("GetSaveFile() Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000));
-			return;
+			return "";
 		logger.debug(f"SaveFilePath: {saveFilePath}");
 		Config.MainExecPath = saveFilePath;
 		Config.SaveConfig();

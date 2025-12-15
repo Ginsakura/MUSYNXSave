@@ -78,8 +78,8 @@ class Config(object):
 	def __new__(cls):
 		with cls.__lock:
 			if not cls.__instance:
-            	if os.path.isfile(".\\log.txt"):
-            	    cls.CompressLogFile()
+				if os.path.isfile(".\\log.txt"):
+					cls.CompressLogFile()
 				cls.__instance = super(Config, cls).__new__(cls)
 				__file:logging.FileHandler = logging.FileHandler(".\\log.txt");
 				__file.setLevel(logging.DEBUG);

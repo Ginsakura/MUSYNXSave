@@ -138,14 +138,14 @@ class HitDelayText(object):
 			consoleFind = True
 		except Exception as e:
 			self.__logger.exception("控制台窗口未找到,请确认控制台窗口已开启");
-		try:
-			win = uiauto.WindowControl(searchDepth=1,Name='选择 MUSYNX Delay',searchInterval=1).DocumentControl(searchDepth=1,Name='Text Area',searchInterval=1)
-			win.SendKeys('{Ctrl}A',waitTime=0.1)
-			win.SendKeys('{Ctrl}C',waitTime=0.1)
-			consoleFind = True
-		except Exception as e:
-			self.__logger.exception("控制台窗口未找到,请确认控制台窗口已开启");
-			messagebox.showerror("Error", f'控制台窗口未找到\n请确认控制台窗口已开启\n{e}');
+			try:
+				win = uiauto.WindowControl(searchDepth=1,Name='选择 MUSYNX Delay',searchInterval=1).DocumentControl(searchDepth=1,Name='Text Area',searchInterval=1)
+				win.SendKeys('{Ctrl}A',waitTime=0.1)
+				win.SendKeys('{Ctrl}C',waitTime=0.1)
+				consoleFind = True
+			except Exception as e:
+				self.__logger.exception("控制台窗口未找到,请确认控制台窗口已开启");
+				messagebox.showerror("Error", f'控制台窗口未找到\n请确认控制台窗口已开启\n{e}');
 		if consoleFind:
 			data = pyperclip.paste().split('\n');
 			dataList=list();
@@ -166,7 +166,9 @@ class HitDelayText(object):
 					sumKeys += 1;
 			avgDelay = (sumNums / sumKeys) if sumKeys > 0 else 0
 			avgAcc = (sum(abs(i) for i in dataList) / allKeys) if allKeys > 0 else 0
-			self.delayHistory.insert('', END, values=(name,allKeys,'%.6f ms'%avgDelay,'%.6f ms'%avgAcc));
+			# Either correct column order:
+			self.delayHistory.insert('', END, values=(name, time, allKeys, '%.6f ms'%avgDelay, '%.6f ms'%avgAcc))
+			# or drop this insert and rely on HistoryUpdate() alone.
 			dataListStr = "";
 			for i in dataList:
 				dataListStr += f'{i}|';
@@ -174,19 +176,24 @@ class HitDelayText(object):
 			self.db.commit();
 			self.HistoryUpdate();
 			dataList = [name,time,avgDelay,allKeys,avgAcc,dataList];
+			if allKeys == 0:
+				messagebox.showwarning("Warning", "未检测到任何有效的 HitDelay 数据，已跳过绘图。");
+				return;
 			HitDelayDraw(dataList,isHistory=False);
 
 	def OpenTxt(self):
 		os.system('start notepad ./musync_data/Acc-Sync.json')
 		# os.system(f'start explorer {os.getcwd()}')
 		import AvgAcc_SynxAnalyze
-		AvgAcc_SynxAnalyze.Analyze()
+		AvgAcc_SynxAnalyze.Analyze();
 
 	def ShowHistoryInfo(self,event):
 		e = event.widget									# 取得事件控件
 		itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
 		# state = e.item(itemID,"text")						# 取得text参数
 		historyItem = e.item(itemID,"values")				# 取得values参数
+		if not itemID or not historyItem:
+			return;
 		if not self.history == []:
 			isChange = False
 			historyName = historyItem[0].replace("\'",'’')
@@ -279,6 +286,10 @@ class HitDelayDraw(object):
 			self.dataList = dataList[5]
 
 		self.dataListLenth = len(self.dataList)
+		self.dataListLenth = len(self.dataList)
+		if self.dataListLenth == 0:
+			self.__logger.warning("HitDelayDraw: empty data list, skipping plots");
+			return;
 		self.x_axis = [i for i in range(self.dataListLenth)]
 		self.y_axis = [int(i) for i in self.dataList]
 

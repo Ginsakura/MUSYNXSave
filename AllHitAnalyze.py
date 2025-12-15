@@ -136,6 +136,9 @@ class AllHitAnalyze(object):
 		maxLen = 10**len(strMaxY);
 		maxLenSub2 = maxLen//100;
 
+		if maxY == 0:
+			ax1.text(0.5, 0.5, "No data", ha="center", va="center",transform=ax1.transAxes, fontsize=14);
+			return;
 		if maxY < maxLen*0.2:
 			for ids in range(maxLen//400,maxLenSub2,maxLen//400):
 				yLine.append([ids for i in range(-150,251)]);
@@ -180,7 +183,7 @@ class AllHitAnalyze(object):
 
 		##正态分布函数曲线
 		if self.var > 0:
-			pdfAxis = [PDFxEx(i) for i in self.xAxis]
+			pdfAxis = [PDFx(i) for i in self.xAxis]
 		else:
 			pdfAxis = []
 		ax1.plot(self.xAxis,pdfAxis,linestyle='-',alpha=1,linewidth=1,color='grey',
@@ -217,6 +220,9 @@ class AllHitAnalyze(object):
 			per = num/summ*100;
 			return '%.1f%%'%(per);
 		accurateRateSum = sum(self.accurateRate);
+		if accurateRateSum == 0:
+			ax2.text(0.5, 0.5, "No data", ha="center", va="center", transform=ax2.transAxes, fontsize=12);
+			return;
 
 		wedgeprops = {'width':0.15, 'edgecolor':'black', 'linewidth':0.2};
 		pieRtn = ax2.pie(self.accurateRate, wedgeprops=wedgeprops, startangle=90, autopct='%1.1f%%', pctdistance = 0.95, labeldistance = 1.05, 

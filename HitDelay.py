@@ -137,15 +137,15 @@ class HitDelayText(object):
 			win.SendKeys('{Ctrl}C',waitTime=0.1)
 			consoleFind = True
 		except Exception as e:
-				self.__logger.exception("控制台窗口未找到,请确认控制台窗口已开启");
-			try:
-				win = uiauto.WindowControl(searchDepth=1,Name='选择 MUSYNX Delay',searchInterval=1).DocumentControl(searchDepth=1,Name='Text Area',searchInterval=1)
-				win.SendKeys('{Ctrl}A',waitTime=0.1)
-				win.SendKeys('{Ctrl}C',waitTime=0.1)
-				consoleFind = True
-			except Exception as e:
-				self.__logger.exception("控制台窗口未找到,请确认控制台窗口已开启");
-				messagebox.showerror("Error", f'控制台窗口未找到\n请确认控制台窗口已开启\n{e}');
+			self.__logger.exception("控制台窗口未找到,请确认控制台窗口已开启");
+		try:
+			win = uiauto.WindowControl(searchDepth=1,Name='选择 MUSYNX Delay',searchInterval=1).DocumentControl(searchDepth=1,Name='Text Area',searchInterval=1)
+			win.SendKeys('{Ctrl}A',waitTime=0.1)
+			win.SendKeys('{Ctrl}C',waitTime=0.1)
+			consoleFind = True
+		except Exception as e:
+			self.__logger.exception("控制台窗口未找到,请确认控制台窗口已开启");
+			messagebox.showerror("Error", f'控制台窗口未找到\n请确认控制台窗口已开启\n{e}');
 		if consoleFind:
 			data = pyperclip.paste().split('\n');
 			dataList=list();

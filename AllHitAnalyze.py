@@ -180,23 +180,23 @@ class AllHitAnalyze(object):
 
 		##正态分布函数曲线
 		if self.var > 0:
-    		pdfAxis = [PDFx(i) for i in self.xAxis]
+			pdfAxis = [PDFxEx(i) for i in self.xAxis]
 		else:
-    		pdfAxis = []
+			pdfAxis = []
 		ax1.plot(self.xAxis,pdfAxis,linestyle='-',alpha=1,linewidth=1,color='grey',
 			label=f'Fitting all data\n(μ={self.avg}\n σ={self.std})');
 
-		if self.var > 0:
-    		pdfAxis = [PDFxEx(i) for i in self.xAxis]
+		if self.varEx > 0:
+			pdfExAxis = [PDFxEx(i) for i in self.xAxis]
 		else:
-    		pdfAxis = []
+			pdfExAxis = []
 		ax1.plot(self.xAxis,pdfExAxis,linestyle='-',alpha=1,linewidth=1,color='black',
 			label=f'Fitting only on Exact rate\n(μ={self.avgEx}\n σ={self.stdEx})');
 
-		if self.var > 0:
-    		pdfAxis = [PDFxEX(i) for i in self.xAxis]
+		if self.varEX > 0:
+			pdfEXAxis = [PDFxEX(i) for i in self.xAxis]
 		else:
-    		pdfAxis = []
+			pdfEXAxis = []
 		ax1.plot(self.xAxis,pdfEXAxis,linestyle='-',alpha=1,linewidth=1,color='blue',
 			label=f'Fitting only on Cyan Exact rate\n(μ={self.avgEX}\n σ={self.stdEX})');
 

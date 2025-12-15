@@ -1,5 +1,4 @@
 ﻿import gzip
-from hashlib import sha256
 import io
 import json
 import os
@@ -104,8 +103,7 @@ if __name__ == '__main__':
 			hash = Toolkit.GetHash(file['Source']),
 			);
 		binaryOffset += len(encodeString);
-		with open(file['Target'],"rb") as fileContext:
-			binaryData += encodeString;
+		binaryData += encodeString;
 
 	# 修复文件结构
 	binaryInfo["GameLib"]["SourceHash"] = SourceDLL;

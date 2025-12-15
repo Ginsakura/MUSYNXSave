@@ -378,7 +378,7 @@ class MusyncSavDecodeGUI(object):
 		self.logger.info("Local PreVersion : %s"%self.preVersion.replace("pre","."));
 		labelUrl:str = "";
 		if (CheckVersion(self.preVersion if self.isPreRelease else self.version, tergetVersion)):
-			self.gitHubUrlVar = f'有新版本啦——点此打开下载页面	NewVersion: {tergetVersion}'
+			self.gitHubUrlVar.set(f'有新版本啦——点此打开下载页面	NewVersion: {tergetVersion}')
 			labelUrl = f"https://github.com/Ginsakura/MUSYNCSave/releases/tag/{tergetVersion}";
 			self.UpdateTip();
 		# else:
@@ -497,13 +497,13 @@ class MusyncSavDecodeGUI(object):
 		self.UpdateWindowInfo()
 
 # 控件更新功能组
-	def ShowMessageBox(self, type:int=0, title:str="", msg:str=""):
+	def ShowMessageBox(self, msgType:int=0, title:str="", msg:str=""):
 		# TODO: messagebox in root.after
-		if (level==0):
+		if (msgType==0):
 			pass;
-		elif (level == 1):
+		elif (msgType == 1):
 			pass;
-		elif (level == 2):
+		elif (msgType == 2):
 			pass;
 
 

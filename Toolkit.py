@@ -39,7 +39,7 @@ class Toolkit(object):
 		# height:int = GetSystemMetrics (1);
 		# real_resolution = [relw,relh];
 		# screen_size = [w,h];
-		dpi:int = int(round(relWidth[0] / width[0], 2) * 100);
+		dpi:int = int(round(relWidth / width, 2) * 100);
 		logger.debug(f"Get DPI:{dpi}");
 		logger.debug(f"GetDPI Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
 		return dpi;
@@ -92,8 +92,9 @@ class Toolkit(object):
 		__compressedStream:io.BytesIO = io.BytesIO(cls.__resourceFile.read(lenth));
 		with gzip.GzipFile(fileobj=__compressedStream, mode='rb') as gz_file:
 			decompressedData:bytes = gz_file.read()
-		with open(releasePath,"wb") as file:
-			file.write(decompressedData);
+		if releasePath is not None:
+			with open(releasePath,"wb") as file:
+				file.write(decompressedData);
 		logger.debug(f"ResourceReleases() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
 		return decompressedData;
 
@@ -113,12 +114,12 @@ class Toolkit(object):
 		os.makedirs("./logs/", exist_ok=True);
 		# 检查mscorlib.dll是否存在
 		logger.debug("Check \"./LICENSE\" is not exists...");
-		if (not os.path.isfile("./LICENSE") or (Toolkit.GetHash('./LICENSE') != cls.__resourceFileInfo["License"])):
+		if (not os.path.isfile("./LICENSE") or (Toolkit.GetHash('./LICENSE') != cls.__resourceFileInfo["License"]["hash"])):
 			info:dict[str,any] = cls.__resourceFileInfo["License"];
 			Toolkit.ResourceReleases(info["offset"], info["lenth"], "./LICENSE");
 		# 检查图标文件是否存在
 		logger.debug("Check \"musync_data\\MUSYNC.ico\" is not exists...");
-		if (not os.path.isfile('./musync_data/MUSYNC.ico') or (Toolkit.GetHash('./musync_data/MUSYNC.ico') != cls.__resourceFileInfo["Icon"])):
+		if (not os.path.isfile('./musync_data/MUSYNC.ico') or (Toolkit.GetHash('./musync_data/MUSYNC.ico') != cls.__resourceFileInfo["Icon"]["hash"])):
 			info:dict[str,any] = cls.__resourceFileInfo["Icon"];
 			Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/MUSYNC.ico');
 		# 检查SongName.json是否存在
@@ -128,12 +129,12 @@ class Toolkit(object):
 			Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/SongName.json');
 		# 检查mscorlib.dll是否存在
 		logger.debug("Check \"mscorlib.dll\" is not exists...");
-		if (not os.path.isfile("./mscorlib.dll") or (Toolkit.GetHash('./mscorlib.dll') != cls.__resourceFileInfo["CoreLib"])):
+		if (not os.path.isfile("./mscorlib.dll") or (Toolkit.GetHash('./mscorlib.dll') != cls.__resourceFileInfo["CoreLib"]["hash"])):
 			info:dict[str,any] = cls.__resourceFileInfo["CoreLib"];
 			Toolkit.ResourceReleases(info["offset"], info["lenth"], "./mscorlib.dll");
 		# 检查字体文件是否存在
 		logger.debug("Check \"musync_data\\LXGW.ttf\" is not exists...");
-		if not os.path.isfile('./musync_data/LXGW.ttf') or (Toolkit.GetHash('./musync_data/LXGW.ttf') != cls.__resourceFileInfo["Font"]):
+		if not os.path.isfile('./musync_data/LXGW.ttf') or (Toolkit.GetHash('./musync_data/LXGW.ttf') != cls.__resourceFileInfo["Font"]["hash"]):
 			info:dict[str,any] = cls.__resourceFileInfo["Font"];
 			Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/LXGW.ttf');
 		# 检查字体是否安装
@@ -281,6 +282,7 @@ class Toolkit(object):
 			cursor.execute("CREATE Table IF NOT EXISTS Infos (Key Text PRIMARY KEY, Value Text Default None);");
 			cursor.execute("INSERT Into Infos Values(?, ?)", ("Version","%d"%LastVersion));
 			db.commit();
+			db.close();
 			return;
 		if (nowVersion == 1):
 			logger.info(f"记录数据迁移中... v1->v2");

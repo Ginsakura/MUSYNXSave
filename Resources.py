@@ -12,10 +12,13 @@ class Config(object):
 		logsDir:str		= ".\\logs\\";
 		# Ensure logs directory exists
 		os.makedirs(logsDir, exist_ok=True);
+		logName:str		= "log.txt";
+		# Check if log file exists
+		if not os.path.isfile(f".\\{logName}"):
+			return;
 		# 获取已有的压缩文件数量
 		nextIndex:int = len([f for f in os.listdir(logsDir)]);
 		logsName:str	= f"log.{nextIndex}.gz";
-		logName:str		= "log.txt";
 		# 移动压缩文件到 logs 目录
 		shutil.move(f".\\{logName}", logsDir+logName);
 		# 压缩 log.txt 文件
@@ -133,7 +136,7 @@ class Config(object):
 		# 获取所有需要保存的属性
 		config_data = {
 			"Version": cls.Version,
-			"LoggerFilter" : loggerFilterStr,
+			"LoggerFilterString": loggerFilterStr,
 			"Acc_Sync": cls.Acc_Sync,
 			"CheckUpdate": cls.CheckUpdate,
 			"DLLInjection": cls.DLLInjection,

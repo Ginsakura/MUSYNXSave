@@ -1,8 +1,0 @@
-<?xml version="1.0"?>
-<ProfilingTarget xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <ProjectTarget>
-    <TargetProject>614ae87f-b8a4-457c-b876-4c6631cb2d19</TargetProject>
-    <FriendlyName>MUSYNCSavDecode</FriendlyName>
-  </ProjectTarget>
-  <UseVTune>false</UseVTune>
-</ProfilingTarget>

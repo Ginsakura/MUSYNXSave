@@ -9,6 +9,7 @@
 /logs
 /SavDecode
 /MusyncSaveDecode
+!/.github
 
 bootcfg.json
 LXGW.ttf

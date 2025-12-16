@@ -19,6 +19,7 @@ logger:logging.Logger = Logger().GetLogger("Toolkit");
 class Toolkit(object):
 	logger.debug("加载资源文件: \"./musync_data/Resources.bin\".");
 	__resourceFileInfo:dict[str,dict[str,any]] = {};
+	isResourceFileInfoLoaded = False;
 	try:
 		__resourceFile:io.TextIOWrapper = open("./musync_data/Resources.bin", "rb");
 		__resourceFile.seek(0);
@@ -27,23 +28,24 @@ class Toolkit(object):
 		with gzip.GzipFile(fileobj=__compressedStream, mode='rb') as gz_file:
 			decompressedData:bytes = gz_file.read()
 		__resourceFileInfo:dict[str,dict[str,any]] = json.loads(decompressedData.decode('ASCII'));
+		isResourceFileInfoLoaded = True;
 	except Exception as ex:
 		logger.exception("资源文件加载失败.");
 		messagebox.showerror("Error",f"资源文件\"./musync_data/Resources.bin\"加载失败!\n{ex}");
 
+	@staticmethod
 	def GetDpi()->int:
-		startTime:int = time.perf_counter_ns();
-		hDC:any = win32gui.GetDC(0);
-		relWidth:int = win32print.GetDeviceCaps(hDC, win32con.DESKTOPHORZRES);
-		# relHeight:int = win32print.GetDeviceCaps(hDC, win32con.DESKTOPVERTRES);
-		width:int = GetSystemMetrics(0);
-		# height:int = GetSystemMetrics (1);
-		# real_resolution = [relw,relh];
-		# screen_size = [w,h];
-		dpi:int = int(round(relWidth / width, 2) * 100);
-		logger.debug(f"Get DPI:{dpi}");
-		logger.debug(f"GetDPI Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
-		return dpi;
+		startTime:int = time.perf_counter_ns()
+		hDC = win32gui.GetDC(0)
+		try:
+			relWidth:int = win32print.GetDeviceCaps(hDC, win32con.DESKTOPHORZRES)
+			width:int = GetSystemMetrics(0)
+			dpi:int = int(round(relWidth / width, 2) * 100)
+		finally:
+			win32gui.ReleaseDC(0, hDC)
+		logger.debug(f"Get DPI:{dpi}")
+		logger.debug(f"GetDPI Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms")
+		return dpi
 
 	def ChangeConsoleStyle()->None:
 		"修改控制台样式"
@@ -113,37 +115,39 @@ class Toolkit(object):
 		# 检查日志存档文件夹
 		logger.debug("Check \"log\\\" is not exists...");
 		os.makedirs("./logs/", exist_ok=True);
-		# 检查mscorlib.dll是否存在
-		logger.debug("Check \"./LICENSE\" is not exists...");
-		if (not os.path.isfile("./LICENSE") or (Toolkit.GetHash('./LICENSE') != cls.__resourceFileInfo["License"]["hash"])):
-			info:dict[str,any] = cls.__resourceFileInfo["License"];
-			Toolkit.ResourceReleases(info["offset"], info["lenth"], "./LICENSE");
-		# 检查图标文件是否存在
-		logger.debug("Check \"musync_data\\MUSYNC.ico\" is not exists...");
-		if (not os.path.isfile('./musync_data/MUSYNC.ico') or (Toolkit.GetHash('./musync_data/MUSYNC.ico') != cls.__resourceFileInfo["Icon"]["hash"])):
-			info:dict[str,any] = cls.__resourceFileInfo["Icon"];
-			Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/MUSYNC.ico');
-		# 检查SongName.json是否存在
-		logger.debug("Check \"musync_data\\SongName.json\" is not exists...");
-		if (not os.path.isfile('./musync_data/SongName.json') or (cls.__resourceFileInfo["SongName"]["Version"] > SongName.Version())):
-			info:dict[str,any] = cls.__resourceFileInfo["SongName"];
-			Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/SongName.json');
-		# 检查mscorlib.dll是否存在
-		logger.debug("Check \"mscorlib.dll\" is not exists...");
-		if (not os.path.isfile("./mscorlib.dll") or (Toolkit.GetHash('./mscorlib.dll') != cls.__resourceFileInfo["CoreLib"]["hash"])):
-			info:dict[str,any] = cls.__resourceFileInfo["CoreLib"];
-			Toolkit.ResourceReleases(info["offset"], info["lenth"], "./mscorlib.dll");
-		# 检查字体文件是否存在
-		logger.debug("Check \"musync_data\\LXGW.ttf\" is not exists...");
-		if not os.path.isfile('./musync_data/LXGW.ttf') or (Toolkit.GetHash('./musync_data/LXGW.ttf') != cls.__resourceFileInfo["Font"]["hash"]):
-			info:dict[str,any] = cls.__resourceFileInfo["Font"];
-			Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/LXGW.ttf');
-		# 检查字体是否安装
-		logger.debug("Check \"霞鹜文楷等宽\" is not installed...");
-		if not '霞鹜文楷等宽' in fonts:
-			os.startfile(os.path.join(os.getcwd(), 'musync_data', 'LXGW.ttf'))
+		# 检查资源文件
+		if isResourceFileInfoLoaded:
+			# 检查LICENSE是否存在
+			logger.debug("Check if the \"./LICENSE\" is exists...");
+			if (not os.path.isfile("./LICENSE") or (Toolkit.GetHash('./LICENSE') != cls.__resourceFileInfo["License"]["hash"])):
+				info:dict[str,any] = cls.__resourceFileInfo["License"];
+				Toolkit.ResourceReleases(info["offset"], info["lenth"], "./LICENSE");
+			# 检查图标文件是否存在
+			logger.debug("Check if the \"musync_data\\MUSYNC.ico\" is exists...");
+			if (not os.path.isfile('./musync_data/MUSYNC.ico') or (Toolkit.GetHash('./musync_data/MUSYNC.ico') != cls.__resourceFileInfo["Icon"]["hash"])):
+				info:dict[str,any] = cls.__resourceFileInfo["Icon"];
+				Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/MUSYNC.ico');
+			# 检查SongName.json是否存在
+			logger.debug("Check if the \"musync_data\\SongName.json\" is exists...");
+			if (not os.path.isfile('./musync_data/SongName.json') or (cls.__resourceFileInfo["SongName"]["Version"] > SongName.Version())):
+				info:dict[str,any] = cls.__resourceFileInfo["SongName"];
+				Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/SongName.json');
+			# 检查mscorlib.dll是否存在
+			logger.debug("Check if the \"mscorlib.dll\" is exists...");
+			if (not os.path.isfile("./mscorlib.dll") or (Toolkit.GetHash('./mscorlib.dll') != cls.__resourceFileInfo["CoreLib"]["hash"])):
+				info:dict[str,any] = cls.__resourceFileInfo["CoreLib"];
+				Toolkit.ResourceReleases(info["offset"], info["lenth"], "./mscorlib.dll");
+			# 检查字体文件是否存在
+			logger.debug("Check if the \"musync_data\\LXGW.ttf\" is exists...");
+			if not os.path.isfile('./musync_data/LXGW.ttf') or (Toolkit.GetHash('./musync_data/LXGW.ttf') != cls.__resourceFileInfo["Font"]["hash"]):
+				info:dict[str,any] = cls.__resourceFileInfo["Font"];
+				Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/LXGW.ttf');
+			# 检查字体是否安装
+			logger.debug("Check if the \"霞鹜文楷等宽\" font is installed...");
+			if '霞鹜文楷等宽' not in fonts:
+				os.startfile(os.path.join(os.getcwd(), 'musync_data', 'LXGW.ttf'))
 		# 检查皮肤文件夹是否存在
-		logger.debug("Check \"skin\\\" is not exists...");
+		logger.debug("Check if the \"skin\\\" is exists...");
 		if not os.path.exists("./skin/"):
 			os.makedirs('./skin/');
 		# 检查数据库文件版本
@@ -189,14 +193,20 @@ class Toolkit(object):
 			1: 已修补
 			2: 未修补,但已经完成修补
 		"""
-		startTime:int = time.perf_counter_ns();
 		def DLLInjection():
+			"""备份并修补"""
 			if os.path.isfile(f'{dllPath}.old'): os.remove(f'{dllPath}.old');
 			os.rename(dllPath, f'{dllPath}.old');
 			info:dict[str,any] = cls.__resourceFileInfo["GameLib"];
 			Toolkit.ResourceReleases(info["offset"], info["lenth"], dllPath);
-		dllPath = Config.MainExecPath+'MUSYNX_Data/Managed/Assembly-CSharp.dll';
-		nowHash = Toolkit.GetHash(dllPath);
+
+		startTime:int = time.perf_counter_ns();
+		dllPath = Config.MainExecPath+'MUSYNX_Data/Managed/Assembly-CSharp.dll'
+		if not os.path.isfile(dllPath):
+			logger.error(f"Assembly-CSharp.dll not found at \"{dllPath}\", skip DLLInjection.")
+			logger.debug(f"GameLibCheck() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms")
+			return 0
+		nowHash = Toolkit.GetHash(dllPath)
 		sourceHash = cls.__resourceFileInfo["GameLib"]["SourceHash"];
 		fixHash = cls.__resourceFileInfo["GameLib"]["hash"];
 		# 'D41D8CD98F00B204E9800998ECF8427E' is 0 Byte file
@@ -207,7 +217,7 @@ class Toolkit(object):
 		if (nowHash == fixHash):
 			rtcode = 1;
 		# 当前文件哈希为空文件 或者 为原始文件哈希
-		elif (sourceHash == "D41D8CD98F00B204E9800998ECF8427E") or ((sourceHash == nowHash) and (sourceHash != fixHash)):
+		elif (sourceHash == "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855") or ((sourceHash == nowHash) and (sourceHash != fixHash)):
 			DLLInjection();
 			rtcode = 1;
 		logger.debug(f"GameLibCheck() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
@@ -222,7 +232,7 @@ class Toolkit(object):
 			db:sql.Connection = sql.connect('./musync_data/HitDelayHistory_v2.db')
 			cursor:sql.Cursor = db.cursor();
 			# 使用 PRAGMA table_info 获取表的列信息
-			cursor.execute(f"PRAGMA table_info(HitDelayHistory);")
+			cursor.execute("PRAGMA table_info(HitDelayHistory);")
 			# 获取列的数量
 			columnCount:int = len(cursor.fetchall());
 			if (columnCount==6):
@@ -253,10 +263,10 @@ class Toolkit(object):
 				db.close();
 				rtcode = version;
 		else:
-			logger.warning(f"无数据库文件存在.");
+			logger.warning("无数据库文件存在.");
 			rtcode = 0;
 		if (rtcode == -1):
-			logger.fatal(f"CheckDatabaseVersion()函数出现严重异常! 函数未能完成执行!");
+			logger.fatal(">>> CheckDatabaseVersion()函数出现严重异常! 函数未能完成执行! <<<");
 		logger.debug(f"CheckDatabaseVersion() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms");
 		return rtcode;
 
@@ -286,7 +296,7 @@ class Toolkit(object):
 			db.close();
 			return;
 		if (nowVersion == 1):
-			logger.info(f"记录数据迁移中... v1->v2");
+			logger.info("记录数据迁移中... v1->v2");
 			cursor.execute("ALTER TABLE HitDelayHistory RENAME TO HitDelayHistoryV1;");
 			cursor.execute("""CREATE table IF NOT EXISTS HitDelayHistory (
 				SongMapName text Not Null,
@@ -310,7 +320,7 @@ class Toolkit(object):
 			db.commit();
 			nowVersion=2;
 		if (nowVersion == 2):
-			logger.info(f"记录数据迁移中... v2->v3");
+			logger.info("记录数据迁移中... v2->v3");
 			cursor.execute("CREATE Table IF NOT EXISTS Infos (Key Text PRIMARY KEY, Value Text Default None);");
 			cursor.execute("INSERT Into Infos Values(?, ?)", ("Version","3"));
 			db.commit();

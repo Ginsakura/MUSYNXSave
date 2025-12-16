@@ -166,9 +166,7 @@ class HitDelayText(object):
 					sumKeys += 1;
 			avgDelay = (sumNums / sumKeys) if sumKeys > 0 else 0
 			avgAcc = (sum(abs(i) for i in dataList) / allKeys) if allKeys > 0 else 0
-			# Either correct column order:
 			self.delayHistory.insert('', END, values=(name, time, allKeys, '%.6f ms'%avgDelay, '%.6f ms'%avgAcc))
-			# or drop this insert and rely on HistoryUpdate() alone.
 			dataListStr = "";
 			for i in dataList:
 				dataListStr += f'{i}|';
@@ -242,6 +240,8 @@ class HitDelayText(object):
 		# state = e.item(itemID,"text")						# 取得text参数
 		historyItem = e.item(itemID,"values")				# 取得values参数
 		self.__logger.debug(e.item(itemID))
+		if not itemID or not historyItem:
+			return
 		if not self.history == []:
 			data = self.cur.execute(
 			 	"SELECT * FROM HitDelayHistory WHERE SongMapName=? AND RecordTime=?",
@@ -285,7 +285,6 @@ class HitDelayDraw(object):
 		else:
 			self.dataList = dataList[5]
 
-		self.dataListLenth = len(self.dataList)
 		self.dataListLenth = len(self.dataList)
 		if self.dataListLenth == 0:
 			self.__logger.warning("HitDelayDraw: empty data list, skipping plots");

@@ -27,20 +27,16 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AllHitAnalyze_New.py" />
     <Compile Include="AllHitAnalyze.py" />
-    <Compile Include="AvgAcc-SyncFormat.py" />
     <Compile Include="AvgAcc_SynxAnalyze.py" />
     <Compile Include="Difficulty_ScoreAnalyze.py" />
     <Compile Include="File2Base64.py" />
     <Compile Include="FormatSongName.py" />
-    <Compile Include="setup.py" />
     <Compile Include="Toolkit.py" />
     <Compile Include="HitDelay.py" />
     <Compile Include="Launcher.py" />
     <Compile Include="MainWindow.py" />
     <Compile Include="MUSYNCSavDecode.py" />
-    <Compile Include="MainWindow_New.py" />
     <Compile Include="Resources.py" />
     <Compile Include="uiautomation.py" />
     <Compile Include="Version.py" />
@@ -62,7 +58,7 @@
     <Content Include=".github\ISSUE_TEMPLATE\feature_request.md" />
     <Content Include=".github\workflows\dist.yml" />
     <Content Include=".gitignore" />
-    <Content Include="AvgAcc-Sync.bat" />
+    <Content Include="buildLauncher.ps1" />
     <Content Include="changelog.md" />
     <Content Include="CSharp Code\ConsoleInput.cs" />
     <Content Include="CSharp Code\ConsoleWindow.cs" />

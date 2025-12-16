@@ -18,13 +18,13 @@ uiauto.SetGlobalSearchTimeout(1)
 class HitDelayText(object):
 	"""docstring for DrawHDLine"""
 	def __init__(self,subroot):
-		self.__logger:logging.Logger = Logger.GetLogger("HitDelay.HitDelayText");
+		self.__logger:logging.Logger = Logger.GetLogger("HitDelay.HitDelayText")
 		if os.path.isfile('./musync_data/HitDelayHistory.db'):
-			self.db = sql.connect('./musync_data/HitDelayHistory.db');
-			self.cur = self.db.cursor();
+			self.db = sql.connect('./musync_data/HitDelayHistory.db')
+			self.cur = self.db.cursor()
 		else:
-			self.db = sql.connect('./musync_data/HitDelayHistory.db');
-			self.cur = self.db.cursor();
+			self.db = sql.connect('./musync_data/HitDelayHistory.db')
+			self.cur = self.db.cursor()
 			self.cur.execute("""CREATE table HitDelayHistory (
 				SongMapName text Not Null,
 				RecordTime text Not Null,
@@ -32,17 +32,17 @@ class HitDelayText(object):
 				AllKeys int,
 				AvgAcc float,
 				HitMap text,
-				PRIMARY KEY ("SongMapName", "RecordTime"))""");
-		self.subroot = subroot;
-		self.font=('霞鹜文楷等宽',16);
-		self.subroot.iconbitmap('./musync_data/Musync.ico');
-		self.subroot.geometry(f'1000x600+600+400');
-		self.subroot.title("高精度延迟分析");
-		self.subroot['background'] = '#efefef';
+				PRIMARY KEY ("SongMapName", "RecordTime"))""")
+		self.subroot = subroot
+		self.font=('霞鹜文楷等宽',16)
+		self.subroot.iconbitmap('./musync_data/Musync.ico')
+		self.subroot.geometry(f'1000x600+600+400')
+		self.subroot.title("高精度延迟分析")
+		self.subroot['background'] = '#efefef'
 		self.tipLabel = Label(self.subroot,font=self.font, relief="groove",text='↓将您用来辨识谱面的方式填入右侧文本框，然后点击右侧红色按钮进行结果分析↓',fg='#F9245E')
-		self.tipLabel.place(x=0,y=0,height=40,relwidth=1);
-		self.style = ttk.Style();
-		self.cursorHistory = '';
+		self.tipLabel.place(x=0,y=0,height=40,relwidth=1)
+		self.style = ttk.Style()
+		self.cursorHistory = ''
 		self.hitAnalyzeButton = Button(self.subroot,text='All\nHit',command=lambda :AllHitAnalyze().Show(),font=self.font, relief="groove")
 		self.hitAnalyzeButton.place(x=0,y=40,height=90,relwidth=0.05)
 		self.nameDelayLabel = Label(self.subroot,font=self.font, relief="groove",text='↓请在下面输入曲名与谱面难度↓这只是用来标记你玩的哪个谱面而已，\n没有任何要求                    ↓右侧水绿色按钮选择难度和键数↓')
@@ -63,7 +63,7 @@ class HitDelayText(object):
 			self.logButton.place(relx=0.7,y=40,height=90,relwidth=0.3)
 		self.keysButton = Button(self.subroot,font=self.font, text=("4Key" if Config.Default4Keys else "6Key"), command=self.ChangeKeys, bg="#4AA4C9")
 		self.keysButton.place(relx=0.5,y=100,height=30,relwidth=0.1)
-		self.diffcute = Config.DefaultDiffcute;
+		self.diffcute = Config.DefaultDiffcute
 		self.diffcuteButton = Button(self.subroot,font=self.font, text=["Easy","Hard","Inferno"][self.diffcute], command=self.ChangeDiffcute, bg="#4AA4C9")
 		self.diffcuteButton.place(relx=0.6,y=100,height=30,relwidth=0.1)
 
@@ -96,18 +96,18 @@ class HitDelayText(object):
 		self.historyDeleteButton = ttk.Button(self.historyFrame, text='删除记录', style="delete.TButton",command=self.DeleteCursorHistory)
 		self.historyDeleteButton.place(relx=0.5,y=210,height=30,relwidth=0.5)
 
-		self.delayInterval:int = 45 if Config.NarrowDelayInterval else 90;
+		self.delayInterval:int = 45 if Config.NarrowDelayInterval else 90
 		self.history:list = list()
 		self.HistoryUpdate()
 		self.UpdateWindowInfo()
 
 	def ChangeKeys(self):
-		Config.Default4Keys = not Config.Default4Keys;
-		self.keysButton.configure(text=("4Key" if Config.Default4Keys else "6Key"));
+		Config.Default4Keys = not Config.Default4Keys
+		self.keysButton.configure(text=("4Key" if Config.Default4Keys else "6Key"))
 	def ChangeDiffcute(self):
-		self.diffcute = (self.diffcute + 1) % 3;
-		Config.DefaultDiffcute = self.diffcute;
-		self.diffcuteButton.configure(text=["Easy","Hard","Inferno"][self.diffcute]);
+		self.diffcute = (self.diffcute + 1) % 3
+		Config.DefaultDiffcute = self.diffcute
+		self.diffcuteButton.configure(text=["Easy","Hard","Inferno"][self.diffcute])
 
 	def TestEntryString(self):
 		string = self.nameDelayEntry.get()
@@ -137,53 +137,53 @@ class HitDelayText(object):
 			win.SendKeys('{Ctrl}C',waitTime=0.1)
 			consoleFind = True
 		except Exception as e:
-			self.__logger.exception("控制台窗口未找到,请确认控制台窗口已开启");
+			self.__logger.exception("控制台窗口未找到,请确认控制台窗口已开启")
 			try:
 				win = uiauto.WindowControl(searchDepth=1,Name='选择 MUSYNX Delay',searchInterval=1).DocumentControl(searchDepth=1,Name='Text Area',searchInterval=1)
 				win.SendKeys('{Ctrl}A',waitTime=0.1)
 				win.SendKeys('{Ctrl}C',waitTime=0.1)
 				consoleFind = True
 			except Exception as e:
-				self.__logger.exception("控制台窗口未找到,请确认控制台窗口已开启");
-				messagebox.showerror("Error", f'控制台窗口未找到\n请确认控制台窗口已开启\n{e}');
+				self.__logger.exception("控制台窗口未找到,请确认控制台窗口已开启")
+				messagebox.showerror("Error", f'控制台窗口未找到\n请确认控制台窗口已开启\n{e}')
 		if consoleFind:
-			data = pyperclip.paste().split('\n');
-			dataList=list();
-			n = self.nameDelayEntry.get().replace("\'","’");
-			k = "4K" if Config.Default4Keys else "6K";
-			d = ["EZ","HD","IN"][self.diffcute];
-			name = f"{n} {k}{d}";
-			time = f"{dt.now()}";
+			data = pyperclip.paste().split('\n')
+			dataList=list()
+			n = self.nameDelayEntry.get().replace("\'","’")
+			k = "4K" if Config.Default4Keys else "6K"
+			d = ["EZ","HD","IN"][self.diffcute]
+			name = f"{n} {k}{d}"
+			time = f"{dt.now()}"
 			if data[-1] == "": #如果最后一行是空行，则去除
-				data.pop(-1);
+				data.pop(-1)
 			for ids in range(1,len(data)): # 去除第一行
-				dataList.append(float(data[ids][13:-3]));
-			allKeys = len(dataList);
-			sumNums,sumKeys = 0,0;
+				dataList.append(float(data[ids][13:-3]))
+			allKeys = len(dataList)
+			sumNums,sumKeys = 0,0
 			for ids in dataList:
 				if (ids < self.delayInterval) and (ids > -self.delayInterval):
-					sumNums += ids;
-					sumKeys += 1;
+					sumNums += ids
+					sumKeys += 1
 			avgDelay = (sumNums / sumKeys) if sumKeys > 0 else 0
 			avgAcc = (sum(abs(i) for i in dataList) / allKeys) if allKeys > 0 else 0
 			self.delayHistory.insert('', END, values=(name, time, allKeys, '%.6f ms'%avgDelay, '%.6f ms'%avgAcc))
-			dataListStr = "";
+			dataListStr = ""
 			for i in dataList:
-				dataListStr += f'{i}|';
-			self.cur.execute("INSERT into HitDelayHistory values(?,?,?,?,?,?)",(name,time,avgDelay,allKeys,avgAcc,dataListStr[:-1]));
-			self.db.commit();
-			self.HistoryUpdate();
-			dataList = [name,time,avgDelay,allKeys,avgAcc,dataList];
+				dataListStr += f'{i}|'
+			self.cur.execute("INSERT into HitDelayHistory values(?,?,?,?,?,?)",(name,time,avgDelay,allKeys,avgAcc,dataListStr[:-1]))
+			self.db.commit()
+			self.HistoryUpdate()
+			dataList = [name,time,avgDelay,allKeys,avgAcc,dataList]
 			if allKeys == 0:
-				messagebox.showwarning("Warning", "未检测到任何有效的 HitDelay 数据，已跳过绘图。");
-				return;
-			HitDelayDraw(dataList,isHistory=False);
+				messagebox.showwarning("Warning", "未检测到任何有效的 HitDelay 数据，已跳过绘图。")
+				return
+			HitDelayDraw(dataList,isHistory=False)
 
 	def OpenTxt(self):
 		os.system('start notepad ./musync_data/Acc-Sync.json')
 		# os.system(f'start explorer {os.getcwd()}')
 		import AvgAcc_SynxAnalyze
-		AvgAcc_SynxAnalyze.Analyze();
+		AvgAcc_SynxAnalyze.Analyze()
 
 	def ShowHistoryInfo(self,event):
 		e = event.widget									# 取得事件控件
@@ -191,7 +191,7 @@ class HitDelayText(object):
 		# state = e.item(itemID,"text")						# 取得text参数
 		historyItem = e.item(itemID,"values")				# 取得values参数
 		if not itemID or not historyItem:
-			return;
+			return
 		if not self.history == []:
 			isChange = False
 			historyName = historyItem[0].replace("\'",'’')
@@ -275,8 +275,8 @@ class HitDelayText(object):
 class HitDelayDraw(object):
 	"""docstring for ClassName"""
 	def __init__(self, dataList,isHistory=False):
-		self.__logger:logging.Logger = Logger.GetLogger("HitDelay.HitDelayDraw");
-		self.__logger.info(f'Name:{dataList[0]}\nRecordTime:{dataList[1]}');
+		self.__logger:logging.Logger = Logger.GetLogger("HitDelay.HitDelayDraw")
+		self.__logger.info(f'Name:{dataList[0]}\nRecordTime:{dataList[1]}')
 		self.avgDelay = dataList[2]
 		self.allKeys = dataList[3]
 		self.avgAcc = dataList[4]
@@ -287,8 +287,8 @@ class HitDelayDraw(object):
 
 		self.dataListLenth = len(self.dataList)
 		if self.dataListLenth == 0:
-			self.__logger.warning("HitDelayDraw: empty data list, skipping plots");
-			return;
+			self.__logger.warning("HitDelayDraw: empty data list, skipping plots")
+			return
 		self.x_axis = [i for i in range(self.dataListLenth)]
 		self.y_axis = [int(i) for i in self.dataList]
 
@@ -307,11 +307,11 @@ class HitDelayDraw(object):
 			else: self.sum[4] += 1
 		self.sum[0] = sum(self.exCount)
 		self.exCount = self.exCount + self.sum[1:]
-		self.__logger.debug(f"HitDelayDraw: {self.sum}, {self.exCount}");
+		self.__logger.debug(f"HitDelayDraw: {self.sum}, {self.exCount}")
 
-		self.DrawLine();
-		if Config.DonutChartinHitDelay: self.DrawBarPie();
-		plt.show();
+		self.DrawLine()
+		if Config.DonutChartinHitDelay: self.DrawBarPie()
+		plt.show()
 
 	def DrawLine(self):
 		fig = plt.figure(f'AvgDelay: {self.avgDelay:.4f}ms    AllKeys: {self.allKeys}    AvgAcc: {self.avgAcc:.4f}ms',figsize=(9, 4))

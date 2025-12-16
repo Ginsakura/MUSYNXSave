@@ -61,4 +61,4 @@ def FormatSongName20230626(): #2023年6月26日
 if __name__ == '__main__':
 	# Sort()
 	# FormatSongName20230626()
-	pass;
+	pass

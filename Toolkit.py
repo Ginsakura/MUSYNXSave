@@ -19,7 +19,7 @@ logger:logging.Logger = Logger().GetLogger("Toolkit");
 class Toolkit(object):
 	logger.debug("加载资源文件: \"./musync_data/Resources.bin\".");
 	__resourceFileInfo:dict[str,dict[str,any]] = {};
-	isResourceFileInfoLoaded = False;
+	__isResourceFileInfoLoaded:bool = False;
 	try:
 		__resourceFile:io.TextIOWrapper = open("./musync_data/Resources.bin", "rb");
 		__resourceFile.seek(0);
@@ -28,7 +28,7 @@ class Toolkit(object):
 		with gzip.GzipFile(fileobj=__compressedStream, mode='rb') as gz_file:
 			decompressedData:bytes = gz_file.read()
 		__resourceFileInfo:dict[str,dict[str,any]] = json.loads(decompressedData.decode('ASCII'));
-		isResourceFileInfoLoaded = True;
+		__isResourceFileInfoLoaded = True;
 	except Exception as ex:
 		logger.exception("资源文件加载失败.");
 		messagebox.showerror("Error",f"资源文件\"./musync_data/Resources.bin\"加载失败!\n{ex}");
@@ -116,7 +116,7 @@ class Toolkit(object):
 		logger.debug("Check \"log\\\" is not exists...");
 		os.makedirs("./logs/", exist_ok=True);
 		# 检查资源文件
-		if isResourceFileInfoLoaded:
+		if cls.__isResourceFileInfoLoaded:
 			# 检查LICENSE是否存在
 			logger.debug("Check if the \"./LICENSE\" is exists...");
 			if (not os.path.isfile("./LICENSE") or (Toolkit.GetHash('./LICENSE') != cls.__resourceFileInfo["License"]["hash"])):

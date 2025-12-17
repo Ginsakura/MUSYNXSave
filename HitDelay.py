@@ -188,7 +188,7 @@ class HitDelayText(object):
 	def OpenTxt(self):
 		""" 打开 Acc-Sync 文本文件 """
 		import subprocess
-		subprocess.Popen(['notepad', './musync_data/Acc-Sync.json'], shell=True)
+		subprocess.Popen(['notepad', './musync_data/Acc-Sync.json'])
 		# os.system(f'start explorer {os.getcwd()}')
 		import AvgAcc_SynxAnalyze
 		AvgAcc_SynxAnalyze.Analyze()

@@ -114,7 +114,7 @@ class Config(object):
 			return
 		with open(cls.__filePath,'r',encoding='utf8') as configFile:
 			try:
-				config:dict[str,any] = json.load(configFile)
+				config:dict[str,Any] = json.load(configFile)
 				# 动态将字典的键值对赋值给类的属性
 				for key, value in config.items():
 					setattr(cls, key, value)
@@ -249,7 +249,7 @@ class MapInfo(object):
 			self.SongName:str				= str(info[0])
 			self.SongKeys:str				= ("4Key" if info[1]==4 else "6Key")
 			difficulties:list[str]			= ["Easy", "Hard", "Inferno"]
-			self.SongDifficulty:str			= difficulties[info[2]] if (0 <= info[2]) < len(difficulties) else "Unknown"
+			self.SongDifficulty:str = difficulties[info[2]] if 0 <= info[2] < len(difficulties) else "Unknown"
 			self.SongDifficultyNumber:str	= f"{info[3]:02d}"
 		self.SongIsBuiltin:bool				= isBuiltin
 
@@ -300,21 +300,22 @@ class MapDataInfo(MapInfo):
 			info = args[0]
 			if (info is None):
 				return
-			self.SongName			  = str(info[0])
-			self.SongKeys			  = "4Key" if info[1] == 4 else "6Key"
-			self.SongDifficulty		  = str(["Easy", "Hard", "Inferno"][info[2]])
-			self.SongDifficultyNumber = f"{info[3]:02d}"
-			self.SongIsBuiltin		  = kwargs.get('isBuiltin', False)
+			self.SongName:str				= str(info[0])
+			self.SongKeys:str				= "4Key" if info[1] == 4 else "6Key"
+			difficulties:list[str]			= ["Easy", "Hard", "Inferno"]
+			self.SongDifficulty:str			= difficulties[info[2]] if 0 <= info[2] < len(difficulties) else "Unknown"
+			self.SongDifficultyNumber:str	= f"{info[3]:02d}"
+			self.SongIsBuiltin:bool			= kwargs.get('isBuiltin', False)
 		elif len(args) == 1 and isinstance(args[0], MapInfo):
 			# 通过 MapInfo 设置 SongInfo 字段
 			mapInfo = args[0]
 			if (mapInfo is None):
 				return
-			self.SongName			  = mapInfo.SongName
-			self.SongKeys			  = mapInfo.SongKeys
-			self.SongDifficulty		  = mapInfo.SongDifficulty
-			self.SongDifficultyNumber = mapInfo.SongDifficultyNumber
-			self.SongIsBuiltin		  = mapInfo.SongIsBuiltin
+			self.SongName:str				= mapInfo.SongName
+			self.SongKeys:str				= mapInfo.SongKeys
+			self.SongDifficulty:str			= mapInfo.SongDifficulty
+			self.SongDifficultyNumber:str	= mapInfo.SongDifficultyNumber
+			self.SongIsBuiltin:bool			= mapInfo.SongIsBuiltin
 		elif len(args) == 1 and args[0] is None:
 			# 如果传入的 MapInfo 为 None，处理这种情况
 			# Config.__logger.warning("MapInfo is None.")
@@ -330,7 +331,7 @@ class MapDataInfo(MapInfo):
 		"设置曲目是否为内置曲目"
 		self.SongIsBuiltin = isBuiltin
 
-	def ToDict(self)->dict[str,any]:
+	def ToDict(self)->dict[str,Any]:
 		"格式化为dict类型"
 		return dict(
 			SongId			 = f"{self.SongId:08X}",
@@ -447,7 +448,7 @@ class SaveDataInfo(object):
 			f"\tfps:{cls.fps})"
 
 	@classmethod
-	def ToDict(cls,debug=False)->dict[str,any]:
+	def ToDict(cls,debug=False)->dict[str,Any]:
 		"格式化为dict类型"
 		tempDict = dict(
 			Version					 = cls.version,

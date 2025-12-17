@@ -26,7 +26,7 @@ class MUSYNCSavProcess(object):
 	"""docstring for MUSYNCSavProcess"""
 	def __init__(self, savFile:str=''):
 		super(MUSYNCSavProcess, self).__init__()
-		self.__assembly_loaded:int = 
+		self.__assembly_loaded:bool = False
 		dllPath:str|None = None
 		try:
 			dllPath = os.path.join(Config.MainExecPath, 'MUSYNX_Data', 'Managed', 'Assembly-CSharp.dll')
@@ -224,8 +224,8 @@ class MUSYNCSavProcess(object):
 		self.__logger.debug("FavFix Start.")
 		# allSongData:dict[str,list] = SongName.SongNameData()
 		self.__logger.debug(f"Favorites List：{self.FavSong}")
-		for index in enumerate(SaveDataInfo.saveInfoList):
-			if SaveDataInfo.saveInfoList[index].SongName in self.FavSong:
+		for index, mapData in enumerate(SaveDataInfo.saveInfoList):
+			if mapData.SongName in self.FavSong:
 				SaveDataInfo.saveInfoList[index].State = "Favo"
 		self.__logger.debug("FavFix End.")
 		self.__logger.info("FavFix Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000))

@@ -26,8 +26,8 @@ def Launcher()->None:
 		Config.Version = Version.version.replace("rc", ".")
 
 	# Launcher
-	root:Tk = Tk()
 	ctypes.windll.shcore.SetProcessDpiAwareness(1)
+	root:Tk = Tk()
 	fontlist:list[str] = list(font.families())
 	Toolkit.GetSaveFile()
 	Toolkit.CheckResources(fontlist)
@@ -48,12 +48,14 @@ def Launcher()->None:
 
 if __name__ == '__main__':
 	# from datetime import datetime as dt
+	exitCode:int = 0
 	try:
 		logger.info(" ====> Launcher() start <====")
 		Launcher()
 		logger.info(" ====> Launcher() end <====")
 	except Exception:
 		logger.exception("Launcher Exception.")
+		exitCode = 1
 	logger.info("====> Software Exiting <====")
 	# os.system("pause")
-	sys.exit(0)
+	sys.exit(exitCode)

@@ -1,4 +1,5 @@
 import logging
+import math
 # import numpy as np
 import sqlite3
 
@@ -11,11 +12,11 @@ class AllHitAnalyze(object):
 	"""docstring for HitAnalyze"""
 	def __init__(self):
 		# super(AllHitAnalyze, self).__init__()
-		self.logger:logging.Logger = Logger.GetLogger(name="MusyncSavDecodeGUI")
+		self.logger:logging.Logger = Logger.GetLogger(name="AllHitAnalyze")
 		db:sqlite3.Connection = sqlite3.connect('./musync_data/HitDelayHistory.db')
 		cur:sqlite3.Cursor = db.cursor()
 		cur.execute('select HitMap from HitDelayHistory')
-		res:list = cur.fetchall()
+		res:list[str] = cur.fetchall()
 		db.close();
 		hitMapA:list[int] = [0]*150; # -149~-0
 		hitMapB:list[int] = [0]*251; # +0~+250
@@ -24,51 +25,70 @@ class AllHitAnalyze(object):
 		self.sumYnumEX:int = 0; # only cyan Exact
 		self.rate:list[int] = [0,0,0,0,0]; # EXACT,Exact,Great,Right,Miss
 		self.accurateRate:list[int] = [0,0,0,0,0,0,0,0]; # ±5ms,±10ms,±20ms,±45ms,Exact,Great,Right,Miss
-		for ids in res:
-			for idx in ids[0].split("|"):
-				idx = float(idx)
+
+		# 改进的循环：更健壮、可读、修正负值取整问题
+		for row in res:
+			hitmap_field:str = row[0]
+			if not hitmap_field:
+				continue
+			for token in hitmap_field.split("|"):
+				if not token:
+					continue
+				try:
+					val = float(token)
+				except ValueError:
+					# 跳过无法解析的条目
+					continue
+
 				self.sumYnum += 1
 
-				idxAbs = abs(idx)
-				if idxAbs<5:
+				absVal = abs(val)
+
+				# 分类到 rate 和 accurateRate（保持原有分段逻辑）
+				if absVal < 5:
 					self.rate[0] += 1
 					self.accurateRate[0] += 1
-				elif idxAbs<10:
+				elif absVal < 10:
 					self.rate[0] += 1
 					self.accurateRate[1] += 1
-				elif idxAbs<20:
+				elif absVal < 20:
 					self.rate[0] += 1
 					self.accurateRate[2] += 1
-				elif idxAbs<45:
+				elif absVal < 45:
 					self.rate[0] += 1
 					self.accurateRate[3] += 1
-				elif idxAbs<90:
+				elif absVal < 90:
 					self.rate[1] += 1
 					self.accurateRate[4] += 1
-				elif idxAbs<150:
+				elif absVal < 150:
 					self.rate[2] += 1
 					self.accurateRate[5] += 1
-				elif idxAbs<250:
+				elif absVal < 250:
 					self.rate[3] += 1
 					self.accurateRate[6] += 1
-				else :
+				else:
 					self.rate[4] += 1
 					self.accurateRate[7] += 1
 
-				if idxAbs<45:
+				# 更新 Exact / cyan Exact 计数
+				if absVal < 45:
 					self.sumYnumEX += 1
 					self.sumYnumEx += 1
-				elif idxAbs<90:
+				elif absVal < 90:
 					self.sumYnumEx += 1
 
-				if idx < 0:
-					idx = int(idx)-1
-				else:
-					idx = int(idx)
+				# 对延迟值取整 —— 使用 math.floor 对负值正确向下取整
+				idx = math.floor(val)
 
-				if (idx >= 0) and (idx < 250):hitMapB[idx] += 1
-				elif (idx >= 250):hitMapB[250] += 1
-				else:hitMapA[idx] += 1
+				# 更新命中地图（尽量保持原有逻辑：0..249 -> hitMapB[idx], >=250 -> hitMapB[250], 否则放入 hitMapA）
+				if 0 <= idx < 250:
+					hitMapB[idx] += 1
+				elif idx >= 250:
+					hitMapB[250] += 1
+				else:
+					# 负数索引：原实现直接用负索引访问 hitMapA（利用 Python 的负索引），
+					# 这里继续使用负索引以保留原有数组布局和语义。
+					hitMapA[idx] += 1
 
 		self.xAxis:list[int] = [i for i in range(-150,251)]
 		self.yAxis:list[int] = hitMapA + hitMapB

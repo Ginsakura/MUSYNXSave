@@ -4,7 +4,7 @@ import logging
 import os
 import shutil
 import threading
-from typing import ClassVar
+from typing import Any, ClassVar
 
 class Config(object):
 	"""从bootcfg.json读取配置信息,单例"""
@@ -18,7 +18,7 @@ class Config(object):
 		if not os.path.isfile(f".\\{logName}"):
 			return
 		# 获取已有的压缩文件数量
-		nextIndex:int = len([f for f in os.listdir(logsDir)])
+		nextIndex:int = len(os.listdir(logsDir))
 		logsName:str	= f"log.{nextIndex}.gz"
 		# 移动压缩文件到 logs 目录
 		shutil.move(f".\\{logName}", logsDir+logName)
@@ -44,7 +44,7 @@ class Config(object):
 	__lock:threading.Lock			= threading.Lock()
 	__logger:logging.Logger			= None
 	__filePath:str					= os.getcwd()+"\\musync_data\\bootcfg.json"
-	__config:ClassVar[dict[str,any]]	= dict()
+	__config:ClassVar[dict[str,Any]]	= dict()
 
 	Version:str						= __config.get("Version"					, None)
 	UpdateChannel:str				= __config.get("UpdateChannel"				, "Release")
@@ -173,20 +173,19 @@ class Config(object):
 class Logger(object):
 	"""用于记录和生成日志"""
 	__formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-	__loggerFilter:int = Config.LoggerFilter
 
 	@classmethod
 	def GetLogger(cls, name:str)->logging.Logger:
 		"""获取Logger"""
-
+		loggerFilter:int = Config.LoggerFilter
 		logger:logging.Logger = logging.getLogger(name)
-		logger.setLevel(level = cls.__loggerFilter)
+		logger.setLevel(level = loggerFilter)
 		if not logger.hasHandlers():
 			file_handler = logging.FileHandler(".\\log.txt")
-			file_handler.setLevel(cls.__loggerFilter)
+			file_handler.setLevel(loggerFilter)
 			file_handler.setFormatter(cls.__formatter)
 			console_handler = logging.StreamHandler()
-			console_handler.setLevel(cls.__loggerFilter)
+			console_handler.setLevel(loggerFilter)
 			console_handler.setFormatter(cls.__formatter)
 			logger.addHandler(file_handler)
 			logger.addHandler(console_handler)
@@ -242,16 +241,17 @@ class MapInfo(object):
 	"存储谱面信息"
 	def __init__(self, info:list|None = None, isBuiltin:bool=False) -> None:
 		if info is None:
-			self.SongName:str			  = None
-			self.SongKeys:str			  = None
-			self.SongDifficulty:str		  = None
-			self.SongDifficultyNumber:str = None
+			self.SongName:str				= None
+			self.SongKeys:str				= None
+			self.SongDifficulty:str			= None
+			self.SongDifficultyNumber:str	= None
 		else:
-			self.SongName:str			  = str(info[0])
-			self.SongKeys:str			  = ("4Key" if info[1]==4 else "6Key")
-			self.SongDifficulty:str		  = str(["Easy","Hard","Inferno"][info[2]])
-			self.SongDifficultyNumber:str = f"{info[3]:02d}"
-		self.SongIsBuiltin:bool		  = isBuiltin
+			self.SongName:str				= str(info[0])
+			self.SongKeys:str				= ("4Key" if info[1]==4 else "6Key")
+			difficulties:list[str]			= ["Easy", "Hard", "Inferno"]
+			self.SongDifficulty:str			= difficulties[info[2]] if (0 <= info[2]) < len(difficulties) else "Unknown"
+			self.SongDifficultyNumber:str	= f"{info[3]:02d}"
+		self.SongIsBuiltin:bool				= isBuiltin
 
 	def ToDict(self)->dict[str,str]:
 		"格式化为dict类型"
@@ -269,7 +269,7 @@ class MapDataInfo(MapInfo):
 			UploadScore:float=0.0, PlayCount:int=0, Isfav:bool=False,
 			CrcInt:int=0) -> None:
 		self.SongId:int = SongId
-		super().__init__(); # 父类构造函数
+		super().__init__() # 父类构造函数
 		# self.SongInfo:MapInfo = None
 		self.SpeedStall:int		= SpeedStall
 		self.SyncNumber:int		= SyncNumber
@@ -503,6 +503,7 @@ class SaveDataInfo(object):
 		"实例的数据保存为 JSON 文件"
 		dataDict = cls.ToDict()
 		filePath:str = ".\\musync_data\\SaveDataInfo.json"
+		os.makedirs(os.path.dirname(filePath), exist_ok=True)
 		try:
 			with open(filePath, "w", encoding="utf-8") as json_file:
 				json.dump(dataDict, json_file, ensure_ascii=False, indent=2)

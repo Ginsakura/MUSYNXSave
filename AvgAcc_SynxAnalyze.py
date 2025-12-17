@@ -8,13 +8,17 @@ def Analyze() -> None:
 	__logger:logging.Logger = Logger.GetLogger("AvgAcc_SynxAnalyze.Analyze")
 	acc=list()
 	sync=list()
-	with open('./musync_data/Acc-Sync.json') as f:
-		rows = [line.strip().split(',') for line in f]
+	try:
+		with open('./musync_data/Acc-Sync.json') as f:
+			rows = [line.strip().split(',') for line in f]
+	except FileNotFoundError:
+		__logger.error("Acc-Sync.json not found")
+		return
 	for row in rows:
 		try:
 			acc.append(float(row[0]))
 			sync.append(float(row[1]))
-		except (ValueError, IndexError) as e:
+		except (ValueError, IndexError):
 			__logger.exception("Failed to parse row")
 			continue
 
@@ -29,8 +33,8 @@ def Analyze() -> None:
 	fig.subplots_adjust(**{"left":0.06,"bottom":0.05,"right":0.998,"top":0.994})
 	ax = fig.add_subplot()
 
-	y_step = max((max(sync) - min(sync)) // 15, 1)
-	x_step = max((max(acc) - min(acc)) // 10, 1)
+	y_step = max(int((max(sync) - min(sync)) // 15), 1)
+	x_step = max(int((max(acc) - min(acc)) // 10), 1)
 	ax.yaxis.set_major_locator(MultipleLocator(y_step))
 	ax.xaxis.set_major_locator(MultipleLocator(x_step))
 

@@ -21,13 +21,12 @@ class HitDelayText(object):
 	"""docstring for DrawHDLine"""
 	def __init__(self,subroot):
 		self.__logger:logging.Logger = Logger.GetLogger("HitDelay.HitDelayText")
-		if os.path.isfile('./musync_data/HitDelayHistory.db'):
-			self.db = sqlite3.connect('./musync_data/HitDelayHistory.db')
-			self.cur = self.db.cursor()
-		else:
-			self.db = sqlite3.connect('./musync_data/HitDelayHistory.db')
-			self.cur = self.db.cursor()
-			self.cur.execute("""CREATE table HitDelayHistory (
+		db_path:str = './musync_data/HitDelayHistory.db'
+		db_exists:bool = os.path.isfile(db_path)
+		self.db:sqlite3.Connection = sqlite3.connect(db_path)
+		self.cur:sqlite3.Cursor = self.db.cursor()
+		if not db_exists:
+			self.cur.execute("""CREATE TABLE HitDelayHistory (
 				SongMapName text Not Null,
 				RecordTime text Not Null,
 				AvgDelay float,
@@ -150,9 +149,9 @@ class HitDelayText(object):
 				win.SendKeys('{Ctrl}A',waitTime=0.1)
 				win.SendKeys('{Ctrl}C',waitTime=0.1)
 				consoleFind = True
-			except Exception as e:
+			except Exception:
 				self.__logger.exception("控制台窗口未找到,请确认控制台窗口已开启")
-				messagebox.showerror("Error", f'控制台窗口未找到\n请确认控制台窗口已开启\n{e}')
+				messagebox.showerror("Error", f'控制台窗口未找到\n请确认控制台窗口已开启')
 		if consoleFind:
 			data = pyperclip.paste().split('\n')
 			dataList=list()
@@ -188,7 +187,8 @@ class HitDelayText(object):
 
 	def OpenTxt(self):
 		""" 打开 Acc-Sync 文本文件 """
-		os.system('start notepad ./musync_data/Acc-Sync.json')
+		import subprocess
+		subprocess.Popen(['notepad', './musync_data/Acc-Sync.json'], shell=True)
 		# os.system(f'start explorer {os.getcwd()}')
 		import AvgAcc_SynxAnalyze
 		AvgAcc_SynxAnalyze.Analyze()
@@ -359,11 +359,11 @@ class HitDelayDraw(object):
 		ax.plot(self.x_axis,self.y_axis,linestyle='-',alpha=0.7,linewidth=1,color='#8a68d0',
 			label='HitDelay(ms)      miss--%d'%self.sum[4],marker='.',markeredgecolor='#c4245c',markersize='3')
 
-		for x,y in zip(self.x_axis,self.y_axis):
+		for x,y in zip(self.x_axis, self.y_axis, strict=True):
 			if y<0:
-				ax.text(x,y-3,'%dms'%y,ha='center',va='top',fontsize=7.5,alpha=0.7, )
+				ax.text(x,y-3,'%dms'%y,ha='center',va='top',fontsize=7.5,alpha=0.7)
 			else:
-				ax.text(x,y+3,'%dms'%y,ha='center',va='bottom',fontsize=7.5,alpha=0.7, )
+				ax.text(x,y+3,'%dms'%y,ha='center',va='bottom',fontsize=7.5,alpha=0.7)
 
 		ax.legend(prop={'size':12},framealpha=0.5)  #显示上面的label
 		ax.set_xlabel('HitCount', fontsize=15) #x_label

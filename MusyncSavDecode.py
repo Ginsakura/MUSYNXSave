@@ -26,14 +26,15 @@ class MUSYNCSavProcess(object):
 	"""docstring for MUSYNCSavProcess"""
 	def __init__(self, savFile:str=''):
 		super(MUSYNCSavProcess, self).__init__()
-		self.__assembly_loaded = False
+		self.__assembly_loaded:int = 
+		dllPath:str|None = None
 		try:
 			dllPath = os.path.join(Config.MainExecPath, 'MUSYNX_Data', 'Managed', 'Assembly-CSharp.dll')
 			assembly = Assembly.LoadFrom(dllPath)
 			self.__assembly = assembly
 			self.__assembly_loaded = True
 		except Exception:
-			logger.exception(f"Failed to Load {dllPath}")
+			logger.exception(f"Failed to Load {dllPath or 'assembly (path construction failed)'}")
 			raise
 		self.savPath:str = savFile
 		self.FavSong:list[str] = list()
@@ -106,46 +107,54 @@ class MUSYNCSavProcess(object):
 		# secret_name_field.SetValue(instance, "Bob")
 		# secret_age_field.SetValue(instance, 25)
 		# 获取 private 字段的值
-		SaveDataInfo.version = int(GetNonPublicField("version"))
+		fieldMappings: list[tuple[str, object]] = [
+			("version", int),
+			("crc", int),
+			("saveInfoList", lambda v: NetListToPyList(v)),
+			("purchaseIds", list),
+			("songIndex", int),
+			("isHard", int),
+			("buttonNumber", int),
+			("sortNum", int),
+			("missVibrate", bool),
+			("soundHelper", int),
+			("displayAdjustment", int),
+			("judgeCompensate", int),
+			("advSceneSettringString", str),
+			("metronomeSquipment", str),
+			("playTimeUIA", int),
+			("playTimeUIB", int),
+			("playTimeUIC", int),
+			("playTimeUID", int),
+			("playTimeUIE", int),
+			("playTimeUIF", int),
+			("playTimeRankEX", int),
+			("playTimeKnockEX", int),
+			("playTimeKnockNote", int),
+			("playVsync", bool),
+			("buttonSetting4K", list),
+			("buttonSetting6K", list),
+			("hiddenUnlockSongs", bool),
+			("hideLeaderboardMini", bool),
+			("playingSceneName", str),
+			("selectSongName", str),
+			("sceneName", str),
+			("busVolume", float),
+			("advSceneSettingString", str),
+			("dropSpeed", int),
+			("dropSpeedFloat", float),
+			("isOpenVSync", bool),
+			("hadSaveFpsAndVSync", bool),
+			("fps", int),
+		]
+		for field, converter in fieldMappings:
+			raw_value = GetNonPublicField(field)
+			setattr(SaveDataInfo, field, converter(raw_value))
+
+		# 具有特殊来源的字段（直接从 userMemory 读取）
 		SaveDataInfo.AppVersion = int(userMemory.AppVersion)
-		SaveDataInfo.saveInfoList = NetListToPyList(GetNonPublicField("saveInfoList"))
-		SaveDataInfo.purchaseIds = list(GetNonPublicField("purchaseIds"))
-		SaveDataInfo.crc = int(GetNonPublicField("crc"))
-		SaveDataInfo.songIndex = int(GetNonPublicField("songIndex"))
-		SaveDataInfo.isHard = int(GetNonPublicField("isHard"))
-		SaveDataInfo.buttonNumber = int(GetNonPublicField("buttonNumber"))
-		SaveDataInfo.sortNum = int(GetNonPublicField("sortNum"))
-		SaveDataInfo.missVibrate = bool(GetNonPublicField("missVibrate"))
-		SaveDataInfo.soundHelper = int(GetNonPublicField("soundHelper"))
-		SaveDataInfo.displayAdjustment = int(GetNonPublicField("displayAdjustment"))
-		SaveDataInfo.judgeCompensate = int(GetNonPublicField("judgeCompensate"))
-		SaveDataInfo.advSceneSettringString = str(GetNonPublicField("advSceneSettringString"))
-		SaveDataInfo.metronomeSquipment = str(GetNonPublicField("metronomeSquipment"))
-		SaveDataInfo.playTimeUIA = int(GetNonPublicField("playTimeUIA"))
-		SaveDataInfo.playTimeUIB = int(GetNonPublicField("playTimeUIB"))
-		SaveDataInfo.playTimeUIC = int(GetNonPublicField("playTimeUIC"))
-		SaveDataInfo.playTimeUID = int(GetNonPublicField("playTimeUID"))
-		SaveDataInfo.playTimeUIE = int(GetNonPublicField("playTimeUIE"))
-		SaveDataInfo.playTimeUIF = int(GetNonPublicField("playTimeUIF"))
-		SaveDataInfo.playTimeRankEX = int(GetNonPublicField("playTimeRankEX"))
-		SaveDataInfo.playTimeKnockEX = int(GetNonPublicField("playTimeKnockEX"))
-		SaveDataInfo.playTimeKnockNote = int(GetNonPublicField("playTimeKnockNote"))
-		SaveDataInfo.playVsync = bool(GetNonPublicField("playVsync"))
-		SaveDataInfo.buttonSetting4K = list(GetNonPublicField("buttonSetting4K"))
-		SaveDataInfo.buttonSetting6K = list(GetNonPublicField("buttonSetting6K"))
-		SaveDataInfo.hiddenUnlockSongs = bool(GetNonPublicField("hiddenUnlockSongs"))
-		SaveDataInfo.hideLeaderboardMini = bool(GetNonPublicField("hideLeaderboardMini"))
-		SaveDataInfo.playingSceneName = str(GetNonPublicField("playingSceneName"))
-		SaveDataInfo.selectSongName = str(GetNonPublicField("selectSongName"))
-		SaveDataInfo.sceneName = str(GetNonPublicField("sceneName"))
-		SaveDataInfo.busVolume = float(GetNonPublicField("busVolume"))
-		SaveDataInfo.advSceneSettingString = str(GetNonPublicField("advSceneSettingString"))
-		SaveDataInfo.dropSpeed = int(GetNonPublicField("dropSpeed"))
 		SaveDataInfo.isUseUserMemoryDropSpeed = bool(userMemory.isUseUserMemoryDropSpeed)
-		SaveDataInfo.dropSpeedFloat = float(GetNonPublicField("dropSpeedFloat"))
-		SaveDataInfo.isOpenVSync = bool(GetNonPublicField("isOpenVSync"))
-		SaveDataInfo.hadSaveFpsAndVSync = bool(GetNonPublicField("hadSaveFpsAndVSync"))
-		SaveDataInfo.fps = int(GetNonPublicField("fps"))
+
 		self.__logger.debug(SaveDataInfo.ToDict(debug=True))
 		self.__logger.debug("SaveDeserialize End.")
 		self.__logger.info("SaveDeserialize Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000))
@@ -188,7 +197,7 @@ class MUSYNCSavProcess(object):
 		removeIndexList:list[int] = list()
 		self.__logger.debug("|  SongID  | SpeedStall | SyncNumber |         UploadScore        | PlayCount |  State  |")
 		# 遍历列表
-		for saveIndex in range(len(SaveDataInfo.saveInfoList)):
+		for saveIndex, mapData in enumerate(SaveDataInfo.saveInfoList):
 			mapData:MapDataInfo = SaveDataInfo.saveInfoList[saveIndex]
 			mapInfo:MapInfo = GetSongName(mapData.SongId)
 			if ((mapInfo is None) or (mapInfo.SongName == "")):
@@ -215,7 +224,7 @@ class MUSYNCSavProcess(object):
 		self.__logger.debug("FavFix Start.")
 		# allSongData:dict[str,list] = SongName.SongNameData()
 		self.__logger.debug(f"Favorites List：{self.FavSong}")
-		for index in range(len(SaveDataInfo.saveInfoList)):
+		for index in enumerate(SaveDataInfo.saveInfoList):
 			if SaveDataInfo.saveInfoList[index].SongName in self.FavSong:
 				SaveDataInfo.saveInfoList[index].State = "Favo"
 		self.__logger.debug("FavFix End.")

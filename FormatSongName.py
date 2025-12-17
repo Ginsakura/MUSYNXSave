@@ -9,7 +9,7 @@ def Format():
 	with open('./musync_data/songname.json','r',encoding='utf8') as f:
 		d = json.load(f)
 	for ids in range(15,1344):
-		if not f'{ids}' in d:
+		if f'{ids}' not in d:
 			d[f'{ids}'] = None
 	with open('./musync_data/songname.json','w',encoding='utf8') as f:
 		json.dump(d,f,ensure_ascii=False)
@@ -40,7 +40,8 @@ def main():
 	with open("./musync_data/SavAnalyze.analyze",'r') as analyze:
 		while True:
 			line = analyze.readline()
-			if not line:break
+			if not line:
+				break
 			songid = line[4:8].strip()
 			speedStall = line[23:31]
 			# print(songid,speedStall)

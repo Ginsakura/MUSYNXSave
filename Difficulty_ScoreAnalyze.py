@@ -99,9 +99,9 @@ def Analyze() -> None:
 	ax.scatter(diff[1],score[1],alpha=0.7,color='#F83535',s=5)
 	ax.text(18,123,"\n".join(labels),ha="left",va="top",alpha=1,
 		fontdict={'family':'LXGW WenKai Mono','weight':'normal','size':10})
-	ax.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':10},framealpha=0.4);  #show label
-	ax.set_xlabel('Difficulty'); #x_label
-	ax.set_ylabel('SYNC.Rate'); #y_label
+	ax.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':10},framealpha=0.4) #show label
+	ax.set_xlabel('Difficulty') #x_label
+	ax.set_ylabel('SYNC.Rate') #y_label
 
 	plt.show()
 

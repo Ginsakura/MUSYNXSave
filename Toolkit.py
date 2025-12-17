@@ -1,18 +1,19 @@
 ﻿import gzip
-from hashlib import sha256
 import io
 import json
 import logging
 import os
-from Resources import Config, Logger, SongName
-import sqlite3 as sql
+import sqlite3
 import struct
 import time
+import winreg
+from hashlib import sha256
 from tkinter import messagebox
 from win32 import win32gui, win32print
 from win32.lib import win32con
 from win32.win32api import GetSystemMetrics
-import winreg
+
+from Resources import Config, Logger, SongName
 
 logger:logging.Logger = Logger().GetLogger("Toolkit")
 
@@ -75,8 +76,12 @@ class Toolkit(object):
 
 	@staticmethod
 	def GetHash(filePath:str|None=None)->str:
-		"""获取文件哈希值
-		
+		"""
+		获取文件哈希值
+		param:
+			filePath(str|None): 文件路径
+		return:
+			str: 文件SHA256哈希值(大写)
 		"""
 		startTime:int = time.perf_counter_ns()
 		if (filePath is None): return ""
@@ -86,14 +91,14 @@ class Toolkit(object):
 		return hashResult
 
 	@classmethod
-	def ResourceReleases(cls, offset:int, lenth:int, releasePath:str=None)->bytes:
+	def ResourceReleases(cls, offset:int, lenth:int, releasePath:str|None=None)->bytes:
 		"""
 		资源释放函数
-		传入:
+		param:
 			offset      (int): 资源偏移
 			lenth       (int): 资源长度
-			releasePath (str): 资源释放地址
-		传出:
+			releasePath (str|None): 资源释放地址
+		return:
 			bytes: 解压的资源
 		"""
 		startTime:int = time.perf_counter_ns()
@@ -109,7 +114,11 @@ class Toolkit(object):
 
 	@classmethod
 	def CheckResources(cls, fonts:list[str])->None:
-		"""运行前环境检查"""
+		"""
+		运行前环境检查
+		param:
+			fonts (list[str]): 已安装字体列表
+		"""
 		startTime:int = time.perf_counter_ns()
 		# 检查旧版数据文件夹
 		logger.debug("Check \"musync\\\" is exists...")
@@ -235,8 +244,8 @@ class Toolkit(object):
 		startTime:int = time.perf_counter_ns()
 		rtcode:int = -1
 		if os.path.isfile("./musync_data/HitDelayHistory_v2.db"):
-			db:sql.Connection = sql.connect('./musync_data/HitDelayHistory_v2.db')
-			cursor:sql.Cursor = db.cursor()
+			db:sqlite3.Connection = sqlite3.connect('./musync_data/HitDelayHistory_v2.db')
+			cursor:sqlite3.Cursor = db.cursor()
 			# 使用 PRAGMA table_info 获取表的列信息
 			cursor.execute("PRAGMA table_info(HitDelayHistory);")
 			# 获取列的数量
@@ -252,8 +261,8 @@ class Toolkit(object):
 				db.close()
 				rtcode = 1
 		elif os.path.isfile("./musync_data/HitDelayHistory.db"):
-			db:sql.Connection = sql.connect('./musync_data/HitDelayHistory.db')
-			cursor:sql.Cursor = db.cursor()
+			db:sqlite3.Connection = sqlite3.connect('./musync_data/HitDelayHistory.db')
+			cursor:sqlite3.Cursor = db.cursor()
 			cursor.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table';")
 			tableCount:int = cursor.fetchone()[0]
 			if (tableCount==1):
@@ -284,8 +293,8 @@ class Toolkit(object):
 		# 链接数据库
 		if (nowVersion==2):
 			os.rename("./musync_data/HitDelayHistory_v2.db", "./musync_data/HitDelayHistory.db")
-		db:sql.Connection = sql.connect('./musync_data/HitDelayHistory.db')
-		cursor:sql.Cursor = db.cursor()
+		db:sqlite3.Connection = sqlite3.connect('./musync_data/HitDelayHistory.db')
+		cursor:sqlite3.Cursor = db.cursor()
 		if (nowVersion == 0):
 			logger.info(f"创建v{LastVersion}版本数据库中...")
 			cursor.execute("""CREATE table IF NOT EXISTS HitDelayHistory (

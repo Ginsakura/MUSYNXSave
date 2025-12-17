@@ -72,23 +72,23 @@ class AllHitAnalyze(object):
 
 		self.xAxis = [i for i in range(-150,251)]
 		self.yAxis = hitMapA + hitMapB
-		self.avg = sum([ids[0]*ids[1]/self.sumYnum for ids in zip(self.xAxis,self.yAxis)]) if self.sumYnum > 0 else 0
-		self.var = sum([(ids[1]/self.sumYnum)*((ids[0] - self.avg) ** 2) for ids in zip(self.xAxis,self.yAxis)]) if self.sumYnum > 0 else 0
+		self.avg = sum([ids[0]*ids[1]/self.sumYnum for ids in zip(self.xAxis, self.yAxis, strict=True)]) if self.sumYnum > 0 else 0
+		self.var = sum([(ids[1]/self.sumYnum)*((ids[0] - self.avg) ** 2) for ids in zip(self.xAxis, self.yAxis, strict=True)]) if self.sumYnum > 0 else 0
 		self.std = self.var**0.5
 
-		self.avgEx = sum([ids[0]*ids[1]/self.sumYnumEx for ids in zip(self.xAxis[61:240],self.yAxis[61:240])]) if self.sumYnumEx > 0 else 0
-		self.varEx = sum([(ids[1]/self.sumYnumEx)*((ids[0] - self.avgEx) ** 2) for ids in zip(self.xAxis[61:240],self.yAxis[61:240])]) if self.sumYnumEx > 0 else 0
+		self.avgEx = sum([ids[0]*ids[1]/self.sumYnumEx for ids in zip(self.xAxis[61:240], self.yAxis[61:240], strict=True)]) if self.sumYnumEx > 0 else 0
+		self.varEx = sum([(ids[1]/self.sumYnumEx)*((ids[0] - self.avgEx) ** 2) for ids in zip(self.xAxis[61:240], self.yAxis[61:240], strict=True)]) if self.sumYnumEx > 0 else 0
 		self.stdEx = self.varEx**0.5
 
-		self.avgEX = sum([ids[0]*ids[1]/self.sumYnumEX for ids in zip(self.xAxis[106:195],self.yAxis[106:195])]) if self.sumYnumEX > 0 else 0
-		self.varEX = sum([(ids[1]/self.sumYnumEX)*((ids[0] - self.avgEX) ** 2) for ids in zip(self.xAxis[106:195],self.yAxis[106:195])]) if self.sumYnumEX > 0 else 0
+		self.avgEX = sum([ids[0]*ids[1]/self.sumYnumEX for ids in zip(self.xAxis[106:195], self.yAxis[106:195], strict=True)]) if self.sumYnumEX > 0 else 0
+		self.varEX = sum([(ids[1]/self.sumYnumEX)*((ids[0] - self.avgEX) ** 2) for ids in zip(self.xAxis[106:195], self.yAxis[106:195], strict=True)]) if self.sumYnumEX > 0 else 0
 		self.stdEX = self.varEX**0.5
 		# del db,cur,hitMapA,hitMapB,res,idxAbs
 		print('All data:  ',self.avg,self.var,self.std,self.sumYnum)
 		print('Exact rate:',self.avgEx,self.varEx,self.stdEx,self.sumYnumEx)
 		print('cyan Exact:',self.avgEX,self.varEX,self.stdEX,self.sumYnumEX)
 
-	def Show(self):
+	def Show(self) -> None:
 		fig = plt.figure(f"HitAnalyze (Total:{self.sumYnum},  CyanEx:{self.rate[0]},  BlueEx:{self.rate[1]},  Great:{self.rate[2]},  Right:{self.rate[3]},  Miss:{self.rate[4]})", figsize=(16, 9))
 		fig.clear()
 		# fig.subplots_adjust(**{"left":0,"bottom":0,"right":1,"top":1})
@@ -113,7 +113,7 @@ class AllHitAnalyze(object):
 			self.Pie(ax2)
 		plt.show()
 
-	def Line(self,ax1):
+	def Line(self,ax1) -> None:
 		e = 2.718281828459045
 		p = 3.141592653589793
 		def PDFx(x):
@@ -209,14 +209,15 @@ class AllHitAnalyze(object):
 
 		ax1.legend(loc='upper left',prop={'size':15}); #显示上面的label
 
-	def Pie(self,ax2):
-		def Percentage(num, summ):
+	def Pie(self,ax2) -> None:
+		def Percentage(num, summ) -> str:
+			""" """
 			per = num/summ*100
 			return ' '*(3-len(str(int((per)))))+'%.3f%%'%(per)
-		def Count(num):
+		def Count(num) -> str:
 			cou = str(num)
 			return ' '*(6-len(cou))+cou
-		def PercentageLabel(num, summ):
+		def PercentageLabel(num, summ) -> str:
 			per = num/summ*100
 			return '%.1f%%'%(per)
 		accurateRateSum = sum(self.accurateRate)

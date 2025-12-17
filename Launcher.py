@@ -5,12 +5,12 @@ import sys
 import ctypes
 import logging
 from tkinter import Tk, font
-from Resources import Logger
-from Version import *
 # from tkinter import *
+
+import Version
 from MainWindow import MusyncSavDecodeGUI
 #from .MainWindow_New import MusyncSavDecodeGUI
-from Resources import Config, SaveDataInfo, SongName
+from Resources import Logger, SaveDataInfo, SongName
 from Toolkit import Toolkit
 
 logger:logging.Logger = Logger.GetLogger(name="Launcher")
@@ -19,7 +19,7 @@ def Launcher()->None:
 	# Init
 	SongName()
 	SaveDataInfo()
-	Config.Version = preVersion.replace("pre",".") if (isPreRelease) else version.replace("rc",".")
+	Config.Version = Version.preVersion.replace("pre",".") if (Version.isPreRelease) else Version.version.replace("rc",".")
 
 	# Launcher
 	root:Tk = Tk()

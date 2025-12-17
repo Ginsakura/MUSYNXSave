@@ -1,17 +1,20 @@
 import logging
-from AllHitAnalyze import AllHitAnalyze
-# from AllHitAnalyze_New import AllHitAnalyze
-from datetime import datetime as dt
+import tkinter
 import matplotlib.gridspec as gridspec
-import matplotlib.pyplot as plt
-from matplotlib.pyplot import MultipleLocator
+import matplotlib.pyplot as plot
 import os
 import pyperclip
-from Resources import Config, Logger
-import sqlite3 as sql
-from tkinter import *
-from tkinter import Tk, ttk, messagebox
+import sqlite3
 import uiautomation as uiauto
+from datetime import datetime as dt
+from matplotlib.pyplot import MultipleLocator
+# from tkinter import *
+from tkinter import Tk, ttk, messagebox
+from tkinter import Button, Label, Entry, Frame, Scrollbar
+
+from AllHitAnalyze import AllHitAnalyze
+# from AllHitAnalyze_New import AllHitAnalyze
+from Resources import Config, Logger
 
 uiauto.SetGlobalSearchTimeout(1)
 
@@ -20,10 +23,10 @@ class HitDelayText(object):
 	def __init__(self,subroot):
 		self.__logger:logging.Logger = Logger.GetLogger("HitDelay.HitDelayText")
 		if os.path.isfile('./musync_data/HitDelayHistory.db'):
-			self.db = sql.connect('./musync_data/HitDelayHistory.db')
+			self.db = sqlite3.connect('./musync_data/HitDelayHistory.db')
 			self.cur = self.db.cursor()
 		else:
-			self.db = sql.connect('./musync_data/HitDelayHistory.db')
+			self.db = sqlite3.connect('./musync_data/HitDelayHistory.db')
 			self.cur = self.db.cursor()
 			self.cur.execute("""CREATE table HitDelayHistory (
 				SongMapName text Not Null,
@@ -102,14 +105,17 @@ class HitDelayText(object):
 		self.UpdateWindowInfo()
 
 	def ChangeKeys(self):
+		""" 切换按键数 """
 		Config.Default4Keys = not Config.Default4Keys
 		self.keysButton.configure(text=("4Key" if Config.Default4Keys else "6Key"))
 	def ChangeDiffcute(self):
+		""" 切换难度 """
 		self.diffcute = (self.diffcute + 1) % 3
 		Config.DefaultDiffcute = self.diffcute
 		self.diffcuteButton.configure(text=["Easy","Hard","Inferno"][self.diffcute])
 
 	def TestEntryString(self):
+		""" 测试输入框内容 """
 		string = self.nameDelayEntry.get()
 		if string == '':
 			self.nameDelayEntry.insert(0, "→→在这里输入谱面标识←←")
@@ -118,6 +124,7 @@ class HitDelayText(object):
 		return True
 
 	def HistoryUpdate(self):
+		""" 更新历史记录 """
 		for ids in self.delayHistory.get_children():
 			self.delayHistory.delete(ids)
 		data = self.cur.execute("SELECT SongMapName,RecordTime,AvgDelay,AllKeys,AvgAcc from HitDelayHistory")
@@ -125,11 +132,12 @@ class HitDelayText(object):
 		self.history = list()
 		for ids in data:
 			self.history.append(ids[0])
-			self.delayHistory.insert('', END, values=(ids[0],ids[1],ids[3],'%.6f ms'%ids[2],'%.6f ms'%ids[4]))
+			self.delayHistory.insert('', tkinter.END, values=(ids[0],ids[1],ids[3],'%.6f ms'%ids[2],'%.6f ms'%ids[4]))
 		del data
 		self.UpdateWindowInfo()
 
 	def Draw(self):
+		""" 绘制 HitDelay 图表 """
 		consoleFind = False
 		try:
 			win = uiauto.WindowControl(searchDepth=1,Name='MUSYNX Delay',searchInterval=1).DocumentControl(searchDepth=1,Name='Text Area',searchInterval=1)
@@ -166,7 +174,7 @@ class HitDelayText(object):
 					sumKeys += 1
 			avgDelay = (sumNums / sumKeys) if sumKeys > 0 else 0
 			avgAcc = (sum(abs(i) for i in dataList) / allKeys) if allKeys > 0 else 0
-			self.delayHistory.insert('', END, values=(name, time, allKeys, '%.6f ms'%avgDelay, '%.6f ms'%avgAcc))
+			self.delayHistory.insert('', tkinter.END, values=(name, time, allKeys, '%.6f ms'%avgDelay, '%.6f ms'%avgAcc))
 			dataListStr = ""
 			for i in dataList:
 				dataListStr += f'{i}|'
@@ -180,12 +188,14 @@ class HitDelayText(object):
 			HitDelayDraw(dataList,isHistory=False)
 
 	def OpenTxt(self):
+		""" 打开 Acc-Sync 文本文件 """
 		os.system('start notepad ./musync_data/Acc-Sync.json')
 		# os.system(f'start explorer {os.getcwd()}')
 		import AvgAcc_SynxAnalyze
 		AvgAcc_SynxAnalyze.Analyze()
 
 	def ShowHistoryInfo(self,event):
+		""" 显示历史记录信息 """
 		e = event.widget									# 取得事件控件
 		itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
 		# state = e.item(itemID,"text")						# 取得text参数
@@ -210,6 +220,7 @@ class HitDelayText(object):
 			del data
 
 	def DeleteCursorHistory(self):
+		""" 删除历史记录 """
 		self.__logger.info(f"delete history {self.cursorHistory}")
 		if self.cursorHistory == '':
 			messagebox.showerror('Error','请输入谱面标识')
@@ -224,6 +235,7 @@ class HitDelayText(object):
 				self.HistoryUpdate()
 
 	def UpdateCursorHistory(self):
+		""" 更新历史记录 """
 		nowHistoryName = self.historyNameEntry.get().replace("\'","’")
 		if self.cursorHistory != nowHistoryName:
 			self.__logger.debug(f"change history name \nfrom {self.cursorHistory} \nto {nowHistoryName} \nwhen time is {self.historyRecordTimeValueLabel['text']}")
@@ -235,6 +247,7 @@ class HitDelayText(object):
 			self.HistoryUpdate()
 
 	def HistoryDraw(self,event):
+		""" 绘制历史记录图表 """
 		e = event.widget									# 取得事件控件
 		itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
 		# state = e.item(itemID,"text")						# 取得text参数
@@ -251,6 +264,7 @@ class HitDelayText(object):
 			HitDelayDraw(data,isHistory=True)
 
 	def UpdateWindowInfo(self):
+		""" 更新窗口信息 """
 		self.delayHistory.heading("Name",anchor="center",text="曲名")
 		self.delayHistory.heading("RecordTime",anchor="center",text="记录时间")
 		self.delayHistory.heading("AllKeys",anchor="center",text="Keys")
@@ -273,7 +287,7 @@ class HitDelayText(object):
 		# self.subroot.after(500,self.UpdateWindowInfo)
 
 class HitDelayDraw(object):
-	"""docstring for ClassName"""
+	""" docstring for DrawHDLine """
 	def __init__(self, dataList,isHistory=False):
 		self.__logger:logging.Logger = Logger.GetLogger("HitDelay.HitDelayDraw")
 		self.__logger.info(f'Name:{dataList[0]}\nRecordTime:{dataList[1]}')
@@ -311,15 +325,16 @@ class HitDelayDraw(object):
 
 		self.DrawLine()
 		if Config.DonutChartinHitDelay: self.DrawBarPie()
-		plt.show()
+		plot.show()
 
 	def DrawLine(self):
-		fig = plt.figure(f'AvgDelay: {self.avgDelay:.4f}ms    AllKeys: {self.allKeys}    AvgAcc: {self.avgAcc:.4f}ms',figsize=(9, 4))
+		""" 绘制 HitDelay 折线图 """
+		fig = plot.figure(f'AvgDelay: {self.avgDelay:.4f}ms    AllKeys: {self.allKeys}    AvgAcc: {self.avgAcc:.4f}ms',figsize=(9, 4))
 		fig.clear()
 		fig.subplots_adjust(**{"left":0.045,"bottom":0.055,"right":1,"top":1})
 		ax = fig.add_subplot()
-		plt.rcParams['font.serif'] = ["LXGW WenKai Mono"]
-		plt.rcParams["font.sans-serif"] = ["LXGW WenKai Mono"]
+		plot.rcParams['font.serif'] = ["LXGW WenKai Mono"]
+		plot.rcParams["font.sans-serif"] = ["LXGW WenKai Mono"]
 		self.__logger.info(f'AvgDelay: {self.avgDelay}\tAllKeys: {self.allKeys}\tAvgAcc: {self.avgAcc}')
 		ax.text(0,5,"Slower→", ha='right',color='#c22472',rotation=90, fontdict={'size':15})
 		ax.text(0,-5,"←Faster", ha='right',va='top',color='#288328',rotation=90, fontdict={'size':15})
@@ -359,19 +374,43 @@ class HitDelayDraw(object):
 		# plt.show()
 
 	def DrawBarPie(self):
-		def Percentage(num, summ):
+		""" 绘制 HitDelay 饼图与柱状图 """
+		def Percentage(num, summ)->str:
+			"""
+			百分比标签，补齐3位整数，保留三位小数
+			param:
+				num: 部分值
+				summ: 总值
+			return:
+				str 百分比标签
+			"""
 			per = num/summ*100
 			return ' '*(3-len(str(int((per)))))+'%.3f%%'%(per)
-		def Count(num):
+		def Count(num)->str:
+			"""
+			计数标签，补齐6位
+			param:
+				num: 计数值
+			return:
+				str 计数标签
+			"""
 			cou = str(num)
 			return ' '*(6-len(cou))+cou
-		def PercentageLabel(num, summ):
+		def PercentageLabel(num, summ)->str:
+			"""
+			百分比标签，保留一位小数
+			param:
+				num: 计数值
+				summ: 总值
+			return:
+				str 计数标签
+			"""
 			per = num/summ*100
 			return '%.1f%%'%(per)
 		# import random
 		# fig = plt.figure(f'Pie&Bar AvgDelay: {"%.4fms"%self.avgDelay}  ' \
 		# 	f'AllKeys: {self.allKeys}  AvgAcc: {"%.4fms"%self.avgAcc}', figsize=(5.5, 6.5))
-		fig = plt.figure(f'Pie&Bar', figsize=(5.5, 6.5))
+		fig = plot.figure(f'Pie&Bar', figsize=(5.5, 6.5))
 		fig.clear()
 		grid = gridspec.GridSpec(4, 1, left=0, right=1, top=1, bottom=0.035, wspace=0, hspace=0)
 		ax1 = fig.add_subplot(grid[0:3,0])

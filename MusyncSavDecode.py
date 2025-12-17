@@ -1,11 +1,12 @@
-﻿from base64 import b64decode
-import clr
+﻿import clr
 import logging
 import os
-from Resources import Logger
 import sys
 import time
+from base64 import b64decode
 from tkinter import messagebox
+
+from Resources import Logger
 
 logger:logging.Logger = Logger.GetLogger(name="MUSYNCSavDecode")
 try:
@@ -27,11 +28,12 @@ class MUSYNCSavProcess(object):
 		super(MUSYNCSavProcess, self).__init__()
 		self.__assembly_loaded = False
 		try:
-			assembly = Assembly.LoadFrom(os.path.join(Config.MainExecPath, 'MUSYNX_Data', 'Managed', 'Assembly-CSharp.dll'))
+			dllPath = os.path.join(Config.MainExecPath, 'MUSYNX_Data', 'Managed', 'Assembly-CSharp.dll')
+			assembly = Assembly.LoadFrom(dllPath)
 			self.__assembly = assembly
 			self.__assembly_loaded = True
 		except Exception:
-			logger.exception(f"Failed to Load {Config.MainExecPath}MUSYNX_Data/Managed/Assembly-CSharp.dll")
+			logger.exception(f"Failed to Load {dllPath}")
 			raise
 		self.savPath:str = savFile
 		self.FavSong:list[str] = list()
@@ -174,13 +176,13 @@ class MUSYNCSavProcess(object):
 				129301, 129302, 129311, 129312, #ArroganT
 				129401, 129402, 129411, 129412, #樂園 - Atlantis
 				]
-			return (True if songId in NCR else False)
+			return songId in NCR
 
 		def OldAprilFoolsDay(songId:int) -> bool:
 			"""标记愚人节谱面"""
 			OAFD = [
 				]
-			return (True if songId in OAFD else False)
+			return songId in OAFD
 
 		allSongData:dict[str,list] = SongName.SongNameData()
 		removeIndexList:list[int] = list()

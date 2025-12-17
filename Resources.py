@@ -4,6 +4,7 @@ import logging
 import os
 import shutil
 import threading
+from typing import ClassVar
 
 class Config(object):
 	"""从bootcfg.json读取配置信息,单例"""
@@ -23,8 +24,9 @@ class Config(object):
 		shutil.move(f".\\{logName}", logsDir+logName)
 		# 压缩 log.txt 文件
 		with open(logsDir+logName, 'rb') as f_in:
-			with gzip.GzipFile(filename='log.txt', mode='wb', fileobj=open(logsDir+logsName, 'wb')) as f_out:
-				shutil.copyfileobj(f_in, f_out)
+			with open(logsDir+logsName, 'wb') as f_out_raw:
+				with gzip.GzipFile(filename='log.txt', mode='wb', fileobj=f_out_raw) as f_out:
+					shutil.copyfileobj(f_in, f_out)
 		# 清理 log.txt 文件
 		os.remove(logsDir+logName)
 
@@ -166,7 +168,7 @@ class Config(object):
 				json.dump(config_data, configFile, ensure_ascii=False, indent=2)
 			cls.__logger.info(f"Configuration saved to \"{cls.__filePath}\" successfully.")
 		except Exception as e:
-			cls.__logger.exception(f"Failed to save configuration to \"{cls.__filePath}\": {e}")
+			cls.__logger.exception(f"Failed to save configuration to \"{cls.__filePath}\"")
 
 class Logger(object):
 	"""用于记录和生成日志"""
@@ -349,8 +351,8 @@ class SaveDataInfo(object):
 	__logger:logging.Logger			= None
 	version:int						= None
 	AppVersion:int					= None
-	saveInfoList:list[MapDataInfo]	= list()
-	purchaseIds:list[str]			= list()
+	saveInfoList:ClassVar[list[MapDataInfo]] = []
+	purchaseIds:ClassVar[list[str]]	= []
 	crc:int							= None
 	saveDate:int					= None
 	songIndex:int					= 1

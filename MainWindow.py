@@ -1,34 +1,44 @@
-from ast import Lambda
 import ctypes
-from Difficulty_ScoreAnalyze import Analyze
-from enum import Enum, unique
-from HitDelay import HitDelayText
 import logging
-from MusyncSavDecode import MUSYNCSavProcess
 import os
-# from PIL import Image as PILImage
-# from PIL import ImageTk
 import psutil
 import requests
-from Resources import Config, SaveDataInfo, SongName, Logger
 import threading
 import time
 import tkinter
-from tkinter import Label,Entry,Button,Scrollbar,Frame
-from tkinter import font,messagebox,StringVar
-from tkinter import Tk,ttk,Toplevel
-from tkinter.filedialog import askopenfilename
-from Toolkit import Toolkit
-import Version
 import webbrowser
 #import win32api
 #import win32con
 #import win32gui_struct
 #import win32gui
+from enum import Enum, unique
+from tkinter import Label,Entry,Button,Scrollbar,Frame
+from tkinter import font,messagebox,StringVar
+from tkinter import Tk,ttk,Toplevel
+from tkinter.filedialog import askopenfilename
+# from PIL import Image as PILImage
+# from PIL import ImageTk
+
+import Version
+from Difficulty_ScoreAnalyze import Analyze
+from HitDelay import HitDelayText
+from MusyncSavDecode import MUSYNCSavProcess
+from Resources import Config, SaveDataInfo, SongName, Logger
+from Toolkit import Toolkit
 
 class MusyncSavDecodeGUI(object):
-	"""docstring for MusyncSavDecodeGUI"""
+	"""
+		docstring for MusyncSavDecodeGUI
+		描述: MusyncSavDecodeGUI主窗口类
+		功能: 初始化主窗口，控件布局，事件绑定，UI逻辑处理
+	"""
 	def __init__(self, root:Tk=None, isTKroot:bool=True):
+		"""
+			MusyncSavDecodeGUI类初始化函数
+			param:
+				root: Tk - 主窗口Tk实例
+				isTKroot: bool - 是否为Tk根窗口
+		"""
 		# super(MusyncSavDecodeGUI, self).__init__()
 		self.logger:logging.Logger = Logger.GetLogger(name="MusyncSavDecodeGUI")
 		self.version:str = Version.version
@@ -173,12 +183,12 @@ class MusyncSavDecodeGUI(object):
 			self.UpdateWindowInfo()
 			self.TreeviewWidthUptate()
 			self.TreeviewColumnUpdate()
-	
+
 			self.checkGameStartEvent.set()
 			self.checkGameIsStartThread:threading.Thread = threading.Thread(target=self.CheckGameRunning)
 			self.checkGameIsStartThread.start()
 			threading.Thread(target=self.CheckJsonUpdate).start()
-	
+
 			if Config().CheckUpdate:
 				self.logger.info("Check Updating...")
 				threading.Thread(target=self.CheckUpdate).start()
@@ -215,22 +225,26 @@ class MusyncSavDecodeGUI(object):
 
 # select功能组
 	def SelectKeys(self) -> None:
+		"""切换按键数筛选"""
 		self.keys = KeysEnum((self.keys.value+1)%3)
 		self.selectKeys.configure(text=self.keys.text)
 		self.DataLoad()
 		self.root.update()
 	def SelectDifficute(self) -> None:
+		"""切换难度筛选"""
 		self.difficute = DiffcuteEnum((self.difficute.value+1)%4)
 		self.selectDifficute.configure(text=self.difficute.text)
 		self.DataLoad()
 		self.root.update()
 	def SelectDLCSong(self) -> None:
+		"""切换DLC筛选"""
 		self.songSelect = SongSelectEnum((self.songSelect.value+1)%3)
 		self.selectDLCSong.configure(text=self.songSelect.text)
 		self.selectDLCSong.configure(bg=self.songSelect.background)
 		self.DataLoad()
 		self.root.update()
 	def SelectMethod(self,method) -> None:
+		"""切换筛选方法"""
 		if self.dataSelectMethod == method:
 			self.dataSelectMethod = None
 			self.SelectButtonGrey(method)
@@ -241,6 +255,7 @@ class MusyncSavDecodeGUI(object):
 		self.DataLoad()
 		self.root.update()
 	def SelectButtonGreen(self,method) -> None:
+		"""设置按钮为绿色"""
 		if method == "Played":self.selectPlayedButton.configure(bg='#98E22B')
 		elif method == "Unplay":self.selectUnplayButton.configure(bg='#98E22B')
 		elif method == "IsFav":self.selectIsFavButton.configure(bg='#98E22B')
@@ -252,6 +267,7 @@ class MusyncSavDecodeGUI(object):
 		elif method == "RankB":self.selectBRankButton.configure(bg='#98E22B')
 		elif method == "RankC":self.selectCRankButton.configure(bg='#98E22B')
 	def SelectButtonGrey(self,method) -> None:
+		"""设置按钮为灰色"""
 		if method == "Played":self.selectPlayedButton.configure(bg='#F0F0F0')
 		elif method == "Unplay":self.selectUnplayButton.configure(bg='#F0F0F0')
 		elif method == "IsFav":self.selectIsFavButton.configure(bg='#F0F0F0')
@@ -264,6 +280,7 @@ class MusyncSavDecodeGUI(object):
 		elif method == "RankC":self.selectCRankButton.configure(bg='#F0F0F0')
 
 	def SelectPath(self) -> None:
+		"""选择存档文件路径"""
 		# 使用askdirectory()方法返回文件夹的路径
 		path_ = askopenfilename(title="打开存档文件", filetypes=(("Sav Files", "*.sav"),("All Files","*.*"),))
 		if path_ == "":
@@ -276,6 +293,7 @@ class MusyncSavDecodeGUI(object):
 
 # bind功能组
 	def DoubleClick(self,event) -> None:
+		"""双击事件处理函数"""
 		e = event.widget									# 取得事件控件
 		itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
 		# state = e.item(itemID,"text")						# 取得text参数
@@ -286,6 +304,7 @@ class MusyncSavDecodeGUI(object):
 		# newWindow = SubWindow(nroot, songData[0], songData[1], songData[2])
 
 	def SortClick(self,event) -> None:
+		"""列标题点击排序事件处理函数"""
 		def TreeviewSortColumn(col) -> None:
 			startTime = time.perf_counter_ns()
 			if self.dataSortMethodsort[0] == col:
@@ -314,16 +333,20 @@ class MusyncSavDecodeGUI(object):
 			self.saveData.heading(col, command=lambda _col=col:TreeviewSortColumn(_col))
 
 	def StartGame(self,event) -> None:
+		"""启动游戏事件处理函数"""
 		if self.isGameRunning["text"] == '游戏未启动':
 			os.system('start steam://rungameid/952040')
 		else:
 			messagebox.showinfo("Info", '游戏已启动')
 
 	def F5Key(self,event) -> None:
+		"""F5键刷新事件处理函数"""
 		self.DataLoad()
 
 # update功能组
 	def CheckJsonUpdate(self) -> None:
+		"""检查谱面信息更新"""
+
 		startTime = time.perf_counter_ns()
 		try:
 			response:requests.Response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update", timeout=10)
@@ -342,14 +365,17 @@ class MusyncSavDecodeGUI(object):
 				self.logger.error("Can't get \"songname.update\", HTTP status code: %d."%(response.status_code))
 		except Exception as e:
 			self.logger.exception("谱面信息更新发生错误: ")
-			# TODO: 修改为root.After
-			self.root.after(0, lambda _:messagebox.showerror("Error", f'发生错误: {e}'))
-			if messagebox.askyesno("无法获取谱面信息更新", f'是否前往网页查看是否存在更新?\n(请比对 SongName.update 中的时间是否比本地文件中的时间更大)'):
-				webbrowser.open("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
+			error_msg = str(e)
+			def show_error(_):
+				messagebox.showerror("Error", f'发生错误: {error_msg}')
+				if messagebox.askyesno("无法获取谱面信息更新", '是否前往网页查看是否存在更新?\n(请比对 SongName.update 中的时间是否比本地文件中的时间更大)'):
+					webbrowser.open("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
+			self.root.after(0, show_error)
 		endTime = time.perf_counter_ns()
 		self.logger.info("CheckJsonUpdate Run Time: %f ms"%((endTime - startTime)/1000000))
 
 	def CheckUpdate(self) -> None:
+		"""检查软件更新"""
 		def CheckVersion(local:list[int], target:list[int], channel:bool=False)->bool:
 			"""版本号比较"""
 			if (target[0] > local[0]): return True
@@ -357,15 +383,18 @@ class MusyncSavDecodeGUI(object):
 			if (target[2] > local[2]): return True
 			if channel:
 				if (target[3] > local[3]): return True
-			else: return False
+			return False
 
 		startTime:int = time.perf_counter_ns()
 		updateChannel:bool = Config().UpdateChannel.lower() == "prerelease"
 		localVersion:list[int] = [int(i) for i in Version.preVersion.replace("pre",".").split(".")]
-		targetVersion:list[int] = []
+		targetVersion:list[int] = [0,0,0,0]
 		# 获取版本号
 		try:
 			response:requests.Response = requests.get("https://api.github.com/repositories/591967225/releases", timeout=10)
+			if (response.status_code != 200):
+				self.logger.error("Can't get releases info, HTTP status code: %d."%(response.status_code))
+				raise Exception(f"无法获取更新信息，HTTP状态码: {response.status_code}")
 			resJson:dict|list = response.json()
 			if "message" in resJson:
 				if resJson["message"][:23] == "API rate limit exceeded":
@@ -380,9 +409,10 @@ class MusyncSavDecodeGUI(object):
 				# 取最新版本所在索引（区分rc、pre）
 				selectedTag:dict = resJson[0]
 				if (not updateChannel):
-					for ids in len(resJson):
+					for ids in range(len(resJson)):
 						if (resJson[ids]["prerelease"] == False):
 							selectedTag = resJson[ids]
+							break
 				# 将版本字符串变为版本整数数组
 				targetVersion = [int(i) for i in selectedTag["tag_name"].replace("pre",".").split(".")]
 		except Exception as ex:
@@ -390,15 +420,15 @@ class MusyncSavDecodeGUI(object):
 			error_msg = str(ex)
 			self.root.after(0, lambda _: messagebox.showerror("Error", f'发生错误: {error_msg}'))
 		# print(localVersion,targetVersion)
-		self.logger.info('  Terget Version : %s'%".".join(targetVersion))
+		self.logger.info('  Terget Version : %s'%".".join(map(str, targetVersion)))
 		if updateChannel: # True is Pre
-			self.logger.info("Local PreVersion : %s"%".".join(localVersion))
+			self.logger.info("Local PreVersion : %s"%".".join(map(str, localVersion)))
 		else:
-			self.logger.info('   Local Version : %s'%".".join(localVersion))
+			self.logger.info('   Local Version : %s'%".".join(map(str, localVersion)))
 		labelUrl:str = ""
 		if (CheckVersion(localVersion, targetVersion, updateChannel)):
-			self.gitHubUrlVar.set(f'有新版本啦——点此打开下载页面	NewVersion: {targetVersion}')
-			labelUrl = f"https://github.com/Ginsakura/MUSYNCSave/releases/tag/{targetVersion}"
+			self.gitHubUrlVar.set(f'有新版本啦——点此打开下载页面	NewVersion: {".".join(map(str, targetVersion))}')
+			labelUrl = f"https://github.com/Ginsakura/MUSYNCSave/releases/tag/{'.'.join(map(str, targetVersion))}"
 			self.UpdateTip()
 		# else:
 		# 	self.gitHubUrlVar = "点击打开GitHub仓库	点个Star吧，秋梨膏"

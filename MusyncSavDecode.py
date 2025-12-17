@@ -226,7 +226,7 @@ if __name__ == '__main__':
 	parser = argparse.ArgumentParser()
 	parser.add_argument('savPath', nargs='?', default=None, help='Path to savedata.sav')
 	args = parser.parse_args()
-	
+
 	savPath = args.savPath or os.path.join(Config.MainExecPath or '.', 'SavesDir', 'savedata.sav')
 
 	Object = MUSYNCSavProcess(savPath)

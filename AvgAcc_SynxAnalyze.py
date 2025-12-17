@@ -1,6 +1,6 @@
 import logging
 
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plot
 from matplotlib.pyplot import MultipleLocator
 from Resources import Logger
 
@@ -15,14 +15,14 @@ def Analyze() -> None:
 			acc.append(float(row[0]))
 			sync.append(float(row[1]))
 		except (ValueError, IndexError) as e:
-			__logger.error(str(e));
+			__logger.exception("Failed to parse row")
 			continue
 
 	if not acc or not sync:
 		__logger.error("No valid data found in Acc-Sync.json")
 		return
 
-	fig = plt.figure('AvgAcc与SYNC.Rate散点图', figsize=(10, 10))
+	fig = plot.figure('AvgAcc与SYNC.Rate散点图', figsize=(10, 10))
 	fig.clear()
 	# print(acc,sync)
 
@@ -52,10 +52,10 @@ def Analyze() -> None:
 
 	ax.scatter(acc,sync,alpha=0.7,color='#8a68d0',s=5)
 	# plt.plot(acc,sync,'o')
-	ax.set_xlabel('AvgAcc (ms)'); #x_label
-	ax.set_ylabel('SYNC.Rate (%)'); #y_label
+	ax.set_xlabel('AvgAcc (ms)')  # x_label
+	ax.set_ylabel('SYNC.Rate (%)')  # y_label
 
-	plt.show()
+	plot.show()
 
 if __name__ == '__main__':
-	Analyze();
+	Analyze()

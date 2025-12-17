@@ -19,7 +19,11 @@ def Launcher()->None:
 	# Init
 	SongName()
 	SaveDataInfo()
-	Config.Version = Version.preVersion.replace("pre",".") if (Version.isPreRelease) else Version.version.replace("rc",".")
+
+	if Version.isPreRelease:
+		Config.Version = Version.preVersion.replace("pre", ".")
+	else:
+		Config.Version = Version.version.replace("rc", ".")
 
 	# Launcher
 	root:Tk = Tk()
@@ -43,7 +47,7 @@ def Launcher()->None:
 	root.mainloop()
 
 if __name__ == '__main__':
-	from datetime import datetime as dt
+	# from datetime import datetime as dt
 	try:
 		logger.info(" ====> Launcher() start <====")
 		Launcher()

@@ -1,12 +1,11 @@
 import logging
 import tkinter
-import matplotlib.gridspec as gridspec
-import matplotlib.pyplot as plot
 import os
 import pyperclip
 import sqlite3
 import uiautomation as uiauto
 from datetime import datetime as dt
+from matplotlib import axes, pyplot as plot, gridspec, figure
 from matplotlib.pyplot import MultipleLocator
 # from tkinter import *
 from tkinter import Tk, ttk, messagebox
@@ -375,7 +374,7 @@ class HitDelayDraw(object):
 
 	def DrawBarPie(self):
 		""" 绘制 HitDelay 饼图与柱状图 """
-		def Percentage(num, summ)->str:
+		def Percentage(num, summ, decimals=3)->str:
 			"""
 			百分比标签，补齐3位整数，保留三位小数
 			param:
@@ -384,100 +383,123 @@ class HitDelayDraw(object):
 			return:
 				str 百分比标签
 			"""
-			per = num/summ*100
-			return ' '*(3-len(str(int((per)))))+'%.3f%%'%(per)
-		def Count(num)->str:
+			if summ == 0:
+				return f"{0:.{decimals}f}%"
+			return f"{num / summ * 100:.{decimals}f}%"
+		def CountStr(num, width=6)->str:
 			"""
-			计数标签，补齐6位
+			数量标签，补齐width位整数
 			param:
-				num: 计数值
+				num: 数量值
+				width: 补齐宽度
 			return:
-				str 计数标签
+				str 数量标签
 			"""
-			cou = str(num)
-			return ' '*(6-len(cou))+cou
-		def PercentageLabel(num, summ)->str:
-			"""
-			百分比标签，保留一位小数
-			param:
-				num: 计数值
-				summ: 总值
-			return:
-				str 计数标签
-			"""
-			per = num/summ*100
-			return '%.1f%%'%(per)
+			return str(num).rjust(width)
+
 		# import random
 		# fig = plt.figure(f'Pie&Bar AvgDelay: {"%.4fms"%self.avgDelay}  ' \
 		# 	f'AllKeys: {self.allKeys}  AvgAcc: {"%.4fms"%self.avgAcc}', figsize=(5.5, 6.5))
-		fig = plot.figure(f'Pie&Bar', figsize=(5.5, 6.5))
+		fig:figure.Figure = plot.figure(f'Pie&Bar', figsize=(5.5, 6.5))
 		fig.clear()
-		grid = gridspec.GridSpec(4, 1, left=0, right=1, top=1, bottom=0.035, wspace=0, hspace=0)
-		ax1 = fig.add_subplot(grid[0:3,0])
-		wedgeprops = {'width':0.15, 'edgecolor':'black', 'linewidth':0.2}
-		if self.sum[0]/sum(self.sum) > 0.6:
-			exCountSum = sum(self.exCount)
-			pieRtn = ax1.pie(self.exCount, wedgeprops=wedgeprops, startangle=90, autopct='%1.1f%%', pctdistance = 0.95, labeldistance = 1.05, 
-				colors=['#9dfff0',    '#69f1f1',     '#25d8d8',     '#32a9c7',     '#2F97FF', 'green', 'orange', 'red', ], 
-				labels=["EXACT±5ms", "EXACT±10ms", "EXACT±20ms", "EXACT±45ms", "Exact",   "Great", "Right",  "Miss", ],
-				textprops={'size':10})
-			ax1.legend(prop={'size':9},loc='center', handles=pieRtn[0], 
-				labels=[
-					f"EXACT± 5ms  {Count(self.exCount[0])}  {Percentage(self.exCount[0], exCountSum)}", 
-					f"EXACT±10ms  {Count(self.exCount[1])}  {Percentage(self.exCount[1], exCountSum)}", 
-					f"EXACT±20ms  {Count(self.exCount[2])}  {Percentage(self.exCount[2], exCountSum)}", 
-					f"EXACT±45ms  {Count(self.exCount[3])}  {Percentage(self.exCount[3], exCountSum)}", 
-					f"Exact±90ms  {Count(self.exCount[4])}  {Percentage(self.exCount[4], exCountSum)}", 
-					f"Great±150ms {Count(self.exCount[5])}  {Percentage(self.exCount[5], exCountSum)}", 
-					f"Right＋250ms {Count(self.exCount[6])}  {Percentage(self.exCount[6], exCountSum)}", 
-					f"Miss >=251ms {Count(self.exCount[7])}  {Percentage(self.exCount[7], exCountSum)}", ],
-				)
-			ax1.text(-0.41,0.48,f"EXACT        {Count(sum(self.exCount[0:4]))}  " \
-				f"{Percentage(sum(self.exCount[0:4]), exCountSum)}", 
-				ha='left',va='top',fontsize=9,color='#00B5B5', )
-		else:
-			summ = sum(self.sum)
-			ax1.pie(self.sum, wedgeprops=wedgeprops, startangle=90, autopct='%1.1f%%', pctdistance = 0.9, labeldistance = 1.05, 
-				colors=['cyan', '#2F97FF', 'green', 'orange', 'red'],
-				# autopct=lambda x:'%.3f%%'%(x*sum(self.exCount)/100+0.5),
-				labels=["EXACT", "Exact", "Great", "Right", "Miss"],
-				textprops={'size':9})
-			ax1.legend(prop={'size':9},loc='center',
-				labels=[
-					f"EXACT±45ms  {Count(self.sum[0])}  {Percentage(self.sum[0], summ)}", 
-					f"Exact±90ms  {Count(self.sum[1])}  {Percentage(self.sum[1], summ)}", 
-					f"Great±150ms {Count(self.sum[2])}  {Percentage(self.sum[2], summ)}", 
-					f"Right＋250ms {Count(self.sum[3])}  {Percentage(self.sum[3], summ)}", 
-					f"Miss > 250ms {Count(self.sum[4])}  {Percentage(self.sum[4], summ)}"],
-				)
+		grid:gridspec.GridSpec = gridspec.GridSpec(4, 1, left=0, right=1, top=1, bottom=0.035, wspace=0, hspace=0)
+		ax1:axes.Axes = fig.add_subplot(grid[0:3,0])
 
-		ax2 = fig.add_subplot(grid[3,0])
-		hitMapA = [0]*150 # -149~-0
-		hitMapB = [0]*251 # +0~+250
-		for idx in self.dataList:
-			if idx < 0:
-				idx = int(idx)-1
+		# 保护：计算总量并在为空时提前返回
+		total_sum = sum(self.sum)
+		ex_total = sum(self.exCount) if hasattr(self, "exCount") else 0
+		if total_sum == 0 and ex_total == 0:
+			self.__logger.warning("DrawBarPie: no data to plot")
+			return
+
+		wedgeprops = {'width': 0.15, 'edgecolor': 'black', 'linewidth': 0.2}
+
+		# 当 EXACT 部分占比大时，显示更细的分段（exCount 包含 4 个 EXACT 子段，后面接其他段）
+		if ex_total and (ex_total / (total_sum if total_sum > 0 else ex_total) > 0.6):
+			labels = ["EXACT±5ms", "EXACT±10ms", "EXACT±20ms", "EXACT±45ms",
+					  "Exact", "Great", "Right", "Miss"]
+			colors = ['#9dfff0', '#69f1f1', '#25d8d8', '#32a9c7',
+					  '#2F97FF', 'green', 'orange', 'red']
+			# 确保 exCount 长度为 8（原逻辑中 exCount 已扩展），否则填 0
+			data = list(self.exCount) if len(self.exCount) >= 8 else (list(self.exCount) + [0] * (8 - len(self.exCount)))
+			pie_rtn = ax1.pie(data, wedgeprops=wedgeprops, startangle=90, autopct='%1.1f%%',
+							  pctdistance=0.95, labeldistance=1.05, colors=colors, labels=labels,
+							  textprops={'size': 10})
+			# 构建 legend 文本
+			legend_labels = [
+				f"EXACT± 5ms  {CountStr(data[0])}  {Percentage(data[0], ex_total, 3)}",
+				f"EXACT±10ms  {CountStr(data[1])}  {Percentage(data[1], ex_total, 3)}",
+				f"EXACT±20ms  {CountStr(data[2])}  {Percentage(data[2], ex_total, 3)}",
+				f"EXACT±45ms  {CountStr(data[3])}  {Percentage(data[3], ex_total, 3)}",
+				f"Exact±90ms  {CountStr(data[4])}  {Percentage(data[4], ex_total, 3)}",
+				f"Great±150ms {CountStr(data[5])}  {Percentage(data[5], ex_total, 3)}",
+				f"Right＋250ms {CountStr(data[6])}  {Percentage(data[6], ex_total, 3)}",
+				f"Miss >=251ms {CountStr(data[7])}  {Percentage(data[7], ex_total, 3)}",
+			]
+			ax1.legend(prop={'size': 9}, loc='center', handles=pie_rtn[0], labels=legend_labels)
+			ax1.text(-0.41, 0.48,
+					 f"EXACT        {CountStr(sum(data[0:4]))}  {Percentage(sum(data[0:4]), ex_total, 3)}",
+					 ha='left', va='top', fontsize=9, color='#00B5B5')
+		else:
+			# 使用 self.sum 的五段显示
+			summ = total_sum if total_sum > 0 else 1
+			labels = ["EXACT", "Exact", "Great", "Right", "Miss"]
+			colors = ['cyan', '#2F97FF', 'green', 'orange', 'red']
+			data = list(self.sum)
+			ax1.pie(data, wedgeprops=wedgeprops, startangle=90, autopct='%1.1f%%',
+					pctdistance=0.9, labeldistance=1.05, colors=colors,
+					labels=labels, textprops={'size': 9})
+			ax1.legend(prop={'size': 9}, loc='center',
+					   labels=[
+						   f"EXACT±45ms  {CountStr(data[0])}  {Percentage(data[0], summ, 3)}",
+						   f"Exact±90ms  {CountStr(data[1])}  {Percentage(data[1], summ, 3)}",
+						   f"Great±150ms {CountStr(data[2])}  {Percentage(data[2], summ, 3)}",
+						   f"Right＋250ms {CountStr(data[3])}  {Percentage(data[3], summ, 3)}",
+						   f"Miss > 250ms {CountStr(data[4])}  {Percentage(data[4], summ, 3)}",
+					   ])
+
+		# ---- 构建命中分布直方图数据（保留原有 bin 范围） ----
+		hitMapA = [0] * 150  # -149 ... -1, index 0 表示 -149
+		hitMapB = [0] * 251  # 0 ... 250, 250 为 250+
+		for v in self.dataList:
+			# 原代码对负数向下取整的处理：负数 -1.2 -> int(-1.2)-1 -> -2
+			if v < 0:
+				idx = int(v) - 1
 			else:
-				idx = int(idx)
-			if (idx >= 0) and (idx < 250):
+				idx = int(v)
+			if 0 <= idx < 250:
 				hitMapB[idx] += 1
-			elif (idx >= 250):
+			elif idx >= 250:
 				hitMapB[250] += 1
 			else:
-				hitMapA[idx] += 1
-		leftBorder,rightBorder = 0,0
-		while (hitMapA[0] == 0):
+				# 索引为负时，hitMapA 使用 idx 直接索引（保持原行为）
+				# 这里若 idx < -149 仍会抛出 IndexError；为稳健，采用扩展处理
+				neg_idx = idx
+				# 若超出左界，扩展左侧列表以保证索引有效
+				need = abs(neg_idx) - len(hitMapA) + 1
+				if need > 0:
+					hitMapA = [0] * need + hitMapA
+				hitMapA[neg_idx] += 1
+
+		# 删除左右无用空白
+		leftBorder, rightBorder = 0, 0
+		while hitMapA and (hitMapA[0] == 0):
 			hitMapA.pop(0)
 			leftBorder += 1
-		while (hitMapB[-1] == 0):
+		while hitMapB and (hitMapB[-1] == 0):
 			hitMapB.pop(-1)
 			rightBorder += 1
-		self.xAxis = [i for i in range(-len(hitMapA),251-rightBorder)]
-		self.yAxis = hitMapA + hitMapB
-		for i in range(len(self.xAxis)):
-			ax2.bar(self.xAxis[i],self.yAxis[i])
+
+		xAxis = [i for i in range(-len(hitMapA), 251 - rightBorder)]
+		yAxis = hitMapA + hitMapB
+
+		ax2 = fig.add_subplot(grid[3, 0])
+		# 一次性绘制 bar（避免在 Python 中循环单个绘制）
+		if yAxis:
+			ax2.bar(xAxis, yAxis, align='center')
 		ax2.xaxis.set_major_locator(MultipleLocator(15))
-		# plt.show()
+
+		fig.tight_layout()
 
 
 if __name__ == '__main__':

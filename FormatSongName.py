@@ -3,9 +3,8 @@ import os
 
 def Format():
 	if not os.path.isfile('./musync_data/songname.json'):
-		f = open('./musync_data/songname.json','w',encoding='utf8')
-		f.write('{}')
-		f.close()
+		with open('./musync_data/songname.json','w',encoding='utf8') as f:
+			f.write('{}')
 	with open('./musync_data/songname.json','r',encoding='utf8') as f:
 		d = json.load(f)
 	for ids in range(15,1344):
@@ -46,7 +45,7 @@ def main():
 			speedStall = line[23:31]
 			# print(songid,speedStall)
 			if songid in songName:
-				dictVue = songName[songid]
+				# dictVue = songName[songid]
 				songName[speedStall] = songName.pop(songid)
 	with open("./musync_data/SongName.json",'w',encoding='utf8') as jsonFile:
 		json.dump(songName,jsonFile,ensure_ascii=False)
@@ -55,10 +54,11 @@ def FormatSongName20230626(): #2023年6月26日
 	with open("./musync_data/songname.json",'r',encoding='utf8') as f:
 		data = json.load(f)
 	for ids in data:
-		data[ids] = data[ids]+[0]
+		if data[ids] is not None:
+			data[ids] = data[ids]+[0]
 	with open("./musync_data/SongName.json",'w',encoding='utf8') as f:
 		json.dump(data, f, ensure_ascii=False)
-		
+
 if __name__ == '__main__':
 	# Sort()
 	# FormatSongName20230626()

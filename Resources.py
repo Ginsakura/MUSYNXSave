@@ -30,7 +30,7 @@ class Config(object):
 		# 清理 log.txt 文件
 		os.remove(logsDir+logName)
 
-	__logLevelMapping={
+	__logLevelMapping:ClassVar[dict[str,int]]={
 		"NOTSET": logging.NOTSET,
 		"DEBUG": logging.DEBUG,
 		"INFO": logging.INFO,
@@ -44,7 +44,7 @@ class Config(object):
 	__lock:threading.Lock			= threading.Lock()
 	__logger:logging.Logger			= None
 	__filePath:str					= os.getcwd()+"\\musync_data\\bootcfg.json"
-	__config:dict[str,any]			= dict()
+	__config:ClassVar[dict[str,any]]	= dict()
 
 	Version:str						= __config.get("Version"					, None)
 	UpdateChannel:str				= __config.get("UpdateChannel"				, "Release")
@@ -167,7 +167,7 @@ class Config(object):
 			with open(cls.__filePath, 'w', encoding='utf8') as configFile:
 				json.dump(config_data, configFile, ensure_ascii=False, indent=2)
 			cls.__logger.info(f"Configuration saved to \"{cls.__filePath}\" successfully.")
-		except Exception as e:
+		except Exception:
 			cls.__logger.exception(f"Failed to save configuration to \"{cls.__filePath}\"")
 
 class Logger(object):
@@ -298,7 +298,8 @@ class MapDataInfo(MapInfo):
 		if len(args) == 1 and isinstance(args[0], list):
 			# 通过 List 设置 SongInfo 字段
 			info = args[0]
-			if (info is None): return
+			if (info is None):
+				return
 			self.SongName			  = str(info[0])
 			self.SongKeys			  = "4Key" if info[1] == 4 else "6Key"
 			self.SongDifficulty		  = str(["Easy", "Hard", "Inferno"][info[2]])
@@ -307,7 +308,8 @@ class MapDataInfo(MapInfo):
 		elif len(args) == 1 and isinstance(args[0], MapInfo):
 			# 通过 MapInfo 设置 SongInfo 字段
 			mapInfo = args[0]
-			if (mapInfo is None): return
+			if (mapInfo is None):
+				return
 			self.SongName			  = mapInfo.SongName
 			self.SongKeys			  = mapInfo.SongKeys
 			self.SongDifficulty		  = mapInfo.SongDifficulty
@@ -346,50 +348,50 @@ class MapDataInfo(MapInfo):
 
 class SaveDataInfo(object):
 	"存储存档数据,单例"
-	__instance						= None
-	__lock:threading.Lock			= threading.Lock()
-	__logger:logging.Logger			= None
-	version:int						= None
-	AppVersion:int					= None
-	saveInfoList:ClassVar[list[MapDataInfo]] = []
-	purchaseIds:ClassVar[list[str]]	= []
-	crc:int							= None
-	saveDate:int					= None
-	songIndex:int					= 1
-	isHard:int						= None
-	buttonNumber:int				= 4
-	sortNum:int						= None
-	missVibrate:bool				= None
-	soundHelper:int					= 3
-	displayAdjustment:int			= None
-	judgeCompensate:int				= None
-	advSceneSettringString:str		= None
-	metronomeSquipment:str			= None
-	playTimeUIA:int					= None
-	playTimeUIB:int					= None
-	playTimeUIC:int					= None
-	playTimeUID:int					= None
-	playTimeUIE:int					= None
-	playTimeUIF:int					= None
-	playTimeRankEX:int				= None
-	playTimeKnockEX:int				= None
-	playTimeKnockNote:int			= None
-	playVsync:bool					= True
-	buttonSetting4K:list[int]		= list()
-	buttonSetting6K:list[int]		= list()
-	hiddenUnlockSongs:bool			= None
-	hideLeaderboardMini:bool		= True
-	playingSceneName:str			= None
-	selectSongName:str				= "luobi"
-	sceneName:str					= "SelectSongScene"
-	busVolume:float					= None
-	advSceneSettingString:str		= "\n"
-	dropSpeed:int					= 8
-	isUseUserMemoryDropSpeed:bool	= True
-	dropSpeedFloat:float			= None
-	isOpenVSync:bool				= True
-	hadSaveFpsAndVSync:bool			= None
-	fps:int							= 60
+	__instance									= None
+	__lock:threading.Lock						= threading.Lock()
+	__logger:logging.Logger						= None
+	version:int									= None
+	AppVersion:int								= None
+	saveInfoList:ClassVar[list[MapDataInfo]]	= []
+	purchaseIds:ClassVar[list[str]]				= []
+	crc:int										= None
+	saveDate:int								= None
+	songIndex:int								= 1
+	isHard:int									= None
+	buttonNumber:int							= 4
+	sortNum:int									= None
+	missVibrate:bool							= None
+	soundHelper:int								= 3
+	displayAdjustment:int						= None
+	judgeCompensate:int							= None
+	advSceneSettringString:str					= None
+	metronomeSquipment:str						= None
+	playTimeUIA:int								= None
+	playTimeUIB:int								= None
+	playTimeUIC:int								= None
+	playTimeUID:int								= None
+	playTimeUIE:int								= None
+	playTimeUIF:int								= None
+	playTimeRankEX:int							= None
+	playTimeKnockEX:int							= None
+	playTimeKnockNote:int						= None
+	playVsync:bool								= True
+	buttonSetting4K:ClassVar[list[int]]			= list()
+	buttonSetting6K:ClassVar[list[int]]			= list()
+	hiddenUnlockSongs:bool						= None
+	hideLeaderboardMini:bool					= True
+	playingSceneName:str						= None
+	selectSongName:str							= "luobi"
+	sceneName:str								= "SelectSongScene"
+	busVolume:float								= None
+	advSceneSettingString:str					= "\n"
+	dropSpeed:int								= 8
+	isUseUserMemoryDropSpeed:bool				= True
+	dropSpeedFloat:float						= None
+	isOpenVSync:bool							= True
+	hadSaveFpsAndVSync:bool						= None
+	fps:int										= 60
 
 	def __new__(cls):
 		with cls.__lock:
@@ -399,7 +401,8 @@ class SaveDataInfo(object):
 				cls.__logger.info("creating an instance in Resources.SaveDataInfo")
 		return cls.__instance
 
-	def __str__(cls)->str:
+	@classmethod
+	def ToString(cls)->str:
 		return f"SongSaveInfoPy(\n"\
 			f"\tversion:{cls.version}\n"\
 			f"\tAppVersion:{cls.AppVersion}\n"\

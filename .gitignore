@@ -17,6 +17,7 @@ SavDecode/x64
 SavDecode/**
 
 ExtraFunction.cfg
+bootcfg.json
 LXGW.ttf
 SavAnalyze.json
 SaveDataInfo.json
@@ -39,7 +40,6 @@ SaveDataInfo.json
 *.split
 *.spec
 *.sql
-*.sublime*
 *.tmp
 *.txt
 !requirements.txt

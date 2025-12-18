@@ -31,9 +31,9 @@ SavDecode.decode
 *.pyd
 *.sav
 *.sfp
-*.spec
 *.sql
-*.sublime*
 *.tmp
 *.txt
 !requirements.txt
+/MUSYNCSavDecodeV1.sublime-project
+/MUSYNCSavDecodeV1.sublime-workspace

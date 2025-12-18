@@ -198,7 +198,6 @@ class MUSYNCSavProcess(object):
 		self.__logger.debug("|  SongID  | SpeedStall | SyncNumber |         UploadScore        | PlayCount |  State  |")
 		# 遍历列表
 		for saveIndex, mapData in enumerate(SaveDataInfo.saveInfoList):
-			mapData:MapDataInfo = SaveDataInfo.saveInfoList[saveIndex]
 			mapInfo:MapInfo = GetSongName(mapData.SongId)
 			if ((mapInfo is None) or (mapInfo.SongName == "")):
 				mapData.State = "NoName"

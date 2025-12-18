@@ -37,7 +37,7 @@ class HitDelayText(object):
 		self.subroot = subroot
 		self.font=('霞鹜文楷等宽',16)
 		self.subroot.iconbitmap('./musync_data/Musync.ico')
-		self.subroot.geometry(f'1000x600+600+400')
+		self.subroot.geometry('1000x600+600+400')
 		self.subroot.title("高精度延迟分析")
 		self.subroot['background'] = '#efefef'
 		self.tipLabel = Label(self.subroot,font=self.font, relief="groove",text='↓将您用来辨识谱面的方式填入右侧文本框，然后点击右侧红色按钮进行结果分析↓',fg='#F9245E')
@@ -142,7 +142,7 @@ class HitDelayText(object):
 			win.SendKeys('{Ctrl}A',waitTime=0.1)
 			win.SendKeys('{Ctrl}C',waitTime=0.1)
 			consoleFind = True
-		except Exception as e:
+		except Exception:
 			self.__logger.exception("控制台窗口未找到,请确认控制台窗口已开启")
 			try:
 				win = uiauto.WindowControl(searchDepth=1,Name='选择 MUSYNX Delay',searchInterval=1).DocumentControl(searchDepth=1,Name='Text Area',searchInterval=1)
@@ -202,7 +202,7 @@ class HitDelayText(object):
 		if not itemID or not historyItem:
 			return
 		if not self.history == []:
-			isChange = False
+			# isChange = False
 			historyName = historyItem[0].replace("\'",'’')
 			recordTime = historyItem[1]
 			self.__logger.debug(f"ShowHistoryInfo: {historyItem}")

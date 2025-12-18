@@ -39,7 +39,8 @@ jobs:
               $version = python -c "import Version; print(Version.preVersion)";
               $rcVersion = $version -replace "pre", " PreRelease ";
           } else {
-              $rcVersion = python -c "import Version; print(Version.version)";
+              $version = python -c "import Version; print(Version.version)";
+              $rcVersion = $version;
           }
           echo "v:'${version}',rcv:'${rcVersion}'";
           echo "isPreRelease=${isPreReleaseBool}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append;

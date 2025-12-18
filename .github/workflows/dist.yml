@@ -34,7 +34,7 @@ jobs:
         run: |
           $isPreRelease = python -c "import Version;print(Version.isPreRelease)";
           $isPreReleaseBool = [bool]::Parse($isPreRelease);
-          if ($isPreReleaseBool) { 
+          if ($isPreReleaseBool) {
               $version = py -c "import Version; print(Version.preVersion)";
               $rcVersion = $version -replace "pre", " PreRelease ";
           } else {

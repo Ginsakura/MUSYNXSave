@@ -78,7 +78,7 @@ class HitDelayText(object):
 		self.historyRecordTimeLabel.place(x=0,y=60,height=30,relwidth=1)
 		self.historyRecordTimeValueLabel = Label(self.historyFrame, text=dt.now(),font=self.font, relief="groove")
 		self.historyRecordTimeValueLabel.place(x=0,y=90,height=30,relwidth=1)
-		self.historyKeysLabel = Label(self.historyFrame, text=f'按键数量: ',font=self.font, relief="groove", anchor="e")
+		self.historyKeysLabel = Label(self.historyFrame, text='按键数量: ',font=self.font, relief="groove", anchor="e")
 		self.historyKeysLabel.place(x=0,y=120,height=30,relwidth=0.4)
 		self.historyKeysValueLabel = Label(self.historyFrame, text="0    ",font=self.font, relief="groove", anchor="e")
 		self.historyKeysValueLabel.place(relx=0.4,y=120,height=30,relwidth=0.6)
@@ -151,7 +151,7 @@ class HitDelayText(object):
 				consoleFind = True
 			except Exception:
 				self.__logger.exception("控制台窗口未找到,请确认控制台窗口已开启")
-				messagebox.showerror("Error", f'控制台窗口未找到\n请确认控制台窗口已开启')
+				messagebox.showerror("Error", '控制台窗口未找到\n请确认控制台窗口已开启')
 		if consoleFind:
 			data = pyperclip.paste().split('\n')
 			dataList=list()
@@ -310,14 +310,22 @@ class HitDelayDraw(object):
 		for ids in self.dataList:
 			ids = abs(ids)
 			if ids < 45:
-				if ids < 5:self.exCount[0] += 1
-				elif ids < 10:self.exCount[1] += 1
-				elif ids < 20:self.exCount[2] += 1
-				else:self.exCount[3] += 1
-			elif ids < 90: self.sum[1] += 1
-			elif ids < 150: self.sum[2] += 1
-			elif ids < 250: self.sum[3] += 1
-			else: self.sum[4] += 1
+				if ids < 5:
+					self.exCount[0] += 1
+				elif ids < 10:
+					self.exCount[1] += 1
+				elif ids < 20:
+					self.exCount[2] += 1
+				else:
+					self.exCount[3] += 1
+			elif ids < 90:
+				self.sum[1] += 1
+			elif ids < 150:
+				self.sum[2] += 1
+			elif ids < 250:
+				self.sum[3] += 1
+			else:
+				self.sum[4] += 1
 		self.sum[0] = sum(self.exCount)
 		self.exCount = self.exCount + self.sum[1:]
 		self.__logger.debug(f"HitDelayDraw: {self.sum}, {self.exCount}")
@@ -400,7 +408,7 @@ class HitDelayDraw(object):
 		# import random
 		# fig = plt.figure(f'Pie&Bar AvgDelay: {"%.4fms"%self.avgDelay}  ' \
 		# 	f'AllKeys: {self.allKeys}  AvgAcc: {"%.4fms"%self.avgAcc}', figsize=(5.5, 6.5))
-		fig:figure.Figure = plot.figure(f'Pie&Bar', figsize=(5.5, 6.5))
+		fig:figure.Figure = plot.figure('Pie&Bar', figsize=(5.5, 6.5))
 		fig.clear()
 		grid:gridspec.GridSpec = gridspec.GridSpec(4, 1, left=0, right=1, top=1, bottom=0.035, wspace=0, hspace=0)
 		ax1:axes.Axes = fig.add_subplot(grid[0:3,0])

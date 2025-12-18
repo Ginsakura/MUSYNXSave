@@ -5,6 +5,7 @@ import sys
 import time
 from base64 import b64decode
 from tkinter import messagebox
+from typing import Any
 
 from Resources import Logger
 
@@ -72,16 +73,16 @@ class MUSYNCSavProcess(object):
 			stream.Dispose()
 		userMemoryTypeInfo = userMemory.GetType()
 
-		def GetNonPublicField(field,typeInfo=userMemoryTypeInfo,instance=userMemory)->any:
+		def GetNonPublicField(field,typeInfo=userMemoryTypeInfo,instance=userMemory)->Any:
 			'''获取非公开的字段'''
 			anyVar = typeInfo.GetField(field, Reflection.BindingFlags.NonPublic | Reflection.BindingFlags.Instance)
 			return anyVar.GetValue(instance)
 
-		def GetNonPublicMethod(field:str,typeInfo=userMemoryTypeInfo,instance=userMemory)->any:
+		def GetNonPublicMethod(field:str,typeInfo=userMemoryTypeInfo,instance=userMemory)->Any:
 			'''获取非公开的Get方法'''
 			# 获取 internal 属性的 PropertyInfo
 			propertyInfo = typeInfo.GetProperty(field, Reflection.BindingFlags.Instance | Reflection.BindingFlags.NonPublic)
-			# 获取属性值（调用 get 方法）
+			# 获取属性值(调用 get 方法)
 			method = propertyInfo.GetGetMethod(nonPublic=True)
 			return method.Invoke(instance, None)
 

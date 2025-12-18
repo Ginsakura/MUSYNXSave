@@ -32,14 +32,14 @@ jobs:
 
       - name: Create Build Variable
         run: |
+          $ErrorActionPreference = 'Stop'
           $isPreRelease = python -c "import Version;print(Version.isPreRelease)";
           $isPreReleaseBool = [bool]::Parse($isPreRelease);
           if ($isPreReleaseBool) {
-              $version = py -c "import Version; print(Version.preVersion)";
+              $version = python -c "import Version; print(Version.preVersion)";
               $rcVersion = $version -replace "pre", " PreRelease ";
           } else {
-              $version = py -c "import Version; print(Version.version)";
-              $rcVersion = $version -replace "rc", " Release ";
+              $rcVersion = python -c "import Version; print(Version.version)";
           }
           echo "v:'${version}',rcv:'${rcVersion}'";
           echo "isPreRelease=${isPreReleaseBool}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append;

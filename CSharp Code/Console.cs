@@ -187,9 +187,9 @@ namespace BMSLib
 		{
 		}
 
-		public string inputString;
+		public string inputString = "";
 
-		public float kD;
+		public float kD = 9999f;
 	}
 
 	public static class GloHasConsole

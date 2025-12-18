@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from matplotlib.pyplot import MultipleLocator
 from Resources import MapDataInfo, SaveDataInfo
 
-def Analyze():
+def Analyze() -> None:
 	diff = [[],[]]
 	score = [[],[]]
 	diffSocre = [dict(),dict()]
@@ -11,9 +11,9 @@ def Analyze():
 		diffSocre[1]['%02d'%mapData] = []
 	# print(diffSocre)
 
-	data:list[MapDataInfo] = SaveDataInfo.saveInfoList;
+	data:list[MapDataInfo] = SaveDataInfo.saveInfoList
 	for mapData in data:
-		syncNumber:float = mapData.SyncNumber/100.0;
+		syncNumber:float = mapData.SyncNumber/100.0
 		if (syncNumber > 0.0):
 			diffcute:int = int(mapData.SongDifficultyNumber)
 			if (mapData.SongKeys == "4Key"):
@@ -99,9 +99,9 @@ def Analyze():
 	ax.scatter(diff[1],score[1],alpha=0.7,color='#F83535',s=5)
 	ax.text(18,123,"\n".join(labels),ha="left",va="top",alpha=1,
 		fontdict={'family':'LXGW WenKai Mono','weight':'normal','size':10})
-	ax.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':10},framealpha=0.4)  #show label
+	ax.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':10},framealpha=0.4) #show label
 	ax.set_xlabel('Difficulty') #x_label
-	ax.set_ylabel('SYNC.Rate')#y_label
+	ax.set_ylabel('SYNC.Rate') #y_label
 
 	plt.show()
 

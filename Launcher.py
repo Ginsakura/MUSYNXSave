@@ -1,57 +1,61 @@
+from Resources import Config
+Config()
+
 import sys
 import ctypes
 import logging
-import os
 from tkinter import Tk, font
-from Resources import Logger
-from Version import *
-logger:logging.Logger = Logger.GetLogger(name="Launcher");
-try:
-	# from tkinter import *
-	from MainWindow import MusyncSavDecodeGUI
-	#from .MainWindow_New import MusyncSavDecodeGUI
-	from Resources import Config, SaveDataInfo, SongName
-	from Toolkit import Toolkit
-except:
-	logger.exception("Import Error.");
-	sys.exit(101);
+# from tkinter import *
+
+import Version
+from MainWindow import MusyncSavDecodeGUI
+#from .MainWindow_New import MusyncSavDecodeGUI
+from Resources import Logger, SaveDataInfo, SongName
+from Toolkit import Toolkit
+
+logger:logging.Logger = Logger.GetLogger(name="Launcher")
 
 def Launcher()->None:
 	# Init
-	Config();
-	SongName();
-	SaveDataInfo();
-	Config.Version = preVersion.replace("pre",".") if (isPreRelease) else version.replace("rc",".");
+	SongName()
+	SaveDataInfo()
+
+	if Version.isPreRelease:
+		Config.Version = Version.preVersion.replace("pre", ".")
+	else:
+		Config.Version = Version.version.replace("rc", ".")
 
 	# Launcher
-	root:Tk = Tk();
-	ctypes.windll.shcore.SetProcessDpiAwareness(1);
-	fontlist:list[str] = list(font.families());
-	Toolkit.GetSaveFile();
-	Toolkit.CheckResources(fontlist);
+	ctypes.windll.shcore.SetProcessDpiAwareness(1)
+	root:Tk = Tk()
+	fontlist:list[str] = list(font.families())
+	Toolkit.GetSaveFile()
+	Toolkit.CheckResources(fontlist)
 	# del fonts
 	if Config.ChangeConsoleStyle:
-		Toolkit.ChangeConsoleStyle();
-	root.tk.call('tk', 'scaling', 1.25);
-	root.resizable(False, True); #允许改变窗口高度，不允许改变窗口宽度
-	# 强制仅旧版UI
-	MusyncSavDecodeGUI(root=root);
+		Toolkit.ChangeConsoleStyle()
+	root.tk.call('tk', 'scaling', 1.25)
+	root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
+	# 仅旧版UI可用
+	MusyncSavDecodeGUI(root=root)
 	# if cfg['EnableFramelessWindow']:
 	# 	root.overrideredirect(1)
 	# 	window = NewStyle.MusyncSavDecodeGUI(root=root)
 	# else:
 	# 	window = OldStyle.MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease)
-	root.update();
-	root.mainloop();
+	root.update()
+	root.mainloop()
 
 if __name__ == '__main__':
-	from datetime import datetime as dt
+	# from datetime import datetime as dt
+	exitCode:int = 0
 	try:
-		logger.info(" ====> Launcher() start <====");
-		Launcher();
-		logger.info(" ====> Launcher() end <====");
+		logger.info(" ====> Launcher() start <====")
+		Launcher()
+		logger.info(" ====> Launcher() end <====")
 	except Exception:
-		logger.exception("Launcher Exception.");
-	logger.info("====> Software Exiting <====");
-	# os.system("pause");
-	sys.exit(0);
+		logger.exception("Launcher Exception.")
+		exitCode = 1
+	logger.info("====> Software Exiting <====")
+	# os.system("pause")
+	sys.exit(exitCode)

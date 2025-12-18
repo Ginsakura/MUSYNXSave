@@ -1,4 +1,4 @@
-﻿/__pycache__
+/__pycache__
 /.vs
 /build
 /musync
@@ -9,7 +9,6 @@
 /logs
 /SavDecode
 /MusyncSaveDecode
-!/.github
 
 bootcfg.json
 LXGW.ttf

@@ -10,16 +10,9 @@ namespace BMSLib
 
         public static void Reset()
         {
-            //JudgeGrade.baseAccuracy = 0f;
-            //JudgeGrade.exAccuracy = 0f;
-            //JudgeGrade.exactAccuracy = 0f;
-            //JudgeGrade.greatAccuracy = 0f;
-            //JudgeGrade.rightAccuracy = 0f;
-            //JudgeGrade.TotalEx = 0;
-            //JudgeGrade.TotalExact = 0;
-            //JudgeGrade.TotalGreat = 0;
-            //JudgeGrade.TotalRight = 0;
-            //JudgeGrade.TotalMiss = 0;
+            /*
+             * and so on...
+             */
             //JudgeGrade.TotalCombo = 0;
             //JudgeGrade.uploadScore = new float[6];
             OptimizedConsole.InitializeDefault();
@@ -37,7 +30,11 @@ namespace BMSLib
             //int result = -1;
             //bool flag = knockDistance < 0L;
             //knockDistance = Math.Abs(knockDistance);
-            //if (knockDistance < 450000L){}
+            //if (knockDistance < 450000L){
+            /*
+             * and so on...
+             */
+            return 0;
         }
     }
 }

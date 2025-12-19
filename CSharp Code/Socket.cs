@@ -27,6 +27,7 @@ namespace BMSLib
             CreateSocket, LazyThreadSafetyMode.ExecutionAndPublication);
 
         private static readonly object _lock = new object();
+        private static readonly System.Random _random = new System.Random();
         private static bool _preloaded = false;
 
         /* ==================== 初始化与清理 ==================== */
@@ -157,7 +158,11 @@ namespace BMSLib
         private static ulong GeneratePacketId()
         {
             long timestamp = DateTime.UtcNow.Ticks;
-            int random = Random.Shared.Next();
+            int random;
+            lock (_random)
+            {
+                random = _random.Next();
+            }
             return ((ulong)(uint)timestamp << 32) | (uint)random;
         }
 

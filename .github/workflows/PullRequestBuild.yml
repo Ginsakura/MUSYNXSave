@@ -28,6 +28,11 @@ jobs:
       - name: Install requirements
         run: pip3 install -r ./requirements.txt
 
+      - name: Get commit message
+        run: |
+          $commitMsg = git log -1 --pretty=%B
+          echo "CommitMessage=${commitMsg}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
       - name: Create Build Variable
         run: |
           $ErrorActionPreference = 'Stop'
@@ -56,7 +61,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
-          name: ${{ env.RCVersion }}  ${{ github.event.head_commit.message }}  < Auto Release >
+          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }}  < Auto Release >
           path: ./MusyncSaveDecode/Archive/
           retention-days: 7          # 可选：保留天数（默认 90 天）
 

@@ -50,7 +50,7 @@ jobs:
           powershell.exe ./buildLauncher.ps1;
 
 
-      # ÉÏ´«¹¹½¨²úÎï
+      # ä¸Šä¼ æ„å»ºäº§ç‰©
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         env:
@@ -58,5 +58,5 @@ jobs:
         with:
           name: ${{ env.RCVersion }}  ${{ github.event.head_commit.message }}  < Auto Release >
           path: ./MusyncSaveDecode/Archive/
-          retention-days: 7          # ¿ÉÑ¡£º±£ÁôÌìÊı£¨Ä¬ÈÏ 90 Ìì£©
+          retention-days: 7          # å¯é€‰ï¼šä¿ç•™å¤©æ•°ï¼ˆé»˜è®¤ 90 å¤©ï¼‰
 

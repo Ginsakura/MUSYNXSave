@@ -1,5 +1,5 @@
 version:str = '2.1.0'						# Release版本号
-preVersion:str = "2.1.0pre15"				# PreRelease版本号
+preVersion:str = "2.1.0pre20"				# PreRelease版本号
 # 提交前手动控制
-# Change 1→0 for release
-isPreRelease:bool = True if 0 else False
+# Change 0→1 for release
+isPreRelease:bool = False if 0 else True

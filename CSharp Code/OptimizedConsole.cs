@@ -136,10 +136,10 @@ namespace BMSLib
         public static void WriteHitDelay(long delay, string prefix = "> ")
         {
             long absDelay = Math.Abs(delay);
-            message = string.Format("Hit Delay: {0:F1}ms", delay / 10000);  // 保留1位小数
+            string message = string.Format("Hit Delay: {0:F1}ms", delay / 10000.0);  // 保留1位小数
 
             // 颜色阈值映射（与原始逻辑完全对齐）
-            color = absDelay switch
+            ConsoleColor color = absDelay switch
             {
                 < 50000L => ConsoleColor.Green,
                 < 100000L => ConsoleColor.Cyan,

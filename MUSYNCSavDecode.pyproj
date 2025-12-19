@@ -71,7 +71,7 @@
     <Content Include="MUSYNCSavDecode.sublime-project" />
     <Content Include="MUSYNCSavDecode.sublime-workspace" />
     <Content Include="MusyncSavDecodeGUI.bat" />
-    <Content Include="musync_data\Acc-Sync.json" />
+    <Content Include="musync_data\Acc-Sync.csv" />
     <Content Include="musync_data\Acc-SyncAnalyze%28Stata%29.do" />
     <Content Include="musync_data\Assembly-CSharp.dll" />
     <Content Include="musync_data\bootcfg.json" />

@@ -9,10 +9,10 @@ def Analyze() -> None:
 	acc=list()
 	sync=list()
 	try:
-		with open('./musync_data/Acc-Sync.json') as f:
+		with open('./musync_data/Acc-Sync.csv') as f:
 			rows = [line.strip().split(',') for line in f]
 	except FileNotFoundError:
-		__logger.error("Acc-Sync.json not found")
+		__logger.error("Acc-Sync.csv not found")
 		return
 	for row in rows:
 		try:
@@ -23,7 +23,7 @@ def Analyze() -> None:
 			continue
 
 	if not acc or not sync:
-		__logger.error("No valid data found in Acc-Sync.json")
+		__logger.error("No valid data found in Acc-Sync.csv")
 		return
 
 	fig = plot.figure('AvgAcc与SYNC.Rate散点图', figsize=(10, 10))

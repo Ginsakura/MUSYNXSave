@@ -42,29 +42,28 @@ def Analyze() -> None:
 	ax.set_ylim(int(min(sync))-1,125)
 
 	# 画线和标注
-	xLineDict: dict[str, tuple[float, str, str]] = {
-		'Max'		: (122,	'max',		"-"),
-		'BlackEx'	: (122,	'black',	"--"),
-		'RedEx'		: (120,	'red',		"--"),
-		'CyanEx'	: (117,	'cyan',		"--"),
-		'S'			: (110,	'blue',		"--"),
-		'A'			: (95,	'green',	"--"),
-		'B'			: (75,	'orange',	"--"),
+	xLineDict: dict[str, tuple[float, str]] = {
+		'Max'		: (125,	'red'),
+		'BlackEx'	: (122,	'black'),
+		'RedEx'		: (120,	'red'),
+		'CyanEx'	: (117,	'cyan'),
+		'S'			: (110,	'blue'),
+		'A'			: (95,	'green'),
+		'B'			: (75,	'orange'),
 	}
 	for label, (syncLine, color) in xLineDict.items():
-		ax.plot([0, int(max(acc))+3], [syncLine] * 2,
-				linestyle='--', alpha=0.7, linewidth=1.2, color=color)
-		ax.text(int(max(acc)) - 5, syncLine - 0.4, label,
-				ha='center', va='top', fontsize=8, alpha=0.7)
+		if syncLine == 125:
+			ax.plot([0, int(max(acc))+3], [syncLine] * 2, linestyle="-", alpha=1, linewidth=1.5, color=color)
+		else:
+			ax.plot([0, int(max(acc))+3], [syncLine] * 2, linestyle='--', alpha=0.7, linewidth=1.2, color=color)
+		ax.text(int(max(acc)) - 5, syncLine - 0.4, label, ha='center', va='top', fontsize=8, alpha=0.7)
 
 	# 每5ms画一条竖线
 	for accLine in range(0, int(max(acc)), 5):
 		if accLine == 0:
-			ax.plot([accLine] * 2, [int(min(sync))-3, 125],
-					linestyle='-', alpha=0.6, linewidth=1)
+			ax.plot([accLine] * 2, [int(min(sync))-3, 125], linestyle='-', alpha=1, linewidth=1.5)
 		else:
-			ax.plot([accLine] * 2, [int(min(sync))-3, 125],
-					linestyle='--', alpha=0.6, linewidth=1)
+			ax.plot([accLine] * 2, [int(min(sync))-3, 125], linestyle='--', alpha=0.6, linewidth=1)
 
 
 	# ax.plot([i for i in range(int(min(acc))-3,int(max(acc))+3)],[122]*((int(max(acc))+3)-(int(min(acc))-3)),linestyle='--',alpha=0.7,linewidth=1,color='black')

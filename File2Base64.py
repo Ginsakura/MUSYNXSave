@@ -13,7 +13,7 @@ FixDLL:str = "83951C09C2402D99018F28F405725D07A9D27807D9147F19AD4F6E089FCB7C9D"
 # Source Assembly-CSharp.dll
 SourceDLL:str = '1F66F70DBF17B37EE1F8B2F67D7938AF9ACF20148F331335F9285502E63B5F4C'
 with open("./musync_data/songname.ver", 'r', encoding="ascii") as f:
-	SongNameVersion:int = f.read()
+	SongNameVersion:int = int(f.read())
 
 def CompressAndEncode(filePath: str) -> bytes:
 	"""

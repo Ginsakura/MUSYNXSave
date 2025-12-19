@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using Microsoft.Win32.SafeHandles;
 using UnityEngine;
 
 namespace BMSLib
@@ -77,9 +78,6 @@ namespace BMSLib
 				Console.BackgroundColor = Config.BackgroundColor;
 				Console.SetWindowSize(Config.WindowWidth, Config.WindowHeight);
 				
-				// 更新全局状态
-				GloHasConsole.hasConsole = 1;
-				
 				Debug.Log("[Console] 默认配置已应用");
 			}
 		}
@@ -92,7 +90,6 @@ namespace BMSLib
 			if (_instance.IsValueCreated && _instance.Value != null)
 			{
 				_instance.Value.Shutdown();
-				GloHasConsole.hasConsole = 0;
 				Debug.Log("[Console] 资源已释放");
 			}
 		}
@@ -134,8 +131,8 @@ namespace BMSLib
 		
 		public static void WriteHitDelay(long delay, string prefix = "> ")
 		{
-			float absDelay = Math.Abs(delayMs);
-			message = string.Format("Hit Delay: {0:F1}ms", delayMs/10000);  // 保留1位小数
+			long absDelay = Math.Abs(delay);
+			message = string.Format("Hit Delay: {0:F1}ms", delay/10000);  // 保留1位小数
 			
 			// 颜色阈值映射（与原始逻辑完全对齐）
 			color = absDelay switch

@@ -13,7 +13,7 @@ public class SongInfoCore
 	{
 		//this.MaxComboThis = maxCombo;
 		//this.SyncNumberThis = JudgeGrade.GetSyncNumber(maxCombo);
-		LocalUdpClient.SendStructuredData(this.SongId, this.SyncNumberThis, this.MaxComboThis, JudgeGrade.TotalCombo, JudgeGrade.hitMap)
+		LocalUdpClient.SendStructuredData(this.SongId, this.SyncNumberThis, this.MaxComboThis, JudgeGrade.TotalCombo, JudgeGrade.hitMap);
 		//UserMemory.AddPlayCount(this.SongId);
 		//if (this.SyncNumberThis > this.saveInfo.SyncNumber)
 		//{

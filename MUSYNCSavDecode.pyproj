@@ -40,7 +40,6 @@
     <Compile Include="Resources.py" />
     <Compile Include="uiautomation.py" />
     <Compile Include="Version.py" />
-    <Compile Include="__init__.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".github\" />
@@ -56,28 +55,26 @@
     <Content Include=".github\ISSUE_TEMPLATE\bug_report.md" />
     <Content Include=".github\ISSUE_TEMPLATE\custom.md" />
     <Content Include=".github\ISSUE_TEMPLATE\feature_request.md" />
-    <Content Include=".github\workflows\dist.yml" />
+    <Content Include=".github\workflows\PullRequestBuild.yml" />
+    <Content Include=".github\workflows\ReleaseBuild.yml" />
     <Content Include=".gitignore" />
     <Content Include="buildLauncher.ps1" />
     <Content Include="changelog.md" />
-    <Content Include="CSharp Code\ConsoleInput.cs" />
-    <Content Include="CSharp Code\ConsoleWindow.cs" />
-    <Content Include="CSharp Code\GloHasConsole.cs" />
     <Content Include="CSharp Code\JudgeGrade.cs" />
+    <Content Include="CSharp Code\OptimizedConsole.cs" />
+    <Content Include="CSharp Code\sender.cs" />
+    <Content Include="CSharp Code\Socket.cs" />
     <Content Include="How_to_use.zh.md" />
     <Content Include="Launcher.cpp" />
-    <Content Include="Launcher.exe" />
     <Content Include="LauncherC.exe" />
     <Content Include="LICENSE" />
     <Content Include="MUSYNCSavDecode.sublime-project" />
     <Content Include="MUSYNCSavDecode.sublime-workspace" />
     <Content Include="MusyncSavDecodeGUI.bat" />
-    <Content Include="musync_data\Acc-Sync.json" />
+    <Content Include="musync_data\Acc-Sync.csv" />
     <Content Include="musync_data\Acc-SyncAnalyze%28Stata%29.do" />
-    <Content Include="musync_data\Acc-SyncFormat.txt" />
     <Content Include="musync_data\Assembly-CSharp.dll" />
     <Content Include="musync_data\bootcfg.json" />
-    <Content Include="musync_data\HitDelayHistory.sql" />
     <Content Include="musync_data\how to use.psd" />
     <Content Include="musync_data\ico.rc" />
     <Content Include="musync_data\ico.res" />
@@ -85,7 +82,7 @@
     <Content Include="musync_data\Musync.ico" />
     <Content Include="musync_data\SaveFilePath.sfp" />
     <Content Include="musync_data\songname.json" />
-    <Content Include="musync_data\songname.update" />
+    <Content Include="musync_data\songname.ver" />
     <Content Include="Push.ps1" />
     <Content Include="README.md" />
     <Content Include="ReadmeResources\AllHitAnalyze.png" />

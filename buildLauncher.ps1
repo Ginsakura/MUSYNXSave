@@ -101,7 +101,7 @@ function Copy-Resources {
     An array of file names to be copied.
 
     .EXAMPLE
-    Copy-Resources -SourceDirectory "musync_data" -TargetDirectory "MusyncSaveDecode/musync_data" -ResourceFiles @("Resources.bin", "songname.json", "songname.update", "Musync.ico")
+    Copy-Resources -SourceDirectory "musync_data" -TargetDirectory "MusyncSaveDecode/musync_data" -ResourceFiles @("Resources.bin", "songname.json", "songname.ver", "Musync.ico")
     #>
     param (
         [string]$SourceDirectory,
@@ -172,7 +172,7 @@ if ($isPreReleaseBool) {
 } else {
     $version = py -c "import Version; print(Version.version)";
 }
-$resourceFiles = @("Resources.bin", "songname.json", "songname.update", "Musync.ico");  # 资源文件
+$resourceFiles = @("Resources.bin", "songname.json", "songname.ver", "Musync.ico");  # 资源文件
 $archive_AC = @("logs", "musync_data", "MusyncSaveDecodeCLI.exe");                     # CLI all in one archive files
 $archive_ANC = @("logs", "musync_data", "MusyncSaveDecodeNoCLI.exe");                  # NoCLI all in one archive files
 $archive_C = @("logs", "musync_data", "_internal", "MusyncSaveDecodeCLI.exe");

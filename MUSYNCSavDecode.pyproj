@@ -55,8 +55,8 @@
     <Content Include=".github\ISSUE_TEMPLATE\bug_report.md" />
     <Content Include=".github\ISSUE_TEMPLATE\custom.md" />
     <Content Include=".github\ISSUE_TEMPLATE\feature_request.md" />
-    <Content Include=".github\workflows\PR.yml" />
-    <Content Include=".github\workflows\Release.yml" />
+    <Content Include=".github\workflows\PullRequestBuild.yml" />
+    <Content Include=".github\workflows\ReleaseBuild.yml" />
     <Content Include=".gitignore" />
     <Content Include="buildLauncher.ps1" />
     <Content Include="changelog.md" />

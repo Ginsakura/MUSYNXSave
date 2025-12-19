@@ -1,4 +1,4 @@
-name: Auto Release Action
+name: Auto PR Build Action
 on:
   push:
     branches:
@@ -14,8 +14,8 @@ env:
   CommitMessage: Init
 
 jobs:
-  Build_Application:
-    name: Build Application
+  PullRequest_Build:
+    name: Build Pull Request Version
     runs-on: windows-2025
     steps:
       - name: CheckOut Repo
@@ -62,10 +62,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
           name: ${{ env.RCVersion }}  ${{ env.CommitMessage }}  < Auto Release >
-          tag_name: ${{ env.Version }}
-          draft: false
-          body_path: ${{ github.workspace }}/changelog.md
-          prerelease: ${{ env.isPreRelease }}
-          files: ./MusyncSaveDecode/Archive/*
-          retention-days: 15          # 可选：保留天数（默认 90 天）
+          path: ./MusyncSaveDecode/Archive/
+          retention-days: 7          # 可选：保留天数（默认 90 天）
 

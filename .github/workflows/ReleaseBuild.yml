@@ -1,4 +1,4 @@
-name: Auto Release Action
+name: Auto Release Build Action
 on:
   push:
     branches:
@@ -14,8 +14,8 @@ env:
   CommitMessage: Init
 
 jobs:
-  Build_Application:
-    name: Build Application
+  Build_Release_Application:
+    name: Build Release Application
     runs-on: windows-2025
     steps:
       - name: CheckOut Repo

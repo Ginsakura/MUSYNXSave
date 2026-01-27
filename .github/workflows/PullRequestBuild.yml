@@ -1,0 +1,97 @@
+name: Auto PR Build Action
+on:
+  pull_request:
+    branches:
+    - 'dev'
+    - 'main'
+
+env:
+  RCVersion: < 0.0.0 PreRelease 0>
+  isPreRelease: true
+  Version: Init
+  CommitMessage: Init
+
+jobs:
+  PullRequest_Build:
+    name: Build Pull Request Version
+    runs-on: windows-2025
+    steps:
+      - name: CheckOut Repo
+        uses: actions/checkout@v4
+
+      - name: Cache and Setup Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.5'
+          cache: 'pip' # caching pip dependencies
+
+      - name: Install requirements
+        run: pip3 install -r ./requirements.txt
+
+      - name: Get commit message
+        run: |
+          # 获取 PR 所有 commits
+          $COMMITS = gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits" | ConvertFrom-Json
+          # 提取最新的 commit message（第一行）
+          $LATEST_MSG = $COMMITS[-1].commit.message -split "`n" | Select-Object -First 1
+          Write-Host "Latest dev commit message: $LATEST_MSG"
+          # 保存到环境变量（PowerShell 方式）
+          Write-Host "CommitMessage=${$LATEST_MSG}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Create Build Variable
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $isPreRelease = python -c "import Version;print(Version.isPreRelease)";
+          $isPreReleaseBool = [bool]::Parse($isPreRelease);
+          if ($isPreReleaseBool) {
+              $version = python -c "import Version; print(Version.preVersion)";
+              $rcVersion = $version -replace "pre", " PreRelease ";
+          } else {
+              $version = python -c "import Version; print(Version.version)";
+              $rcVersion = $version + "Release";
+          }
+          echo "v:'${version}',rcv:'${rcVersion}'";
+          echo "isPreRelease=${isPreReleaseBool}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append;
+          echo "Version=${version}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append;
+          echo "RCVersion=[ ${rcVersion} ]" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append;
+
+      - name: Build ${{ env.Version }}
+        run: |
+          powershell.exe ./buildLauncher.ps1;
+
+      # 上传构建产物
+      - name: Upload build artifacts { ${{ env.Version }} With Console AllInOne}
+        uses: actions/upload-artifact@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        with:
+          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }}  [ Auto Release ]
+          path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_WithConsole_${version}_AllInOne.zip
+          retention-days: 7          # 可选：保留天数（默认 90 天）
+
+      - name: Upload build artifacts { ${{ env.Version }} Without Console AllInOne}
+        uses: actions/upload-artifact@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        with:
+          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }}  [ Auto Release ]
+          path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_WithConsole_${{env.RCVersion}}_AllInOne.zip
+          retention-days: 7          # 可选：保留天数（默认 90 天）
+
+      - name: Upload build artifacts { ${{ env.Version }} With Console}
+        uses: actions/upload-artifact@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        with:
+          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }}  [ Auto Release ]
+          path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_WithConsole_${env.RCVersion}.zip
+          retention-days: 7          # 可选：保留天数（默认 90 天）
+
+      - name: Upload build artifacts { ${{ env.Version }} Without Console}
+        uses: actions/upload-artifact@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        with:
+          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }}  [ Auto Release ]
+          path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_NoConsole_${env.RCVersion}.zip
+          retention-days: 7          # 可选：保留天数（默认 90 天）

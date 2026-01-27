@@ -1,3 +1,4 @@
+""" 本文件为工具脚本 """
 import json
 import os
 

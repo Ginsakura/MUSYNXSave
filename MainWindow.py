@@ -349,7 +349,7 @@ class MusyncSavDecodeGUI(object):
 
 		startTime = time.perf_counter_ns()
 		try:
-			response:requests.Response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update", timeout=10)
+			response:requests.Response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.ver", timeout=10)
 			localVersion:int = int(SongName.Version())
 			self.logger.info(f"   Local Json Version: {localVersion}")
 			if response.status_code == 200:
@@ -362,14 +362,14 @@ class MusyncSavDecodeGUI(object):
 						snj.write(songNameJson)
 					SongName.LoadFile()
 			else:
-				self.logger.error("Can't get \"songname.update\", HTTP status code: %d."%(response.status_code))
+				self.logger.error("Can't get \"songname.ver\", HTTP status code: %d."%(response.status_code))
 		except Exception as e:
 			self.logger.exception("谱面信息更新发生错误: ")
 			error_msg = str(e)
 			def show_error(_):
 				messagebox.showerror("Error", f'发生错误: {error_msg}')
-				if messagebox.askyesno("无法获取谱面信息更新", '是否前往网页查看是否存在更新?\n(请比对 SongName.update 中的时间是否比本地文件中的时间更大)'):
-					webbrowser.open("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.update")
+				if messagebox.askyesno("无法获取谱面信息更新", '是否前往网页查看是否存在更新?\n(请比对 SongName.ver 中的时间是否比本地文件中的时间更大)'):
+					webbrowser.open("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.ver")
 			self.root.after(0, show_error)
 		endTime = time.perf_counter_ns()
 		self.logger.info("CheckJsonUpdate Run Time: %f ms"%((endTime - startTime)/1000000))

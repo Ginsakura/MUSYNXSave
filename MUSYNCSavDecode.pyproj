@@ -38,6 +38,7 @@
     <Compile Include="MainWindow.py" />
     <Compile Include="MUSYNCSavDecode.py" />
     <Compile Include="Resources.py" />
+    <Compile Include="UdpSocket.py" />
     <Compile Include="uiautomation.py" />
     <Compile Include="Version.py" />
   </ItemGroup>
@@ -64,7 +65,9 @@
     <Content Include="CSharp Code\OptimizedConsole.cs" />
     <Content Include="CSharp Code\sender.cs" />
     <Content Include="CSharp Code\Socket.cs" />
-    <Content Include="How_to_use.zh.md" />
+    <Content Include="ReadmeResources\How_to_use.en.md" />
+    <Content Include="ReadmeResources\How_to_use.v1.zh.md" />
+    <Content Include="ReadmeResources\How_to_use.zh.md" />
     <Content Include="Launcher.cpp" />
     <Content Include="LauncherC.exe" />
     <Content Include="LICENSE" />

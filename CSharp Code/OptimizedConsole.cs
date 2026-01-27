@@ -19,7 +19,7 @@ namespace BMSLib
         /* ==================== 配置常量（可外部修改） ==================== */
         public static class Config
         {
-            public static string Title = "MUSYNX Delay";
+            public static string Title = "MUSYNX Delay (请勿关闭)";
             public static ConsoleColor ForegroundColor = ConsoleColor.Red;
             public static ConsoleColor BackgroundColor = ConsoleColor.White;
             public static int WindowWidth = 30;
@@ -177,6 +177,9 @@ namespace BMSLib
                     AllocConsole();
                 }
 
+                // 2. 关闭“快速编辑”模式，防止鼠标选中阻塞
+                DisableQuickEditMode();
+
                 _oldOutput = Console.Out;
                 try
                 {
@@ -189,6 +192,32 @@ namespace BMSLib
                     Debug.LogError($"[Console] 输出重定向失败: {ex.Message}");
                 }
             }
+
+            #region ---- 新增：关闭快速编辑 ----
+
+            private const int STD_INPUT_HANDLE = -10;
+            private const uint ENABLE_QUICK_EDIT_MODE = 0x0040;
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            private static extern IntPtr GetStdHandle(int nStdHandle);
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            private static extern bool GetConsoleMode(IntPtr hConsoleHandle, out uint lpMode);
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            private static extern bool SetConsoleMode(IntPtr hConsoleHandle, uint dwMode);
+
+            private static void DisableQuickEditMode()
+            {
+                IntPtr hStdin = GetStdHandle(STD_INPUT_HANDLE);
+                if (GetConsoleMode(hStdin, out uint mode))
+                {
+                    mode &= ~ENABLE_QUICK_EDIT_MODE;   // 关掉快速编辑
+                    SetConsoleMode(hStdin, mode);
+                }
+            }
+
+            #endregion ---- 新增：关闭快速编辑 ----
 
             public void Shutdown()
             {

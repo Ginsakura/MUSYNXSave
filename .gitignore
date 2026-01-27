@@ -37,3 +37,4 @@ SavDecode.decode
 *.txt
 !requirements.txt
 
+/MUSYNCSavDecode.sublime-workspace

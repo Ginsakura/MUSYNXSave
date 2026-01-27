@@ -53,6 +53,7 @@ class Config(object):
 	Acc_Sync:bool					= __config.get("Acc_Sync"					, False)
 	CheckUpdate:bool				= __config.get("CheckUpdate"				, True)
 	DLLInjection:bool				= __config.get("DLLInjection"				, False)
+	CreateUdpWhenStartup: bool		= __config.get("CreateUdpWhenStartup"		, False)
 	SystemDPI:int					= __config.get("SystemDPI"					, 100)
 	DonutChartinHitDelay:bool		= __config.get("DonutChartinHitDelay"		, True)
 	DonutChartinAllHitAnalyze:bool	= __config.get("DonutChartinAllHitAnalyze"	, True)
@@ -146,6 +147,7 @@ class Config(object):
 			"Acc_Sync": cls.Acc_Sync,
 			"CheckUpdate": cls.CheckUpdate,
 			"DLLInjection": cls.DLLInjection,
+			"CreateUdpWhenStartup": cls.CreateUdpWhenStartup,
 			"SystemDPI": cls.SystemDPI,
 			"DonutChartinHitDelay": cls.DonutChartinHitDelay,
 			"DonutChartinAllHitAnalyze": cls.DonutChartinAllHitAnalyze,

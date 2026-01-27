@@ -22,31 +22,40 @@ C#重构版本: [MUSYNCSaveCSharp](https://github.com/Ginsakura/MUSYNCSaveCSharp
 
 ## How to use
 
-1. [English (English, `en-us`) v1.2.6 rc2](How_to_use.en.md)
-2. [简体中文 (Simplified Chinese, `zh-Hans`) v1.2.6 rc2](How_to_use.zh.md)
+1. [English (English, `en-us`) v1.2.6 rc2](/ReadmeResources/How_to_use.en.md)
+2. [简体中文 (Simplified Chinese, `zh-Hans`) v1.2.6 rc2](/ReadmeResources/How_to_use.zh.md)
 
 ## 界面展示
 
 <details>
 <summary>界面展示</summary>
 
-![主页面](./ReadmeResources/main.png "主页面")
-![score-diff页面](./ReadmeResources/score-diff.png "score-diff页面")
-![HitDelay页面](./ReadmeResources/HitDelay.png "HitDelay页面")
-![HitAnalyze-Pie&Bar页面](./ReadmeResources/HitAnalyze-Pie&Bar.png "HitAnalyze-Pie&Bar页面")
-![HitAnalyze-Line页面](./ReadmeResources/HitAnalyze-Line.png "HitAnalyze-Line页面")
-![AllHitAnalyze-Pie页面](./ReadmeResources/AllHitAnalyze.png "AllHitAnalyze页面")
-![AvgAcc-SYNC.Rate回归分析页面](./ReadmeResources/AvgAcc-SYNC.Rate.png "AvgAcc-SYNC.Rate回归分析")
+![主页面](/ReadmeResources/main.png "主页面")
+![score-diff页面](/ReadmeResources/score-diff.png "score-diff页面")
+![HitDelay页面](/ReadmeResources/HitDelay.png "HitDelay页面")
+![HitAnalyze-Pie&Bar页面](/ReadmeResources/HitAnalyze-Pie&Bar.png "HitAnalyze-Pie&Bar页面")
+![HitAnalyze-Line页面](/ReadmeResources/HitAnalyze-Line.png "HitAnalyze-Line页面")
+![AllHitAnalyze-Pie页面](/ReadmeResources/AllHitAnalyze.png "AllHitAnalyze页面")
+![AvgAcc-SYNC.Rate回归分析页面](/ReadmeResources/AvgAcc-SYNC.Rate.png "AvgAcc-SYNC.Rate回归分析")
 
 </details>
 
 ## 计划
 ### 未来的计划
-- [ ] 提供全球排行榜显示功能 (需要调用SteamAPI)
-- [ ] 将提供一个文档来演示使用方法 (在写了,咕咕咕)
-- [ ] 使用文件夹内指定文件名的方式自定义美化UI
-- [ ] 主程序目录通过exe文件进行判断
+- [ ] (  0% ) 提供全球排行榜显示功能 (需要调用SteamAPI)
+- [ ] (  0% ) 使用文件夹内指定文件名的方式自定义美化UI
+
+### 进行中的计划
+- [ ] (  0% ) 使用mod加载器代替DLL注入
+([[1]](www.kimi.com/share/19b65045-1262-8dd7-8000-000083def80e))
+- [ ] ( 80% ) 使用UDP通信代替UIAutomation进行结果获取
+
 ### 已完成的计划
+<details>
+<summary>详细信息</summary>
+
+- [x] 主程序目录通过exe文件进行判断
+- [x] 将提供一个文档来演示使用方法 (在写了,咕咕咕)
 - [x] 一键获取上次谱面游玩结果
 - [x] 使用GitHub Action workflow实现自动分发
 - [x] 重排版SongName.json
@@ -55,6 +64,8 @@ C#重构版本: [MUSYNCSaveCSharp](https://github.com/Ginsakura/MUSYNCSaveCSharp
 - [x] 将像Windows资源管理器一样使用列标题栏进行排序
 - [x] 将高级功能整合为`ExtraFunction.cfg`配置文件
 - [x] 日志工具提上日程
+
+</details>
 
 ## Release版本说明
 NoConsole版本为没有命令提示符界面，适合正常使用
@@ -68,7 +79,7 @@ WithConsole版本为带命令提示符界面，适合出现bug时快速定位错
   table { margin: 0 auto; }
 </style>
 
-于`./musync_data/ExtraFunction.cfg`文件中启用/禁用对应功能
+于`./musync_data/bootcfg.json`文件中启用/禁用对应功能
 
 |            配置项           |     默认值     | 值类型  |                                配置说明                                |
 |-----------------------------|----------------|---------|------------------------------------------------------------------------|
@@ -77,6 +88,7 @@ WithConsole版本为带命令提示符界面，适合出现bug时快速定位错
 | `Acc_Sync`                  | false          | boolean | 是否启用Acc-Synx图表                                                    |
 | `CheckUpdate`               | false          | boolean | 是否启用自动检查更新                                                    |
 | `DLLInjection`              | false          | boolean | 是否启用DLL注入以开启`高级功能`                                         |
+| `CreateUdpWhenStartup`      | false          | boolean | 在开启`高级功能`的前提下, 是否在应用程序启动时立即启动UDP接收端         |
 | `SystemDPI`                 | `自动获取`     | string  | 读取系统DPI, 提供DPI窗体修正(未实现)                                    |
 | `DonutChartinHitDelay`      | false          | boolean | 是否在单次游玩统计中显示击打延迟环形图                                  |
 | `DonutChartinAllHitAnalyze` | false          | boolean | 是否在全局统计中显示击打延迟环形图                                      |
@@ -105,73 +117,99 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 
 - `HitDelayFix.dll` 被精心修改过的客户端文件,原始文件为`./MUSYNX_Data/Managed/Assembly-CSharp.dll`.
 - `HitDelayLine.py` 用于读取控制台中的击打信息生成可视化数据表,标题栏提供三个统计信息.
-    - `AvgDelay` 平均击打延迟,即所有击打的平均值,能够一定程度上提示游戏延迟应该调整的数值(可能有较大偏差,仅供参考).
-    比如游戏内判定补偿是+010ms,AvgDelay数值为-5ms,那么就应将游戏内判定补偿减少5ms,但是具体需要调整多少请多次测试.
-    - `AllKeys` 谱面中存在note的数目.
-    - `AvgAcc` 平均击打偏差,即所有击打的绝对值的平均值,该值总为正数.
-    该值反应了您当前谱面本次游玩击打Key的时机的精准度,该值与您本次游玩的结算成绩有一定的关联:
+	- `AvgDelay` 平均击打延迟,即所有击打的平均值,能够一定程度上提示游戏延迟应该调整的数值(可能有较大偏差,仅供参考).
+	比如游戏内判定补偿是+010ms,AvgDelay数值为-5ms,那么就应将游戏内判定补偿减少5ms,但是具体需要调整多少请多次测试.
+	- `AllKeys` 谱面中存在note的数目.
+	- `AvgAcc` 平均击打偏差,即所有击打的绝对值的平均值,该值总为正数.
+	该值反应了您当前谱面本次游玩击打Key的时机的精准度,该值与您本次游玩的结算成绩有一定的关联:
 
-    该值越小,就说明您击打的越精准,(在该值小于45ms时，您的)分值就会越高.
+	该值越小,就说明您击打的越精准,(在该值小于45ms时，您的)分值就会越高.
 
 ## 更新日志
 <!--
+
 ### Version 
 #### PreRelease 
 1. 更新
-    1. xxx
+	1. xxx
 2. 修复
-    1. xxx
+	1. xxx
 3. 优化
-    1. xxx
+	1. xxx
 -->
+
+### Version 2.2.0
+#### Release 1
+1. 更新
+	1. xxx
+2. 修复
+	1. xxx
+3. 优化
+	1. xxx
+
+### Version 2.1.0
+#### Release 1
+代码库引入AI审查工具`Code Rabbit`, 用于检测代码中的潜在问题
+1. 更新
+	1. ***更新2025年12月19日喵赛克新增曲目***
+		- 十重告别 (EZ HD IN)
+2. 修复
+	1. 修复大量潜在的代码问题
+3. 优化
+	1. xxx
+
 ### Version 2.0.2
 #### Release 1
+1. 更新
+	1. ***更新2025年04月03日喵赛克新增曲目***
+		- [NWAD] (EZ HD IN)
+		- Astral Injection (EZ HD IN)
 1. 修复
-    1. 修复多次切换谱面筛选时，谱面计数中移除曲目没有清零的bug
-    2. 修复SongName.json中的数据错误
-    3. 修复数据库更新时可能出现的bug
+	1. 修复多次切换谱面筛选时，谱面计数中移除曲目没有清零的bug
+	2. 修复SongName.json中的数据错误
+	3. 修复数据库更新时可能出现的bug
 
 ### Version 2.0.1
 #### Release 2
 2. 修复
-    1. 修复CI脚本中的变量引用错误
+	1. 修复CI脚本中的变量引用错误
 #### Release 1
 2. 修复
-    1. 修复CI脚本中的变量引用错误
-    2. 修复软件初始启动时无法获取到游戏本体目录
-    3. 修复软件初始启动时数据库创建失败导致的崩溃
-    4. 修复无游戏本体目录时写入注册表导致的崩溃
-    5. 修复检查更新时修改UI样式导致的崩溃
-    6. 修复`SongName.json`更新时的换行异常
-    7. 修复检查更新时多线程弹窗导致的崩溃
+	1. 修复CI脚本中的变量引用错误
+	2. 修复软件初始启动时无法获取到游戏本体目录
+	3. 修复软件初始启动时数据库创建失败导致的崩溃
+	4. 修复无游戏本体目录时写入注册表导致的崩溃
+	5. 修复检查更新时修改UI样式导致的崩溃
+	6. 修复`SongName.json`更新时的换行异常
+	7. 修复检查更新时多线程弹窗导致的崩溃
 3. 优化
-    1. `Toolkit`类中添加函数执行计时器
-    2. 优化函数返回逻辑
-    3. 在UI初始化部分添加异常捕捉
-    4. 修改存档搜索文件目标为游戏主程序
-    5. 修改默认日志等级为`INFO`
+	1. `Toolkit`类中添加函数执行计时器
+	2. 优化函数返回逻辑
+	3. 在UI初始化部分添加异常捕捉
+	4. 修改存档搜索文件目标为游戏主程序
+	5. 修改默认日志等级为`INFO`
 
 ### Version 2.0.0
 #### Release 2
 1. 更新
-    1. #### ***更新2025年01月27日喵赛克新增曲目 (新春联动大更新)***
-        - Glazed Color (EZ HD)
-        - ENDRUiD (EZ HD IN)
-        - Super Nova Project (EZ HD IN)
-        - Steel Core Bullet (EZ HD IN)
-        - Random (EZ HD IN)
-        - Phonon (EZ HD IN)
-    2. #### ***更新2025年02月28日喵赛克新增曲目***
-        - Awaken In Ruins (EZ HD)
-        - Xenolith (EZ HD IN)
-    3. ***修补2025年03月03日 游戏资源热更新***
+	1. ***更新2025年01月27日喵赛克新增曲目 (新春联动大更新)***
+		- Glazed Color (EZ HD)
+		- ENDRUiD (EZ HD IN)
+		- Super Nova Project (EZ HD IN)
+		- Steel Core Bullet (EZ HD IN)
+		- Random (EZ HD IN)
+		- Phonon (EZ HD IN)
+	2. ***更新2025年02月28日喵赛克新增曲目***
+		- Awaken In Ruins (EZ HD)
+		- Xenolith (EZ HD IN)
+	3. ***修补2025年03月03日 游戏资源热更新***
 2. 修复
-    1. 修复存档解析方案，使用C#实现存档的解析
-    2. 修复日志压缩时，压缩文件命名错误
+	1. 修复存档解析方案，使用C#实现存档的解析
+	2. 修复日志压缩时，压缩文件命名错误
 3. 优化
-    1. 重构程序
-    2. 优化CI配置文件
-    3. 优化C#修补代码
+	1. 重构程序
+	2. 优化CI配置文件
+	3. 优化C#修补代码
 
 ## 旧版本更新日志 (1.0.0 - 1.2.8rc5)
 <details>
@@ -180,169 +218,172 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 ### Version 1.2.8
 #### Release 5
 1. 修复
-    1. 修复特定情况下因无法获取最后游玩谱面名称导致存档加载失败的bug
-    2. 修复仓库主页链接错误的bug
+	1. 修复特定情况下因无法获取最后游玩谱面名称导致存档加载失败的bug
+	2. 修复仓库主页链接错误的bug
 #### Release 4
 1. 更新
-    1. 25年1月3日 本体Assembly-CSharp.dll更新
+	1. 25年1月3日 本体Assembly-CSharp.dll更新
 #### Release 3
 1. 更新
-    1. #### ***更新2024年12月24日喵赛克新增曲目 (圣诞节更新)***
-        - Kirakira Noel Story!! (EZ HD IN)
+	1. ***更新2024年12月24日喵赛克新增曲目 (圣诞节更新)***
+		- Kirakira Noel Story!! (EZ HD IN)
 2. 修复
-    1. 修复能够获取版本号时出现Json解析错误的bug
-    2. 尝试修复如果4K/6K模式没有一次游玩记录时`Difficulty_ScoreAnalyze`无法加载的bug
-    3. 修复最小值赋值错误的bug
+	1. 修复能够获取版本号时出现Json解析错误的bug
+	2. 尝试修复如果4K/6K模式没有一次游玩记录时`Difficulty_ScoreAnalyze`无法加载的bug
+	3. 修复最小值赋值错误的bug
 3. 优化
-    1. 微调难度分布曲线中文本的位置
-    2. 修改文件在程序中的存储与释放算法
+	1. 微调难度分布曲线中文本的位置
+	2. 修改文件在程序中的存储与释放算法
 #### Release 2
 2. 修复
-    1. ***修复新用户释放资源时，图标文件名称错误的bug***
+	1. ***修复新用户释放资源时，图标文件名称错误的bug***
 #### Release 1
 1. 更新
-    1. #### ***更新09月30日喵赛克新增曲目 (国庆节更新)***
-        - Sky Fragment (EZ HD IN)
-        - Bright red hertz (EZ HD IN)
-        - Zheichour (EZ HD)
-        - 双生のネビュラ (EZ HD IN)
-    2. 重新修补`Assembly-CSharp.dll`文件
+	1. ***更新09月30日喵赛克新增曲目 (国庆节更新)***
+		- Sky Fragment (EZ HD IN)
+		- Bright red hertz (EZ HD IN)
+		- Zheichour (EZ HD)
+		- 双生のネビュラ (EZ HD IN)
+	2. 重新修补`Assembly-CSharp.dll`文件
 3. 优化
-    1. 优化进程查找
-    2. 优化文件数据的内部存储方式
-    3. 优化文件数据的内部存储编码方式
+	1. 优化进程查找
+	2. 优化文件数据的内部存储方式
+	3. 优化文件数据的内部存储编码方式
+
 ### Version 1.2.7
 #### Release 3
 1. 修复
-    1. 修复`Launcher.cpp`中没有更改程序入口的bug
-    2. 修复没有取消新UI导入的bug
+	1. 修复`Launcher.cpp`中没有更改程序入口的bug
+	2. 修复没有取消新UI导入的bug
 2. 优化
-    1. 将网络连接失败提示改为跳转框,点击`是`即可自动打开浏览器访问GitHub页面
+	1. 将网络连接失败提示改为跳转框,点击`是`即可自动打开浏览器访问GitHub页面
 #### Release 2
 1. 更新
-    1. 将启动函数单独拆分到`Launcher.py`
+	1. 将启动函数单独拆分到`Launcher.py`
 2. 修复
-    1. 修复关闭窗口时子线程未被停止的bug
-    2. （尝试）修复读取存档时字符串无法被解码导致的崩溃
-    3. 修复控制台输出表格头顺序错误的bug
+	1. 修复关闭窗口时子线程未被停止的bug
+	2. （尝试）修复读取存档时字符串无法被解码导致的崩溃
+	3. 修复控制台输出表格头顺序错误的bug
 3. 优化
-    1. （尝试）优化存档读取兼容性
+	1. （尝试）优化存档读取兼容性
 #### Release 1
 1. 更新
-    1. 通过threading.event事件在关闭窗口时结束子线程以避免在关闭时出现孤儿进程的情况
+	1. 通过threading.event事件在关闭窗口时结束子线程以避免在关闭时出现孤儿进程的情况
 2. 修复
-    1. 修复综合同步率小数位数未被限制的bug
-    2. `Songname.json`中错误的记录
+	1. 修复综合同步率小数位数未被限制的bug
+	2. `Songname.json`中错误的记录
 
-        |        曲名        |   错误原因   |
-        |--------------------|--------------|
-        | Spooky Mummy Party | 难度标记错误 |
-    3. 修复`综合同步率`数值小数部分长度未被限制的bug
-    4. 修复`HitDelay`中按钮命名重复的bug
-    5. 修复`matplotlib, numpy`版本错误导致CI不通过的bug
+		|        曲名        |   错误原因   |
+		|--------------------|--------------|
+		| Spooky Mummy Party | 难度标记错误 |
+	3. 修复`综合同步率`数值小数部分长度未被限制的bug
+	4. 修复`HitDelay`中按钮命名重复的bug
+	5. 修复`matplotlib, numpy`版本错误导致CI不通过的bug
 3. 优化
-    1. 简化变量存储与读取流程
+	1. 简化变量存储与读取流程
+
 ### Version 1.2.6
 #### Release 3
 1. 更新
-    1. 编写使用说明与wiki
-    2. #### ***更新04月30日喵赛克新增曲目 (劳动节更新)***
-        - City Night Comedy (EZ HD)
-        - Submerge in Color (EZ HD)
-        - Invisible Chaos (EZ HD)
-    3. 更新`songname.json`的内容 (20240220 -> 20240330)
-    4. 将`IsFav`字段改为`Status`字段,并扩充状态列表
+	1. 编写使用说明与wiki
+	2. ***更新04月30日喵赛克新增曲目 (劳动节更新)***
+		- City Night Comedy (EZ HD)
+		- Submerge in Color (EZ HD)
+		- Invisible Chaos (EZ HD)
+	3. 更新`songname.json`的内容 (20240220 -> 20240330)
+	4. 将`IsFav`字段改为`Status`字段,并扩充状态列表
 
-        |  Status  | 中文释义 |       English        |
-        |----------|----------|----------------------|
-        | '    '   | 无状态   | No Status            |
-        | 'Favo'   | 收藏曲目 | Favorite             |
-        | 'NoCR'   | 下架曲目 | No CopyRight         |
-        | 'NoName' | 未命名   | Not in Songname.json |
-    5. 修补新的Assembly-CSharp.dll
+		|  Status  | 中文释义 |       English        |
+		|----------|----------|----------------------|
+		| '    '   | 无状态   | No Status            |
+		| 'Favo'   | 收藏曲目 | Favorite             |
+		| 'NoCR'   | 下架曲目 | No CopyRight         |
+		| 'NoName' | 未命名   | Not in Songname.json |
+	5. 修补新的Assembly-CSharp.dll
 2. 修复
-    1. 修复未启用谱面数据同步的bug
-        - 因为仓库使用GitHub，所以在国内环境中可能出现无法连接的问题
+	1. 修复未启用谱面数据同步的bug
+		- 因为仓库使用GitHub，所以在国内环境中可能出现无法连接的问题
 3. 优化
-    1. 将`刷新`与`解码`合并为`解码并刷新`按钮
-    2. 优化字体判定流程
-    3. 优化C#代码中的判断流程
+	1. 将`刷新`与`解码`合并为`解码并刷新`按钮
+	2. 优化字体判定流程
+	3. 优化C#代码中的判断流程
 #### Release 2
 1. 更新
-    1. 修补新的Assembly-CSharp.dll
-    2. 使用新的md结构用于展示版本更新内容
+	1. 修补新的Assembly-CSharp.dll
+	2. 使用新的md结构用于展示版本更新内容
 2. 修复
-    1. 修复Delay中默认数值无法载入的bug
+	1. 修复Delay中默认数值无法载入的bug
 #### Release 1
 1. 更新
-    1. #### ***更新02月08日喵赛克新增曲目 (新春超大份更新)***
-        - Maholova (EZ HD IN)
-        - Inverted World (EZ HD IN)
-        - Shooting☆Stars (EZ HD IN)
-        - Provison (EZ HD)
-        - Lockdown(MUSYNX edit.) (EZ HD)
-        - Shizuku (ft. NEONA & KOTONOHOUSE) (EZ HD)
-        - Bison Charge(MUSYNX Update) (EZ HD IN)
-        - opia -awakened- (MUSYNC edit.) (EZ HD IN)
-        - quia desolatio (EZ HD IN)
-        - Xigns (EZ HD IN)
+	1. ***更新02月08日喵赛克新增曲目 (新春超大份更新)***
+		- Maholova (EZ HD IN)
+		- Inverted World (EZ HD IN)
+		- Shooting☆Stars (EZ HD IN)
+		- Provison (EZ HD)
+		- Lockdown(MUSYNX edit.) (EZ HD)
+		- Shizuku (ft. NEONA & KOTONOHOUSE) (EZ HD)
+		- Bison Charge(MUSYNX Update) (EZ HD IN)
+		- opia -awakened- (MUSYNC edit.) (EZ HD IN)
+		- quia desolatio (EZ HD IN)
+		- Xigns (EZ HD IN)
 2. 修复
-    1. 修复ci中requirement安装失败的bug
+	1. 修复ci中requirement安装失败的bug
 3. 优化
-    1. 优化C#代码中的判断流程
-    2. 优化`songname.json`的格式 (20231229 -> 20240118)
-    3. 优化ci执行流程
+	1. 优化C#代码中的判断流程
+	2. 优化`songname.json`的格式 (20231229 -> 20240118)
+	3. 优化ci执行流程
+
 ### Version 1.2.5
 #### Release 6
 1. 更新
-    1. #### ***更新12月29日喵赛克新增曲目 (元旦节更新)***
-        - Flammable (EZ HD IN)
+	1. ***更新12月29日喵赛克新增曲目 (元旦节更新)***
+		- Flammable (EZ HD IN)
 2. 修复
-    1. 修复`AllHitDelay`中环形图Legend显示错误的bug
+	1. 修复`AllHitDelay`中环形图Legend显示错误的bug
 3. 优化
-    1. 优化部分UI布局
-    2. 优化绘图部分程序逻辑
-    3. 优化绘图样式与展示
-    4. 优化主页谱面排序规则：`顺序优先 -> 逆序优先`
-    5. 主页面双击谱面能够在控制台输出谱面信息
+	1. 优化部分UI布局
+	2. 优化绘图部分程序逻辑
+	3. 优化绘图样式与展示
+	4. 优化主页谱面排序规则：`顺序优先 -> 逆序优先`
+	5. 主页面双击谱面能够在控制台输出谱面信息
 #### Release 5
 1. 更新
-    1. #### ***更新12月22日喵赛克新增曲目 (圣诞节更新)***
-        - fallin' fallin' (EZ HD)
-        - Cross†Destination (EZ HD)
-        - Don't Never Around (EZ HD IN)
-        - Eschatology (EZ HD IN)
-        - Revival of Kalpa (EZ HD IN)
+	1. ***更新12月22日喵赛克新增曲目 (圣诞节更新)***
+		- fallin' fallin' (EZ HD)
+		- Cross†Destination (EZ HD)
+		- Don't Never Around (EZ HD IN)
+		- Eschatology (EZ HD IN)
+		- Revival of Kalpa (EZ HD IN)
 3. 优化
-    1. 优化`HitDelay`中柱状图x轴间隔
+	1. 优化`HitDelay`中柱状图x轴间隔
 #### Release 4
 1. 更新
-    1. 提供DPI锁定，使得界面不会随着系统DPI设置而导致UI显示错误
-    2. #### ***更新11月01日喵赛克新增曲目 (万圣节更新)***
-        - spooky mummy party (EZ HD)
+	1. 提供DPI锁定，使得界面不会随着系统DPI设置而导致UI显示错误
+	2. ***更新11月01日喵赛克新增曲目 (万圣节更新)***
+		- spooky mummy party (EZ HD)
 2. 修复
-    1. 修复`Readme`中的链接错误
-    2. 修复配置项中的SystemDPI无法正确更新的bug
+	1. 修复`Readme`中的链接错误
+	2. 修复配置项中的SystemDPI无法正确更新的bug
 #### Release 3
 2. 修复
-    1. 修复图片资源缺失的bug
+	1. 修复图片资源缺失的bug
 3. 优化
-    1. 优化字节读取
+	1. 优化字节读取
 #### Release 2
 1. 更新
-    1. `HitDelay`模块中`tap的Rate环形图`中新增柱状图子图
+	1. `HitDelay`模块中`tap的Rate环形图`中新增柱状图子图
 2. 修复
-    1. 修复`HitDelay`模块中更改、删除记录时删除所有同名记录的bug
+	1. 修复`HitDelay`模块中更改、删除记录时删除所有同名记录的bug
 3. 优化
-    1. 优化`HitDelay`中的折线图使其自适应显示记录中的最大值
+	1. 优化`HitDelay`中的折线图使其自适应显示记录中的最大值
 #### Release 1
 1. 更新
-    1. #### ***更新9月28日喵赛克新增曲目 (国庆节更新)***
-        - 中华少女·终 (EZ HD)
-        - 夜月花 (EZ HD)
-        - KiNG FORM -XIII- (2023 Update) (EZ HD IN)
-        - Binary Star (EZ HD)
-        - wish upon the polar star (EZ HD)
+	1. ***更新9月28日喵赛克新增曲目 (国庆节更新)***
+		- 中华少女·终 (EZ HD)
+		- 夜月花 (EZ HD)
+		- KiNG FORM -XIII- (2023 Update) (EZ HD IN)
+		- Binary Star (EZ HD)
+		- wish upon the polar star (EZ HD)
 
 ### Version 1.2.4
 #### Release 7
@@ -375,12 +416,12 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 2. 修复 修复未输出`LICENSE`的bug
 1. 优化 优化`难度与成绩的散点分布图`中图示与指示线的颜色、分布
 2. 优化 主窗口UI调整：
-    - 上调`刷新`按钮位置与`存档分析`按钮并排
-    - 缩小`存档分析`按钮大小
-    - 将`游戏运行检测`<ruby>标签<rp>(</rp><rt>Label</rt><rp>)</rp></ruby>移动到原`刷新`按钮的位置
-    - 取消`关闭`按钮
-    - 在原`游戏运行检测`<ruby>标签<rp>(</rp><rt>Label</rt><rp>)</rp></ruby>处放置`成绩分布`按钮
-    - 将原`结果分析`按钮的文本改为`游玩结算`
+	- 上调`刷新`按钮位置与`存档分析`按钮并排
+	- 缩小`存档分析`按钮大小
+	- 将`游戏运行检测`<ruby>标签<rp>(</rp><rt>Label</rt><rp>)</rp></ruby>移动到原`刷新`按钮的位置
+	- 取消`关闭`按钮
+	- 在原`游戏运行检测`<ruby>标签<rp>(</rp><rt>Label</rt><rp>)</rp></ruby>处放置`成绩分布`按钮
+	- 将原`结果分析`按钮的文本改为`游玩结算`
 3. 优化 将散点图函数重命名
 #### Release 2
 1. 修复 修复游玩结算时对CyanExact数量计算错误的bug
@@ -395,9 +436,9 @@ HitDelay模块用法:启用DLL注入后,在本次游戏进行首次谱面游玩�
 ### Version 1.2.3
 1. 更新 对曲目新增DLC标记，用以标记曲目是否是DLC曲目
 2. 更新 新增本体/DLC曲目筛选
-3. #### 更新 更新本次喵赛克更新的新曲目
-    - 日本式硬核 -Oukaranman-(EZ HD)
-    - Euphoria(MUSYNX EDIT.)(EZ HD)
+3. 更新 更新本次喵赛克更新的新曲目
+	- 日本式硬核 -Oukaranman-(EZ HD)
+	- Euphoria(MUSYNX EDIT.)(EZ HD)
 4. 更新 新增检测游戏是否启动
 5. 更新 提供自动更新游玩记录数据库的功能，在程序启动时自动执行
 $\color{Red}{更新后的数据库不向下兼容}$
@@ -411,10 +452,10 @@ $\color{Red}{更新后的数据库不向下兼容}$
 
 ### Version 1.2.2
 1. 更新 通过使用UIAutoMation库实现一键自动从控制台获取游玩结果 
-    <del>以后都不需要再Ctrl A+C+V了</del>
-    $\color{Red}{控制台只显示最近一次的游玩记录，请在下次谱面游玩开始前生成结果}$
-    $\color{Red}{控制台关闭后不会保存游玩记录，请在关闭游戏前生成结果}$
-    $\color{Red}{结果生成需要使用剪切板，点击按钮后，在结果生成前请不要进行任何复制操作}$
+	<del>以后都不需要再Ctrl A+C+V了</del>
+	$\color{Red}{控制台只显示最近一次的游玩记录，请在下次谱面游玩开始前生成结果}$
+	$\color{Red}{控制台关闭后不会保存游玩记录，请在关闭游戏前生成结果}$
+	$\color{Red}{结果生成需要使用剪切板，点击按钮后，在结果生成前请不要进行任何复制操作}$
 2. 更新 `HitDelay` 窗口中新增详细游玩记录展示
 3. 更新 `HitDelay` 窗口中新增支持修改谱面游玩标识
 4. 更新 `HitDelay` 窗口中新增支持删除谱面游玩记录
@@ -446,11 +487,11 @@ $\color{Red}{更新后的数据库不向下兼容}$
 
 ### Version 1.2.1
 1. 更新 针对喵赛克本体游玩时的Console进行优化，新增配置项
-    - `ConsoleAlpha` : 控制台透明度,建议设置为65~75,取值范围[0,100],默认75
-    - `ConsoleFont` : 控制台字体,默认`霞鹜文楷等宽`  <br><del>这个字体明明挺好看的(逃)</del>
-    - `ConsoleFontSize` : 控制台字号,取值一般为20,24,28,36, 默认36
-    - `MainExecPath` : 喵赛克主程序所在路径,会由程序自动填写,可手动修改
-    - `ChangeConsoleStyle` : 是否启用控制台样式修改,布尔类型,默认为false
+	- `ConsoleAlpha` : 控制台透明度,建议设置为65~75,取值范围[0,100],默认75
+	- `ConsoleFont` : 控制台字体,默认`霞鹜文楷等宽`  <br><del>这个字体明明挺好看的(逃)</del>
+	- `ConsoleFontSize` : 控制台字号,取值一般为20,24,28,36, 默认36
+	- `MainExecPath` : 喵赛克主程序所在路径,会由程序自动填写,可手动修改
+	- `ChangeConsoleStyle` : 是否启用控制台样式修改,布尔类型,默认为false
    本项更新涉及注册表操作,本人测试正常,使用时还请提前添加系统还原点,启动一次本程序确认不会造成损害后可删除还原点,<br>第一次启动没有事之后就不会有事(除非你喵赛克换路径了)
 2. 更新 对DLL注入进行更新,本次更新后将支持谱面开始游玩时自动清空控制台 <br><del>放心大胆的Ctrl A吧!  ε=ε=ε=┏(゜ロ゜;)┛</del>
 4. 修复 多次重复打开 `AllHitAnalyze` 图表时，在图表内重叠显示内容的bug，本版本之后会转变成刷新图表
@@ -459,10 +500,10 @@ $\color{Red}{更新后的数据库不向下兼容}$
 
 ### Version 1.2.0
 1. 更新 适配本体*端午节更新*
-2. #### 更新 更新本次喵赛克更新的新曲目
-    - BiBiC Heart(EZ HD)
-    - Brain Crash(EZ HD IN)
-    - Saintelmo(EZ HD IN)
+2. 更新 更新本次喵赛克更新的新曲目
+	- BiBiC Heart(EZ HD)
+	- Brain Crash(EZ HD IN)
+	- Saintelmo(EZ HD IN)
 
 ### Version 1.1.9
 1. 更新 于`HitDelay`模块处更新Acc-Sync分析功能
@@ -470,7 +511,7 @@ $\color{Red}{更新后的数据库不向下兼容}$
 3. 更新 于`HitDelay`模块处更新tap的Rate环形图，若CyanExact比例大于60%，则使用精细分级，若小于60%，则使用普通分级。
 4. 更新 配置文件中增加更多的配置项：默认不开启上述两个环形图
 5. 修复 修复`songname.json`中`惊涛落日 IN`谱面难度评级未更新的bug
-    <del>这玩意儿算bug吗？</del>
+	<del>这玩意儿算bug吗？</del>
 
 6. 修复 修复些许文案错误
 7. 修复 修复多次点击`HitDelay`模块中的`AllHit`按钮时AllHitAnalyze图表显示错误的bug
@@ -495,17 +536,17 @@ $\color{Red}{更新后的数据库不向下兼容}$
 
 ### Version 1.1.8
 1. 更新 适配本体*劳动节更新*
-2. #### 更新 更新本次喵赛克更新的新曲目
-    - luxianuz(EZ HD)
-    - Four leaf clover(EZ HD)
-    - 惊涛落日(IN)
-    - diamond smile(IN)
-    - platina(IN)
-    - Sakura fubuki(IN)
-    - supersonic(IN)
-    - trojan(IN)
-    - when you are away(IN)
-    - 人里に下ったアタイがいつの間にか社畜にな(IN)
+2. 更新 更新本次喵赛克更新的新曲目
+	- luxianuz(EZ HD)
+	- Four leaf clover(EZ HD)
+	- 惊涛落日(IN)
+	- diamond smile(IN)
+	- platina(IN)
+	- Sakura fubuki(IN)
+	- supersonic(IN)
+	- trojan(IN)
+	- when you are away(IN)
+	- 人里に下ったアタイがいつの間にか社畜にな(IN)
 1. 优化 在`AllHitAnalyze`的标题栏中,新增各个评级的统计数字.
 1. 优化 在`AllHitAnalyze`中,新增仅对Exact评级进行拟合曲线(黑色实线),原对所有数据进行拟合的曲线变更为黑色虚线
 2. 优化 在`AllHitAnalyze`中,标签栏新增正态分布的方差与标准差的数值显示
@@ -514,8 +555,8 @@ $\color{Red}{更新后的数据库不向下兼容}$
 
 ### Version 1.1.7
 1. 更新 更新本次喵赛克更新的新曲目
-      - 黄老饼梦游惊奇(EZ HD)
-      - 惊涛落日(愚人节IN)
+	  - 黄老饼梦游惊奇(EZ HD)
+	  - 惊涛落日(愚人节IN)
 2. 更新 对更新的DLL文件进行适配
 3. 更新 对延迟图表的Label增加评级统计
 3. 更新 新增一个统计所有击打的延迟的柱状图，在延迟分析页面的"All Hit"按钮
@@ -542,9 +583,9 @@ $\color{Red}{更新后的数据库不向下兼容}$
 
 ### Version 1.1.5
 1. 更新 修改排除空白谱面的函数，使其更加自动化
-      - 已找出空白谱面的规律: 加入收藏后会在收藏曲目的6KHD难度的编号+9位置产生一个空白谱面
+	  - 已找出空白谱面的规律: 加入收藏后会在收藏曲目的6KHD难度的编号+9位置产生一个空白谱面
 2. 更新 `songname.json`
-      - 更新曲目: Chivalric
+	  - 更新曲目: Chivalric
 1. 修复 修复了对"游玩计数"排序功能无法正确排序的bug
 2. 优化 修改少量函数名,使其更加贴近实现的功能
 3. 优化 整合本地功能函数库
@@ -557,20 +598,20 @@ $\color{Red}{更新后的数据库不向下兼容}$
 2. 更新 补全当前版本所有SongName
 3. 更新 增加版权到期排除谱面功能
   版权到期的曲目有：
-    - 404 Not Found
-    - ArroganT
-    - TWINKLE STAR
-    - 为你而来
-    - 寓言预见遇见你的那刻
-    - 星之伊始
-    - 樂園 - Atlantis
-    - 观星者
+	- 404 Not Found
+	- ArroganT
+	- TWINKLE STAR
+	- 为你而来
+	- 寓言预见遇见你的那刻
+	- 星之伊始
+	- 樂園 - Atlantis
+	- 观星者
 1. 更新 新增一个筛选按钮用于筛选谱面难度
-    - (Easy | Hard | Inferno | All)
-    - 默认为All
+	- (Easy | Hard | Inferno | All)
+	- 默认为All
 2. 更新 新增一个筛选按钮用于筛选谱面按键数
-    - (4K | 6K | 4K&6K)
-    - 默认为4K&6K
+	- (4K | 6K | 4K&6K)
+	- 默认为4K&6K
 2. 更新 新增一个Label将上述两个按钮包裹在内(伪装成一个Frame(bushi))
 3. 优化执行流程
 4. 修复些许bug
@@ -580,8 +621,8 @@ $\color{Red}{更新后的数据库不向下兼容}$
 - [x] 隐藏cmd窗口
 - [x] 将像Windows资源管理器一样使用列标题栏进行排序
 2. 更新 通过点击标题栏来进行排序显示
-    - 升序:`▲`
-    - 降序:`▼`
+	- 升序:`▲`
+	- 降序:`▼`
 4. 更新 文件选择功能增加扩展名限制
 5. 更新 `SongName.json`的内容
 6. 更新 从GitHub下载`SongName.json`文件
@@ -598,14 +639,14 @@ $\color{Red}{更新后的数据库不向下兼容}$
 ### Version 1.1.1
 1. 修复 修复某些bug
 2. 优化 更改SongName数据表的键名
-    - 将小端键名替换为大端
+	- 将小端键名替换为大端
 3. 优化 更改"未游玩"筛选的判定条件
-    - 现在"未游玩"的判定条件为: 游玩计数和本地同步率同时为0
+	- 现在"未游玩"的判定条件为: 游玩计数和本地同步率同时为0
 
 ### Version 1.1.0
 1. 优化 更改判定一条存储内容是哪首歌哪个谱面的方式
-    - 已通过(本人的)多版本存档验证
-    - 缺少更多的存档进行更多的测试
+	- 已通过(本人的)多版本存档验证
+	- 缺少更多的存档进行更多的测试
 2. 优化 修改Json文件的内容
 
 ### Version 1.0.7
@@ -631,16 +672,16 @@ $\color{Red}{更新后的数据库不向下兼容}$
 
 ### Version 1.0.5
 1. 更新 谱面排序功能
-    - 灰色(#F0F0F0)表示未启用该排序方法
-    - 绿色(#98E22B)表示已启用该排序的倒序方法
-    - 红色(#FF7B7B)表示已启用该排序的正序方法
+	- 灰色(#F0F0F0)表示未启用该排序方法
+	- 绿色(#98E22B)表示已启用该排序的倒序方法
+	- 红色(#FF7B7B)表示已启用该排序的正序方法
   1. 按 游玩次数 排序
   2. 按 难度等级 排序
   3. 按 本地同步率 排序
   1. 按 名称 排序
 2. 更新 谱面筛选按钮增加背景颜色启用标识
-    - 灰色(#F0F0F0)表示未启用该筛选方法
-    - 绿色(#98E22B)表示已启用该筛选方法
+	- 灰色(#F0F0F0)表示未启用该筛选方法
+	- 绿色(#98E22B)表示已启用该筛选方法
 3. 更新 谱面筛选功能与谱面排序功能可同时使用
 4. 优化 筛选控件与排序控件的排版大幅度改动
 

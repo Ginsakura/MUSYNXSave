@@ -162,8 +162,10 @@ class HitDelayText(object):
 			time = f"{dt.now()}"
 			if data[-1] == "": #如果最后一行是空行，则去除
 				data.pop(-1)
+			if data[-1][0:10] == "> SongInfo":
+				songInfo = data.pop(-1) # > "SongInfo::SID:141801,SN:12184,MC:536,TC:536": SongID,SyncNumber,MaxCombo,TotalCombo
 			for ids in range(1,len(data)): # 去除第一行
-				dataList.append(float(data[ids][13:-3]))
+				dataList.append(float(data[ids][9:-3])) # "> Delay: xxx.xms"
 			allKeys = len(dataList)
 			sumNums,sumKeys = 0,0
 			for ids in dataList:

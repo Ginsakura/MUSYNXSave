@@ -11,7 +11,7 @@ from Toolkit import Toolkit
 FillSize:int = 512
 FixDLL:str = "83951C09C2402D99018F28F405725D07A9D27807D9147F19AD4F6E089FCB7C9D"
 # Source Assembly-CSharp.dll
-SourceDLL:str = '1F66F70DBF17B37EE1F8B2F67D7938AF9ACF20148F331335F9285502E63B5F4C'
+SourceDLL:str = '9FA415129805E0ADE305E9CA76B7E692FA31492CE807C4667F6B46BD10849A97'
 with open("./musync_data/songname.ver", 'r', encoding="ascii") as f:
 	SongNameVersion:int = int(f.read())
 

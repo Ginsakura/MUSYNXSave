@@ -1,4 +1,4 @@
-﻿# Step 0: 检查参数列表
+# Step 0: 检查参数列表
 [CmdletBinding()]
 param (
     [switch]$noarchive

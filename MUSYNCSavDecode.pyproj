@@ -30,7 +30,7 @@
     <Compile Include="AllHitAnalyze.py" />
     <Compile Include="AvgAcc_SyncAnalyze.py" />
     <Compile Include="Difficulty_ScoreAnalyze.py" />
-    <Compile Include="File2Base64.py" />
+    <Compile Include="FileEncoder.py" />
     <Compile Include="FormatSongName.py" />
     <Compile Include="Toolkit.py" />
     <Compile Include="HitDelay.py" />
@@ -60,6 +60,7 @@
     <Content Include=".github\workflows\ReleaseBuild.yml" />
     <Content Include=".gitignore" />
     <Content Include="buildLauncher.ps1" />
+    <Content Include="buildLauncher.spec" />
     <Content Include="changelog.md" />
     <Content Include="CSharp Code\JudgeGrade.cs" />
     <Content Include="CSharp Code\OptimizedConsole.cs" />
@@ -69,6 +70,8 @@
     <Content Include="Launcher.cpp" />
     <Content Include="LauncherC.exe" />
     <Content Include="LICENSE" />
+    <Content Include="mscorlib.dll" />
+    <Content Include="MUSYNCSavDecode.pyperf" />
     <Content Include="MUSYNCSavDecode.sublime-project" />
     <Content Include="MUSYNCSavDecode.sublime-workspace" />
     <Content Include="MusyncSavDecodeGUI.bat" />
@@ -91,8 +94,15 @@
     <Content Include="ReadmeResources\HitAnalyze-Line.png" />
     <Content Include="ReadmeResources\HitAnalyze-Pie&amp;Bar.png" />
     <Content Include="ReadmeResources\HitDelay.png" />
+    <Content Include="ReadmeResources\How_to_use.en.md" />
+    <Content Include="ReadmeResources\How_to_use.zh.md" />
     <Content Include="ReadmeResources\how_to_use_maintitle.png" />
+    <Content Include="ReadmeResources\how_to_use_play_settlement.png" />
+    <Content Include="ReadmeResources\how_to_use_preparatory_phase.png" />
+    <Content Include="ReadmeResources\how_to_use_ring&amp;bar_chart.png" />
+    <Content Include="ReadmeResources\how_to_use_settlement_title.png" />
     <Content Include="ReadmeResources\main.png" />
+    <Content Include="ReadmeResources\OldVersionUpdateLog.md" />
     <Content Include="ReadmeResources\score-diff.png" />
     <Content Include="ReadmeResources\zzz %281%29.png" />
     <Content Include="ReadmeResources\zzz %282%29.png" />

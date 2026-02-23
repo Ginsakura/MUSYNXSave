@@ -40,21 +40,21 @@ C#重构版本: [MUSYNCSaveCSharp](https://github.com/Ginsakura/MUSYNCSaveCSharp
 
 ## 使用说明 (How to use)
 
-1. [English (English, `en-us`) v1.2.6 rc2](/ReadmeResources/How_to_use.en.md)
-2. [简体中文 (Simplified Chinese, `zh-Hans`) v1.2.6 rc2](/ReadmeResources/How_to_use.zh.md)
+1. [English (English, `en-us`) v3.0.0](/ReadmeResources/How_to_use.en.md)
+2. [简体中文 (Simplified Chinese, `zh-cn`) v3.0.0](/ReadmeResources/How_to_use.zh.md)
 
 ## 界面展示
 
 <details>
 <summary>点击展开界面展示</summary>
 
-![主页面](/ReadmeResources/main.png "主页面")
-![score-diff页面](/ReadmeResources/score-diff.png "score-diff页面")
+![主页面](/ReadmeResources/main.jpg "主页面")
+![score-diff页面](/ReadmeResources/score-diff.jpg "score-diff页面")
 ![HitDelay页面](/ReadmeResources/HitDelay.png "HitDelay页面")
 ![HitAnalyze-Pie&Bar页面](/ReadmeResources/HitAnalyze-Pie&Bar.png "HitAnalyze-Pie&Bar页面")
 ![HitAnalyze-Line页面](/ReadmeResources/HitAnalyze-Line.png "HitAnalyze-Line页面")
-![AllHitAnalyze-Pie页面](/ReadmeResources/AllHitAnalyze.png "AllHitAnalyze页面")
-![AvgAcc-SYNC.Rate回归分析页面](/ReadmeResources/AvgAcc-SYNC.Rate.png "AvgAcc-SYNC.Rate回归分析")
+![AllHitAnalyze-Pie页面](/ReadmeResources/AllHitAnalyze.jpg "AllHitAnalyze页面")
+![AvgAcc-SYNC.Rate回归分析页面](/ReadmeResources/AvgAcc-SYNC.Rate.jpg "AvgAcc-SYNC.Rate回归分析")
 
 </details>
 

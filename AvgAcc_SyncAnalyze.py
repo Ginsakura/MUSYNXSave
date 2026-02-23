@@ -78,7 +78,7 @@ def analyze_3d() -> None:
         ax.zaxis.set_major_locator(MultipleLocator(2))
 
     # 设置 labelrotation=45 使得文字倾斜，避免紧凑布局下的重叠
-    ax.tick_params(axis='x', labelrotation=30)
+    ax.tick_params(axis='x', labelrotation=90, pad=-5)
 
     # 4. 绘制参考线 (使用“后墙投影法”，绘制在 Y = 15 的面上)
     y_wall: float = 15.0  # 难度最大面

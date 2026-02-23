@@ -50,7 +50,6 @@ class Config(object):
 	UpdateChannel:str				= __config.get("UpdateChannel"				, "Release")
 	LoggerFilterString:str			= __config.get("LoggerFilterString"			, "DEBUG")
 	LoggerFilter:int				= __logLevelMapping.get(LoggerFilterString	, logging.INFO)
-	Acc_Sync:bool					= __config.get("Acc_Sync"					, False)
 	CheckUpdate:bool				= __config.get("CheckUpdate"				, True)
 	DLLInjection:bool				= __config.get("DLLInjection"				, False)
 	SystemDPI:int					= __config.get("SystemDPI"					, 100)
@@ -64,8 +63,6 @@ class Config(object):
 	ChangeConsoleStyle:bool			= __config.get("ChangeConsoleStyle"			, True)
 	FramelessWindow:bool			= __config.get("FramelessWindow"			, False)
 	TransparentColor:str			= __config.get("TransparentColor"			, "#FFFFFF")
-	Default4Keys:bool				= __config.get("Default4Keys"				, False)
-	DefaultDiffcute:int				= __config.get("DefaultDiffcute"			, 0)
 
 	def __new__(cls):
 		with cls.__lock:
@@ -143,7 +140,6 @@ class Config(object):
 			"Version": cls.Version,
 			"UpdateChannel": cls.UpdateChannel,
 			"LoggerFilterString": loggerFilterStr,
-			"Acc_Sync": cls.Acc_Sync,
 			"CheckUpdate": cls.CheckUpdate,
 			"DLLInjection": cls.DLLInjection,
 			"SystemDPI": cls.SystemDPI,
@@ -157,8 +153,6 @@ class Config(object):
 			"ChangeConsoleStyle": cls.ChangeConsoleStyle,
 			"FramelessWindow": cls.FramelessWindow,
 			"TransparentColor": cls.TransparentColor,
-			"Default4Keys": cls.Default4Keys,
-			"DefaultDiffcute": cls.DefaultDiffcute
 		}
 		# 确保文件夹存在
 		os.makedirs(os.path.dirname(cls.__filePath), exist_ok=True)

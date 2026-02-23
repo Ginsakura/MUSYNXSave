@@ -9,6 +9,7 @@ import time
 import winreg
 from hashlib import sha256
 from tkinter import messagebox
+from typing import Any
 from win32 import win32gui, win32print
 from win32.lib import win32con
 from win32.win32api import GetSystemMetrics
@@ -238,6 +239,23 @@ class Toolkit(object):
 		logger.debug(f"GameLibCheck() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms")
 		return rtcode
 
+	@staticmethod
+	def CreateNewDataBase(db:sqlite3.Connection)->bool:
+		cursor:sqlite3.Cursor = db.cursor()
+		cursor.execute("""CREATE table IF NOT EXISTS HitDelayHistory (
+			SongMapName	text	Not Null DEFAULT '',
+			RecordTime	text	Not Null DEFAULT '',
+			Diff		int		Not Null DEFAULT 0,
+			Keys		text	Not Null DEFAULT '',
+			Combo		text	Not Null Default '0/0',
+			AvgDelay	float,
+			AllKeys		int,
+			AvgAcc		float,
+			HitMap		text,
+			PRIMARY KEY ("SongMapName", "RecordTime"));""")
+		cursor.execute("CREATE Table IF NOT EXISTS Infos (Key Text PRIMARY KEY, Value Text Default None);")
+		pass
+
 	@classmethod
 	def CheckDatabaseVersion(cls)->int:
 		"数据库版本检查"
@@ -253,13 +271,13 @@ class Toolkit(object):
 			if (columnCount==6):
 				logger.debug("存在文件 HitDelayHistory_v2.db 且 列数为6, 判定数据库版本为 v2")
 				logger.info("Database Version: 2")
-				db.close()
 				rtcode = 2
 			else:
 				logger.debug("存在文件 HitDelayHistory_v2.db 且 列数不为6, 判定数据库版本为 v1")
 				logger.info("Database Version: 1")
-				db.close()
 				rtcode = 1
+			cursor.close()
+			db.close()
 		elif os.path.isfile("./musync_data/HitDelayHistory.db"):
 			db:sqlite3.Connection = sqlite3.connect('./musync_data/HitDelayHistory.db')
 			cursor:sqlite3.Cursor = db.cursor()
@@ -268,15 +286,15 @@ class Toolkit(object):
 			if (tableCount==1):
 				logger.debug("存在文件 HitDelayHistory.db 且 仅有一张数据表, 判定数据库版本为 v1")
 				logger.info("Database Version: 1")
-				db.close()
 				rtcode = 1
 			else:
 				cursor.execute("SELECT Value FROM Infos WHERE Key='Version';")
 				version:int = int(cursor.fetchone()[0])
 				logger.debug(f"存在文件\"HitDelayHistory.db\"且\"Infos.Version={version}\", 判定数据库版本为 v{version}")
 				logger.info(f"Database Version: {version}")
-				db.close()
 				rtcode = version
+			cursor.close()
+			db.close()
 		else:
 			logger.warning("无数据库文件存在.")
 			rtcode = 0
@@ -286,65 +304,162 @@ class Toolkit(object):
 		return rtcode
 
 	@classmethod
-	def DatabaseUpdate(cls, nowVersion:int)->None:
+	def DatabaseUpdate(cls, nowVersion:int)->bool:
 		"数据库版本更新"
 		startTime:int = time.perf_counter_ns()
-		LastVersion:int = 3
+		LastVersion:int = 4
+		rtcode:bool = False
 		# 链接数据库
 		if (nowVersion==2):
 			os.rename("./musync_data/HitDelayHistory_v2.db", "./musync_data/HitDelayHistory.db")
 		db:sqlite3.Connection = sqlite3.connect('./musync_data/HitDelayHistory.db')
 		cursor:sqlite3.Cursor = db.cursor()
 		if (nowVersion == 0):
+			rtcode = False
 			logger.info(f"创建v{LastVersion}版本数据库中...")
-			cursor.execute("""CREATE table IF NOT EXISTS HitDelayHistory (
-				SongMapName text Not Null,
-				RecordTime text Not Null,
-				AvgDelay float,
-				AllKeys int,
-				AvgAcc float,
-				HitMap text,
-				PRIMARY KEY ("SongMapName", "RecordTime"));""")
-			cursor.execute("CREATE Table IF NOT EXISTS Infos (Key Text PRIMARY KEY, Value Text Default None);")
-			cursor.execute("INSERT Into Infos Values(?, ?)", ("Version","%d"%LastVersion))
-			db.commit()
-			db.close()
-			return
+			try:
+				Toolkit.CreateNewDataBase(db)
+				cursor.execute("INSERT Into Infos Values(?, ?)", ("Version","%d"%LastVersion))
+				db.commit()
+				nowVersion = 4;
+			except sqlite3.OperationalError as e:
+				# 如果列已经存在，或者表不存在，会抛出此异常
+				logger.error(f"操作失败，原因: {e}")
+			finally:
+				cursor.close()
+				db.close()
+
 		if (nowVersion == 1):
 			logger.info("记录数据迁移中... v1->v2")
-			cursor.execute("ALTER TABLE HitDelayHistory RENAME TO HitDelayHistoryV1;")
-			cursor.execute("""CREATE table IF NOT EXISTS HitDelayHistory (
-				SongMapName text Not Null,
-				RecordTime text Not Null,
-				AvgDelay float,
-				AllKeys int,
-				AvgAcc float,
-				HitMap text,
-				PRIMARY KEY ("SongMapName", "RecordTime"));""")
-			for ids in cursor.execute("SELECT * From HitDelayHistoryV1").fetchall():
-				nameAndTime:str = ids[0].split("-202")
-				name:str = nameAndTime[0]
-				recordTime:str = "202%s"%nameAndTime[1]
-				avgDelay:float = ids[1]
-				allKeys:int = ids[2]
-				avgAcc:float = ids[3]
-				hitMap:str = ids[4]
-				logger.debug("正在迁移%s  %s"%(name,recordTime))
-				cursor.execute("INSERT Into HitDelayHistory values(?,?,?,?,?,?)", (name,recordTime,avgDelay,allKeys,avgAcc,hitMap))
-			# cursor.execute("ALTER TABLE HitDelayHistory RENAME TO HitDelayHistoryV1;")
-			db.commit()
-			nowVersion=2
+			try:
+				cursor.execute("ALTER TABLE HitDelayHistory RENAME TO HitDelayHistoryV1;")
+				cursor.execute("""CREATE table IF NOT EXISTS HitDelayHistory (
+					SongMapName text Not Null,
+					RecordTime text Not Null,
+					AvgDelay float,
+					AllKeys int,
+					AvgAcc float,
+					HitMap text,
+					PRIMARY KEY ("SongMapName", "RecordTime"));""")
+				for ids in cursor.execute("SELECT * From HitDelayHistoryV1").fetchall():
+					nameAndTime:str = ids[0].split("-202")
+					name:str = nameAndTime[0]
+					recordTime:str = "202%s"%nameAndTime[1]
+					avgDelay:float = ids[1]
+					allKeys:int = ids[2]
+					avgAcc:float = ids[3]
+					hitMap:str = ids[4]
+					logger.debug("正在迁移%s  %s"%(name,recordTime))
+					cursor.execute("INSERT Into HitDelayHistory values(?,?,?,?,?,?)", (name,recordTime,avgDelay,allKeys,avgAcc,hitMap))
+				# cursor.execute("ALTER TABLE HitDelayHistory RENAME TO HitDelayHistoryV1;")
+				db.commit()
+				nowVersion=2
+			except Exception as e:
+				# 如果列已经存在，或者表不存在，会抛出此异常
+				logger.error(f"操作失败，原因: {e}")
+				cursor.close()
+				db.close()
+
 		if (nowVersion == 2):
 			logger.info("记录数据迁移中... v2->v3")
-			cursor.execute("CREATE Table IF NOT EXISTS Infos (Key Text PRIMARY KEY, Value Text Default None);")
-			cursor.execute("INSERT Into Infos Values(?, ?)", ("Version","3"))
-			db.commit()
-			nowVersion = 3
+			try:
+				cursor.execute("CREATE Table IF NOT EXISTS Infos (Key Text PRIMARY KEY, Value Text Default None);")
+				cursor.execute("INSERT Into Infos Values(?, ?)", ("Version","3"))
+				db.commit()
+				nowVersion = 3
+			except sqlite3.OperationalError as e:
+				# 如果列已经存在，或者表不存在，会抛出此异常
+				logger.error(f"操作失败，原因: {e}")
+				cursor.close()
+				db.close()
+
 		if (nowVersion == 3):
+			logger.info("记录数据迁移中... v3->v4")
+			try:
+				# 2. 新增 Diff 列：整数 (INTEGER)，非空 (NOT NULL)，默认值为 0
+				cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN Diff INTEGER NOT NULL DEFAULT 0")
+				logger.debug("成功添加列: Diff")
+				# 3. 新增 Mode 列：字符串 (TEXT)，非空 (NOT NULL)，默认值为空字符串 ''
+				cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN Mode TEXT NOT NULL DEFAULT ''")
+				logger.debug("成功添加列: Mode")
+				# 3. 新增 Combo 列：字符串 (TEXT)，非空 (NOT NULL)，默认值为空字符串 ''
+				cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN Combo TEXT NOT NULL DEFAULT '0/0'")
+				logger.debug("成功添加列: Combo")
+
+				logger.warning("表创建完成，表内容迁移中...")
+				def CleanAndExtract(name:str) -> tuple[str,str]:
+					"""
+					解析 SongMapName，返回 (清理后的曲名, 标准化的Mode)。
+					如果匹配失败，返回 ("", "")。
+					"""
+					# 正则解析：
+					# \s* : 匹配后缀前面可能存在的空格（连同空格一起切掉）
+					# (4|6)       : 捕获组1，匹配 4 或 6
+					# [Kk]?       : 可选的 K 或 k
+					# (ez|e|hd|h|in|i) : 捕获组2，匹配各种难度缩写
+					# \s*$        : 允许末尾有空白字符
+					import re
+					pattern = r'\s*(4|6)[Kk]?(ez|e|hd|h|in|i)\s*$'
+
+					match = re.search(pattern, name, re.IGNORECASE)
+
+					if match:
+						key_num = match.group(1)
+						diff_raw = match.group(2).upper()
+						# 归一化难度
+						if diff_raw.startswith('E'):
+							diff_std = 'EZ'
+						elif diff_raw.startswith('H'):
+							diff_std = 'HD'
+						elif diff_raw.startswith('I'):
+							diff_std = 'IN'
+						std_keys = f"{key_num}K{diff_std}"
+						# 清理原字符串：截取匹配开始之前的部分
+						cleaned_name = name[:match.start()]
+						return cleaned_name, std_keys
+					# 匹配失败
+					return "", ""
+
+				# 更新表数据
+				# 取出 ROWID 和现有的 SongMapName
+				cursor.execute("SELECT ROWID, SongMapName FROM HitDelayHistory")
+				rows:list[Any] = cursor.fetchall()
+
+				updateData:list[tuple[str,str]] = []
+				for rowId, oldName in rows:
+					if oldName:
+						# 获取清理后的名字和提取出的 Mode
+						cleanedName, stdMode = CleanAndExtract(oldName)
+						# 只有当成功提取（即 cleaned_name 和 stdMode 不为空字符串时）才进行更新
+						if cleanedName != "" and stdMode != "":
+							# 准备更新的数据：(干净的名字, 标准的Mode, 对应的rowid)
+							updateData.append((cleanedName, stdMode, rowId))
+				logger.debug(f"已转换 {len(updateData)} 条记录，共 {len(rows)} 条记录。")
+
+				# 批量更新两列
+				if updateData:
+					cursor.executemany("UPDATE HitDelayHistory SET SongMapName = ?, Mode = ? WHERE ROWID = ?", updateData)
+					logger.debug(f"成功清理并更新了 {len(updateData)} 条记录。")
+				else:
+					logger.debug("没有找到符合正则匹配规则的数据。")
+
+				cursor.execute("UPDATE Infos SET Value = ? WHERE Key = ?", ("4", "Version"))
+				db.commit()
+				nowVersion = 4
+			except sqlite3.OperationalError as e:
+				# 如果列已经存在，或者表不存在，会抛出此异常
+				logger.error(f"操作失败，原因: {e}")
+				cursor.close()
+				db.close()
+
+		if (nowVersion == 4):
 			db.commit()
 			db.close()
 			logger.info("记录数据无需迁移.")
+			rtcode = True
+
 		logger.debug(f"DatabaseUpdate() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms")
+		return rtcode;
 
 if __name__ == '__main__':
 	print(Toolkit.GetDpi())

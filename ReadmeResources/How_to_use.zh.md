@@ -1,5 +1,4 @@
-# How to use (v1.2.6 rc2)
-
+# 使用教程 (v3.0.0)
 ## 菜单
 [steamlink]: https://store.steampowered.com/app/952040/_/
 本程序为Steam游戏[`同步音律喵赛克`][steamlink]的非官方插件，用于对游戏本体进行功能扩展。

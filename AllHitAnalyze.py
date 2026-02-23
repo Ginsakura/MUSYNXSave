@@ -7,6 +7,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plot
+from matplotlib.ticker import MultipleLocator
 from matplotlib.widgets import CheckButtons
 
 from Resources import Config, Logger
@@ -182,11 +183,13 @@ class AllHitAnalyze(object):
 
         # 直方图 Axes
         ax1: Axes = fig.add_subplot(grid[:, :])
+        ax1.format_coord = lambda x, y: f"x={int(x)}, y={int(y)}"
         self._draw_histogram_and_curves(fig, ax1)
 
         # 饼图 Axes
         if Config.DonutChartinAllHitAnalyze:
             ax2: Axes = fig.add_subplot(grid[0:2, 3:])
+            ax2.format_coord = lambda x, y: f"x={x:.3f}, y={y:.3f}"
             self._draw_pie_chart(ax2)
 
         plot.show()

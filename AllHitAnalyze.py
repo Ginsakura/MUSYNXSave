@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 import math
-# import numpy as np
 import sqlite3
 
-from matplotlib import patches
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 import matplotlib.gridspec as gridspec
 import matplotlib.pyplot as plot
-from matplotlib.pyplot import MultipleLocator
 from matplotlib.widgets import CheckButtons
 
 from Resources import Config, Logger

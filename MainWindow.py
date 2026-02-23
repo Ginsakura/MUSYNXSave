@@ -21,7 +21,7 @@ from tkinter.filedialog import askopenfilename
 # from PIL import ImageTk
 
 import Version
-from Difficulty_ScoreAnalyze import Analyze
+import Difficulty_ScoreAnalyze
 from HitDelay import HitDelayText
 from MusyncSavDecode import MUSYNCSavProcess
 from Resources import Config, SaveDataInfo, SongName, Logger
@@ -126,7 +126,7 @@ class MusyncSavDecodeGUI(object):
 
         # self.closeWindow = ttk.Button(self.root, text="关闭",command=lambda : self.root.destroy(),style='close.TButton')
         # self.closeWindow.place(x=100,y=88,width=90,height=30)
-        self.difficuteScoreAnalyze = Button(self.root, text="成绩分布",command=lambda:Analyze(), font=self.font)
+        self.difficuteScoreAnalyze = Button(self.root, text="成绩分布",command=lambda:Difficulty_ScoreAnalyze.analyze(), font=self.font)
         self.difficuteScoreAnalyze.place(x=775,y=88,width=90,height=30)
 
         self.totalSyncFrameLabel = Label(self.root, text='', relief="groove")
@@ -200,7 +200,7 @@ class MusyncSavDecodeGUI(object):
             if Config().MainExecPath and os.path.isfile(Config().MainExecPath):
                 self.saveFilePathVar.set(Config().MainExecPath+"SavesDir\\savedata.sav")
             else:
-                self.saveFilePathVar.set(Toolkit.GetSaveFile()+"SavesDir\\savedata.sav")
+                self.saveFilePathVar.set(Toolkit.get_save_file()+"SavesDir\\savedata.sav")
             if Config().DLLInjection:
                 self.logger.warning("DLL Injection is Enable.")
                 self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelay, font=self.font,bg='#FF5959')
@@ -347,17 +347,21 @@ class MusyncSavDecodeGUI(object):
 # update功能组
     def CheckJsonUpdate(self) -> None:
         """检查谱面信息更新"""
-
         startTime = time.perf_counter_ns()
+
+        repo: str = "https://raw.githubusercontent.com/Ginsakura/MUSYNXSave/main/musync_data/"
+        if Config().UpdateChannel.lower() == "beta":
+            repo = "https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/dev/musync_data/"
+
         try:
-            response:requests.Response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.ver", timeout=10)
+            response:requests.Response = requests.get(repo + "songname.ver", timeout=10)
             localVersion:int = int(SongName.Version())
             self.logger.info(f"   Local Json Version: {localVersion}")
             if response.status_code == 200:
                 githubVersion = int(response.content.decode('utf8'))
                 self.logger.info(f"  Terget Json Version: {githubVersion}")
                 if githubVersion>localVersion:
-                    response = requests.get("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.json", timeout=10)
+                    response = requests.get(repo + "songname.json", timeout=10)
                     songNameJson = response.text
                     with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
                         snj.write(songNameJson)
@@ -369,8 +373,8 @@ class MusyncSavDecodeGUI(object):
             error_msg = str(e)
             def show_error(_):
                 messagebox.showerror("Error", f'发生错误: {error_msg}')
-                if messagebox.askyesno("无法获取谱面信息更新", '是否前往网页查看是否存在更新?\n(请比对 SongName.ver 中的时间是否比本地文件中的时间更大)'):
-                    webbrowser.open("https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/main/musync_data/songname.ver")
+                if messagebox.askyesno("无法获取谱面信息更新", '是否前往网页查看是否存在更新?\n(请比对 SongName.json 中的时间是否比本地文件中的时间更大)'):
+                    webbrowser.open(repo + "songname.json")
             self.root.after(0, show_error)
         endTime = time.perf_counter_ns()
         self.logger.info("CheckJsonUpdate Run Time: %f ms"%((endTime - startTime)/1000000))
@@ -456,7 +460,7 @@ class MusyncSavDecodeGUI(object):
         "DLL注入功能"
         if not Config().DLLInjection:
             return
-        result:int = Toolkit.GameLibCheck()
+        result:int = Toolkit.game_lib_check()
         if result == 0:
             messagebox.showerror("Error", f'DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁')
             self.logger.error("DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁")
@@ -755,16 +759,17 @@ if __name__ == '__main__':
     Config()
     SongName()
     SaveDataInfo()
+    Toolkit.init_resources();
     Config().Version = Version.preVersion.replace("pre",".") if (Version.isPreRelease) else Version.version
 
     # Launcher
     root:Tk = Tk()
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
     fontlist:list[str] = list(font.families())
-    Toolkit.CheckResources(fonts=fontlist)
+    Toolkit.check_resources(fonts=fontlist)
     # del fonts
     if Config().ChangeConsoleStyle:
-        Toolkit.ChangeConsoleStyle()
+        Toolkit.change_console_style()
     root.tk.call('tk', 'scaling', 1.25)
     root.resizable(False, True); #允许改变窗口高度，不允许改变窗口宽度
     # 强制仅旧版UI

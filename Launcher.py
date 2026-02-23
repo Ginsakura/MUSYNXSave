@@ -20,6 +20,7 @@ def Launcher()->None:
     # Init
     SongName()
     SaveDataInfo()
+    Toolkit.init_resources()
 
     if Version.isPreRelease:
         Config.Version = Version.preVersion.replace("pre", ".")
@@ -30,11 +31,11 @@ def Launcher()->None:
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
     root:Tk = Tk()
     fontlist:list[str] = list(font.families())
-    Toolkit.GetSaveFile()
-    Toolkit.CheckResources(fontlist)
+    Toolkit.get_save_file()
+    Toolkit.check_resources(fontlist)
     # del fonts
     if Config.ChangeConsoleStyle:
-        Toolkit.ChangeConsoleStyle()
+        Toolkit.change_console_style()
     root.tk.call('tk', 'scaling', 1.25)
     root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
     # 仅旧版UI可用

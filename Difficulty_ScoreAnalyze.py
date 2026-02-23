@@ -1,110 +1,144 @@
 # -*- coding: utf-8 -*-
 import matplotlib.pyplot as plt
-from matplotlib.pyplot import MultipleLocator
+from matplotlib.ticker import MultipleLocator
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+from typing import Final
+
 from Resources import MapDataInfo, SaveDataInfo
 
-def Analyze() -> None:
-    diff = [[],[]]
-    score = [[],[]]
-    diffSocre = [dict(),dict()]
-    for mapData in range(1,16):
-        diffSocre[0]['%02d'%mapData] = []
-        diffSocre[1]['%02d'%mapData] = []
-    # print(diffSocre)
+# 定义偏移量常量，避免魔法数字
+JITTER_OFFSET: Final[float] = 0.15
 
-    data:list[MapDataInfo] = SaveDataInfo.saveInfoList
-    for mapData in data:
-        syncNumber:float = mapData.SyncNumber/100.0
-        if (syncNumber > 0.0):
-            diffcute:int = int(mapData.SongDifficultyNumber)
-            if (mapData.SongKeys == "4Key"):
-                diff[0].append(diffcute-0.15)
-                score[0].append(syncNumber)
-                diffSocre[0]['%02d'%diffcute] += [syncNumber]
-            else: # 6Key Mode
-                diff[1].append(diffcute+0.15)
-                score[1].append(syncNumber)
-                diffSocre[1]['%02d'%diffcute] += [syncNumber]
-    # print(diffSocre)
+def analyze() -> None:
+    """分析谱面数据并生成难度与分数散点图"""
 
-    diffSocreTrim = [dict(),dict()]
-    for mapData in range(0,2):
-        for idx in diffSocre[mapData].keys():
-            if len(diffSocre[mapData][idx]) != 0:
-                diffSocreTrim[mapData][idx] = [round(sum(diffSocre[mapData][idx])/len(diffSocre[mapData][idx]),3),len(diffSocre[mapData][idx])]
-            # else:
-            # 	diffSocre.pop(ids, None)
-    # print(diffSocreTrim)
+    # 1. 语义化的数据容器
+    diff_4k: list[float] = []
+    scores_4k: list[float] = []
+    scores_by_diff_4k: dict[int, list[float]] = {i: [] for i in range(1, 16)}
 
-    fig = plt.figure('难度与分数散点图', figsize=(7, 8))
+    diff_6k: list[float] = []
+    scores_6k: list[float] = []
+    scores_by_diff_6k: dict[int, list[float]] = {i: [] for i in range(1, 16)}
+
+    # 2. 数据解析层 (Data Parsing)
+    data: list[MapDataInfo] = SaveDataInfo.saveInfoList
+    for map_data in data:
+        sync_rate: float = map_data.SyncNumber / 100.0
+
+        if sync_rate <= 0.0:
+            continue
+
+        difficulty: int = int(map_data.SongDifficultyNumber)
+
+        if map_data.SongKeys == "4Key":
+            diff_4k.append(difficulty - JITTER_OFFSET)
+            scores_4k.append(sync_rate)
+            if difficulty in scores_by_diff_4k:
+                scores_by_diff_4k[difficulty].append(sync_rate)
+        else: # 6Key Mode
+            diff_6k.append(difficulty + JITTER_OFFSET)
+            scores_6k.append(sync_rate)
+            if difficulty in scores_by_diff_6k:
+                scores_by_diff_6k[difficulty].append(sync_rate)
+
+    # 3. 统计计算层 (Statistics Calculation)
+    stats_4k: dict[int, tuple[float, int]] = {}
+    for diff, score_list in scores_by_diff_4k.items():
+        if score_list:
+            stats_4k[diff] = (sum(score_list) / len(score_list), len(score_list))
+
+    stats_6k: dict[int, tuple[float, int]] = {}
+    for diff, score_list in scores_by_diff_6k.items():
+        if score_list:
+            stats_6k[diff] = (sum(score_list) / len(score_list), len(score_list))
+
+    # 4. 视图渲染层 (View Rendering)
+    fig: Figure = plt.figure('难度与分数散点图', figsize=(8, 8))
     fig.clear()
-    fig.subplots_adjust(**{"left":0.083,"bottom":0.07,"right":0.60,"top":0.994})
-    ax = fig.add_subplot()
-    axR = ax.twinx()
+    fig.subplots_adjust(left=0.075, bottom=0.06, right=0.58, top=0.994)
+
+    ax: Axes = fig.add_subplot(111)
+    ax_right: Axes = ax.twinx()  # 右侧双 Y 轴
+
+    # 坐标轴刻度配置
     ax.yaxis.set_major_locator(MultipleLocator(1))
-    axR.yaxis.set_major_locator(MultipleLocator(1))
+    ax_right.yaxis.set_major_locator(MultipleLocator(1))
     ax.xaxis.set_major_locator(MultipleLocator(1))
-    ax.set_xlim(0,16)
-    min0 = 125 if len(score[0]) == 0 else min(score[0])
-    min1 = 125 if len(score[1]) == 0 else min(score[1])
-    minScore = int(min([min0,min1]))
-    ax.set_ylim(minScore-1,125)
-    axR.set_ylim(minScore-1,125)
+    ax.set_xlim(0, 16)
 
-    labels = []
-    for mapData in diffSocreTrim[0].keys():
-        labels.append(f"难度: 4K {mapData} Avg:{'%.3f'%diffSocreTrim[0][mapData][0]:0>7s}% 计数:{diffSocreTrim[0][mapData][1]:0=2d}")
-    labels.append("")
-    for mapData in diffSocreTrim[1].keys():
-        labels.append(f"难度: 6K {mapData} Avg:{'%.3f'%diffSocreTrim[1][mapData][0]:0>7s}% 计数:{diffSocreTrim[1][mapData][1]:0=2d}")
-    print("\n".join(labels))
+    # 自适应 Y 轴下限计算 (防御空列表)
+    all_scores = scores_4k + scores_6k
+    min_score: int = int(min(all_scores)) if all_scores else 125
+    ax.set_ylim(min_score - 1, 125)
+    ax_right.set_ylim(min_score - 1, 125)
 
-    for mapData in range(1,16):
-        ax.plot([mapData]*(125-minScore+2),[ids for ids in range(minScore-1,126)],linestyle='--',alpha=0.6,linewidth=1)
-    # diffSocreTrim:[{'diff':[avg,count]}, {'diff':[avg,count]}]
-    # [4K, 6K]
-    for mapData in range(0,2): #ids <= [4K, 6K]
-        for idx in diffSocreTrim[mapData].keys(): #idx <= diff
-            ax.plot([i for i in range(int(idx)+1)] if mapData else [i for i in range(int(idx),17)], # '6k=>' if ids else '<=4K'
-                [diffSocreTrim[mapData][idx][0]]*(int(idx)+1) if mapData else [diffSocreTrim[mapData][idx][0]]*(17-int(idx)), # '6k=>' if ids else '<=4K'
-                linestyle='--',alpha=1,linewidth=1)
+    # 原生网格线
+    # 替代原代码低效的 for 循环画竖线：ax.plot([mapData]*N, ...)
+    ax.grid(axis='x', linestyle='--', alpha=0.6, linewidth=1)
 
-    if minScore < 122:
-        ax.plot([i for i in range(17)],[122]*17,linestyle='-',alpha=0.7,linewidth=1,color='black')
-        ax.text(14.5,122.5,'BlackEx',ha='center',va='top',fontsize=7.5,alpha=0.7)
-    if minScore < 120:
-        ax.plot([i for i in range(17)],[120]*17,linestyle='-',alpha=0.7,linewidth=1,color='red')
-        ax.text(14.5,120.5,'RedEx',ha='center',va='top',fontsize=7.5,alpha=0.7)
-    if minScore < 117:
-        ax.plot([i for i in range(17)],[117]*17,linestyle='-',alpha=0.7,linewidth=1,color='cyan')
-        ax.text(14.5,117.5,'CyanEx',ha='center',va='top',fontsize=7.5,alpha=0.7)
-    if minScore < 110:
-        ax.plot([i for i in range(17)],[110]*17,linestyle='-',alpha=0.7,linewidth=1,color='blue')
-        ax.text(14.5,110.5,'S',ha='center',va='top',fontsize=7.5,alpha=0.7)
-    if minScore < 95:
-        ax.plot([i for i in range(17)],[95]*17,linestyle='-',alpha=0.7,linewidth=1,color='green')
-        ax.text(14.5,95.5,'A',ha='center',va='top',fontsize=7.5,alpha=0.7)
-    if minScore < 75:
-        ax.plot([i for i in range(17)],[75]*17,linestyle='-',alpha=0.7,linewidth=1,color='orange')
-        ax.text(14.5,75.5,'B',ha='center',va='top',fontsize=7.5,alpha=0.7)
+    # 向量化水平延伸线
+    # 替代原代码用推导式生成 [i for i in range(17)] 的笨重写法
+    for diff, (avg, _) in stats_4k.items():
+        # 4K 从当前难度向右延伸至 16
+        ax.plot([diff, 16], [avg, avg], linestyle='--', alpha=1, linewidth=1, color='#1f77b4')
+    for diff, (avg, _) in stats_6k.items():
+        # 6K 从 0 向右延伸至当前难度
+        ax.plot([0, diff], [avg, avg], linestyle='--', alpha=1, linewidth=1, color='#ff7f0e')
 
-    # supported values are '-', '--', '-.', ':', 'None', ' ', '', 'solid', 'dashed', 'dashdot', 'dotted'
-    ax.plot([int(i) for i in diffSocreTrim[0].keys()],[diffSocreTrim[0][ids][0] for ids in diffSocreTrim[0].keys()],
-        linestyle='-',color='orange',marker="D",markerfacecolor="Blue",alpha=0.7,linewidth=2,
-        label="4Key Mode")
-    ax.plot([int(i) for i in diffSocreTrim[1].keys()],[diffSocreTrim[1][ids][0] for ids in diffSocreTrim[1].keys()],
-        linestyle='-',color='orange',marker="D",markerfacecolor="Red",alpha=0.7,linewidth=2,
-        label="6Key Mode")
+    # 批量绘制等级参考线
+    ref_lines: list[tuple[float, str, str]] = [
+        (122.0, 'BlackEx', 'black'),
+        (120.0, 'RedEx', 'red'),
+        (117.0, 'CyanEx', 'cyan'),
+        (110.0, 'S', 'blue'),
+        (95.0,  'A', 'green'),
+        (75.0,  'B', 'orange')
+    ]
+    for y_val, label, color in ref_lines:
+        if min_score < y_val:
+            # axhline 比手动绘制一整条线性能高得多且无视 X 轴缩放
+            ax.axhline(y=y_val, color=color, linestyle='-', alpha=0.7, linewidth=1)
+            ax.text(15.5, y_val + 0.75, label, ha='right', va='top', fontsize=9, alpha=0.7)
 
-    ax.scatter(diff[0],score[0],alpha=0.7,color='#8A68D0',s=5)
-    ax.scatter(diff[1],score[1],alpha=0.7,color='#F83535',s=5)
-    ax.text(18,123,"\n".join(labels),ha="left",va="top",alpha=1,
-        fontdict={'family':'LXGW WenKai Mono','weight':'normal','size':10})
-    ax.legend(prop={'family':'LXGW WenKai Mono','weight':'normal','size':10},framealpha=0.4) #show label
-    ax.set_xlabel('Difficulty') #x_label
-    ax.set_ylabel('SYNC.Rate') #y_label
+    # 排序后绘制折线
+    font_cn = {'family': 'LXGW WenKai Mono', 'weight': 'normal', 'size': 12}
+
+    # 必须对 diff 排序，防止由于数据乱序导致折线图连线交叉错乱
+    diff_keys_4k = sorted(stats_4k.keys())
+    avg_vals_4k = [stats_4k[d][0] for d in diff_keys_4k]
+    ax.plot(diff_keys_4k, avg_vals_4k, linestyle='-', color='orange',
+            marker="D", markerfacecolor="Blue", alpha=0.7, linewidth=2, label="4Key Mode")
+
+    diff_keys_6k = sorted(stats_6k.keys())
+    avg_vals_6k = [stats_6k[d][0] for d in diff_keys_6k]
+    ax.plot(diff_keys_6k, avg_vals_6k, linestyle='-', color='orange',
+            marker="D", markerfacecolor="Red", alpha=0.7, linewidth=2, label="6Key Mode")
+
+    # 绘制散点
+    ax.scatter(diff_4k, scores_4k, alpha=0.7, color='#8A68D0', s=5)
+    ax.scatter(diff_6k, scores_6k, alpha=0.7, color='#F83535', s=5)
+
+    # 现代化文本格式化
+    label_texts: list[str] = []
+    for d in diff_keys_4k:
+        avg, count = stats_4k[d]
+        # 使用现代 f-string 的 :>7.3f 进行右对齐保留三位小数格式化
+        label_texts.append(f"难度: 4K {d:02d} Avg:{avg:>7.3f}% 计数:{count:02d}")
+    label_texts.append("")
+    for d in diff_keys_6k:
+        avg, count = stats_6k[d]
+        label_texts.append(f"难度: 6K {d:02d} Avg:{avg:>7.3f}% 计数:{count:02d}")
+
+    # 将总结文本输出在图表外部空白处 (X=18)
+    ax.text(18, 123, "\n".join(label_texts), ha="left", va="top", alpha=1, fontdict=font_cn)
+
+    ax.set_xlabel('Difficulty')
+    ax.set_ylabel('SYNC.Rate')
+    ax.legend(prop=font_cn, framealpha=0.4)
 
     plt.show()
 
 if __name__ == '__main__':
-    Analyze()
+    analyze()

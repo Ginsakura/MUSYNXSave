@@ -4,463 +4,420 @@ import io
 import json
 import logging
 import os
+import re
 import sqlite3
 import struct
+import threading
 import time
 import winreg
+
 from hashlib import sha256
 from tkinter import messagebox
-from typing import Any
+from typing import Any, Optional
 from win32 import win32gui, win32print
 from win32.lib import win32con
 from win32.win32api import GetSystemMetrics
 
 from Resources import Config, Logger, SongName
 
-logger:logging.Logger = Logger().GetLogger("Toolkit")
+_logger: logging.Logger = Logger().GetLogger("Toolkit")
 
-class Toolkit(object):
-    logger.debug("加载资源文件: \"./musync_data/Resources.bin\".")
-    __resourceFileInfo:dict[str,dict[str,any]] = {}
-    __isResourceFileInfoLoaded:bool = False
-    try:
-        __resourceFile:io.TextIOWrapper = open("./musync_data/Resources.bin", "rb")
-        __resourceFile.seek(0)
-        __infoSize:int = struct.unpack('I', __resourceFile.read(4))[0]
-        __compressedStream:io.BytesIO = io.BytesIO(__resourceFile.read(__infoSize))
-        with gzip.GzipFile(fileobj=__compressedStream, mode='rb') as gz_file:
-            decompressedData:bytes = gz_file.read()
-        __resourceFileInfo:dict[str,dict[str,any]] = json.loads(decompressedData.decode('ASCII'))
-        __isResourceFileInfoLoaded = True
-    except Exception as ex:
-        logger.exception("资源文件加载失败.")
-        messagebox.showerror("Error",f"资源文件\"./musync_data/Resources.bin\"加载失败!\n{ex}")
+class Toolkit:
+    _logger: logging.Logger = Logger().GetLogger("Toolkit")
+    _resource_file_info: dict[str, dict[str, Any]] = {}
+    _is_resource_loaded: bool = False
+    _resource_file: Optional[io.BufferedReader] = None
+    _file_lock: threading.Lock = threading.Lock()
 
-    @staticmethod
-    def GetDpi()->int:
-        """ get system dpi"""
-        startTime:int = time.perf_counter_ns()
-        hDC = win32gui.GetDC(0)
-        try:
-            relWidth:int = win32print.GetDeviceCaps(hDC, win32con.DESKTOPHORZRES)
-            width:int = GetSystemMetrics(0)
-            dpi:int = int(round(relWidth / width, 2) * 100)
-        finally:
-            win32gui.ReleaseDC(0, hDC)
-        logger.debug(f"Get DPI:{dpi}")
-        logger.debug(f"GetDPI Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms")
-        return dpi; # e.g. 100 -> 100%
-
-    @staticmethod
-    def ChangeConsoleStyle()->None:
-        """修改控制台样式"""
-        startTime:int = time.perf_counter_ns()
-        logger.info('Changing Console Style...')
-        config:Config = Config()
-        if not config.MainExecPath:
-            Toolkit.GetSaveFile()
-        if not config.MainExecPath:
-            logger.error('Not Have Config.MainExecPath!')
+    @classmethod
+    def init_resources(cls) -> None:
+        """初始化加载打包的资源文件 (应在程序启动时显式调用)"""
+        if cls._is_resource_loaded:
             return
-        execPath = config.MainExecPath.replace('/','_')+'musynx.exe'
-        logger.debug(f"execPath: {execPath}")
-        regkey:winreg.HKEYType = winreg.OpenKey(winreg.HKEY_CURRENT_USER, 'Console',reserved=0, access=winreg.KEY_WRITE)
-        winreg.CreateKey(regkey,execPath)
-        regkey.Close()
-        regkey = winreg.OpenKey(winreg.HKEY_CURRENT_USER, f'Console\\{execPath}',reserved=0, access=winreg.KEY_WRITE)
-        winreg.SetValueEx(regkey,'CodePage',0,winreg.REG_DWORD,65001)
-        winreg.SetValueEx(regkey,'WindowSize',0,winreg.REG_DWORD,262174)
-        winreg.SetValueEx(regkey,'WindowAlpha',0,winreg.REG_DWORD,(config.ConsoleAlpha * 255 // 100))
-        winreg.SetValueEx(regkey,'FaceName',0,winreg.REG_SZ,'霞鹜文楷等宽')
-        winreg.SetValueEx(regkey,'FontSize',0,winreg.REG_DWORD,(config.ConsoleFontSize << 16))
-        regkey.Close()
-        logger.debug(f"ChangeConsoleStyle() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms")
+
+        cls._logger.debug("加载资源文件: \"./musync_data/Resources.bin\".")
+        try:
+            cls._resource_file = open("./musync_data/Resources.bin", "rb")
+            cls._resource_file.seek(0)
+
+            info_size: int = struct.unpack('I', cls._resource_file.read(4))[0]
+            compressed_stream = io.BytesIO(cls._resource_file.read(info_size))
+
+            with gzip.GzipFile(fileobj=compressed_stream, mode='rb') as gz_file:
+                decompressed_data: bytes = gz_file.read()
+
+            cls._resource_file_info = json.loads(decompressed_data.decode('ascii'))
+            cls._is_resource_loaded = True
+        except Exception as ex:
+            cls._logger.exception("资源文件加载失败.")
+            messagebox.showerror("Error", f"资源文件\"./musync_data/Resources.bin\"加载失败!\n{ex}")
 
     @staticmethod
-    def GetHash(filePath:str|None=None)->str:
-        """
-        获取文件哈希值
-        param:
-            filePath(str|None): 文件路径
-        return:
-            str: 文件SHA256哈希值(大写)
-        """
-        startTime:int = time.perf_counter_ns()
-        if (filePath is None): return ""
-        with open(filePath,'rb') as fileBytes:
-            hashResult:str = sha256(fileBytes.read()).hexdigest().upper()
-        logger.debug(f"GetHash() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms")
-        return hashResult
+    def get_dpi() -> int:
+        """获取系统 DPI 缩放比例 (e.g. 100 -> 100%)"""
+        start_time: int = time.perf_counter_ns()
+        h_dc = win32gui.GetDC(0)
+        try:
+            rel_width: int = win32print.GetDeviceCaps(h_dc, win32con.DESKTOPHORZRES)
+            width: int = GetSystemMetrics(0)
+            dpi: int = int(round(rel_width / width, 2) * 100)
+        finally:
+            win32gui.ReleaseDC(0, h_dc)
+        _logger.debug(f"Get DPI: {dpi}")
+        _logger.debug(f"get_dpi() Run Time: {(time.perf_counter_ns() - start_time) / 1_000_000:.2f} ms")
+        return dpi
 
-    @classmethod
-    def ResourceReleases(cls, offset:int, lenth:int, releasePath:str|None=None)->bytes:
-        """
-        资源释放函数
-        param:
-            offset      (int): 资源偏移
-            lenth       (int): 资源长度
-            releasePath (str|None): 资源释放地址
-        return:
-            bytes: 解压的资源
-        """
-        startTime:int = time.perf_counter_ns()
-        cls.__resourceFile.seek(offset)
-        __compressedStream:io.BytesIO = io.BytesIO(cls.__resourceFile.read(lenth))
-        with gzip.GzipFile(fileobj=__compressedStream, mode='rb') as gz_file:
-            decompressedData:bytes = gz_file.read()
-        if releasePath is not None:
-            with open(releasePath,"wb") as file:
-                file.write(decompressedData)
-        logger.debug(f"ResourceReleases() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms")
-        return decompressedData
+    @staticmethod
+    def change_console_style() -> None:
+        """修改终端控制台样式 (通过写注册表)"""
+        start_time: int = time.perf_counter_ns()
+        _logger.info('Changing Console Style...')
 
-    @classmethod
-    def CheckResources(cls, fonts:list[str])->None:
-        """
-        运行前环境检查
-        param:
-            fonts (list[str]): 已安装字体列表
-        """
-        startTime:int = time.perf_counter_ns()
-        # 检查旧版数据文件夹
-        logger.debug("Check \"musync\\\" is exists...")
-        if os.path.exists('./musync/'):
-            os.rename('./musync/','./musync_data/')
-        # 检查数据文件夹是否存在
-        logger.debug("Check \"musync_data\\\" is not exists...")
-        os.makedirs('./musync_data/', exist_ok=True)
-        # 检查日志存档文件夹
-        logger.debug("Check \"log\\\" is not exists...")
-        os.makedirs("./logs/", exist_ok=True)
-        # 检查资源文件
-        if cls.__isResourceFileInfoLoaded:
-            # 检查LICENSE是否存在
-            logger.debug("Check if the \"./LICENSE\" is exists...")
-            if (not os.path.isfile("./LICENSE") or (Toolkit.GetHash('./LICENSE') != cls.__resourceFileInfo["License"]["hash"])):
-                info:dict[str,any] = cls.__resourceFileInfo["License"]
-                Toolkit.ResourceReleases(info["offset"], info["lenth"], "./LICENSE")
-            # 检查图标文件是否存在
-            logger.debug("Check if the \"musync_data\\MUSYNC.ico\" is exists...")
-            if (not os.path.isfile('./musync_data/MUSYNC.ico') or (Toolkit.GetHash('./musync_data/MUSYNC.ico') != cls.__resourceFileInfo["Icon"]["hash"])):
-                info:dict[str,any] = cls.__resourceFileInfo["Icon"]
-                Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/MUSYNC.ico')
-            # 检查SongName.json是否存在
-            logger.debug("Check if the \"musync_data\\SongName.json\" is exists...")
-            if (not os.path.isfile('./musync_data/SongName.json') or (cls.__resourceFileInfo["SongName"]["Version"] > SongName.Version())):
-                info:dict[str,any] = cls.__resourceFileInfo["SongName"]
-                Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/SongName.json')
-            # 检查mscorlib.dll是否存在
-            logger.debug("Check if the \"mscorlib.dll\" is exists...")
-            if (not os.path.isfile("./mscorlib.dll") or (Toolkit.GetHash('./mscorlib.dll') != cls.__resourceFileInfo["CoreLib"]["hash"])):
-                info:dict[str,any] = cls.__resourceFileInfo["CoreLib"]
-                Toolkit.ResourceReleases(info["offset"], info["lenth"], "./mscorlib.dll")
-            # 检查字体文件是否存在
-            logger.debug("Check if the \"musync_data\\LXGW.ttf\" is exists...")
-            if not os.path.isfile('./musync_data/LXGW.ttf') or (Toolkit.GetHash('./musync_data/LXGW.ttf') != cls.__resourceFileInfo["Font"]["hash"]):
-                info:dict[str,any] = cls.__resourceFileInfo["Font"]
-                Toolkit.ResourceReleases(info["offset"], info["lenth"], './musync_data/LXGW.ttf')
-            # 检查字体是否安装
-            logger.debug("Check if the \"霞鹜文楷等宽\" font is installed...")
-            if '霞鹜文楷等宽' not in fonts:
-                os.startfile(os.path.join(os.getcwd(), 'musync_data', 'LXGW.ttf'))
-        # 检查皮肤文件夹是否存在
-        logger.debug("Check if the \"skin\\\" is exists...")
-        if not os.path.exists("./skin/"):
-            os.makedirs('./skin/')
-        # 检查数据库文件版本
-        logger.debug("Check Database version...")
-        Toolkit.DatabaseUpdate(Toolkit.CheckDatabaseVersion())
-        # 检查GameLib
-        logger.debug("Check DLLInjection...")
-        if Config.DLLInjection:
-            Toolkit.GameLibCheck()
-        logger.debug(f"CheckResources() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms")
+        config = Config()
+        if not config.MainExecPath:
+            Toolkit.get_save_file()
 
-    @classmethod
-    def GetSaveFile(cls)->str:
-        """搜索预设存档目录"""
-        startTime:int = time.perf_counter_ns()
-        logger.debug("正在搜索存档文件中……")
-        saveFilePath:str = None
-        for ids in "DEFCGHIJKLMNOPQRSTUVWXYZAB":
-            if os.path.isfile(f'{ids}:\\Program Files\\steam\\steamapps\\common\\MUSYNX\\musynx.exe'):
-                saveFilePath:str = f"{ids}:\\Program Files\\steam\\steamapps\\common\\MUSYNX\\"
-                break
-            elif os.path.isfile(f'{ids}:\\SteamLibrary\\steamapps\\common\\MUSYNX\\musynx.exe'):
-                saveFilePath:str = f"{ids}:\\SteamLibrary\\steamapps\\common\\MUSYNX\\"
-                break
-            elif os.path.isfile(f'{ids}:\\steam\\steamapps\\common\\MUSYNX\\musynx.exe'):
-                saveFilePath:str = f"{ids}:\\steam\\steamapps\\common\\MUSYNX\\"
-                break
-        else:
-            logger.error("搜索不到存档文件.")
-            logger.info("GetSaveFile() Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000))
+        if not config.MainExecPath:
+            _logger.error('Not Have Config.MainExecPath!')
+            return
+
+        exec_path: str = config.MainExecPath.replace('/', '_') + 'musynx.exe'
+        _logger.debug(f"execPath: {exec_path}")
+
+        try:
+            # 创建 Registry Key
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, 'Console', reserved=0, access=winreg.KEY_WRITE) as reg_key:
+                winreg.CreateKey(reg_key, exec_path)
+
+            # 设置样式值
+            with winreg.OpenKey(winreg.HKEY_CURRENT_USER, f'Console\\{exec_path}', reserved=0, access=winreg.KEY_WRITE) as reg_key:
+                winreg.SetValueEx(reg_key, 'CodePage', 0, winreg.REG_DWORD, 65001)
+                winreg.SetValueEx(reg_key, 'WindowSize', 0, winreg.REG_DWORD, 262174)
+                winreg.SetValueEx(reg_key, 'WindowAlpha', 0, winreg.REG_DWORD, (config.ConsoleAlpha * 255 // 100))
+                winreg.SetValueEx(reg_key, 'FaceName', 0, winreg.REG_SZ, '霞鹜文楷等宽')
+                winreg.SetValueEx(reg_key, 'FontSize', 0, winreg.REG_DWORD, (config.ConsoleFontSize << 16))
+        except OSError as e:
+            _logger.error(f"Failed to change console style: {e}")
+
+        _logger.debug(f"change_console_style() Run Time: {(time.perf_counter_ns() - start_time) / 1_000_000:.2f} ms")
+
+    @staticmethod
+    def get_hash(file_path: Optional[str] = None) -> str:
+        """分块读取并获取文件 SHA256 哈希值 (大写)"""
+        start_time: int = time.perf_counter_ns()
+        if not file_path or not os.path.isfile(file_path):
             return ""
-        logger.debug(f"SaveFilePath: {saveFilePath}")
-        Config.MainExecPath = saveFilePath
-        Config.SaveConfig()
-        return saveFilePath
+
+        sha256_hash = sha256()
+        with open(file_path, 'rb') as f:
+            for byte_block in iter(lambda: f.read(65536), b""):
+                sha256_hash.update(byte_block)
+
+        hash_result: str = sha256_hash.hexdigest().upper()
+        _logger.debug(f"get_hash() Run Time: {(time.perf_counter_ns() - start_time) / 1_000_000:.2f} ms")
+        return hash_result
 
     @classmethod
-    def GameLibCheck(cls)->int:
-        """
-        游戏脚本检查
-        传出:
-            0: 无法修补
-            1: 已修补
-            2: 未修补,但已经完成修补
-        """
-        def DLLInjection():
-            """备份并修补"""
-            if os.path.isfile(f'{dllPath}.old'): os.remove(f'{dllPath}.old')
-            os.rename(dllPath, f'{dllPath}.old')
-            info:dict[str,any] = cls.__resourceFileInfo["GameLib"]
-            Toolkit.ResourceReleases(info["offset"], info["lenth"], dllPath)
+    def release_resource(cls, offset: int, length: int, release_path: Optional[str] = None) -> bytes:
+        """从 VFS 释放单个资源，具备线程安全防护"""
+        if not cls._is_resource_loaded or cls._resource_file is None:
+            cls.init_resources()
 
-        startTime:int = time.perf_counter_ns()
-        dllPath = Config.MainExecPath+'MUSYNX_Data/Managed/Assembly-CSharp.dll'
-        if not os.path.isfile(dllPath):
-            logger.error(f"Assembly-CSharp.dll not found at \"{dllPath}\", skip DLLInjection.")
-            logger.debug(f"GameLibCheck() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms")
-            return 0
-        nowHash = Toolkit.GetHash(dllPath)
-        sourceHash = cls.__resourceFileInfo["GameLib"]["SourceHash"]
-        fixHash = cls.__resourceFileInfo["GameLib"]["hash"]
-        # 'D41D8CD98F00B204E9800998ECF8427E' is 0 Byte file
-        logger.debug(f"     Now Assembly-CSharp.dll: {nowHash}")
-        # 当前文件哈希 等于 修改文件哈希
-        # 其他情况, 无法覆盖文件
-        rtcode:int = 0
-        if (nowHash == fixHash):
-            rtcode = 1
-        # 当前文件哈希为空文件 或者 为原始文件哈希
-        elif (sourceHash == "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855") or ((sourceHash == nowHash) and (sourceHash != fixHash)):
-            DLLInjection()
-            rtcode = 1
-        logger.debug(f"GameLibCheck() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms")
-        return rtcode
+        start_time: int = time.perf_counter_ns()
+
+        with cls._file_lock:
+            cls._resource_file.seek(offset)
+            compressed_data: bytes = cls._resource_file.read(length)
+
+        with gzip.GzipFile(fileobj=io.BytesIO(compressed_data), mode='rb') as gz_file:
+            decompressed_data: bytes = gz_file.read()
+
+        if release_path:
+            with open(release_path, "wb") as f:
+                f.write(decompressed_data)
+
+        cls._logger.debug(f"release_resource() Run Time: {(time.perf_counter_ns() - start_time) / 1_000_000:.2f} ms")
+        return decompressed_data
+
+    @classmethod
+    def check_resources(cls, fonts: list[str]) -> None:
+        """运行前环境与资源校验"""
+        start_time: int = time.perf_counter_ns()
+        cls.init_resources()
+
+        cls._logger.debug("Check directory structure...")
+        if os.path.exists('./musync/'):
+            os.rename('./musync/', './musync_data/')
+        os.makedirs('./musync_data/', exist_ok=True)
+        os.makedirs("./logs/", exist_ok=True)
+        os.makedirs('./skin/', exist_ok=True)
+
+        if cls._is_resource_loaded:
+            # 统一资源检查逻辑
+            resources_to_check = [
+                ("./LICENSE", "license"),
+                ("./musync_data/MUSYNC.ico", "icon"),
+                ("./musync_data/SongName.json", "song_name"),
+                ("./mscorlib.dll", "core_lib"),
+                ("./musync_data/LXGW.ttf", "font")
+            ]
+
+            for file_path, tag in resources_to_check:
+                cls._logger.debug(f"Check if the \"{file_path}\" exists and is valid...")
+                info = cls._resource_file_info[tag]
+
+                # song_name 特殊逻辑 (按 Version 更新)
+                if tag == "song_name":
+                    if not os.path.isfile(file_path) or info["version"] > SongName.Version():
+                        cls.release_resource(info["offset"], info["length"], file_path)
+                # 常规哈希比对逻辑
+                else:
+                    if not os.path.isfile(file_path) or cls.get_hash(file_path) != info["hash"]:
+                        cls.release_resource(info["offset"], info["length"], file_path)
+
+            if '霞鹜文楷等宽' not in fonts:
+                cls._logger.debug("Check if the \"霞鹜文楷等宽\" font is installed...")
+                os.startfile(os.path.abspath(os.path.join('musync_data', 'LXGW.ttf')))
+
+        cls._logger.debug("Check Database version...")
+        cls.update_database(cls.check_database_version())
+
+        cls._logger.debug("Check DLLInjection...")
+        if Config.DLLInjection:
+            cls.game_lib_check()
+
+        cls._logger.debug(f"check_resources() Run Time: {(time.perf_counter_ns() - start_time) / 1_000_000:.2f} ms")
+
+    @classmethod
+    def get_save_file(cls) -> str:
+        """搜索预设存档目录"""
+        start_time: int = time.perf_counter_ns()
+        cls._logger.debug("正在搜索存档文件中……")
+
+        drives = "CDEFGHIJKLMNOPQRSTUVWXYZAB"
+        steam_paths = [
+            "Program Files\\steam\\steamapps\\common\\MUSYNX\\",
+            "SteamLibrary\\steamapps\\common\\MUSYNX\\",
+            "steam\\steamapps\\common\\MUSYNX\\"
+        ]
+
+        for drive in drives:
+            for path in steam_paths:
+                full_path = f"{drive}:\\{path}"
+                if os.path.isfile(f"{full_path}musynx.exe"):
+                    cls._logger.debug(f"SaveFilePath: {full_path}")
+                    Config.MainExecPath = full_path
+                    Config.SaveConfig()
+                    return full_path
+
+        cls._logger.error("搜索不到存档文件.")
+        cls._logger.info(f"get_save_file() Run Time: {(time.perf_counter_ns() - start_time) / 1_000_000:.2f} ms")
+        return ""
+
+    @classmethod
+    def game_lib_check(cls) -> int:
+        """
+        游戏脚本 DLL 检查与修补
+        Returns:
+            0: 无法修补或未匹配到修补条件
+            1: 已修补 (包括已经是最新或修补成功)
+        """
+        start_time: int = time.perf_counter_ns()
+        return_code: int = 0  # 初始化统一返回值
+        dll_path: str = Config.MainExecPath + 'MUSYNX_Data/Managed/Assembly-CSharp.dll'
+        EMPTY_HASH: str = "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
+
+        # 使用嵌套逻辑确保流程最终能流向函数末尾
+        if not os.path.isfile(dll_path):
+            cls._logger.error(f"Assembly-CSharp.dll not found at \"{dll_path}\", skip DLLInjection.")
+            return_code = 0
+        else:
+            now_hash: str = cls.get_hash(dll_path)
+            # 假设资源信息已加载
+            lib_info: dict = cls._resource_file_info.get("game_lib", {})
+            source_hash: str = lib_info.get("source_hash", "")
+            fix_hash: str = lib_info.get("hash", "")
+
+            cls._logger.debug(f"    Now Assembly-CSharp.dll: {now_hash}")
+
+            # 1. 检查是否已经是修补好的版本
+            if now_hash == fix_hash:
+                return_code = 1
+            else:
+                # 2. 检查是否符合修补条件
+                # 逻辑：如果 source_hash 是空的，或者当前文件就是原版文件且不等于目标文件
+                if (source_hash == EMPTY_HASH) or (source_hash == now_hash and source_hash != fix_hash):
+                    try:
+                        old_dll: str = f'{dll_path}.old'
+                        if os.path.isfile(old_dll):
+                            os.remove(old_dll)
+                        os.rename(dll_path, old_dll)
+
+                        # 释放资源
+                        cls.release_resource(lib_info["offset"], lib_info["length"], dll_path)
+                        return_code = 1
+                    except Exception as e:
+                        cls._logger.error(f"修补过程中发生异常: {e}")
+                        return_code = 0
+                else:
+                    return_code = 0
+
+        # --- 统一出口 ---
+        # 无论上述哪个分支执行，都会来到这里
+        run_time_ms: float = (time.perf_counter_ns() - start_time) / 1_000_000
+        cls._logger.debug(f"game_lib_check() Run Time: {run_time_ms:.2f} ms, Return Code: {return_code}")
+        return return_code
 
     @staticmethod
-    def CreateNewDataBase(db:sqlite3.Connection)->bool:
-        cursor:sqlite3.Cursor = db.cursor()
-        cursor.execute("""CREATE table IF NOT EXISTS HitDelayHistory (
-            SongMapName	text	Not Null DEFAULT '',
-            RecordTime	text	Not Null DEFAULT '',
-            Diff		int		Not Null DEFAULT 0,
-            Keys		text	Not Null DEFAULT '',
-            Combo		text	Not Null Default '0/0',
-            AvgDelay	float,
-            AllKeys		int,
-            AvgAcc		float,
-            HitMap		text,
-            PRIMARY KEY ("SongMapName", "RecordTime"));""")
-        cursor.execute("CREATE Table IF NOT EXISTS Infos (Key Text PRIMARY KEY, Value Text Default None);")
-        pass
+    def create_new_database(db: sqlite3.Connection) -> None:
+        """初始化新数据库结构"""
+        cursor = db.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS HitDelayHistory (
+                SongMapName TEXT NOT NULL DEFAULT '',
+                RecordTime TEXT NOT NULL DEFAULT '',
+                Diff INTEGER NOT NULL DEFAULT 0,
+                Keys TEXT NOT NULL DEFAULT '',
+                Combo TEXT NOT NULL DEFAULT '0/0',
+                AvgDelay FLOAT,
+                AllKeys INTEGER,
+                AvgAcc FLOAT,
+                HitMap TEXT,
+                PRIMARY KEY ("SongMapName", "RecordTime")
+            );
+        """)
+        cursor.execute("CREATE TABLE IF NOT EXISTS Infos (Key TEXT PRIMARY KEY, Value TEXT DEFAULT NULL);")
 
     @classmethod
-    def CheckDatabaseVersion(cls)->int:
-        "数据库版本检查"
-        startTime:int = time.perf_counter_ns()
-        rtcode:int = -1
-        if os.path.isfile("./musync_data/HitDelayHistory_v2.db"):
-            db:sqlite3.Connection = sqlite3.connect('./musync_data/HitDelayHistory_v2.db')
-            cursor:sqlite3.Cursor = db.cursor()
-            # 使用 PRAGMA table_info 获取表的列信息
-            cursor.execute("PRAGMA table_info(HitDelayHistory);")
-            # 获取列的数量
-            columnCount:int = len(cursor.fetchall())
-            if (columnCount==6):
-                logger.debug("存在文件 HitDelayHistory_v2.db 且 列数为6, 判定数据库版本为 v2")
-                logger.info("Database Version: 2")
-                rtcode = 2
+    def check_database_version(cls) -> int:
+        """数据库版本检查"""
+        start_time: int = time.perf_counter_ns()
+        rt_code: int = -1
+
+        try:
+            if os.path.isfile("./musync_data/HitDelayHistory_v2.db"):
+                with sqlite3.connect('./musync_data/HitDelayHistory_v2.db') as db:
+                    cursor = db.cursor()
+                    cursor.execute("PRAGMA table_info(HitDelayHistory);")
+                    column_count = len(cursor.fetchall())
+                    rt_code = 2 if column_count == 6 else 1
+                    cls._logger.info(f"Database Version: {rt_code}")
+
+            elif os.path.isfile("./musync_data/HitDelayHistory.db"):
+                with sqlite3.connect('./musync_data/HitDelayHistory.db') as db:
+                    cursor = db.cursor()
+                    cursor.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table';")
+                    table_count = cursor.fetchone()[0]
+
+                    if table_count == 1:
+                        rt_code = 1
+                    else:
+                        cursor.execute("SELECT Value FROM Infos WHERE Key='Version';")
+                        rt_code = int(cursor.fetchone()[0])
+                    cls._logger.info(f"Database Version: {rt_code}")
             else:
-                logger.debug("存在文件 HitDelayHistory_v2.db 且 列数不为6, 判定数据库版本为 v1")
-                logger.info("Database Version: 1")
-                rtcode = 1
-            cursor.close()
-            db.close()
-        elif os.path.isfile("./musync_data/HitDelayHistory.db"):
-            db:sqlite3.Connection = sqlite3.connect('./musync_data/HitDelayHistory.db')
-            cursor:sqlite3.Cursor = db.cursor()
-            cursor.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table';")
-            tableCount:int = cursor.fetchone()[0]
-            if (tableCount==1):
-                logger.debug("存在文件 HitDelayHistory.db 且 仅有一张数据表, 判定数据库版本为 v1")
-                logger.info("Database Version: 1")
-                rtcode = 1
-            else:
-                cursor.execute("SELECT Value FROM Infos WHERE Key='Version';")
-                version:int = int(cursor.fetchone()[0])
-                logger.debug(f"存在文件\"HitDelayHistory.db\"且\"Infos.Version={version}\", 判定数据库版本为 v{version}")
-                logger.info(f"Database Version: {version}")
-                rtcode = version
-            cursor.close()
-            db.close()
-        else:
-            logger.warning("无数据库文件存在.")
-            rtcode = 0
-        if (rtcode == -1):
-            logger.fatal(">>> CheckDatabaseVersion()函数出现严重异常! 函数未能完成执行! <<<")
-        logger.debug(f"CheckDatabaseVersion() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms")
-        return rtcode
+                cls._logger.warning("无数据库文件存在.")
+                rt_code = 0
+
+        except Exception as e:
+            cls._logger.fatal(f"CheckDatabaseVersion() 异常: {e}")
+
+        cls._logger.debug(f"check_database_version() Run Time: {(time.perf_counter_ns() - start_time) / 1_000_000:.2f} ms")
+        return rt_code
 
     @classmethod
-    def DatabaseUpdate(cls, nowVersion:int)->bool:
-        "数据库版本更新"
-        startTime:int = time.perf_counter_ns()
-        LastVersion:int = 4
-        rtcode:bool = False
-        # 链接数据库
-        if (nowVersion==2):
+    def update_database(cls, now_version: int) -> bool:
+        """安全的数据库结构更新 (瀑布式流转)"""
+        start_time: int = time.perf_counter_ns()
+        target_version: int = 4
+
+        if now_version == -1:
+            return False
+
+        if now_version == 2:
             os.rename("./musync_data/HitDelayHistory_v2.db", "./musync_data/HitDelayHistory.db")
-        db:sqlite3.Connection = sqlite3.connect('./musync_data/HitDelayHistory.db')
-        cursor:sqlite3.Cursor = db.cursor()
-        if (nowVersion == 0):
-            rtcode = False
-            logger.info(f"创建v{LastVersion}版本数据库中...")
+
+        # 核心修复：使用 with db 确保所有操作为一个完整的事务，失败自动回滚
+        with sqlite3.connect('./musync_data/HitDelayHistory.db') as db:
+            cursor:sqlite3.Cursor = db.cursor()
+
             try:
-                Toolkit.CreateNewDataBase(db)
-                cursor.execute("INSERT Into Infos Values(?, ?)", ("Version","%d"%LastVersion))
-                db.commit()
-                nowVersion = 4;
-            except sqlite3.OperationalError as e:
-                # 如果列已经存在，或者表不存在，会抛出此异常
-                logger.error(f"操作失败，原因: {e}")
-            finally:
-                cursor.close()
-                db.close()
+                # V0 -> V4: 直接创建最新表
+                if now_version == 0:
+                    cls._logger.info(f"创建 v{target_version} 版本数据库中...")
+                    cls.create_new_database(db)
+                    cursor.execute("INSERT OR REPLACE INTO Infos VALUES(?, ?)", ("Version", str(target_version)))
+                    now_version = target_version
 
-        if (nowVersion == 1):
-            logger.info("记录数据迁移中... v1->v2")
-            try:
-                cursor.execute("ALTER TABLE HitDelayHistory RENAME TO HitDelayHistoryV1;")
-                cursor.execute("""CREATE table IF NOT EXISTS HitDelayHistory (
-                    SongMapName text Not Null,
-                    RecordTime text Not Null,
-                    AvgDelay float,
-                    AllKeys int,
-                    AvgAcc float,
-                    HitMap text,
-                    PRIMARY KEY ("SongMapName", "RecordTime"));""")
-                for ids in cursor.execute("SELECT * From HitDelayHistoryV1").fetchall():
-                    nameAndTime:str = ids[0].split("-202")
-                    name:str = nameAndTime[0]
-                    recordTime:str = "202%s"%nameAndTime[1]
-                    avgDelay:float = ids[1]
-                    allKeys:int = ids[2]
-                    avgAcc:float = ids[3]
-                    hitMap:str = ids[4]
-                    logger.debug("正在迁移%s  %s"%(name,recordTime))
-                    cursor.execute("INSERT Into HitDelayHistory values(?,?,?,?,?,?)", (name,recordTime,avgDelay,allKeys,avgAcc,hitMap))
-                # cursor.execute("ALTER TABLE HitDelayHistory RENAME TO HitDelayHistoryV1;")
-                db.commit()
-                nowVersion=2
-            except Exception as e:
-                # 如果列已经存在，或者表不存在，会抛出此异常
-                logger.error(f"操作失败，原因: {e}")
-                cursor.close()
-                db.close()
+                # V1 -> V2
+                if now_version == 1:
+                    cls._logger.info("记录数据迁移中... v1 -> v2")
+                    cursor.execute("ALTER TABLE HitDelayHistory RENAME TO HitDelayHistoryV1;")
+                    cursor.execute("""
+                        CREATE TABLE IF NOT EXISTS HitDelayHistory (
+                            SongMapName TEXT NOT NULL,
+                            RecordTime TEXT NOT NULL,
+                            AvgDelay FLOAT,
+                            AllKeys INTEGER,
+                            AvgAcc FLOAT,
+                            HitMap TEXT,
+                            PRIMARY KEY ("SongMapName", "RecordTime")
+                        );
+                    """)
+                    for ids in cursor.execute("SELECT * FROM HitDelayHistoryV1").fetchall():
+                        name_and_time = ids[0].split("-202")
+                        name, record_time = name_and_time[0], f"202{name_and_time[1]}"
+                        cursor.execute(
+                            "INSERT INTO HitDelayHistory VALUES(?,?,?,?,?,?)",
+                            (name, record_time, ids[1], ids[2], ids[3], ids[4])
+                        )
+                    cursor.execute("DROP TABLE HitDelayHistoryV1;")
+                    now_version = 2
 
-        if (nowVersion == 2):
-            logger.info("记录数据迁移中... v2->v3")
-            try:
-                cursor.execute("CREATE Table IF NOT EXISTS Infos (Key Text PRIMARY KEY, Value Text Default None);")
-                cursor.execute("INSERT Into Infos Values(?, ?)", ("Version","3"))
-                db.commit()
-                nowVersion = 3
-            except sqlite3.OperationalError as e:
-                # 如果列已经存在，或者表不存在，会抛出此异常
-                logger.error(f"操作失败，原因: {e}")
-                cursor.close()
-                db.close()
+                # V2 -> V3
+                if now_version == 2:
+                    cls._logger.info("记录数据迁移中... v2 -> v3")
+                    cursor.execute("CREATE TABLE IF NOT EXISTS Infos (Key TEXT PRIMARY KEY, Value TEXT DEFAULT NULL);")
+                    cursor.execute("INSERT OR REPLACE INTO Infos VALUES(?, ?)", ("Version", "3"))
+                    now_version = 3
 
-        if (nowVersion == 3):
-            logger.info("记录数据迁移中... v3->v4")
-            try:
-                # 2. 新增 Diff 列：整数 (INTEGER)，非空 (NOT NULL)，默认值为 0
-                cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN Diff INTEGER NOT NULL DEFAULT 0")
-                logger.debug("成功添加列: Diff")
-                # 3. 新增 Mode 列：字符串 (TEXT)，非空 (NOT NULL)，默认值为空字符串 ''
-                cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN Mode TEXT NOT NULL DEFAULT ''")
-                logger.debug("成功添加列: Mode")
-                # 3. 新增 Combo 列：字符串 (TEXT)，非空 (NOT NULL)，默认值为空字符串 ''
-                cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN Combo TEXT NOT NULL DEFAULT '0/0'")
-                logger.debug("成功添加列: Combo")
+                # V3 -> V4
+                if now_version == 3:
+                    cls._logger.info("记录数据迁移中... v3 -> v4")
+                    cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN Diff INTEGER NOT NULL DEFAULT 0")
+                    cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN Mode TEXT NOT NULL DEFAULT ''")
+                    cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN Combo TEXT NOT NULL DEFAULT '0/0'")
 
-                logger.warning("表创建完成，表内容迁移中...")
-                def CleanAndExtract(name:str) -> tuple[str,str]:
-                    """
-                    解析 SongMapName，返回 (清理后的曲名, 标准化的Mode)。
-                    如果匹配失败，返回 ("", "")。
-                    """
-                    # 正则解析：
-                    # \s* : 匹配后缀前面可能存在的空格（连同空格一起切掉）
-                    # (4|6)       : 捕获组1，匹配 4 或 6
-                    # [Kk]?       : 可选的 K 或 k
-                    # (ez|e|hd|h|in|i) : 捕获组2，匹配各种难度缩写
-                    # \s*$        : 允许末尾有空白字符
-                    import re
-                    pattern = r'\s*(4|6)[Kk]?(ez|e|hd|h|in|i)\s*$'
+                    # 预编译正则以提升循环性能
+                    pattern = re.compile(r'\s*(4|6)[Kk]?(ez|e|hd|h|in|i)\s*$', re.IGNORECASE)
 
-                    match = re.search(pattern, name, re.IGNORECASE)
+                    cursor.execute("SELECT ROWID, SongMapName FROM HitDelayHistory")
+                    rows = cursor.fetchall()
+                    update_data = []
 
-                    if match:
-                        key_num = match.group(1)
-                        diff_raw = match.group(2).upper()
-                        # 归一化难度
-                        if diff_raw.startswith('E'):
-                            diff_std = 'EZ'
-                        elif diff_raw.startswith('H'):
-                            diff_std = 'HD'
-                        elif diff_raw.startswith('I'):
-                            diff_std = 'IN'
-                        std_keys = f"{key_num}K{diff_std}"
-                        # 清理原字符串：截取匹配开始之前的部分
-                        cleaned_name = name[:match.start()]
-                        return cleaned_name, std_keys
-                    # 匹配失败
-                    return "", ""
+                    for row_id, old_name in rows:
+                        if not old_name:
+                            continue
+                        match = pattern.search(old_name)
+                        if match:
+                            key_num = match.group(1)
+                            diff_raw = match.group(2).upper()
+                            diff_std = 'EZ' if diff_raw.startswith('E') else 'HD' if diff_raw.startswith('H') else 'IN'
+                            std_keys = f"{key_num}K{diff_std}"
+                            cleaned_name = old_name[:match.start()]
+                            update_data.append((cleaned_name, std_keys, row_id))
 
-                # 更新表数据
-                # 取出 ROWID 和现有的 SongMapName
-                cursor.execute("SELECT ROWID, SongMapName FROM HitDelayHistory")
-                rows:list[Any] = cursor.fetchall()
+                    if update_data:
+                        cursor.executemany("UPDATE HitDelayHistory SET SongMapName = ?, Mode = ? WHERE ROWID = ?", update_data)
+                        cls._logger.debug(f"成功清理并更新了 {len(update_data)} 条记录。")
 
-                updateData:list[tuple[str,str]] = []
-                for rowId, oldName in rows:
-                    if oldName:
-                        # 获取清理后的名字和提取出的 Mode
-                        cleanedName, stdMode = CleanAndExtract(oldName)
-                        # 只有当成功提取（即 cleaned_name 和 stdMode 不为空字符串时）才进行更新
-                        if cleanedName != "" and stdMode != "":
-                            # 准备更新的数据：(干净的名字, 标准的Mode, 对应的rowid)
-                            updateData.append((cleanedName, stdMode, rowId))
-                logger.debug(f"已转换 {len(updateData)} 条记录，共 {len(rows)} 条记录。")
+                    cursor.execute("UPDATE Infos SET Value = ? WHERE Key = ?", (str(target_version), "Version"))
+                    now_version = target_version
 
-                # 批量更新两列
-                if updateData:
-                    cursor.executemany("UPDATE HitDelayHistory SET SongMapName = ?, Mode = ? WHERE ROWID = ?", updateData)
-                    logger.debug(f"成功清理并更新了 {len(updateData)} 条记录。")
-                else:
-                    logger.debug("没有找到符合正则匹配规则的数据。")
+            except sqlite3.Error as e:
+                cls._logger.error(f"数据库更新失败并已回滚，原因: {e}")
+                return False
 
-                cursor.execute("UPDATE Infos SET Value = ? WHERE Key = ?", ("4", "Version"))
-                db.commit()
-                nowVersion = 4
-            except sqlite3.OperationalError as e:
-                # 如果列已经存在，或者表不存在，会抛出此异常
-                logger.error(f"操作失败，原因: {e}")
-                cursor.close()
-                db.close()
-
-        if (nowVersion == 4):
-            db.commit()
-            db.close()
-            logger.info("记录数据无需迁移.")
-            rtcode = True
-
-        logger.debug(f"DatabaseUpdate() Run Time: {(time.perf_counter_ns() - startTime)/1000000} ms")
-        return rtcode;
-
-if __name__ == '__main__':
-    print(Toolkit.GetDpi())
+        cls._logger.info("数据库状态检查通过.")
+        cls._logger.debug(f"update_database() Run Time: {(time.perf_counter_ns() - start_time) / 1_000_000:.2f} ms")
+        return True

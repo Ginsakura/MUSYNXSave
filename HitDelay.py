@@ -22,38 +22,28 @@ class HitDelayText(object):
 	def __init__(self,subroot):
 		self.__logger:logging.Logger = Logger.GetLogger("HitDelay.HitDelayText")
 		db_path:str = './musync_data/HitDelayHistory.db'
-		db_exists:bool = os.path.isfile(db_path)
+		if not os.path.isfile(db_path):
+			self.__logger.fatal("Database Not Exists!");
+			messagebox.showerror("Error", '发生错误: Database Not Exists!')
+			return;
 		self.db:sqlite3.Connection = sqlite3.connect(db_path)
 		self.cur:sqlite3.Cursor = self.db.cursor()
-		if not db_exists:
-			self.cur.execute("""CREATE TABLE HitDelayHistory (
-				SongMapName text Not Null,
-				RecordTime text Not Null,
-				AvgDelay float,
-				AllKeys int,
-				AvgAcc float,
-				HitMap text,
-				PRIMARY KEY ("SongMapName", "RecordTime"))""")
 		self.subroot = subroot
 		self.font=('霞鹜文楷等宽',16)
 		self.subroot.iconbitmap('./musync_data/Musync.ico')
-		self.subroot.geometry('1000x600+600+400')
+		self.subroot.geometry('1200x600+300+300')
 		self.subroot.title("高精度延迟分析")
 		self.subroot['background'] = '#efefef'
-		self.tipLabel = Label(self.subroot,font=self.font, relief="groove",text='↓将您用来辨识谱面的方式填入右侧文本框，然后点击右侧红色按钮进行结果分析↓',fg='#F9245E')
-		self.tipLabel.place(x=0,y=0,height=40,relwidth=1)
-		self.style = ttk.Style()
+		self.style:ttk.Style = ttk.Style()
+		self.style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',13))
+		self.style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
 		self.cursorHistory = ''
-		self.hitAnalyzeButton = Button(self.subroot,text='All\nHit',command=lambda :AllHitAnalyze().Show(),font=self.font, relief="groove")
-		self.hitAnalyzeButton.place(x=0,y=40,height=90,relwidth=0.05)
-		self.nameDelayLabel = Label(self.subroot,font=self.font, relief="groove",text='↓请在下面输入曲名与谱面难度↓这只是用来标记你玩的哪个谱面而已，\n没有任何要求                    ↓右侧水绿色按钮选择难度和键数↓')
-		self.nameDelayLabel.place(relx=0.05,y=40,height=60,relwidth=0.65)
-		self.nameDelayEntry = Entry(self.subroot,font=self.font, relief="sunken",validate='focus',validatecommand=self.TestEntryString)
-		self.nameDelayEntry.insert(0, "→→在这里输入谱面标识←←")
-		self.nameDelayEntry.place(relx=0.05,y=100,height=30,relwidth=0.449)
-		self.delayHistory = ttk.Treeview(self.subroot, show="headings", columns = ['Name','RecordTime','AllKeys','AvgDelay','AvgAcc'])
+		self.hitAnalyzeButton = Button(self.subroot,text='All\nHit',command=lambda :AllHitAnalyze().show(),font=self.font, relief="groove")
+		self.hitAnalyzeButton.place(x=0,y=0,height=90,relwidth=0.05)
+		self.delayHistory = ttk.Treeview(self.subroot, show="headings", columns = ['Name','RecordTime',"Mode","Diff","Combo",'AllKeys','AvgDelay','AvgAcc'])
 		self.VScroll1 = Scrollbar(self.subroot, orient='vertical', command=self.delayHistory.yview)
 		self.delayHistory.configure(yscrollcommand=self.VScroll1.set)
+		self.InitDelayHistoryTreeview();
 
 		self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
 		if Config.Acc_Sync:
@@ -62,12 +52,8 @@ class HitDelayText(object):
 			self.txtButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
 		else:
 			self.logButton.place(relx=0.7,y=40,height=90,relwidth=0.3)
-		self.keysButton = Button(self.subroot,font=self.font, text=("4Key" if Config.Default4Keys else "6Key"), command=self.ChangeKeys, bg="#4AA4C9")
-		self.keysButton.place(relx=0.5,y=100,height=30,relwidth=0.1)
-		self.diffcute = Config.DefaultDiffcute
-		self.diffcuteButton = Button(self.subroot,font=self.font, text=["Easy","Hard","Inferno"][self.diffcute], command=self.ChangeDiffcute, bg="#4AA4C9")
-		self.diffcuteButton.place(relx=0.6,y=100,height=30,relwidth=0.1)
 
+		# 谱面信息修改
 		self.historyFrame = Frame(self.subroot,relief="groove",bd=2)
 		self.historyFrame.place(relx=0.701,y=198,height=244,relwidth=0.298)
 		self.historyNameLabel = Label(self.historyFrame, text='谱面游玩标识',font=self.font, relief="groove")
@@ -102,36 +88,18 @@ class HitDelayText(object):
 		self.HistoryUpdate()
 		self.UpdateWindowInfo()
 
-	def ChangeKeys(self):
-		""" 切换按键数 """
-		Config.Default4Keys = not Config.Default4Keys
-		self.keysButton.configure(text=("4Key" if Config.Default4Keys else "6Key"))
-	def ChangeDiffcute(self):
-		""" 切换难度 """
-		self.diffcute = (self.diffcute + 1) % 3
-		Config.DefaultDiffcute = self.diffcute
-		self.diffcuteButton.configure(text=["Easy","Hard","Inferno"][self.diffcute])
-
-	def TestEntryString(self):
-		""" 测试输入框内容 """
-		string = self.nameDelayEntry.get()
-		if string == '':
-			self.nameDelayEntry.insert(0, "→→在这里输入谱面标识←←")
-		elif string == '→→在这里输入谱面标识←←':
-			self.nameDelayEntry.delete(0,'end')
-		return True
-
 	def HistoryUpdate(self):
 		""" 更新历史记录 """
 		for ids in self.delayHistory.get_children():
 			self.delayHistory.delete(ids)
-		data = self.cur.execute("SELECT SongMapName,RecordTime,AvgDelay,AllKeys,AvgAcc from HitDelayHistory")
+		data = self.cur.execute("SELECT SongMapName,RecordTime,Mode,Diff,Combo,AvgDelay,AllKeys,AvgAcc from HitDelayHistory")
 		data = data.fetchall()
 		self.history = list()
 		for ids in data:
 			self.history.append(ids[0])
-			self.delayHistory.insert('', tkinter.END, values=(ids[0],ids[1],ids[3],'%.6f ms'%ids[2],'%.6f ms'%ids[4]))
+			self.delayHistory.insert('', tkinter.END, values=(ids[0],ids[1],ids[2],ids[3],ids[4],ids[6],'%.6f ms'%ids[5],'%.6f ms'%ids[7]))
 		del data
+		self.delayHistory.yview_moveto(1.0)
 		self.UpdateWindowInfo()
 
 	def Draw(self):
@@ -264,27 +232,36 @@ class HitDelayText(object):
 			data = data.fetchone()
 			HitDelayDraw(data,isHistory=True)
 
-	def UpdateWindowInfo(self):
-		""" 更新窗口信息 """
+	def InitDelayHistoryTreeview(self):
 		self.delayHistory.heading("Name",anchor="center",text="曲名")
 		self.delayHistory.heading("RecordTime",anchor="center",text="记录时间")
-		self.delayHistory.heading("AllKeys",anchor="center",text="Keys")
+		self.delayHistory.heading("Mode",anchor="center",text="Mode")
+		self.delayHistory.heading("Diff",anchor="center",text="难度")
+		self.delayHistory.heading("Combo",anchor="center",text="连击")
+		self.delayHistory.heading("AllKeys",anchor="center",text="Notes")
 		self.delayHistory.heading("AvgDelay",anchor="center",text="Delay")
 		self.delayHistory.heading("AvgAcc",anchor="center",text="AvgAcc")
+
 		self.delayHistory.column("Name",anchor="w",width=180)
-		self.delayHistory.column("RecordTime",anchor="w",width=200)
+		self.delayHistory.column("RecordTime",anchor="w",width=160)
+		self.delayHistory.column("Mode",anchor="center",width=50)
+		self.delayHistory.column("Diff",anchor="center",width=50)
+		self.delayHistory.column("Combo",anchor="e",width=80)
 		self.delayHistory.column("AllKeys",anchor="e",width=60)
 		self.delayHistory.column("AvgDelay",anchor="e",width=120)
 		self.delayHistory.column("AvgAcc",anchor="e",width=120)
+
 		self.delayHistory.bind("<Double-1>",self.HistoryDraw)
 		self.delayHistory.bind("<ButtonPress-1>",self.ShowHistoryInfo)
+
+	def UpdateWindowInfo(self):
+		""" 更新窗口信息 """
 		self.historyRecordTimeValueLabel['text'] = dt.now()
 
 		self.__logger.debug(f"VScroll1.get:{self.VScroll1.get()}")
 		self.delayHistory.place(x=0,y=130,height=self.subroot.winfo_height()-130,relwidth=0.684)
-		self.VScroll1.place(relx=0.684,y=132,height=self.subroot.winfo_height()-133,relwidth=0.015)
+		self.VScroll1.place(relx=0.683,y=132,height=self.subroot.winfo_height()-133,relwidth=0.015)
 		self.subroot.update()
-		self.delayHistory.yview_moveto(1.0)
 		# self.subroot.after(500,self.UpdateWindowInfo)
 
 class HitDelayDraw(object):

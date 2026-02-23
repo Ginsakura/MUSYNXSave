@@ -1,281 +1,316 @@
+# -*- coding: utf-8 -*-
 import logging
 import math
 # import numpy as np
 import sqlite3
 
-from matplotlib import figure, axes, gridspec, patches, pyplot as plot
+from matplotlib import patches
+from matplotlib.axes import Axes
+from matplotlib.figure import Figure
+import matplotlib.gridspec as gridspec
+import matplotlib.pyplot as plot
 from matplotlib.pyplot import MultipleLocator
+from matplotlib.widgets import CheckButtons
 
 from Resources import Config, Logger
 
 class AllHitAnalyze(object):
-	"""docstring for HitAnalyze"""
-	def __init__(self):
-		# super(AllHitAnalyze, self).__init__()
-		self.logger:logging.Logger = Logger.GetLogger(name="AllHitAnalyze")
-		db:sqlite3.Connection = sqlite3.connect('./musync_data/HitDelayHistory.db')
-		cur:sqlite3.Cursor = db.cursor()
-		cur.execute('select HitMap from HitDelayHistory')
-		res:list[str] = cur.fetchall()
-		db.close();
-		hitMapA:list[int] = [0]*150; # -149~-0
-		hitMapB:list[int] = [0]*251; # +0~+250
-		self.sumYnum:int = 0; # with miss
-		self.sumYnumEx:int = 0; # only Exact
-		self.sumYnumEX:int = 0; # only cyan Exact
-		self.rate:list[int] = [0,0,0,0,0]; # EXACT,Exact,Great,Right,Miss
-		self.accurateRate:list[int] = [0,0,0,0,0,0,0,0]; # ±5ms,±10ms,±20ms,±45ms,Exact,Great,Right,Miss
+    """docstring for HitAnalyze"""
 
-		# 改进的循环：更健壮、可读、修正负值取整问题
-		for row in res:
-			hitmap_field:str = row[0]
-			if not hitmap_field:
-				continue
-			for token in hitmap_field.split("|"):
-				if not token:
-					continue
-				try:
-					val = float(token)
-				except ValueError:
-					# 跳过无法解析的条目
-					continue
+    def __init__(self):
+        # super(AllHitAnalyze, self).__init__()
+        self.logger:logging.Logger = Logger.GetLogger(name="AllHitAnalyze")
+        db:sqlite3.Connection = sqlite3.connect('./musync_data/HitDelayHistory.db')
+        cur:sqlite3.Cursor = db.cursor()
+        cur.execute('select HitMap from HitDelayHistory')
+        res:list[str] = cur.fetchall()
+        cur.close()
+        db.close()
+        hit_map_a:list[int] = [0]*150   # -150~-1
+        hit_map_b:list[int] = [0]*251   # 0~+250
+        self.sum_y_num:int = 0          # with miss
+        self.sum_y_num_ext:int = 0      # only Exact
+        self.sum_y_num_core:int = 0     # only Cyan Exact
+        # Cyan_Exact,Exact,Great,Right,Miss
+        self.rate:list[int] = [0,0,0,0,0]
+        # ±5ms,±10ms,±20ms,±45ms,Exact,Great,Right,Miss
+        self.accurate_rate:list[int] = [0,0,0,0,0,0,0,0]
 
-				self.sumYnum += 1
+        # 改进的循环：更健壮、可读、修正负值取整问题
+        for row in res:
+            hitmap_field:str = row[0]
+            if not hitmap_field:
+                continue
+            for token in hitmap_field.split("|"):
+                if not token:
+                    continue
+                try:
+                    val = float(token)
+                except ValueError:
+                    # 跳过无法解析的条目
+                    continue
 
-				absVal = abs(val)
+                self.sum_y_num += 1
 
-				# 分类到 rate 和 accurateRate（保持原有分段逻辑）
-				if absVal < 5:
-					self.rate[0] += 1
-					self.accurateRate[0] += 1
-				elif absVal < 10:
-					self.rate[0] += 1
-					self.accurateRate[1] += 1
-				elif absVal < 20:
-					self.rate[0] += 1
-					self.accurateRate[2] += 1
-				elif absVal < 45:
-					self.rate[0] += 1
-					self.accurateRate[3] += 1
-				elif absVal < 90:
-					self.rate[1] += 1
-					self.accurateRate[4] += 1
-				elif absVal < 150:
-					self.rate[2] += 1
-					self.accurateRate[5] += 1
-				elif absVal < 250:
-					self.rate[3] += 1
-					self.accurateRate[6] += 1
-				else:
-					self.rate[4] += 1
-					self.accurateRate[7] += 1
+                abs_val = abs(val)
 
-				# 更新 Exact / cyan Exact 计数
-				if absVal < 45:
-					self.sumYnumEX += 1
-					self.sumYnumEx += 1
-				elif absVal < 90:
-					self.sumYnumEx += 1
+                # 分类到 rate 和 accurateRate（保持原有分段逻辑）
+                if abs_val < 5:
+                    self.rate[0] += 1
+                    self.accurate_rate[0] += 1
+                elif abs_val < 10:
+                    self.rate[0] += 1
+                    self.accurate_rate[1] += 1
+                elif abs_val < 20:
+                    self.rate[0] += 1
+                    self.accurate_rate[2] += 1
+                elif abs_val < 45:
+                    self.rate[0] += 1
+                    self.accurate_rate[3] += 1
+                elif abs_val < 90:
+                    self.rate[1] += 1
+                    self.accurate_rate[4] += 1
+                elif abs_val < 150:
+                    self.rate[2] += 1
+                    self.accurate_rate[5] += 1
+                elif abs_val < 250:
+                    self.rate[3] += 1
+                    self.accurate_rate[6] += 1
+                else:
+                    self.rate[4] += 1
+                    self.accurate_rate[7] += 1
 
-				# 对延迟值取整 —— 使用 math.floor 对负值正确向下取整
-				idx = math.floor(val)
+                # 更新 Exact / cyan Exact 计数
+                if abs_val < 45:
+                    self.sum_y_num_core += 1
+                    self.sum_y_num_ext += 1
+                elif abs_val < 90:
+                    self.sum_y_num_ext += 1
 
-				# 更新命中地图（尽量保持原有逻辑：0..249 -> hitMapB[idx], >=250 -> hitMapB[250], 否则放入 hitMapA）
-				if 0 <= idx < 250:
-					hitMapB[idx] += 1
-				elif idx >= 250:
-					hitMapB[250] += 1
-				else:
-					# 负数索引：原实现直接用负索引访问 hitMapA（利用 Python 的负索引），
-					# 这里继续使用负索引以保留原有数组布局和语义。
-					hitMapA[idx] += 1
+                # 对延迟值取整 —— 使用 math.floor 对负值正确向下取整
+                idx = math.floor(val)
 
-		self.xAxis:list[int] = [i for i in range(-150,251)]
-		self.yAxis:list[int] = hitMapA + hitMapB
-		self.avg:float = sum([ids[0]*ids[1]/self.sumYnum for ids in zip(self.xAxis, self.yAxis, strict=True)]) if self.sumYnum > 0 else 0
-		self.var:float = sum([(ids[1]/self.sumYnum)*((ids[0] - self.avg) ** 2) for ids in zip(self.xAxis, self.yAxis, strict=True)]) if self.sumYnum > 0 else 0
-		self.std:float = self.var**0.5
+                # 更新命中地图（尽量保持原有逻辑：0..249 -> hitMapB[idx],
+                # >=250 -> hitMapB[250], 否则放入 hitMapA）
+                if 0 <= idx < 250:
+                    hit_map_b[idx] += 1
+                elif idx >= 250:
+                    hit_map_b[250] += 1
+                elif idx >= -150:
+                    # -150 到 -1 的范围，利用 Python 负数索引完美映射
+                    hit_map_a[idx] += 1
+                else:
+                    # 极限 Early 保护：小于 -150ms 的数据统一记入 -150 槽位
+                    hit_map_a[-150] += 1
 
-		self.avgEx:float = sum([ids[0]*ids[1]/self.sumYnumEx for ids in zip(self.xAxis[61:240], self.yAxis[61:240], strict=True)]) if self.sumYnumEx > 0 else 0
-		self.varEx:float = sum([(ids[1]/self.sumYnumEx)*((ids[0] - self.avgEx) ** 2) for ids in zip(self.xAxis[61:240], self.yAxis[61:240], strict=True)]) if self.sumYnumEx > 0 else 0
-		self.stdEx:float = self.varEx**0.5
+        self.x_axis:list[int] = [i for i in range(-150,251)]
+        self.y_axis:list[int] = hit_map_a + hit_map_b
 
-		self.avgEX:float = sum([ids[0]*ids[1]/self.sumYnumEX for ids in zip(self.xAxis[106:195], self.yAxis[106:195], strict=True)]) if self.sumYnumEX > 0 else 0
-		self.varEX:float = sum([(ids[1]/self.sumYnumEX)*((ids[0] - self.avgEX) ** 2) for ids in zip(self.xAxis[106:195], self.yAxis[106:195], strict=True)]) if self.sumYnumEX > 0 else 0
-		self.stdEX:float = self.varEX**0.5
-		# del db,cur,hitMapA,hitMapB,res,idxAbs
-		self.logger.info(f'All data:   {self.avg}  {self.var}  {self.std}  {self.sumYnum}')
-		self.logger.info(f'Exact rate: {self.avgEx}  {self.varEx}  {self.stdEx}  {self.sumYnumEx}')
-		self.logger.info(f'cyan Exact: {self.avgEX}  {self.varEX}  {self.stdEX}  {self.sumYnumEX}')
+        # 全局区间
+        self.avg, self.var, self.std = self._calculate_weighted_stats(
+            self.x_axis, self.y_axis, self.sum_y_num
+        )
 
-	def Show(self) -> None:
-		fig:figure.Figure = plot.figure(f"HitAnalyze (Total:{self.sumYnum},  CyanEx:{self.rate[0]},  BlueEx:{self.rate[1]},  Great:{self.rate[2]},  Right:{self.rate[3]},  Miss:{self.rate[4]})", figsize=(16, 9))
-		fig.clear()
-		# fig.subplots_adjust(**{"left":0,"bottom":0,"right":1,"top":1})
-		plot.rcParams['font.serif'] = ["LXGW WenKai Mono"]
-		plot.rcParams["font.sans-serif"] = ["LXGW WenKai Mono"]
-		# plt.rcParams["figure.subplot.bottom"] = 0
-		# plt.rcParams["figure.subplot.hspace"] = 0
-		# plt.rcParams["figure.subplot.left"] = 0
-		# plt.rcParams["figure.subplot.right"] = 0
-		# plt.rcParams["figure.subplot.top"] = 0
-		# plt.rcParams["figure.subplot.wspace"] = 0
-		grid:gridspec.GridSpec = gridspec.GridSpec(3, 5, left=0.045, right=1, top=1, bottom=0.06, wspace=0, hspace=0)
+        # 扩展区间 (61-240)
+        self.avg_ext, self.var_ext, self.std_ext = self._calculate_weighted_stats(
+            self.x_axis[61:240], self.y_axis[61:240], self.sum_y_num_ext
+        )
 
-		ax1:axes.Axes = fig.add_subplot(grid[:,:])
-		self.Line(ax1)
-		if Config.DonutChartinAllHitAnalyze:
-			ax2:axes.Axes = fig.add_subplot(grid[0:2,3:])
-			ax2.add_patch(patches.Rectangle((-1.5, -1.5), 3, 3, color="white"))
-			# print(ax2.get_subplotspec())
-			self.Pie(ax2)
-		plot.show()
+        # 核心区间 (106-195)
+        self.avg_core, self.var_core, self.std_core = self._calculate_weighted_stats(
+            self.x_axis[106:195], self.y_axis[106:195], self.sum_y_num_core
+        )
+        self.logger.info(f'All Rate Data:   {self.avg:.4f}  {self.var:.4f}  {self.std:.4f}  {self.sum_y_num}')
+        self.logger.info(f'Exact Rate: {self.avg_ext:.4f}  {self.var_ext:.4f}  {self.std_ext:.4f}  {self.sum_y_num_ext}')
+        self.logger.info(f'Cyan Exact Rate: {self.avg_core:.4f}  {self.var_core:.4f}  {self.std_core:.4f}  {self.sum_y_num_core}')
 
-	def Line(self,ax1) -> None:
-		e:float = 2.718281828459045
-		p:float = 3.141592653589793
-		# 正态分布函数
-		def PDFx(x:int)->float:
-			# pdf = np.exp((x-self.avg)**2/(-2*self.var))/(np.sqrt(2*np.pi)*self.std)
-			pdf:float = (e**(-1*(((x-self.avg)**2))/(2*self.var))) / (((2*p)**0.5)*self.std)
-			return pdf*self.sumYnum
-		def PDFxEx(x:int)->float:
-			# pdf = np.exp((x-self.avg)**2/(-2*self.var))/(np.sqrt(2*np.pi)*self.std)
-			pdf:float = (e**(-1*(((x-self.avgEx)**2))/(2*self.varEx))) / (((2*p)**0.5)*self.stdEx)
-			return pdf*self.sumYnumEx
-		def PDFxEX(x:int)->float:
-			# pdf = np.exp((x-self.avg)**2/(-2*self.var))/(np.sqrt(2*np.pi)*self.std)
-			pdf:float = (e**(-1*(((x-self.avgEX)**2))/(2*self.varEX))) / (((2*p)**0.5)*self.stdEX)
-			return pdf*self.sumYnumEX
+    def _calculate_weighted_stats(
+        self,
+        x_data: list[float],
+        y_data: list[float],
+        total_y: float
+        ) -> tuple[float, float, float]:
+        """
+        计算加权统计量：平均数、方差、标准差。
 
-		colors:list[str] = ['red','orange','yellow','green','cyan','blue','purple']
-		yLine:list = []
-		maxY: int = max(self.yAxis)  # 最大命中数
-		strMaxY: str = str(maxY)  # 转换为字符串
-		maxLen: int = 10**len(strMaxY)  # 详细刻度最大值 10^N, N为位数
-		maxLenSub: int = maxLen//100  # 次级刻度最大值 10^(N-2)
-		width:int = len(self.xAxis)
+        Args:
+            x_data: 样本值列表
+            y_data: 权重（频数）列表
+            total_y: 权重总和
 
-		# 无数据
-		if maxY == 0:
-			ax1.text(0.5, 0.5, "No data", ha="center", va="center",transform=ax1.transAxes, fontsize=14)
-			return
-		# 根据最大值设置横线刻度
-		# [0, 20) %
-		if maxY < maxLen*0.2:
-			# 细分刻度, 每隔 maxLen/400 画一条线, 直到 maxLenSub
-			for ids in range(maxLen//400, maxLenSub, maxLen//400):
-				yLine.append([ids]*width)
-			# 次级刻度, 每隔 maxLen/100 画线, 直到覆盖最大值
-			for ids in range(maxLenSub,maxLenSub*(int(strMaxY[0:2])+2),maxLenSub):
-				yLine.append([ids]*width)
-		# [20, 30) %
-		elif maxY < maxLen*0.3:
-			# 细分刻度, 每隔 maxLen/200 画一条线, 直到 maxLenSub
-			for ids in range(maxLenSub,maxLenSub*(int(strMaxY[0:2])+2),maxLenSub):
-				yLine.append([ids]*width)
-		# [30, 60) %
-		elif maxY < maxLen*0.6:
-			# 细分刻度, 每隔 maxLen/100 画一条线, 直到 maxLenSub*2
-			for ids in range(maxLenSub*2,maxLenSub*(int(strMaxY[0:2])+2),maxLenSub*2):
-				yLine.append([ids]*width)
-		# [60, 100) %
-		else:
-			# 细分刻度, 每隔 maxLen/40 画一条线, 直到 maxLen/10
-			for ids in range(maxLen//40, maxLen//10, maxLen//40):  # up to maxLen/10
-				yLine.append([ids]*width)  # 横线数据
-			# 次级刻度, 每隔 maxLen/10 画线, 直到覆盖最大值
-			for ids in range(maxLen//10, maxY+maxLen//10, maxLen//10):  # up to maxY
-				yLine.append([ids]*width)  # 横线数据
+        Returns:
+            tuple: (均值, 方差, 标准差)
+        """
+        # 防御性编程：处理分母为 0 或空数据的情况
+        if total_y <= 0 or not x_data:
+            return 0.0, 0.0, 0.0
 
-		ax1.set_xlabel("Delay(ms)", fontsize=15)
-		ax1.set_ylabel("HitCount", fontsize=15)
-		ax1.set_xlim(-155,255)
+        # 1. 计算加权平均数 (Weighted Mean)
+        # 使用生成器表达式降低内存占用
+        avg: float = sum(
+            x * y / total_y
+            for x, y in zip(x_data, y_data, strict=True)
+        )
 
-		# 设置刻度间隔
-		ax1.xaxis.set_major_locator(MultipleLocator(10))
-		if maxY < 100:
-			ax1.yaxis.set_major_locator(MultipleLocator(5))
-		elif maxY < 1000:
-			ax1.yaxis.set_major_locator(MultipleLocator(25))
-		elif maxY < 2000:
-			ax1.yaxis.set_major_locator(MultipleLocator(50))
-		elif maxY < 4000:
-			ax1.yaxis.set_major_locator(MultipleLocator(75))
-		elif maxY < 8000:
-			ax1.yaxis.set_major_locator(MultipleLocator(150))
-		elif maxY < 16000:
-			ax1.yaxis.set_major_locator(MultipleLocator(300))
-		elif maxY < 32000:
-			ax1.yaxis.set_major_locator(MultipleLocator(600))
+        # 2. 计算加权方差 (Weighted Variance)
+        var: float = sum(
+            (y / total_y) * ((x - avg) ** 2)
+            for x, y in zip(x_data, y_data, strict=True)
+        )
 
-		# 画横线
-		x=0
-		for ids in yLine:
-			ax1.plot(self.xAxis,ids,linestyle='--',alpha=1,linewidth=1,color=colors[x])
-			x = (x+1)%7
+        # 3. 计算标准差 (Standard Deviation)
+        # 使用 math.sqrt 比 ** 0.5 语义更明确且在某些解释器下更快
+        std: float = math.sqrt(var)
 
-		# 正态分布函数曲线
-		pdfAxis:list[float] = []
-		if self.var > 0:
-			pdfAxis = [PDFx(i) for i in self.xAxis]
-		ax1.plot(self.xAxis,pdfAxis,linestyle='-',alpha=1,linewidth=1,color='grey',
-			label=f'Fitting all data\n(μ={self.avg}\n σ={self.std})')
+        return avg, var, std
 
-		pdfExAxis:list[float] = []
-		if self.varEx > 0:
-			pdfExAxis = [PDFxEx(i) for i in self.xAxis]
-		ax1.plot(self.xAxis,pdfExAxis,linestyle='-',alpha=1,linewidth=1,color='black',
-			label=f'Fitting only on Exact rate\n(μ={self.avgEx}\n σ={self.stdEx})')
+    def show(self) -> None:
+        """主绘制入口"""
+        # 预设中文字体 (如果你系统安装了此字体)
+        plot.rcParams['font.serif'] = ["LXGW WenKai Mono"]
+        plot.rcParams["font.sans-serif"] = ["LXGW WenKai Mono"]
 
-		pdfEXAxis:list[float] = []
-		if self.varEX > 0:
-			pdfEXAxis = [PDFxEX(i) for i in self.xAxis]
-		ax1.plot(self.xAxis,pdfEXAxis,linestyle='-',alpha=1,linewidth=1,color='blue',
-			label=f'Fitting only on Cyan Exact rate\n(μ={self.avgEX}\n σ={self.stdEX})')
+        # 创建画板
+        fig: Figure = plot.figure(
+            f"HitAnalyze (Total:{self.sum_y_num},  CyanEx:{self.rate[0]},  "
+            f"BlueEx:{self.rate[1]},  Great:{self.rate[2]},  Right:{self.rate[3]},  Miss:{self.rate[4]})",
+            figsize=(16, 9)
+        )
+        fig.clear()
 
-		# 柱状图
-		for i in range(len(self.xAxis)):
-			ax1.bar(self.xAxis[i],self.yAxis[i])
+        # 布局划分
+        grid: gridspec.GridSpec = gridspec.GridSpec(
+            3, 5, left=0.045, right=0.98, top=0.95, bottom=0.06, wspace=0.2, hspace=0.2
+        )
 
-		ax1.legend(loc='upper left',prop={'size':15}); #显示上面的label
+        # 直方图 Axes
+        ax1: Axes = fig.add_subplot(grid[:, :])
+        self._draw_histogram_and_curves(fig, ax1)
 
-	def Pie(self,ax2) -> None:
-		"""绘制命中率饼图"""
-		def Percentage(num, summ) -> str:
-			per = num/summ*100
-			return ' '*(3-len(str(int((per)))))+'%.3f%%'%(per)
-		def Count(num) -> str:
-			cou = str(num)
-			return ' '*(6-len(cou))+cou
-		def PercentageLabel(num, summ) -> str:
-			per = num/summ*100
-			return '%.1f%%'%(per)
-		accurateRateSum = sum(self.accurateRate)
-		if accurateRateSum == 0:
-			ax2.text(0.5, 0.5, "No data", ha="center", va="center", transform=ax2.transAxes, fontsize=12)
-			return
+        # 饼图 Axes
+        if Config.DonutChartinAllHitAnalyze:
+            ax2: Axes = fig.add_subplot(grid[0:2, 3:])
+            self._draw_pie_chart(ax2)
 
-		wedgeprops = {'width':0.15, 'edgecolor':'black', 'linewidth':0.2}
-		pieRtn = ax2.pie(self.accurateRate, wedgeprops=wedgeprops, startangle=90, autopct='%1.1f%%', pctdistance = 0.95, labeldistance = 1.05, 
-			colors=['#9dfff0',    '#69f1f1',     '#25d8d8',     '#32a9c7',     '#2F97FF', 'green', 'orange', 'red', ], 
-			labels=["EXACT±5ms", "EXACT±10ms", "EXACT±20ms", "EXACT±45ms", "Exact",   "Great", "Right",  "Miss", ], 
-			textprops={'size':12})
-		ax2.legend(prop={'size':12},loc='center', handles=pieRtn[0], 
-			# labelcolor=['#9dfff0', '#69f1f1', '#25d8d8', '#32a9c7', '#2F97FF', 'green', 'orange', 'red', ], 
-			labels=[
-				f"EXACT± 5ms  {Count(self.accurateRate[0])}  {Percentage(self.accurateRate[0], accurateRateSum)}", 
-				f"EXACT±10ms  {Count(self.accurateRate[1])}  {Percentage(self.accurateRate[1], accurateRateSum)}", 
-				f"EXACT±20ms  {Count(self.accurateRate[2])}  {Percentage(self.accurateRate[2], accurateRateSum)}", 
-				f"EXACT±45ms  {Count(self.accurateRate[3])}  {Percentage(self.accurateRate[3], accurateRateSum)}", 
-				f"Exact±90ms  {Count(self.accurateRate[4])}  {Percentage(self.accurateRate[4], accurateRateSum)}", 
-				f"Great±150ms {Count(self.accurateRate[5])}  {Percentage(self.accurateRate[5], accurateRateSum)}", 
-				f"Right＋250ms {Count(self.accurateRate[6])}  {Percentage(self.accurateRate[6], accurateRateSum)}", 
-				f"Miss > 250ms {Count(self.accurateRate[7])}  {Percentage(self.accurateRate[7], accurateRateSum)}", ],
-			)
-		ax2.text(0.1,0.5,f"EXACT        {Count(sum(self.accurateRate[0:4]))}  " \
-			f"{Percentage(sum(self.accurateRate[0:4]), accurateRateSum)}", 
-			ha='center',va='top',fontsize=12,color='#00B5B5', )
+        plot.show()
+
+    def _draw_histogram_and_curves(self, fig: Figure, ax1: Axes) -> None:
+        """绘制直方图与高斯拟合曲线，并添加交互组件"""
+
+        # 1. 绘制底层直方图 (一次性渲染，极大地提升性能)
+        ax1.bar(self.x_axis, self.y_axis, width=1, color='skyblue')
+
+        # 2. 设置坐标轴与自动网格 (摒弃原先的手动计算逻辑)
+        ax1.set_xlabel("Delay(ms)", fontsize=15)
+        ax1.set_ylabel("HitCount", fontsize=15)
+        ax1.set_xlim(-155, 255)
+        ax1.grid(axis='y', linestyle='--', alpha=0.7) # 自动横向辅助线
+
+        # 3. 计算正态分布的通用闭包函数
+        def calculate_pdf(x_data: list[int], avg: float, var: float, std: float, count: int) -> list[float]:
+            if var <= 0 or std <= 0:
+                return [0.0] * len(x_data)
+            # 正态分布公式： f(x) = (1 / (σ * sqrt(2π))) * e^(-(x - μ)² / (2σ²))
+            # 乘以总数 count 以将面积放大至直方图级别
+            coeff = count / (math.sqrt(2 * math.pi) * std)
+            return [coeff * math.exp(-((x - avg) ** 2) / (2 * var)) for x in x_data]
+
+        # 计算三条曲线的数据
+        pdf_all = calculate_pdf( self.x_axis, self.avg,      self.var,      self.std,      self.sum_y_num     )
+        pdf_ext = calculate_pdf( self.x_axis, self.avg_ext,  self.var_ext,  self.std_ext,  self.sum_y_num_ext )
+        pdf_core = calculate_pdf(self.x_axis, self.avg_core, self.var_core, self.std_core, self.sum_y_num_core)
+
+        # 4. 绘制曲线，但先保存对象引用以便后续控制 (初始状态设为隐藏 visible=False)
+        line_all, = ax1.plot(self.x_axis, pdf_all, color='grey', linewidth=2,
+                             label=f'Global Fit (μ={self.avg:.2f}, σ={self.std:.2f})')
+        line_ext, = ax1.plot(self.x_axis, pdf_ext, color='black', linewidth=2,
+                             label=f'Exact Fit (μ={self.avg_ext:.2f}, σ={self.std_ext:.2f})')
+        line_core, = ax1.plot(self.x_axis, pdf_core, color='blue', linewidth=2,
+                              label=f'Cyan Exact Fit (μ={self.avg_core:.2f}, σ={self.std_core:.2f})')
+        ax1.legend(loc='upper left', prop={'size': 12})
+
+        # 生成图例后，再把不需要默认显示的曲线隐藏
+        line_all.set_visible(False)
+        line_ext.set_visible(False)
+
+        # ---------------- 交互模块：CheckButtons ----------------
+        # 在图表的右上角开辟一块区域放置 CheckButtons
+        # [left, bottom, width, height]
+        ax_check = fig.add_axes([0.05, 0.70, 0.20, 0.15])
+
+        curves = [line_all, line_ext, line_core]
+        labels = [curve.get_label().split(' (')[0] for curve in curves] # 提取简短的 Label
+        visibilities = [curve.get_visible() for curve in curves]
+
+        # 绑定到实例属性防止被垃圾回收 (Garbage Collection)
+        self.check_btn = CheckButtons(ax_check, labels, visibilities)
+
+        # 回调函数：切换可见性
+        def toggle_visibility(label: str) -> None:
+            idx = labels.index(label)
+            curves[idx].set_visible(not curves[idx].get_visible())
+            fig.canvas.draw_idle() # 触发重绘
+
+        self.check_btn.on_clicked(toggle_visibility)
+
+    def _draw_pie_chart(self, ax2: Axes) -> None:
+        """绘制高精度命中率饼图/甜甜圈图"""
+        # 1. 强制设置背景为纯白，不透明，且提升 Z 轴层级盖住 ax1
+        ax2.patch.set_visible(True)
+        ax2.patch.set_facecolor('white')
+        ax2.patch.set_alpha(1.0)
+        ax2.set_zorder(10)  # 关键点：层级设为 10，确保它在直方图上方
+
+        # 2. 替代原代码的 Rectangle 补丁：通过扩大坐标轴范围来生成完美的白色内边距 (Padding)
+        # pie 图的标准半径是 1 (范围 -1 到 1)，设置 1.5 就相当于四周多了 50% 的留白
+        ax2.set_xlim(-1.5, 1.5)
+        ax2.set_ylim(-1.5, 1.5)
+
+        # 3. 隐藏刻度和边框
+        ax2.set_xticks([])
+        ax2.set_yticks([])
+        for spine in ax2.spines.values():
+            spine.set_visible(False)
+
+        sum_acc = sum(self.accurate_rate)
+        if sum_acc == 0:
+            ax2.text(0.5, 0.5, "No data", ha="center", va="center", fontsize=12)
+            return
+
+        wedgeprops = {'width': 0.15, 'edgecolor': 'black', 'linewidth': 0.2}
+        colors = ['#9dfff0', '#69f1f1', '#25d8d8', '#32a9c7', '#2F97FF', 'green', 'orange', 'red']
+        labels_pie = ["EXACT<5ms", "EXACT<10ms", "EXACT<20ms", "EXACT<45ms", "Exact", "Great", "Right", "Miss"]
+
+        pie_rtn, _ = ax2.pie(
+            self.accurate_rate,
+            wedgeprops=wedgeprops,
+            startangle=90,
+            colors=colors,
+        )
+
+        # 现代化 f-string 格式化对齐
+        # :>6 表示占6位并右对齐; :>6.2f 表示总共6位、保留2位小数并右对齐
+        legend_labels = [
+            f"{labels_pie[i]:<12} {count:>6} {count/sum_acc*100:>7.3f}%"
+            for i, count in enumerate(self.accurate_rate)
+        ]
+
+        ax2.legend(
+            handles=pie_rtn,
+            labels=legend_labels,
+            loc='center',
+            prop={'size': 11, 'family': 'LXGW WenKai Mono'} # 强制等宽字体以保证严格对齐
+        )
+
+        # 文字
+        core_exact_sum = sum(self.accurate_rate[0:4])
+        core_exact_per = (core_exact_sum / sum_acc * 100) if sum_acc > 0 else 0
+        center_text = f"EXACT Total  {core_exact_sum:>6} {core_exact_per:>7.3f}%"
+
+        ax2.text(
+            -0.41, 0.51, center_text,
+            ha='left', va='top', fontsize=11, color='#00B5B5', weight='bold'
+        )
 
 if __name__ == '__main__':
-	AllHitAnalyze().Show();
+    AllHitAnalyze().show();

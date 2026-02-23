@@ -1,6 +1,5 @@
 public partial class SongInfoCore
 {
-	// Token: 0x06000430 RID: 1072 RVA: 0x0003E128 File Offset: 0x0003C528
 	internal void UpdateSync(int maxCombo)
 	{
 		//this.MaxComboThis = maxCombo;

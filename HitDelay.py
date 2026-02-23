@@ -5,15 +5,16 @@ import os
 import pyperclip
 import sqlite3
 import uiautomation as uiauto
+
 from datetime import datetime as dt
 from matplotlib import axes, pyplot as plot, gridspec, figure
 from matplotlib.pyplot import MultipleLocator
-# from tkinter import *
 from tkinter import Tk, ttk, messagebox
 from tkinter import Button, Label, Entry, Frame, Scrollbar
 
+import AvgAcc_SyncAnalyze
+
 from AllHitAnalyze import AllHitAnalyze
-# from AllHitAnalyze_New import AllHitAnalyze
 from Resources import Config, Logger
 
 uiauto.SetGlobalSearchTimeout(1)
@@ -47,12 +48,9 @@ class HitDelayText(object):
         self.InitDelayHistoryTreeview();
 
         self.logButton = Button(self.subroot,text='点击生成图表',command=self.Draw,font=self.font,bg='#FFCCCC')
-        if Config.Acc_Sync:
-            self.logButton.place(relx=0.7,y=70,height=60,relwidth=0.3)
-            self.txtButton = Button(self.subroot,text='生成Acc-Sync图表',command=self.OpenTxt,font=self.font)
-            self.txtButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
-        else:
-            self.logButton.place(relx=0.7,y=40,height=90,relwidth=0.3)
+        self.logButton.place(relx=0.7,y=70,height=60,relwidth=0.3)
+        self.txtButton = Button(self.subroot,text='生成Acc-Sync图表',command=self.OpenTxt,font=self.font)
+        self.txtButton.place(relx=0.7,y=40,height=30,relwidth=0.3)
 
         # 谱面信息修改
         self.historyFrame = Frame(self.subroot,relief="groove",bd=2)
@@ -161,8 +159,7 @@ class HitDelayText(object):
         import subprocess
         subprocess.Popen(['notepad', './musync_data/Acc-Sync.json'])
         # os.system(f'start explorer {os.getcwd()}')
-        import AvgAcc_SynxAnalyze
-        AvgAcc_SynxAnalyze.Analyze()
+        AvgAcc_SyncAnalyze.analyze_3d()
 
     def ShowHistoryInfo(self,event):
         """ 显示历史记录信息 """
@@ -316,7 +313,7 @@ class HitDelayDraw(object):
 
     def DrawLine(self):
         """ 绘制 HitDelay 折线图 """
-        fig = plot.figure(f'AvgDelay: {self.avgDelay:.4f}ms    AllKeys: {self.allKeys}    AvgAcc: {self.avgAcc:.4f}ms',figsize=(9, 4))
+        fig = plot.figure(f'AvgDelay: {self.avgDelay:.4f}ms    Notes: {self.allKeys}    Combo: self.combo    AvgAcc: {self.avgAcc:.4f}ms',figsize=(9, 4))
         fig.clear()
         fig.subplots_adjust(**{"left":0.045,"bottom":0.055,"right":1,"top":1})
         ax = fig.add_subplot()

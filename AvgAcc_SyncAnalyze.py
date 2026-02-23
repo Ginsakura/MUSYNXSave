@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 import csv
 import logging
+
 from matplotlib import pyplot as plot
 from matplotlib.ticker import MultipleLocator
-from mpl_toolkits.mplot3d import Axes3D
 
-# 假设 Resources 包中存在 Logger
 from Resources import Logger
 
 def analyze_3d() -> None:

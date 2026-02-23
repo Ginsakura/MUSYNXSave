@@ -9,7 +9,7 @@ from Resources import Logger
 
 def analyze_3d() -> None:
     """读取 CSV 数据并生成 3D 散点图分析视图"""
-    logger: logging.Logger = Logger.GetLogger("AvgAcc_SynxAnalyze.Analyze3D")
+    logger: logging.Logger = Logger.GetLogger("AvgAcc_SyncAnalyze.Analyze3D")
 
     # 强制类型注解
     acc: list[float] = []

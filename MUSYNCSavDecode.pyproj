@@ -28,7 +28,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="AllHitAnalyze.py" />
-    <Compile Include="AvgAcc_SynxAnalyze.py" />
+    <Compile Include="AvgAcc_SyncAnalyze.py" />
     <Compile Include="Difficulty_ScoreAnalyze.py" />
     <Compile Include="File2Base64.py" />
     <Compile Include="FormatSongName.py" />

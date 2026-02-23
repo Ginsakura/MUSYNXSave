@@ -148,6 +148,7 @@ C#重构版本: [MUSYNCSaveCSharp](https://github.com/Ginsakura/MUSYNCSaveCSharp
     1. 更改数据库结构，增加模式、难度、连击字段 (v3 -> v4)
     2. 深度重构代码，使其全面符合 `PEP 8` 规范
     3. 优化 patch 用 C# 代码，关闭控制台的 `快速编辑` 模式，提供更丰富的数据输出
+    3. 优化`Tookit`中数据库升级迁移逻辑
 4. 重构
     1. `AllHitAnalyze`: 优化底层数据处理逻辑与图表渲染性能展示
     2. `AvgAcc-SyncAnalyze`: 引入 `Diff` 轴映射，将平面图表重构为 3D 景深散点图

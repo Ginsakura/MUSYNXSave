@@ -1,4 +1,4 @@
-﻿# 同步音律喵赛克 Steam端 存档解析工具
+# 同步音律喵赛克 Steam端 存档解析工具
 MUSYNX Steam Client Savefile Decode & Analyze Tool
 
 C#重构版本: [MUSYNCSaveCSharp](https://github.com/Ginsakura/MUSYNCSaveCSharp)

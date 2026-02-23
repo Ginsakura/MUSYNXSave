@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import csv
 import logging
 from matplotlib import pyplot as plot

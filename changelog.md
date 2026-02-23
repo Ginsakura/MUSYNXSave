@@ -7,7 +7,7 @@
 4. 1.2.7 环境更新：`matplotlib 3.7.2->3.9.2`,`numpy 1.25.2->2.0.1`
 5. 2.0.0 重构程序
 7. 3.0.0 重构部分代码, 更新游玩记录的存储结构,
-   且 $\color{Red}{不向下兼容}$ ，将`HitDelayHistory.db`版本提高到`v4`, 增加Mode,Difficulty,Combo字段
+    且 $\color{Red}{不向下兼容}$ ，将`HitDelayHistory.db`版本提高到`v4`, 增加Mode,Difficulty,Combo字段
 
 ### Version 3.0.0
 #### Release 1

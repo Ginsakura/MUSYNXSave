@@ -307,7 +307,7 @@ class MusyncSavDecodeGUI(object):
     def SortClick(self,event) -> None:
         """列标题点击排序事件处理函数"""
         def TreeviewSortColumn(col) -> None:
-            startTime = time.perf_counter_ns()
+            start_time: int = time.perf_counter_ns()
             if self.dataSortMethodsort[0] == col:
                 self.dataSortMethodsort[1] = not self.dataSortMethodsort[1]
             else:
@@ -324,8 +324,7 @@ class MusyncSavDecodeGUI(object):
             l.sort(reverse=self.dataSortMethodsort[1])
             for index, (val, k) in enumerate(l):
                 self.saveData.move(k, '', index)
-            endTime = time.perf_counter_ns()
-            print("SortClick Run Time: %f ms"%((endTime - startTime)/1000000))
+            print(f"Treeview SortClick Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
             self.TreeviewColumnUpdate()
         if isinstance(event, list):
             self.dataSortMethodsort[1] = not self.dataSortMethodsort[1]
@@ -347,7 +346,7 @@ class MusyncSavDecodeGUI(object):
 # update功能组
     def CheckJsonUpdate(self) -> None:
         """检查谱面信息更新"""
-        startTime = time.perf_counter_ns()
+        start_time: int = time.perf_counter_ns()
 
         repo: str = "https://raw.githubusercontent.com/Ginsakura/MUSYNXSave/main/musync_data/"
         if Config().UpdateChannel.lower() == "beta":
@@ -376,8 +375,7 @@ class MusyncSavDecodeGUI(object):
                 if messagebox.askyesno("无法获取谱面信息更新", '是否前往网页查看是否存在更新?\n(请比对 SongName.json 中的时间是否比本地文件中的时间更大)'):
                     webbrowser.open(repo + "songname.json")
             self.root.after(0, show_error)
-        endTime = time.perf_counter_ns()
-        self.logger.info("CheckJsonUpdate Run Time: %f ms"%((endTime - startTime)/1000000))
+        self.logger.info(f"CheckJsonUpdate() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
 
     def CheckUpdate(self) -> None:
         """检查软件更新"""
@@ -390,7 +388,7 @@ class MusyncSavDecodeGUI(object):
                 if (target[3] > local[3]): return True
             return False
 
-        startTime:int = time.perf_counter_ns()
+        start_time: int = time.perf_counter_ns()
         updateChannel:bool = Config().UpdateChannel.lower() == "prerelease"
         localVersion:list[int] = [int(i) for i in Version.preVersion.replace("pre",".").split(".")]
         targetVersion:list[int] = [0,0,0,0]
@@ -439,8 +437,7 @@ class MusyncSavDecodeGUI(object):
         # 	self.gitHubUrlVar = "点击打开GitHub仓库	点个Star吧，秋梨膏"
         # 	labelUrl = "https://github.com/Ginsakura/MUSYNCSave"
         self.root.after(0, lambda _:self.gitHubLink.configure(command=lambda:webbrowser.open(labelUrl)))
-        endTime = time.perf_counter_ns()
-        self.logger.info("CheckUpdate Run Time: %f ms"%((endTime - startTime)/1000000))
+        self.logger.info(f"CheckUpdate() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
 
 # 初始化提示框
     def InitLabel(self,text,close=False) -> None:
@@ -475,7 +472,7 @@ class MusyncSavDecodeGUI(object):
     def DataLoad(self):
         "存档数据解析"
         self.logger.debug("DataLoad Start")
-        startTime = time.perf_counter_ns()
+        start_time: int = time.perf_counter_ns()
         self.InitLabel(text="正在分析存档文件中……")
         self.logger.debug("正在分析存档文件中……")
         time.sleep(0.1)
@@ -546,8 +543,7 @@ class MusyncSavDecodeGUI(object):
         if not self.dataSortMethodsort[0] is None:
             self.SortClick(self.dataSortMethodsort)
         self.InitLabel('数据展示生成完成.',close=True)
-        endTime = time.perf_counter_ns()
-        self.logger.debug("DataLoad Run Time: %f ms"%((endTime - startTime)/1000000))
+        self.logger.debug(f"DataLoad Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
         self.UpdateWindowInfo()
 
 # 控件更新功能组
@@ -584,7 +580,7 @@ class MusyncSavDecodeGUI(object):
                 time.sleep(0.1)
                 continue
             counter = threadInvert
-            startTime = time.perf_counter_ns()
+            start_time: int = time.perf_counter_ns()
             try:
                 for ids in psutil.pids():
                     if psutil.Process(pid=ids).name() == "MUSYNX.exe":
@@ -600,7 +596,7 @@ class MusyncSavDecodeGUI(object):
             except Exception:
                 logger.debug("Checking has Unknown Exception")
                 pass
-            logger.info("CheckGameIsStart Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000))
+            logger.info(f"CheckGameIsStart Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
         logger.warning("Stop Thread: CheckGameIsStart.")
 
     def TreeviewColumnUpdate(self):

@@ -29,6 +29,10 @@ class Toolkit:
     _resource_file: Optional[io.BufferedReader] = None
     _file_lock: threading.Lock = threading.Lock()
 
+    @staticmethod
+    def calc_end_time(start_time: int) -> float:
+        return (time.perf_counter_ns() - start_time) / 1_000_000;
+
     @classmethod
     def init_resources(cls) -> None:
         """初始化加载打包的资源文件 (应在程序启动时显式调用)"""
@@ -64,7 +68,7 @@ class Toolkit:
         finally:
             win32gui.ReleaseDC(0, h_dc)
         _logger.debug(f"Get DPI: {dpi}")
-        _logger.debug(f"get_dpi() Run Time: {(time.perf_counter_ns() - start_time) / 1_000_000:.2f} ms")
+        _logger.debug(f"get_dpi() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return dpi
 
     @staticmethod
@@ -99,7 +103,7 @@ class Toolkit:
         except OSError as e:
             _logger.error(f"Failed to change console style: {e}")
 
-        _logger.debug(f"change_console_style() Run Time: {(time.perf_counter_ns() - start_time) / 1_000_000:.2f} ms")
+        _logger.debug(f"change_console_style() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
 
     @staticmethod
     def get_hash(file_path: Optional[str] = None) -> str:
@@ -114,7 +118,7 @@ class Toolkit:
                 sha256_hash.update(byte_block)
 
         hash_result: str = sha256_hash.hexdigest().upper()
-        _logger.debug(f"get_hash() Run Time: {(time.perf_counter_ns() - start_time) / 1_000_000:.2f} ms")
+        _logger.debug(f"get_hash() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
         return hash_result
 
     @classmethod
@@ -136,7 +140,7 @@ class Toolkit:
             with open(release_path, "wb") as f:
                 f.write(decompressed_data)
 
-        cls._logger.debug(f"release_resource() Run Time: {(time.perf_counter_ns() - start_time) / 1_000_000:.2f} ms")
+        cls._logger.debug(f"release_resource() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
         return decompressed_data
 
     @classmethod
@@ -186,7 +190,7 @@ class Toolkit:
         if Config.DLLInjection:
             cls.game_lib_check()
 
-        cls._logger.debug(f"check_resources() Run Time: {(time.perf_counter_ns() - start_time) / 1_000_000:.2f} ms")
+        cls._logger.debug(f"check_resources() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
 
     @classmethod
     def get_save_file(cls) -> str:
@@ -211,7 +215,7 @@ class Toolkit:
                     return full_path
 
         cls._logger.error("搜索不到存档文件.")
-        cls._logger.info(f"get_save_file() Run Time: {(time.perf_counter_ns() - start_time) / 1_000_000:.2f} ms")
+        cls._logger.info(f"get_save_file() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
         return ""
 
     @classmethod
@@ -246,7 +250,8 @@ class Toolkit:
             else:
                 # 2. 检查是否符合修补条件
                 # 逻辑：如果 source_hash 是空的，或者当前文件就是原版文件且不等于目标文件
-                if (source_hash == EMPTY_HASH) or (source_hash == now_hash and source_hash != fix_hash):
+                if (source_hash == EMPTY_HASH or
+                    (source_hash == now_hash and source_hash != fix_hash)):
                     try:
                         old_dll: str = f'{dll_path}.old'
                         if os.path.isfile(old_dll):
@@ -254,7 +259,10 @@ class Toolkit:
                         os.rename(dll_path, old_dll)
 
                         # 释放资源
-                        cls.release_resource(lib_info["offset"], lib_info["length"], dll_path)
+                        cls.release_resource(lib_info["offset"],
+                                             lib_info["length"],
+                                             dll_path
+                                             )
                         return_code = 1
                     except Exception as e:
                         cls._logger.error(f"修补过程中发生异常: {e}")
@@ -264,8 +272,9 @@ class Toolkit:
 
         # --- 统一出口 ---
         # 无论上述哪个分支执行，都会来到这里
-        run_time_ms: float = (time.perf_counter_ns() - start_time) / 1_000_000
-        cls._logger.debug(f"game_lib_check() Run Time: {run_time_ms:.2f} ms, Return Code: {return_code}")
+        run_time_ms: float = Toolkit.calculate_end_time(start_time)
+        cls._logger.debug(f"game_lib_check() Run Time: {run_time_ms:.2f} ms, "
+                          f"Return Code: {return_code}")
         return return_code
 
     @staticmethod
@@ -284,9 +293,10 @@ class Toolkit:
                 AvgAcc FLOAT,
                 HitMap TEXT,
                 PRIMARY KEY ("SongMapName", "RecordTime")
-            );
-        """)
-        cursor.execute("CREATE TABLE IF NOT EXISTS Infos (Key TEXT PRIMARY KEY, Value TEXT DEFAULT NULL);")
+            );""")
+        cursor.execute("CREATE TABLE IF NOT EXISTS Infos ("
+                       "Key TEXT PRIMARY KEY,"
+                       "Value TEXT DEFAULT NULL);")
 
     @classmethod
     def check_database_version(cls) -> int:
@@ -322,7 +332,7 @@ class Toolkit:
         except Exception as e:
             cls._logger.fatal(f"CheckDatabaseVersion() 异常: {e}")
 
-        cls._logger.debug(f"check_database_version() Run Time: {(time.perf_counter_ns() - start_time) / 1_000_000:.2f} ms")
+        cls._logger.debug(f"check_database_version() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
         return rt_code
 
     @classmethod
@@ -335,7 +345,8 @@ class Toolkit:
             return False
 
         if now_version == 2:
-            os.rename("./musync_data/HitDelayHistory_v2.db", "./musync_data/HitDelayHistory.db")
+            os.rename("./musync_data/HitDelayHistory_v2.db",
+                      "./musync_data/HitDelayHistory.db")
 
         # 核心修复：使用 with db 确保所有操作为一个完整的事务，失败自动回滚
         with sqlite3.connect('./musync_data/HitDelayHistory.db') as db:
@@ -346,7 +357,8 @@ class Toolkit:
                 if now_version == 0:
                     cls._logger.info(f"创建 v{target_version} 版本数据库中...")
                     cls.create_new_database(db)
-                    cursor.execute("INSERT OR REPLACE INTO Infos VALUES(?, ?)", ("Version", str(target_version)))
+                    cursor.execute("INSERT OR REPLACE INTO Infos VALUES(?, ?)",
+                                   ("Version", str(target_version)))
                     now_version = target_version
 
                 # V1 -> V2
@@ -362,8 +374,7 @@ class Toolkit:
                             AvgAcc FLOAT,
                             HitMap TEXT,
                             PRIMARY KEY ("SongMapName", "RecordTime")
-                        );
-                    """)
+                        );""")
                     for ids in cursor.execute("SELECT * FROM HitDelayHistoryV1").fetchall():
                         name_and_time = ids[0].split("-202")
                         name, record_time = name_and_time[0], f"202{name_and_time[1]}"
@@ -377,35 +388,89 @@ class Toolkit:
                 # V2 -> V3
                 if now_version == 2:
                     cls._logger.info("记录数据迁移中... v2 -> v3")
-                    cursor.execute("CREATE TABLE IF NOT EXISTS Infos (Key TEXT PRIMARY KEY, Value TEXT DEFAULT NULL);")
-                    cursor.execute("INSERT OR REPLACE INTO Infos VALUES(?, ?)", ("Version", "3"))
+                    cursor.execute("CREATE TABLE IF NOT EXISTS Infos ("
+                                   "Key TEXT PRIMARY KEY,"
+                                   "Value TEXT DEFAULT NULL);"
+                                   )
+                    cursor.execute("INSERT OR REPLACE INTO Infos VALUES(?, ?)",
+                                   ("Version", "3"))
                     now_version = 3
 
                 # V3 -> V4
                 if now_version == 3:
                     cls._logger.info("记录数据迁移中... v3 -> v4")
-                    cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN Diff INTEGER NOT NULL DEFAULT 0")
-                    cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN Mode TEXT NOT NULL DEFAULT ''")
-                    cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN Combo TEXT NOT NULL DEFAULT '0/0'")
+                    cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN "
+                                   "Diff INTEGER NOT NULL DEFAULT 0")
+                    cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN "
+                                   "Mode TEXT NOT NULL DEFAULT ''")
+                    cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN "
+                                   "Combo TEXT NOT NULL DEFAULT '0/0'")
 
-                    # 预编译正则以提升循环性能
-                    pattern = re.compile(r'\s*(4|6)[Kk]?(ez|e|hd|h|in|i)\s*$', re.IGNORECASE)
+                    # 预编译双重正则
+                    # 1. 严格末尾匹配 (最安全，覆盖 95% 以上的标准情况)
+                    pattern_end: re.Pattern = re.compile(
+                        r'\s*(4|6)[Kk]?(ez|e|hd|h|in|i)\s*$',
+                        re.IGNORECASE
+                        )
+
+                    # 2. 中间宽泛匹配 (Fallback 方案，匹配被前后夹击的难度标识)
+                    # 注意：两边加上 \s+ 或边界，
+                    # 防止像 "xxxx4ever" 这种单词中间被误识别为 4e (4K EZ)
+                    pattern_mid: re.Pattern = re.compile(
+                        r'\s+(4|6)[Kk]?(ez|e|hd|h|in|i)\s+',
+                        re.IGNORECAS
+                        )
 
                     cursor.execute("SELECT ROWID, SongMapName FROM HitDelayHistory")
-                    rows = cursor.fetchall()
+                    rows: list[Any] = cursor.fetchall()
                     update_data = []
 
                     for row_id, old_name in rows:
                         if not old_name:
                             continue
-                        match = pattern.search(old_name)
-                        if match:
-                            key_num = match.group(1)
-                            diff_raw = match.group(2).upper()
-                            diff_std = 'EZ' if diff_raw.startswith('E') else 'HD' if diff_raw.startswith('H') else 'IN'
-                            std_keys = f"{key_num}K{diff_std}"
-                            cleaned_name = old_name[:match.start()]
+
+                        # === 优先尝试：末尾严格匹配 ===
+                        matchs = pattern_end.search(old_name)
+                        if matchs:
+                            key_num: str = matchs.group(1)
+                            diff_raw: str = matchs.group(2).upper()
+                            diff_std: str = 'IN'
+                            if diff_raw.startswith('E'):
+                                diff_std = 'EZ'
+                            elif diff_raw.startswith('H'):
+                                diff_std = 'HD'
+                            std_keys: str = f"{key_num}K{diff_std}"
+
+                            cleaned_name: str = old_name[:matchs.start()].strip()
                             update_data.append((cleaned_name, std_keys, row_id))
+                            continue  # 匹配成功，直接进入下一条记录
+
+                        # === Fallback 策略：尝试中间匹配 ===
+                        match_mid = pattern_mid.search(old_name)
+                        if match_mid:
+                            key_num: str = match_mid.group(1)
+                            diff_raw: str = match_mid.group(2).upper()
+                            diff_std: str = 'IN'
+                            if diff_raw.startswith('E'):
+                                diff_std = 'EZ'
+                            elif diff_raw.startswith('H'):
+                                diff_std = 'HD'
+                            std_keys: str = f"{key_num}K{diff_std}"
+
+                            # 抽离中间的难度字符串，拼接左右两侧的内容
+                            # 例如 "葬歌 4KHD 2D" -> "葬歌" + " " + "2D"
+                            left_part = old_name[:match_mid.start()]
+                            right_part = old_name[match_mid.end():]
+                            cleaned_name = f"{left_part} {right_part}".strip()
+
+                            # 合并可能产生的多余空格 (例如 "葬歌  2D" -> "葬歌 2D")
+                            cleaned_name = re.sub(r'\s+', ' ', cleaned_name)
+
+                            update_data.append((cleaned_name, std_keys, row_id))
+                            continue  # 匹配成功，进入下一条
+
+                        # === 极端情况：两套正则都没匹配上 ===
+                        cls._logger.warning(f"无法识别难度的异常谱面名称: [{old_name}]，跳过迁移。")
 
                     if update_data:
                         cursor.executemany("UPDATE HitDelayHistory SET SongMapName = ?, Mode = ? WHERE ROWID = ?", update_data)
@@ -419,5 +484,5 @@ class Toolkit:
                 return False
 
         cls._logger.info("数据库状态检查通过.")
-        cls._logger.debug(f"update_database() Run Time: {(time.perf_counter_ns() - start_time) / 1_000_000:.2f} ms")
+        cls._logger.debug(f"update_database() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
         return True

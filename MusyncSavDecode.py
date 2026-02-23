@@ -9,6 +9,7 @@ from tkinter import messagebox
 from typing import Any
 
 from Resources import Logger
+from Toolkit import Toolkit
 
 logger:logging.Logger = Logger.GetLogger(name="MUSYNCSavDecode")
 try:
@@ -55,17 +56,17 @@ class MUSYNCSavProcess(object):
 
     def LoadSaveFile(self)->None:
         '''加载存档文件并进行base64解码'''
-        startTime:int = time.perf_counter_ns()
+        start_time: int = time.perf_counter_ns()
         self.__logger.debug("LoadSaveFile Start.")
         with open(self.savPath, 'r', encoding="utf-8") as file:
             base64_data = file.read()
         self.Deserialize(b64decode(base64_data))
         self.__logger.debug("LoadSaveFile End.")
-        self.__logger.info("LoadSaveFile Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000))
+        self.__logger.info(f"LoadSaveFile Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
 
     def Deserialize(self, data)->None:
         """反序列化存档数据"""
-        startTime:int = time.perf_counter_ns()
+        start_time: int = time.perf_counter_ns()
         self.__logger.debug("SaveDeserialize Start.")
         stream:MemoryStream = MemoryStream(data)
         try:
@@ -159,11 +160,11 @@ class MUSYNCSavProcess(object):
 
         self.__logger.debug(SaveDataInfo.ToDict(debug=True))
         self.__logger.debug("SaveDeserialize End.")
-        self.__logger.info("SaveDeserialize Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000))
+        self.__logger.info(f"SaveDeserialize Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
 
     def FixUserMemory(self)->None:
         """补全缺失数据"""
-        startTime:int = time.perf_counter_ns()
+        start_time: int = time.perf_counter_ns()
         self.__logger.debug("UserMemoryToJson Start.")
 
         def GetSongName(songId:int)->MapInfo|None:
@@ -217,11 +218,11 @@ class MUSYNCSavProcess(object):
         for removeIndex in removeIndexList:
             SaveDataInfo.saveInfoList.pop(removeIndex)
         self.__logger.debug("UserMemoryToJson End.")
-        self.__logger.info("UserMemoryToJson Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000))
+        self.__logger.info(f"UserMemoryToJson Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
 
     def FavFix(self):
         """修复收藏仅应用于每首歌的4KEZ谱面的问题"""
-        startTime = time.perf_counter_ns()
+        start_time: int = time.perf_counter_ns()
         self.__logger.debug("FavFix Start.")
         # allSongData:dict[str,list] = SongName.SongNameData()
         self.__logger.debug(f"Favorites List：{self.FavSong}")
@@ -229,7 +230,7 @@ class MUSYNCSavProcess(object):
             if mapData.SongName in self.FavSong:
                 SaveDataInfo.saveInfoList[index].State = "Favo"
         self.__logger.debug("FavFix End.")
-        self.__logger.info("FavFix Run Time: %f ms"%((time.perf_counter_ns() - startTime)/1000000))
+        self.__logger.info(f"FavFix Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
 
 if __name__ == '__main__':
     import argparse

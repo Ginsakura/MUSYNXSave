@@ -103,7 +103,7 @@ class Toolkit:
         except OSError as e:
             _logger.error(f"Failed to change console style: {e}")
 
-        _logger.debug(f"change_console_style() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
+        _logger.debug(f"change_console_style() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     @staticmethod
     def get_hash(file_path: Optional[str] = None) -> str:
@@ -118,7 +118,7 @@ class Toolkit:
                 sha256_hash.update(byte_block)
 
         hash_result: str = sha256_hash.hexdigest().upper()
-        _logger.debug(f"get_hash() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
+        _logger.debug(f"get_hash() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return hash_result
 
     @classmethod
@@ -130,6 +130,9 @@ class Toolkit:
         start_time: int = time.perf_counter_ns()
 
         with cls._file_lock:
+            if cls._resource_file is None:
+                cls._logger.error("Resource file is not loaded.")
+                raise FileNotFoundError("Resource file is not loaded.")
             cls._resource_file.seek(offset)
             compressed_data: bytes = cls._resource_file.read(length)
 
@@ -140,7 +143,7 @@ class Toolkit:
             with open(release_path, "wb") as f:
                 f.write(decompressed_data)
 
-        cls._logger.debug(f"release_resource() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
+        cls._logger.debug(f"release_resource() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return decompressed_data
 
     @classmethod
@@ -170,14 +173,19 @@ class Toolkit:
                 cls._logger.debug(f"Check if the \"{file_path}\" exists and is valid...")
                 info = cls._resource_file_info[tag]
 
-                # song_name 特殊逻辑 (按 Version 更新)
-                if tag == "song_name":
-                    if not os.path.isfile(file_path) or info["version"] > SongName.Version():
-                        cls.release_resource(info["offset"], info["length"], file_path)
-                # 常规哈希比对逻辑
-                else:
-                    if not os.path.isfile(file_path) or cls.get_hash(file_path) != info["hash"]:
-                        cls.release_resource(info["offset"], info["length"], file_path)
+                try:
+                    # song_name 特殊逻辑 (按 Version 更新)
+                    if tag == "song_name":
+                        if not os.path.isfile(file_path) or info["version"] > SongName.Version():
+                            cls.release_resource(info["offset"], info["length"], file_path)
+                    # 常规哈希比对逻辑
+                    else:
+                        if not os.path.isfile(file_path) or cls.get_hash(file_path) != info["hash"]:
+                            cls.release_resource(info["offset"], info["length"], file_path)
+                except FileNotFoundError as e:
+                    cls._logger.error(f"Required resource \"{file_path}\" is missing and failed to restore: {e}")
+                except Exception as e:
+                    cls._logger.error(f"Error while checking resource \"{file_path}\": {e}")
 
             if '霞鹜文楷等宽' not in fonts:
                 cls._logger.debug("Check if the \"霞鹜文楷等宽\" font is installed...")
@@ -190,7 +198,7 @@ class Toolkit:
         if Config.DLLInjection:
             cls.game_lib_check()
 
-        cls._logger.debug(f"check_resources() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
+        cls._logger.debug(f"check_resources() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     @classmethod
     def get_save_file(cls) -> str:
@@ -215,7 +223,7 @@ class Toolkit:
                     return full_path
 
         cls._logger.error("搜索不到存档文件.")
-        cls._logger.info(f"get_save_file() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
+        cls._logger.info(f"get_save_file() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return ""
 
     @classmethod
@@ -272,7 +280,7 @@ class Toolkit:
 
         # --- 统一出口 ---
         # 无论上述哪个分支执行，都会来到这里
-        run_time_ms: float = Toolkit.calculate_end_time(start_time)
+        run_time_ms: float = Toolkit.calc_end_time(start_time)
         cls._logger.debug(f"game_lib_check() Run Time: {run_time_ms:.2f} ms, "
                           f"Return Code: {return_code}")
         return return_code
@@ -288,10 +296,10 @@ class Toolkit:
                 Diff INTEGER NOT NULL DEFAULT 0,
                 Keys TEXT NOT NULL DEFAULT '',
                 Combo TEXT NOT NULL DEFAULT '0/0',
-                AvgDelay FLOAT,
+                AvgDelay REAL,
                 AllKeys INTEGER,
-                AvgAcc FLOAT,
-                HitMap TEXT,
+                AvgAcc REAL,
+                HitMap BLOB,
                 PRIMARY KEY ("SongMapName", "RecordTime")
             );""")
         cursor.execute("CREATE TABLE IF NOT EXISTS Infos ("
@@ -332,7 +340,7 @@ class Toolkit:
         except Exception as e:
             cls._logger.fatal(f"CheckDatabaseVersion() 异常: {e}")
 
-        cls._logger.debug(f"check_database_version() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
+        cls._logger.debug(f"check_database_version() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return rt_code
 
     @classmethod
@@ -369,9 +377,9 @@ class Toolkit:
                         CREATE TABLE IF NOT EXISTS HitDelayHistory (
                             SongMapName TEXT NOT NULL,
                             RecordTime TEXT NOT NULL,
-                            AvgDelay FLOAT,
+                            AvgDelay REAL,
                             AllKeys INTEGER,
-                            AvgAcc FLOAT,
+                            AvgAcc REAL,
                             HitMap TEXT,
                             PRIMARY KEY ("SongMapName", "RecordTime")
                         );""")
@@ -399,39 +407,66 @@ class Toolkit:
                 # V3 -> V4
                 if now_version == 3:
                     cls._logger.info("记录数据迁移中... v3 -> v4")
-                    cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN "
-                                   "Diff INTEGER NOT NULL DEFAULT 0")
-                    cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN "
-                                   "Mode TEXT NOT NULL DEFAULT ''")
-                    cursor.execute("ALTER TABLE HitDelayHistory ADD COLUMN "
-                                   "Combo TEXT NOT NULL DEFAULT '0/0'")
 
-                    # 预编译双重正则
-                    # 1. 严格末尾匹配 (最安全，覆盖 95% 以上的标准情况)
+                    # 1. 重命名旧表
+                    cursor.execute("ALTER TABLE HitDelayHistory RENAME TO HitDelayHistoryOld;")
+
+                    # 2. 创建新表（符合目标结构，HitMap 改为 BLOB）
+                    cursor.execute("""
+                        CREATE TABLE HitDelayHistory (
+                            SongMapName TEXT NOT NULL DEFAULT '',
+                            RecordTime TEXT NOT NULL DEFAULT '',
+                            Diff INTEGER NOT NULL DEFAULT 0,
+                            Mode TEXT NOT NULL DEFAULT '',
+                            Combo TEXT NOT NULL DEFAULT '0/0',
+                            AvgDelay REAL,
+                            AllKeys INTEGER,
+                            AvgAcc REAL,
+                            HitMap BLOB,
+                            PRIMARY KEY ("SongMapName", "RecordTime")
+                        );
+                    """)
+
+                    # 3. 从旧表读取所有数据
+                    cursor.execute("""
+                        SELECT SongMapName, RecordTime, AvgDelay, AllKeys, AvgAcc, HitMap
+                        FROM HitDelayHistoryOld
+                    """)
+                    rows: list[tuple[str, str, float, int, float, str]] = cursor.fetchall()
+
+                    # 4.预编译双重正则
+                    #   1. 严格末尾匹配 (最安全，覆盖 95% 以上的标准情况)
                     pattern_end: re.Pattern = re.compile(
                         r'\s*(4|6)[Kk]?(ez|e|hd|h|in|i)\s*$',
                         re.IGNORECASE
                         )
 
-                    # 2. 中间宽泛匹配 (Fallback 方案，匹配被前后夹击的难度标识)
+                    #   2. 中间宽泛匹配 (Fallback 方案，匹配被前后夹击的难度标识)
                     # 注意：两边加上 \s+ 或边界，
                     # 防止像 "xxxx4ever" 这种单词中间被误识别为 4e (4K EZ)
                     pattern_mid: re.Pattern = re.compile(
                         r'\s+(4|6)[Kk]?(ez|e|hd|h|in|i)\s+',
-                        re.IGNORECAS
+                        re.IGNORECASE
                         )
 
-                    cursor.execute("SELECT ROWID, SongMapName FROM HitDelayHistory")
-                    rows: list[Any] = cursor.fetchall()
-                    update_data = []
+                    # 5. 准备批量插入的数据
+                    insert_data: list[tuple[str, str, int, str, str, float, int, float, bytes]] = []
 
-                    for row_id, old_name in rows:
-                        if not old_name:
+                    for row in rows:
+                        (song_map_name_old, record_time, avg_delay,
+                         all_keys, avg_acc, hitmap_text) = row
+                        song_map_name_new: str = song_map_name_old
+                        diff: int = 0
+                        mode: str = ""
+                        combo: str = "0/0"
+                        hitmap_bytes: bytes = b''
+                        
+                        if not song_map_name_old:
                             continue
 
+                        # 1. 从谱面名称中解析出 Diff 和 Mode（KeyNum + Diff），并清洗掉名称中的难度信息
                         # === 优先尝试：末尾严格匹配 ===
-                        matchs = pattern_end.search(old_name)
-                        if matchs:
+                        if (matchs := pattern_end.search(song_map_name_old)):
                             key_num: str = matchs.group(1)
                             diff_raw: str = matchs.group(2).upper()
                             diff_std: str = 'IN'
@@ -439,15 +474,9 @@ class Toolkit:
                                 diff_std = 'EZ'
                             elif diff_raw.startswith('H'):
                                 diff_std = 'HD'
-                            std_keys: str = f"{key_num}K{diff_std}"
-
-                            cleaned_name: str = old_name[:matchs.start()].strip()
-                            update_data.append((cleaned_name, std_keys, row_id))
-                            continue  # 匹配成功，直接进入下一条记录
-
-                        # === Fallback 策略：尝试中间匹配 ===
-                        match_mid = pattern_mid.search(old_name)
-                        if match_mid:
+                            mode = f"{key_num}K{diff_std}"
+                            song_map_name_new = song_map_name_old[:matchs.start()].strip()
+                        elif (match_mid := pattern_mid.search(song_map_name_old)):# === Fallback 策略：尝试中间匹配 ===
                             key_num: str = match_mid.group(1)
                             diff_raw: str = match_mid.group(2).upper()
                             diff_std: str = 'IN'
@@ -455,28 +484,54 @@ class Toolkit:
                                 diff_std = 'EZ'
                             elif diff_raw.startswith('H'):
                                 diff_std = 'HD'
-                            std_keys: str = f"{key_num}K{diff_std}"
-
+                            mode = f"{key_num}K{diff_std}"
                             # 抽离中间的难度字符串，拼接左右两侧的内容
                             # 例如 "葬歌 4KHD 2D" -> "葬歌" + " " + "2D"
-                            left_part = old_name[:match_mid.start()]
-                            right_part = old_name[match_mid.end():]
+                            left_part = song_map_name_old[:match_mid.start()]
+                            right_part = song_map_name_old[match_mid.end():]
                             cleaned_name = f"{left_part} {right_part}".strip()
-
                             # 合并可能产生的多余空格 (例如 "葬歌  2D" -> "葬歌 2D")
-                            cleaned_name = re.sub(r'\s+', ' ', cleaned_name)
+                            song_map_name_new = re.sub(r'\s+', ' ', cleaned_name)
+                        else:# === 极端情况：两套正则都没匹配上 ===
+                            cls._logger.warning(f"无法识别难度的异常谱面名称: [{song_map_name_old}]，跳过迁移。")
+                            song_map_name_new = song_map_name_old  # 保持原样迁移，避免数据丢失
 
-                            update_data.append((cleaned_name, std_keys, row_id))
-                            continue  # 匹配成功，进入下一条
+                        # 2. 将 HitMap 从 TEXT 转换为 BLOB（int32 打包）
+                        if hitmap_text:  # 非空字符串
+                            tokens: list[str] = hitmap_text.split('|')
+                            ints: list[int] = []
+                            for token in tokens:
+                                if not token:
+                                    continue
+                                try:
+                                    val: float = float(token)
+                                    # 乘以 10000 并四舍五入取整
+                                    ival: int = int(round(val * 10000))
+                                    ints.append(ival)
+                                except ValueError:
+                                    cls._logger.warning(f"无效的 HitMap 数值 '{token}'，跳过该值 (谱面：{song_map_name_old}，时间：{record_time})")
+                                    continue
+                            if ints:
+                                # 打包为小端 int32 字节串
+                                hitmap_bytes = struct.pack('<' + ('i' * len(ints)), *ints)
 
-                        # === 极端情况：两套正则都没匹配上 ===
-                        cls._logger.warning(f"无法识别难度的异常谱面名称: [{old_name}]，跳过迁移。")
+                        insert_data.append((
+                            song_map_name_new, record_time, diff, mode, combo,
+                            avg_delay, all_keys, avg_acc, hitmap_bytes
+                        ))
 
-                    if update_data:
-                        cursor.executemany("UPDATE HitDelayHistory SET SongMapName = ?, Mode = ? WHERE ROWID = ?", update_data)
-                        cls._logger.debug(f"成功清理并更新了 {len(update_data)} 条记录。")
+                    # 批量插入新表
+                    if insert_data:
+                        cursor.executemany("""
+                            INSERT INTO HitDelayHistory
+                            (SongMapName, RecordTime, Diff, Mode, Combo, AvgDelay, AllKeys, AvgAcc, HitMap)
+                            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                        """, insert_data)
 
-                    cursor.execute("UPDATE Infos SET Value = ? WHERE Key = ?", (str(target_version), "Version"))
+                    # 4. 删除旧表
+                    cursor.execute("DROP TABLE HitDelayHistoryOld;")
+                    
+                    cursor.execute("UPDATE Infos SET Value = ? WHERE Key = ?", ("4", "Version"))
                     now_version = target_version
 
             except sqlite3.Error as e:
@@ -484,5 +539,5 @@ class Toolkit:
                 return False
 
         cls._logger.info("数据库状态检查通过.")
-        cls._logger.debug(f"update_database() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
+        cls._logger.debug(f"update_database() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return True

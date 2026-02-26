@@ -31,7 +31,7 @@ class Config(object):
         # 清理 log.txt 文件
         os.remove(logsDir+logName)
 
-    __logLevelMapping:ClassVar[dict[str,int]]={
+    _logLevelMapping:ClassVar[dict[str,int]]={
         "NOTSET": logging.NOTSET,
         "DEBUG": logging.DEBUG,
         "INFO": logging.INFO,
@@ -41,87 +41,87 @@ class Config(object):
         "FATAL": logging.CRITICAL,
         "CRITICAL": logging.CRITICAL,
         }
-    __instance						= None
-    __lock:threading.Lock			= threading.Lock()
-    __logger:logging.Logger			= None
-    __filePath:str					= os.getcwd()+"\\musync_data\\bootcfg.json"
-    __config:ClassVar[dict[str,Any]]	= dict()
+    _instance						= None
+    _lock:threading.Lock			= threading.Lock()
+    _logger:logging.Logger			= None
+    _filePath:str					= os.getcwd()+"\\musync_data\\bootcfg.json"
+    _config:ClassVar[dict[str,Any]]	= dict()
 
-    Version:str						= __config.get("Version"					, None)
-    UpdateChannel:str				= __config.get("UpdateChannel"				, "Release")
-    LoggerFilterString:str			= __config.get("LoggerFilterString"			, "DEBUG")
-    LoggerFilter:int				= __logLevelMapping.get(LoggerFilterString	, logging.INFO)
-    CheckUpdate:bool				= __config.get("CheckUpdate"				, True)
-    DLLInjection:bool				= __config.get("DLLInjection"				, False)
-    SystemDPI:int					= __config.get("SystemDPI"					, 100)
-    DonutChartinHitDelay:bool		= __config.get("DonutChartinHitDelay"		, True)
-    DonutChartinAllHitAnalyze:bool	= __config.get("DonutChartinAllHitAnalyze"	, True)
-    NarrowDelayInterval:bool		= __config.get("NarrowDelayInterval"		, True)
-    ConsoleAlpha:int				= __config.get("ConsoleAlpha"				, 75)
-    ConsoleFont:str					= __config.get("ConsoleFont"				, "霞鹜文楷等宽")
-    ConsoleFontSize:int				= __config.get("ConsoleFontSize"			, 36)
-    MainExecPath:str				= __config.get("MainExecPath"				, None)
-    ChangeConsoleStyle:bool			= __config.get("ChangeConsoleStyle"			, True)
-    FramelessWindow:bool			= __config.get("FramelessWindow"			, False)
-    TransparentColor:str			= __config.get("TransparentColor"			, "#FFFFFF")
+    Version:str						= _config.get("Version"					, "3.0.0")
+    UpdateChannel:str				= _config.get("UpdateChannel"				, "Release")
+    LoggerFilterString:str			= _config.get("LoggerFilterString"			, "DEBUG")
+    LoggerFilter:int				= _logLevelMapping.get(LoggerFilterString	, logging.INFO)
+    CheckUpdate:bool				= _config.get("CheckUpdate"				, True)
+    DLLInjection:bool				= _config.get("DLLInjection"				, False)
+    SystemDPI:int					= _config.get("SystemDPI"					, 100)
+    DonutChartinHitDelay:bool		= _config.get("DonutChartinHitDelay"		, True)
+    DonutChartinAllHitAnalyze:bool	= _config.get("DonutChartinAllHitAnalyze"	, True)
+    NarrowDelayInterval:bool		= _config.get("NarrowDelayInterval"		, True)
+    ConsoleAlpha:int				= _config.get("ConsoleAlpha"				, 75)
+    ConsoleFont:str					= _config.get("ConsoleFont"				, "霞鹜文楷等宽")
+    ConsoleFontSize:int				= _config.get("ConsoleFontSize"			, 36)
+    MainExecPath:str				= _config.get("MainExecPath"				, "")
+    ChangeConsoleStyle:bool			= _config.get("ChangeConsoleStyle"			, True)
+    FramelessWindow:bool			= _config.get("FramelessWindow"			, False)
+    TransparentColor:str			= _config.get("TransparentColor"			, "#FFFFFF")
 
     def __new__(cls):
-        with cls.__lock:
-            if not cls.__instance:
+        with cls._lock:
+            if not cls._instance:
                 if os.path.isfile(".\\log.txt"):
                     cls.CompressLogFile()
-                cls.__logger_init__()
-                cls.__instance = super(Config, cls).__new__(cls)
-                __file:logging.FileHandler = logging.FileHandler(".\\log.txt")
-                __file.setLevel(logging.DEBUG)
-                __file.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-                __console:logging.StreamHandler = logging.StreamHandler()
-                __console.setLevel(logging.DEBUG)
-                __console.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-                cls.__logger.addHandler(__file)
-                cls.__logger.addHandler(__console)
-                cls.__logger.info("creating an instance in Resources.Config")
+                cls._logger_init()
+                cls._instance = super(Config, cls).__new__(cls)
+                _file:logging.FileHandler = logging.FileHandler(".\\log.txt")
+                _file.setLevel(logging.DEBUG)
+                _file.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+                _console:logging.StreamHandler = logging.StreamHandler()
+                _console.setLevel(logging.DEBUG)
+                _console.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+                cls._logger.addHandler(_file)
+                cls._logger.addHandler(_console)
+                cls._logger.info("creating an instance in Resources.Config")
                 cls.LoadConfig()
-        return cls.__instance
+        return cls._instance
 
     @classmethod
-    def __logger_init__(cls)->None:
-        cls.__logger = logging.getLogger("Resources.Config")
+    def _logger_init(cls)->None:
+        cls._logger = logging.getLogger("Resources.Config")
 
-        if not os.path.isfile(cls.__filePath):
-            cls.__logger.error(f"file: \"{cls.__filePath}\" not exists.")
+        if not os.path.isfile(cls._filePath):
+            cls._logger.error(f"file: \"{cls._filePath}\" not exists.")
         else:
-            with open(cls.__filePath,'r',encoding='utf8') as configFile:
+            with open(cls._filePath,'r',encoding='utf8') as configFile:
                 try:
-                    cls.__config = json.load(configFile)
+                    cls._config = json.load(configFile)
                 except Exception:
-                    cls.__logger.exception(f"file: \"{cls.__filePath}\" load failure.")
+                    cls._logger.exception(f"file: \"{cls._filePath}\" load failure.")
                 else:
-                    cls.__logger.info(f"file: \"{cls.__filePath}\" loaded.")
+                    cls._logger.info(f"file: \"{cls._filePath}\" loaded.")
 
     @classmethod
-    def FilePath(cls)->str: return cls.__filePath
+    def FilePath(cls)->str: return cls._filePath
     # @FilePath.setter
-    # def FilePath(self, value:str): self.__filePath = value; self.LoadFile()
+    # def FilePath(self, value:str): self._filePath = value; self.LoadFile()
 
     @classmethod
     def LoadConfig(cls)->None:
         "读取配置文件,自动执行"
-        if not os.path.isfile(cls.__filePath):
-            cls.__logger.error(f"file: \"{cls.__filePath}\" not exists.")
+        if not os.path.isfile(cls._filePath):
+            cls._logger.error(f"file: \"{cls._filePath}\" not exists.")
             return
-        with open(cls.__filePath,'r',encoding='utf8') as configFile:
+        with open(cls._filePath,'r',encoding='utf8') as configFile:
             try:
                 config:dict[str,Any] = json.load(configFile)
                 # 动态将字典的键值对赋值给类的属性
                 for key, value in config.items():
                     setattr(cls, key, value)
                 # Update LoggerFilter after all keys are loaded
-                cls.LoggerFilter = cls.__logLevelMapping.get(cls.LoggerFilterString, logging.INFO)
+                cls.LoggerFilter = cls._logLevelMapping.get(cls.LoggerFilterString, logging.INFO)
             except Exception:
-                cls.__logger.exception(f"file: \"{cls.__filePath}\" load failure.")
+                cls._logger.exception(f"file: \"{cls._filePath}\" load failure.")
             else:
-                cls.__logger.info(f"file: \"{cls.__filePath}\" loaded.")
+                cls._logger.info(f"file: \"{cls._filePath}\" loaded.")
 
     @classmethod
     def SaveConfig(cls) -> None:
@@ -156,18 +156,18 @@ class Config(object):
             "TransparentColor": cls.TransparentColor,
         }
         # 确保文件夹存在
-        os.makedirs(os.path.dirname(cls.__filePath), exist_ok=True)
+        os.makedirs(os.path.dirname(cls._filePath), exist_ok=True)
         # 保存为 JSON 文件
         try:
-            with open(cls.__filePath, 'w', encoding='utf8') as configFile:
+            with open(cls._filePath, 'w', encoding='utf8') as configFile:
                 json.dump(config_data, configFile, ensure_ascii=False, indent=2)
-            cls.__logger.info(f"Configuration saved to \"{cls.__filePath}\" successfully.")
+            cls._logger.info(f"Configuration saved to \"{cls._filePath}\" successfully.")
         except Exception:
-            cls.__logger.exception(f"Failed to save configuration to \"{cls.__filePath}\"")
+            cls._logger.exception(f"Failed to save configuration to \"{cls._filePath}\"")
 
 class Logger(object):
     """用于记录和生成日志"""
-    __formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    _formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     @classmethod
     def GetLogger(cls, name:str)->logging.Logger:
@@ -178,68 +178,68 @@ class Logger(object):
         if not logger.hasHandlers():
             file_handler = logging.FileHandler(".\\log.txt")
             file_handler.setLevel(loggerFilter)
-            file_handler.setFormatter(cls.__formatter)
+            file_handler.setFormatter(cls._formatter)
             console_handler = logging.StreamHandler()
             console_handler.setLevel(loggerFilter)
-            console_handler.setFormatter(cls.__formatter)
+            console_handler.setFormatter(cls._formatter)
             logger.addHandler(file_handler)
             logger.addHandler(console_handler)
         return logger
 
 class SongName(object):
     "存储SongName.json,单例"
-    __instance = None
-    __lock:threading.Lock		= threading.Lock()
-    __data:dict[str,list|int]	= None
-    __filePath:str				= os.getcwd()+"\\musync_data\\SongName.json"
-    __logger:logging.Logger		= None
+    _instance = None
+    _lock: threading.Lock		= threading.Lock()
+    _data: dict[str, list[Any]]	= {}
+    _filePath: str				= os.getcwd()+"\\musync_data\\SongName.json"
+    _logger: logging.Logger		= None
 
     def __new__(cls):
-        with cls.__lock:
-            if not cls.__instance:
-                cls.__instance = super(SongName, cls).__new__(cls)
-                cls.__logger = Logger.GetLogger("Resources.SongName")
-                cls.__logger.info("creating an instance in Resources.SongName")
+        with cls._lock:
+            if not cls._instance:
+                cls._instance = super(SongName, cls).__new__(cls)
+                cls._logger = Logger.GetLogger("Resources.SongName")
+                cls._logger.info("creating an instance in Resources.SongName")
                 cls.LoadFile()
-        return cls.__instance
+        return cls._instance
 
     @classmethod
-    def SongNameData(cls)->dict[str,list|int]:
-        return cls.__data
+    def SongNameData(cls) -> dict[str,list[str|int|bool]]:
+        return cls._data
 
     @classmethod
     def Version(cls)->int:
-        return 0 if (cls.__data is None) else cls.__data["version"]
+        return 0 if (cls._data is None) else cls._data["version"]
 
     @classmethod
     def FilePath(cls)->str:
-        return cls.__filePath
+        return cls._filePath
     # @FilePath.setter
-    # def FilePath(self, value:str): self.__filePath = value; self.LoadFile()
+    # def FilePath(self, value:str): self._filePath = value; self.LoadFile()
 
     @classmethod
     def LoadFile(cls)->None:
         "加载配置文件,自动执行"
-        if not os.path.isfile(cls.__filePath):
-            cls.__logger.error(f"file: \"{cls.__filePath}\" not exists.")
-            cls.__data = None
+        if not os.path.isfile(cls._filePath):
+            cls._logger.error(f"file: \"{cls._filePath}\" not exists.")
+            cls._data = {}
             return
-        with open(cls.__filePath,'r',encoding='utf8') as songNameFile:
+        with open(cls._filePath,'r',encoding='utf8') as songNameFile:
             try:
-                cls.__data:dict[str,list] = json.load(songNameFile)
+                cls._data = json.load(songNameFile)
             except Exception:
-                cls.__logger.exception(f"file: \"{cls.__filePath}\" load failure.")
+                cls._logger.exception(f"file: \"{cls._filePath}\" load failure.")
             else:
-                cls.__logger.info(f"file: \"{cls.__filePath}\" loaded.")
+                cls._logger.info(f"file: \"{cls._filePath}\" loaded.")
 
 class MapInfo(object):
     "存储谱面信息"
     def __init__(self, info:list|None = None, isBuiltin:bool=False) -> None:
         if info is None:
-            self.SongName:str				= None
-            self.SongKeys:str				= None
-            self.SongDifficulty:str			= None
-            self.SongDifficultyNumber:str	= None
+            self.SongName:str				= ""
+            self.SongKeys:str				= ""
+            self.SongDifficulty:str		    = ""
+            self.SongDifficultyNumber:str	= ""
         else:
             self.SongName:str				= str(info[0])
             self.SongKeys:str				= ("4Key" if info[1]==4 else "6Key")
@@ -248,7 +248,7 @@ class MapInfo(object):
             self.SongDifficultyNumber:str	= f"{info[3]:02d}"
         self.SongIsBuiltin:bool				= isBuiltin
 
-    def ToDict(self)->dict[str,str]:
+    def ToDict(self)->dict[str, str|bool]:
         "格式化为dict类型"
         return dict(
             Name			 = self.SongName,
@@ -313,7 +313,7 @@ class MapDataInfo(MapInfo):
             self.SongIsBuiltin:bool			= mapInfo.SongIsBuiltin
         elif len(args) == 1 and args[0] is None:
             # 如果传入的 MapInfo 为 None，处理这种情况
-            # Config.__logger.warning("MapInfo is None.")
+            # Config._logger.warning("MapInfo is None.")
             return
         elif len(args) == 4 and all(isinstance(arg, str) for arg in args):
             # 通过逐个条目设置 SongInfo 字段
@@ -344,9 +344,9 @@ class MapDataInfo(MapInfo):
 
 class SaveDataInfo(object):
     "存储存档数据,单例"
-    __instance									= None
-    __lock:threading.Lock						= threading.Lock()
-    __logger:logging.Logger						= None
+    _instance									= None
+    _lock:threading.Lock						= threading.Lock()
+    _logger:logging.Logger						= None
     version:int									= None
     AppVersion:int								= None
     saveInfoList:ClassVar[list[MapDataInfo]]	= []
@@ -390,12 +390,12 @@ class SaveDataInfo(object):
     fps:int										= 60
 
     def __new__(cls):
-        with cls.__lock:
-            if not cls.__instance:
-                cls.__instance = super(SaveDataInfo, cls).__new__(cls)
-                cls.__logger = Logger.GetLogger(name="Resources.SaveDataInfo")
-                cls.__logger.info("creating an instance in Resources.SaveDataInfo")
-        return cls.__instance
+        with cls._lock:
+            if not cls._instance:
+                cls._instance = super(SaveDataInfo, cls).__new__(cls)
+                cls._logger = Logger.GetLogger(name="Resources.SaveDataInfo")
+                cls._logger.info("creating an instance in Resources.SaveDataInfo")
+        return cls._instance
 
     @classmethod
     def ToString(cls)->str:
@@ -503,6 +503,6 @@ class SaveDataInfo(object):
         try:
             with open(filePath, "w", encoding="utf-8") as json_file:
                 json.dump(dataDict, json_file, ensure_ascii=False, indent=2)
-            cls.__logger.info(f"Data successfully saved to {filePath}")
+            cls._logger.info(f"Data successfully saved to {filePath}")
         except Exception:
-            cls.__logger.exception(f"Failed to save data to {filePath}")
+            cls._logger.exception(f"Failed to save data to {filePath}")

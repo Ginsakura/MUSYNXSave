@@ -62,7 +62,7 @@ class MUSYNCSavProcess(object):
             base64_data = file.read()
         self.Deserialize(b64decode(base64_data))
         self.__logger.debug("LoadSaveFile End.")
-        self.__logger.info(f"LoadSaveFile Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
+        self.__logger.info(f"LoadSaveFile Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     def Deserialize(self, data)->None:
         """反序列化存档数据"""
@@ -160,7 +160,7 @@ class MUSYNCSavProcess(object):
 
         self.__logger.debug(SaveDataInfo.ToDict(debug=True))
         self.__logger.debug("SaveDeserialize End.")
-        self.__logger.info(f"SaveDeserialize Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
+        self.__logger.info(f"SaveDeserialize Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     def FixUserMemory(self)->None:
         """补全缺失数据"""
@@ -201,7 +201,7 @@ class MUSYNCSavProcess(object):
         self.__logger.debug("|  SongID  | SpeedStall | SyncNumber |         UploadScore        | PlayCount |  State  |")
         # 遍历列表
         for saveIndex, mapData in enumerate(SaveDataInfo.saveInfoList):
-            mapInfo:MapInfo = GetSongName(mapData.SongId)
+            mapInfo: MapInfo|None = GetSongName(mapData.SongId)
             if ((mapInfo is None) or (mapInfo.SongName == "")):
                 mapData.State = "NoName"
                 removeIndexList.insert(0,saveIndex)
@@ -218,7 +218,7 @@ class MUSYNCSavProcess(object):
         for removeIndex in removeIndexList:
             SaveDataInfo.saveInfoList.pop(removeIndex)
         self.__logger.debug("UserMemoryToJson End.")
-        self.__logger.info(f"UserMemoryToJson Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
+        self.__logger.info(f"UserMemoryToJson Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     def FavFix(self):
         """修复收藏仅应用于每首歌的4KEZ谱面的问题"""
@@ -230,7 +230,7 @@ class MUSYNCSavProcess(object):
             if mapData.SongName in self.FavSong:
                 SaveDataInfo.saveInfoList[index].State = "Favo"
         self.__logger.debug("FavFix End.")
-        self.__logger.info(f"FavFix Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
+        self.__logger.info(f"FavFix Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
 if __name__ == '__main__':
     import argparse

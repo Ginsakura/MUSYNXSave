@@ -1,10 +1,11 @@
 /__pycache__
+/.venv
 /.vs
+/.vscode
 /build
 /musync
 /saveFile
 /Releases
-/venv
 /dist
 /logs
 /SavDecode
@@ -37,3 +38,5 @@ SavDecode.decode
 *.txt
 !requirements.txt
 
+ico.res
+ico.o

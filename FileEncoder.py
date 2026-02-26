@@ -8,24 +8,27 @@ import gzip
 import json
 import os
 import struct
-import logging
+from hashlib import sha256
 from io import BytesIO
 from typing import Optional, Any
-
-# 假设外部工具类已正确导入
-from Toolkit import Toolkit
-from Resources import Logger
 
 # ==================== 常量定义 (Constants) ====================
 FILL_SIZE: int = 512
 FIX_DLL: str = "11E958F4662BCAB027299868177FFD7CD19CB9A486C2AD6E822EED1D59A98A20"
 SOURCE_DLL: str = '9FA415129805E0ADE305E9CA76B7E692FA31492CE807C4667F6B46BD10849A97'
 
-# 配置基础日志
-logger: logging.Logger = Logger.GetLogger("File2Base64")
-
-
 # ==================== 核心逻辑 (Core Logic) ====================
+def get_hash(file_path: Optional[str] = None) -> str:
+    """分块读取并获取文件 SHA256 哈希值 (大写)"""
+    if not file_path or not os.path.isfile(file_path):
+        return ""
+    sha256_hash = sha256()
+    with open(file_path, 'rb') as f:
+        for byte_block in iter(lambda: f.read(65536), b""):
+            sha256_hash.update(byte_block)
+    hash_result: str = sha256_hash.hexdigest().upper()
+    return hash_result
+
 def clean_previous_build() -> bool:
     """
     清理上次打包遗留的二进制缓存文件与最终包。
@@ -33,7 +36,7 @@ def clean_previous_build() -> bool:
         bool: 如果所有文件都成功清理（或本就不存在），返回 True；
               如果遇到文件被占用等致命错误，返回 False。
     """
-    logger.info("正在清理上次构建的残留文件...")
+    print("正在清理上次构建的残留文件...")
 
     # 定义所有可能生成的构建产物路径
     target_files: list[str] = [
@@ -52,17 +55,17 @@ def clean_previous_build() -> bool:
         if os.path.exists(abs_path):
             try:
                 os.remove(abs_path)
-                logging.debug(f"已删除缓存文件: {abs_path}")
+                print(f"已删除缓存文件: {abs_path}")
             except PermissionError:
-                logging.error(f"❌ 权限被拒绝 (文件可能被占用): {abs_path}")
+                print(f"❌ 权限被拒绝 (文件可能被占用): {abs_path}")
                 has_error = True
             except OSError as e:
-                logging.error(f"❌ 删除文件时发生未知系统错误 {abs_path}: {e}")
+                print(f"❌ 删除文件时发生未知系统错误 {abs_path}: {e}")
                 has_error = True
     if has_error:
-        logging.error("清理过程中遇到错误，请关闭占用文件的软件后重试。")
+        print("清理过程中遇到错误，请关闭占用文件的软件后重试。")
         return False
-    logging.info("清理完成，环境已就绪。")
+    print("清理完成，环境已就绪。")
     return True
 
 
@@ -86,7 +89,7 @@ def compress_and_save(read_path: str, write_path: str) -> Optional[bytes]:
     读取、压缩并保存单个文件的压缩缓存副本。
     """
     if not os.path.isfile(read_path):
-        logger.warning(f"File not found, skipped: {read_path}")
+        print(f"File not found, skipped: {read_path}")
         return None
 
     compressed_data: bytes = compress_file(read_path)
@@ -103,7 +106,7 @@ def get_song_version() -> int:
         with open("./musync_data/songname.ver", 'r', encoding="ascii") as f:
             return int(f.read().strip())
     except (FileNotFoundError, ValueError):
-        logger.error("Failed to read songname.ver, defaulting to 0")
+        print("Failed to read songname.ver, defaulting to 0")
         return 0
 
 
@@ -111,7 +114,7 @@ def build_resource_pack() -> None:
     """构建打包主控流程"""
     # 打包前进行清理环境校验
     if not clean_previous_build():
-        logging.fatal("环境清理失败，打包流程已终止。")
+        print("环境清理失败，打包流程已终止。")
         return  # 直接退出，避免后续步骤产生脏数据
 
     json_path: str = "./musync_data/songname.json"
@@ -153,7 +156,7 @@ def build_resource_pack() -> None:
         target_path = file_node['target']
         tag = file_node['tag']
 
-        logger.info(f"Encoding: {source_path} -> {target_path}")
+        print(f"Encoding: {source_path} -> {target_path}")
         compressed_bytes = compress_and_save(source_path, target_path)
 
         if compressed_bytes is None:
@@ -165,7 +168,7 @@ def build_resource_pack() -> None:
         binary_info[tag] = {
             "offset": current_offset,
             "length": byte_length,
-            "hash": Toolkit.get_hash(source_path)
+            "hash": get_hash(source_path)
         }
 
         current_offset += byte_length
@@ -205,7 +208,7 @@ def build_resource_pack() -> None:
         # 写入所有被打包文件的二进制流
         binary_file.write(payload_buffer.getvalue())
 
-    logger.info("Success: Resources encoded and packed perfectly.")
+    print("Success: Resources encoded and packed perfectly.")
 
 
 if __name__ == '__main__':

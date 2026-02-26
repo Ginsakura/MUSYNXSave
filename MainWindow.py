@@ -31,7 +31,7 @@ class MusyncSavDecodeGUI(object):
     """
         docstring for MusyncSavDecodeGUI
         描述: MusyncSavDecodeGUI主窗口类
-        功能: 初始化主窗口，控件布局，事件绑定，UI逻辑处理
+        功能: 初始化主窗口, 控件布局, 事件绑定, UI逻辑处理
     """
     def __init__(self, root:Tk=None, isTKroot:bool=True):
         """
@@ -197,10 +197,15 @@ class MusyncSavDecodeGUI(object):
                 self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页')
                 self.logger.warning("Check update is Disable")
             self.InitLabel(text="正在读取存档路径……")
-            if Config().MainExecPath and os.path.isfile(Config().MainExecPath):
+            if (Config().MainExecPath is not None and
+                Config().MainExecPath and
+                os.path.isfile(Config().MainExecPath)
+                ):
                 self.saveFilePathVar.set(Config().MainExecPath+"SavesDir\\savedata.sav")
             else:
-                self.saveFilePathVar.set(Toolkit.get_save_file()+"SavesDir\\savedata.sav")
+                save_path: str = Toolkit.get_save_file()
+                if save_path:
+                    self.saveFilePathVar.set(save_path + "SavesDir\\savedata.sav")
             if Config().DLLInjection:
                 self.logger.warning("DLL Injection is Enable.")
                 self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelay, font=self.font,bg='#FF5959')
@@ -217,10 +222,15 @@ class MusyncSavDecodeGUI(object):
         """重载窗口关闭事件"""
         self.logger.info("Software Closing...")
         self.checkGameStartEvent.clear()
+        self.logger.debug("Waiting for CheckGameIsStartThread to Exit...")
         if self.checkGameIsStartThread and self.checkGameIsStartThread.is_alive():
             self.checkGameIsStartThread.join()
+        self.logger.debug("CheckGameIsStartThread Exited.")
+        self.logger.debug("Main Window Destroying...")
         self.root.destroy()
+        self.logger.debug("Saving Config and Data...")
         Config.SaveConfig()
+        self.logger.debug("SaveDataInfo Dumping To Json...")
         SaveDataInfo.DumpToJson()
         self.logger.info("Software Closed.")
 
@@ -324,7 +334,7 @@ class MusyncSavDecodeGUI(object):
             l.sort(reverse=self.dataSortMethodsort[1])
             for index, (val, k) in enumerate(l):
                 self.saveData.move(k, '', index)
-            print(f"Treeview SortClick Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
+            print(f"Treeview SortClick Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
             self.TreeviewColumnUpdate()
         if isinstance(event, list):
             self.dataSortMethodsort[1] = not self.dataSortMethodsort[1]
@@ -375,18 +385,23 @@ class MusyncSavDecodeGUI(object):
                 if messagebox.askyesno("无法获取谱面信息更新", '是否前往网页查看是否存在更新?\n(请比对 SongName.json 中的时间是否比本地文件中的时间更大)'):
                     webbrowser.open(repo + "songname.json")
             self.root.after(0, show_error)
-        self.logger.info(f"CheckJsonUpdate() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
+        self.logger.info(f"CheckJsonUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     def CheckUpdate(self) -> None:
         """检查软件更新"""
         def CheckVersion(local:list[int], target:list[int], channel:bool=False)->bool:
-            """版本号比较"""
-            if (target[0] > local[0]): return True
-            if (target[1] > local[1]): return True
-            if (target[2] > local[2]): return True
-            if channel:
-                if (target[3] > local[3]): return True
-            return False
+            """版本号比较
+            param:
+                local: list[int] - 本地版本号列表
+                target: list[int] - 目标版本号列表
+                channel: bool - 更新通道 (is pre-release)
+            return: bool - 是否存在更新
+            """
+            if (local[0] > target[0]): return False
+            elif (local[1] > target[1]): return False
+            elif (local[2] > target[2]): return False
+            elif channel and (local[3] > target[3]): return False
+            return True
 
         start_time: int = time.perf_counter_ns()
         updateChannel:bool = Config().UpdateChannel.lower() == "prerelease"
@@ -437,7 +452,7 @@ class MusyncSavDecodeGUI(object):
         # 	self.gitHubUrlVar = "点击打开GitHub仓库	点个Star吧，秋梨膏"
         # 	labelUrl = "https://github.com/Ginsakura/MUSYNCSave"
         self.root.after(0, lambda _:self.gitHubLink.configure(command=lambda:webbrowser.open(labelUrl)))
-        self.logger.info(f"CheckUpdate() Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
+        self.logger.info(f"CheckUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
 # 初始化提示框
     def InitLabel(self,text,close=False) -> None:
@@ -543,7 +558,7 @@ class MusyncSavDecodeGUI(object):
         if not self.dataSortMethodsort[0] is None:
             self.SortClick(self.dataSortMethodsort)
         self.InitLabel('数据展示生成完成.',close=True)
-        self.logger.debug(f"DataLoad Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
+        self.logger.debug(f"DataLoad Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         self.UpdateWindowInfo()
 
 # 控件更新功能组
@@ -596,7 +611,7 @@ class MusyncSavDecodeGUI(object):
             except Exception:
                 logger.debug("Checking has Unknown Exception")
                 pass
-            logger.info(f"CheckGameIsStart Run Time: {Toolkit.calculate_end_time(start_time):.2f} ms")
+            logger.info(f"CheckGameIsStart Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         logger.warning("Stop Thread: CheckGameIsStart.")
 
     def TreeviewColumnUpdate(self):

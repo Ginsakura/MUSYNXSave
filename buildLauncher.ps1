@@ -124,7 +124,7 @@ function Copy-Resources {
 }
 
 # 定义打包函数
-function Create-Archive {
+function Compress-Archive {
     <#
     .SYNOPSIS
     创建ZIP文件，将指定的文件和文件夹打包。
@@ -139,7 +139,7 @@ function Create-Archive {
     输出的ZIP文件路径。
 
     .EXAMPLE
-    Create-Archive -SourceItems @("logs", "musync_data", "MusyncSaveDecodeCLI.exe") -DestinationZip "MusyncSaveDecode_WithConsole_1.0.0_AllInOne.zip"
+    Compress-Archive -SourceItems @("logs", "musync_data", "MusyncSaveDecodeCLI.exe") -DestinationZip "MusyncSaveDecode_WithConsole_1.0.0_AllInOne.zip"
     #>
     param (
         [Parameter(Mandatory = $true)]
@@ -197,9 +197,9 @@ CheckDir -Dir "MusyncSaveDecode/Archive/";
 # Step 3: Pyinstaller编译
 & pyinstaller "buildLauncher.spec" --distpath "./MusyncSaveDecode" --clean;
 if ($?) {
-    Write-Host "Pyinstaller编译成功！" -ForegroundColor Green;
+    Write-Host "Pyinstaller编译成功!" -ForegroundColor Green;
 } else {
-    Write-Host "Pyinstaller编译失败！" -ForegroundColor Red;
+    Write-Host "Pyinstaller编译失败!" -ForegroundColor Red;
     exit 1;
 }
 # Write-Host "正在编译Cython模块 ..."
@@ -229,12 +229,12 @@ Copy-Resources -SourceDirectory "../musync_data" -TargetDirectory "MusyncSaveDec
 if ($noarchive){
     Write-Host "Skip Archive Zip File";
 } else {
-    Create-Archive -SourceItems $archive_AC -DestinationZip $destinationZip_AC;
-    Create-Archive -SourceItems $archive_ANC -DestinationZip $destinationZip_ANC;
+    Compress-Archive -SourceItems $archive_AC -DestinationZip $destinationZip_AC;
+    Compress-Archive -SourceItems $archive_ANC -DestinationZip $destinationZip_ANC;
     Set-Location -Path "MusyncSaveDecodeCLI";
-    Create-Archive -SourceItems $archive_C -DestinationZip $destinationZip_C;
+    Compress-Archive -SourceItems $archive_C -DestinationZip $destinationZip_C;
     Set-Location -Path "../MusyncSaveDecodeNoCLI";
-    Create-Archive -SourceItems $archive_NC -DestinationZip $destinationZip_NC;
+    Compress-Archive -SourceItems $archive_NC -DestinationZip $destinationZip_NC;
     Set-Location -Path "..";
 }
 Set-Location -Path "..";

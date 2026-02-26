@@ -2,6 +2,7 @@
 import logging
 import math
 import sqlite3
+import struct
 
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
@@ -17,88 +18,90 @@ class AllHitAnalyze(object):
 
     def __init__(self):
         # super(AllHitAnalyze, self).__init__()
-        self.logger:logging.Logger = Logger.GetLogger(name="AllHitAnalyze")
-        db:sqlite3.Connection = sqlite3.connect('./musync_data/HitDelayHistory.db')
-        cur:sqlite3.Cursor = db.cursor()
+        self.logger: logging.Logger = Logger.GetLogger(name="AllHitAnalyze")
+        db: sqlite3.Connection = sqlite3.connect('./musync_data/HitDelayHistory.db')
+        cur: sqlite3.Cursor = db.cursor()
         cur.execute('select HitMap from HitDelayHistory')
-        res:list[str] = cur.fetchall()
+        res: list[tuple[bytes]] = cur.fetchall()
         cur.close()
         db.close()
-        hit_map_a:list[int] = [0]*150   # -150~-1
-        hit_map_b:list[int] = [0]*251   # 0~+250
-        self.sum_y_num:int = 0          # with miss
-        self.sum_y_num_ext:int = 0      # only Exact
-        self.sum_y_num_core:int = 0     # only Cyan Exact
+        hit_map_a: list[int] = [0]*150   # -150~-1
+        hit_map_b: list[int] = [0]*251   # 0~+250
+        self.sum_y_num: int = 0          # with miss
+        self.sum_y_num_ext: int = 0      # only Exact
+        self.sum_y_num_core: int = 0     # only Cyan Exact
         # Cyan_Exact,Exact,Great,Right,Miss
-        self.rate:list[int] = [0,0,0,0,0]
+        self.rate: list[int] = [0,0,0,0,0]
         # ±5ms,±10ms,±20ms,±45ms,Exact,Great,Right,Miss
-        self.accurate_rate:list[int] = [0,0,0,0,0,0,0,0]
+        self.accurate_rate: list[int] = [0,0,0,0,0,0,0,0]
+
+        # 阈值常量（乘以10000）
+        THRESHOLD_5   = 5 * 10000      # 50000
+        THRESHOLD_10  = 10 * 10000     # 100000
+        THRESHOLD_20  = 20 * 10000     # 200000
+        THRESHOLD_45  = 45 * 10000     # 450000
+        THRESHOLD_90  = 90 * 10000     # 900000
+        THRESHOLD_150 = 150 * 10000    # 1500000
+        THRESHOLD_250 = 250 * 10000    # 2500000
 
         # 改进的循环：更健壮、可读、修正负值取整问题
         for row in res:
-            hitmap_field:str = row[0]
-            if not hitmap_field:
+            blob: bytes = row[0]
+            if not blob:
                 continue
-            for token in hitmap_field.split("|"):
-                if not token:
-                    continue
-                try:
-                    val = float(token)
-                except ValueError:
-                    # 跳过无法解析的条目
-                    continue
-
+            # 确定整数个数：blob长度除以4（因为int32是4字节）
+            count: int = len(blob) // 4
+            # 使用struct.unpack一次性解析所有整数，格式为'<i'*count
+            # 注意：如果数据量极大，一次性unpack所有整数可能会占用大量内存，但总数据量可能可控（如数百万），可以分批处理。这里按原样一次性。
+            ints = struct.unpack('<' + 'i'*count, blob)   # 返回tuple
+            # hitmap_field:str = row[0]
+            for ival in ints:
                 self.sum_y_num += 1
-
-                abs_val = abs(val)
-
-                # 分类到 rate 和 accurateRate（保持原有分段逻辑）
-                if abs_val < 5:
+                abs_ival: int = abs(ival)
+                # 分类统计（基于 abs_ival）
+                if abs_ival < THRESHOLD_5:
                     self.rate[0] += 1
                     self.accurate_rate[0] += 1
-                elif abs_val < 10:
+                elif abs_ival < THRESHOLD_10:
                     self.rate[0] += 1
                     self.accurate_rate[1] += 1
-                elif abs_val < 20:
+                elif abs_ival < THRESHOLD_20:
                     self.rate[0] += 1
                     self.accurate_rate[2] += 1
-                elif abs_val < 45:
+                elif abs_ival < THRESHOLD_45:
                     self.rate[0] += 1
                     self.accurate_rate[3] += 1
-                elif abs_val < 90:
+                elif abs_ival < THRESHOLD_90:
                     self.rate[1] += 1
                     self.accurate_rate[4] += 1
-                elif abs_val < 150:
+                elif abs_ival < THRESHOLD_150:
                     self.rate[2] += 1
                     self.accurate_rate[5] += 1
-                elif abs_val < 250:
+                elif abs_ival < THRESHOLD_250:
                     self.rate[3] += 1
                     self.accurate_rate[6] += 1
                 else:
                     self.rate[4] += 1
                     self.accurate_rate[7] += 1
 
-                # 更新 Exact / cyan Exact 计数
-                if abs_val < 45:
+                # 统计 exact / cyan exact
+                if abs_ival < THRESHOLD_45:
                     self.sum_y_num_core += 1
                     self.sum_y_num_ext += 1
-                elif abs_val < 90:
+                elif abs_ival < THRESHOLD_90:
                     self.sum_y_num_ext += 1
 
-                # 对延迟值取整 —— 使用 math.floor 对负值正确向下取整
-                idx = math.floor(val)
-
-                # 更新命中地图（尽量保持原有逻辑：0..249 -> hitMapB[idx],
-                # >=250 -> hitMapB[250], 否则放入 hitMapA）
+                # 更新直方图 (直接取整)
+                # 更新命中地图 (尽量保持原有逻辑：0..249 -> hitMapB[idx],
+                # >=250 -> hitMapB[250], 否则放入 hitMapA)
+                idx = ival // 10000       # 等价于 floor(val)
                 if 0 <= idx < 250:
                     hit_map_b[idx] += 1
                 elif idx >= 250:
                     hit_map_b[250] += 1
                 elif idx >= -150:
-                    # -150 到 -1 的范围，利用 Python 负数索引完美映射
                     hit_map_a[idx] += 1
                 else:
-                    # 极限 Early 保护：小于 -150ms 的数据统一记入 -150 槽位
                     hit_map_a[-150] += 1
 
         self.x_axis:list[int] = [i for i in range(-150,251)]
@@ -124,8 +127,8 @@ class AllHitAnalyze(object):
 
     def _calculate_weighted_stats(
         self,
-        x_data: list[float],
-        y_data: list[float],
+        x_data: list[int],
+        y_data: list[int],
         total_y: float
         ) -> tuple[float, float, float]:
         """
@@ -236,17 +239,19 @@ class AllHitAnalyze(object):
         # ---------------- 交互模块：CheckButtons ----------------
         # 在图表的右上角开辟一块区域放置 CheckButtons
         # [left, bottom, width, height]
-        ax_check = fig.add_axes([0.05, 0.70, 0.20, 0.15])
+        ax_check = fig.add_axes((0.05, 0.70, 0.20, 0.15))
 
         curves = [line_all, line_ext, line_core]
-        labels = [curve.get_label().split(' (')[0] for curve in curves] # 提取简短的 Label
+        labels = [str(curve.get_label()).split(' (')[0] for curve in curves] # 提取简短的 Label
         visibilities = [curve.get_visible() for curve in curves]
 
         # 绑定到实例属性防止被垃圾回收 (Garbage Collection)
         self.check_btn = CheckButtons(ax_check, labels, visibilities)
 
         # 回调函数：切换可见性
-        def toggle_visibility(label: str) -> None:
+        def toggle_visibility(label: str | None) -> None:
+            if label is None:
+                return
             idx = labels.index(label)
             curves[idx].set_visible(not curves[idx].get_visible())
             fig.canvas.draw_idle() # 触发重绘
@@ -313,4 +318,4 @@ class AllHitAnalyze(object):
         )
 
 if __name__ == '__main__':
-    AllHitAnalyze().show();
+    AllHitAnalyze().show()

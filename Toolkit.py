@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿*- coding: utf-8 -*-
 import gzip
 import io
 import json
@@ -532,7 +532,10 @@ class Toolkit:
                     cursor.execute("DROP TABLE HitDelayHistoryOld;")
                     
                     cursor.execute("UPDATE Infos SET Value = ? WHERE Key = ?", ("4", "Version"))
-                    now_version = target_version
+                    now_version = 4
+
+                if now_version == target_version:
+                    cls._logger.info("当前版本: v{now_version}, 已是最新")
 
             except sqlite3.Error as e:
                 cls._logger.error(f"数据库更新失败并已回滚，原因: {e}")

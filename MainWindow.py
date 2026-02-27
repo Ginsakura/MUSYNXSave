@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from Resources import Config
+Config()
+
 import ctypes
 import logging
 import os
@@ -24,7 +27,7 @@ import Version
 import Difficulty_ScoreAnalyze
 from HitDelay import HitDelayText
 from MusyncSavDecode import MUSYNCSavProcess
-from Resources import Config, SaveDataInfo, SongName, Logger
+from Resources import SaveDataInfo, SongName, Logger
 from Toolkit import Toolkit
 
 class MusyncSavDecodeGUI(object):
@@ -767,7 +770,6 @@ if __name__ == '__main__':
     import Version
 
     # Init
-    Config()
     SongName()
     SaveDataInfo()
     Toolkit.init_resources();

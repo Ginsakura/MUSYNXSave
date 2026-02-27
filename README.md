@@ -58,6 +58,12 @@ C#重构版本: [MUSYNCSaveCSharp](https://github.com/Ginsakura/MUSYNCSaveCSharp
 
 </details>
 
+## 软件调用结构
+<details>
+<summary>点击展开软件调用结构</summary>
+
+</details>
+
 ## 开发计划
 
 ### 未来的计划

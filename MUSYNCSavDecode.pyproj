@@ -12,7 +12,7 @@
     <Name>MUSYNCSavDecode</Name>
     <RootNamespace>MUSYNCSavDecode</RootNamespace>
     <IsWindowsApplication>False</IsWindowsApplication>
-    <InterpreterId>MSBuild|venv|$(MSBuildProjectFullPath)</InterpreterId>
+    <InterpreterId>MSBuild|.venv|$(MSBuildProjectFullPath)</InterpreterId>
     <TestFramework>none</TestFramework>
     <UnitTestPattern>test*.py</UnitTestPattern>
     <UnitTestRootDirectory>.</UnitTestRootDirectory>
@@ -70,7 +70,6 @@
     <Content Include="LauncherC.exe" />
     <Content Include="LICENSE" />
     <Content Include="mscorlib.dll" />
-    <Content Include="MUSYNCSavDecode.sublime-workspace" />
     <Content Include="MusyncSavDecodeGUI.bat" />
     <Content Include="musync_data\Acc-Sync.csv" />
     <Content Include="musync_data\Acc-SyncAnalyze%28Stata%29.do" />
@@ -119,10 +118,10 @@
     <Content Include="skin\MainBackGround.psd" />
   </ItemGroup>
   <ItemGroup>
-    <Interpreter Include="venv\">
-      <Id>venv</Id>
+    <Interpreter Include=".venv\">
+      <Id>.venv</Id>
       <Version>3.11</Version>
-      <Description>venv (Python 3.11 (64-bit))</Description>
+      <Description>.venv (Python 3.11 (64-bit))</Description>
       <InterpreterPath>Scripts\python.exe</InterpreterPath>
       <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
       <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>

@@ -10,7 +10,7 @@ from Resources import MapDataInfo, SaveDataInfo
 # 定义偏移量常量，避免魔法数字
 JITTER_OFFSET: Final[float] = 0.15
 
-def analyze() -> None:
+def diff_score_analyze() -> None:
     """分析谱面数据并生成难度与分数散点图"""
 
     # 1. 语义化的数据容器

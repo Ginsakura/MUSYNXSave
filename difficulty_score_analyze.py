@@ -5,7 +5,7 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from typing import Final
 
-from Resources import MapDataInfo, SaveDataInfo
+from . import MapDataInfo, SaveDataInfo
 
 # 定义偏移量常量，避免魔法数字
 JITTER_OFFSET: Final[float] = 0.15
@@ -141,4 +141,4 @@ def diff_score_analyze() -> None:
     plt.show()
 
 if __name__ == '__main__':
-    analyze()
+    diff_score_analyze()

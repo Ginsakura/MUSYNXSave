@@ -8,8 +8,7 @@ from base64 import b64decode
 from tkinter import messagebox
 from typing import Any
 
-from Resources import Logger
-from Toolkit import Toolkit
+from . import Logger, Toolkit
 
 logger:logging.Logger = Logger.GetLogger(name="MUSYNCSavDecode")
 try:
@@ -25,10 +24,10 @@ except Exception:
     logger.exception("Import Error.")
     sys.exit(101)
 
-class MUSYNCSavProcess(object):
+class MusyncSaveDecoder(object):
     """docstring for MUSYNCSavProcess"""
     def __init__(self, savFile:str=''):
-        super(MUSYNCSavProcess, self).__init__()
+        super(MusyncSaveDecoder, self).__init__()
         self.__assembly_loaded:bool = False
         dllPath:str|None = None
         try:
@@ -240,5 +239,5 @@ if __name__ == '__main__':
 
     savPath = args.savPath or os.path.join(Config.MainExecPath or '.', 'SavesDir', 'savedata.sav')
 
-    Object = MUSYNCSavProcess(savPath)
+    Object = MusyncSaveDecoder(savPath)
     Object.Main()

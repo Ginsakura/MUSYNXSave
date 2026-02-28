@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-from Resources import Config
-Config()
-
 import ctypes
 import logging
 import os
@@ -23,14 +20,11 @@ from tkinter.filedialog import askopenfilename
 # from PIL import Image as PILImage
 # from PIL import ImageTk
 
-import Version
-import Difficulty_ScoreAnalyze
-from HitDelay import HitDelayText
-from MusyncSavDecode import MUSYNCSavProcess
-from Resources import SaveDataInfo, SongName, Logger
-from Toolkit import Toolkit
+from . import diff_score_analyze, HitDelay
+from . import MusyncSaveDecoder
+from . import SaveDataInfo, SongName, Logger, Toolkit
 
-class MusyncSavDecodeGUI(object):
+class MusyncMainWindow(object):
     """
         docstring for MusyncSavDecodeGUI
         描述: MusyncSavDecodeGUI主窗口类
@@ -129,7 +123,7 @@ class MusyncSavDecodeGUI(object):
 
         # self.closeWindow = ttk.Button(self.root, text="关闭",command=lambda : self.root.destroy(),style='close.TButton')
         # self.closeWindow.place(x=100,y=88,width=90,height=30)
-        self.difficuteScoreAnalyze = Button(self.root, text="成绩分布",command=lambda:Difficulty_ScoreAnalyze.analyze(), font=self.font)
+        self.difficuteScoreAnalyze = Button(self.root, text="成绩分布",command=lambda:diff_score_analyze(), font=self.font)
         self.difficuteScoreAnalyze.place(x=775,y=88,width=90,height=30)
 
         self.totalSyncFrameLabel = Label(self.root, text='', relief="groove")
@@ -211,9 +205,9 @@ class MusyncSavDecodeGUI(object):
                     self.saveFilePathVar.set(save_path + "SavesDir\\savedata.sav")
             if Config().DLLInjection:
                 self.logger.warning("DLL Injection is Enable.")
-                self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelay, font=self.font,bg='#FF5959')
+                self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelayCheck, font=self.font,bg='#FF5959')
                 self.hitDelay.place(x=775,y=50,width=90,height=30)
-            MUSYNCSavProcess(savFile=self.saveFilePathVar.get()).Main()
+            MusyncSaveDecoder(savFile=self.saveFilePathVar.get()).Main()
             self.DataLoad()
         except Exception as e:
             self.logger.exception("Software has some Exception:")
@@ -468,10 +462,10 @@ class MusyncSavDecodeGUI(object):
 # 数据分析功能组
     def RefreshSave(self)->None:
         "刷新存档"
-        MUSYNCSavProcess(savFile=self.saveFilePathVar.get()).Main()
+        MusyncSaveDecoder(savFile=self.saveFilePathVar.get()).Main()
         self.DataLoad()
 
-    def HitDelay(self):
+    def HitDelayCheck(self):
         "DLL注入功能"
         if not Config().DLLInjection:
             return
@@ -485,7 +479,7 @@ class MusyncSavDecodeGUI(object):
             self.logger.info("DLL Injection Success.")
         nroot:Toplevel = Toplevel(self.root)
         nroot.resizable(True, True)
-        HitDelayText(nroot)
+        HitDelay(nroot)
 
     def DataLoad(self):
         "存档数据解析"
@@ -767,14 +761,7 @@ class MessageBoxEnum(Enum):
 
 
 if __name__ == '__main__':
-    import Version
-
-    # Init
-    SongName()
-    SaveDataInfo()
-    Toolkit.init_resources();
-    Config().Version = Version.preVersion.replace("pre",".") if (Version.isPreRelease) else Version.version
-
+    """主函数"""
     # Launcher
     root:Tk = Tk()
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
@@ -786,7 +773,7 @@ if __name__ == '__main__':
     root.tk.call('tk', 'scaling', 1.25)
     root.resizable(False, True); #允许改变窗口高度，不允许改变窗口宽度
     # 强制仅旧版UI
-    MusyncSavDecodeGUI(root=root)
+    MusyncMainWindow(root=root)
     # if cfg['EnableFramelessWindow']:
     # 	root.overrideredirect(1)
     # 	window = NewStyle.MusyncSavDecodeGUI(root=root)

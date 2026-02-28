@@ -1,4 +1,4 @@
-﻿*- coding: utf-8 -*-
+﻿# *- coding: utf-8 -*-
 import gzip
 import io
 import json
@@ -18,7 +18,7 @@ from win32 import win32gui, win32print
 from win32.lib import win32con
 from win32.win32api import GetSystemMetrics
 
-from Resources import Config, Logger, SongName
+from . import Config, Logger, SongName
 
 _logger: logging.Logger = Logger().GetLogger("Toolkit")
 

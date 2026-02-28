@@ -11,7 +11,7 @@ import matplotlib.pyplot as plot
 from matplotlib.ticker import MultipleLocator
 from matplotlib.widgets import CheckButtons
 
-from Resources import Config, Logger
+from . import Config, Logger
 
 class AllHitAnalyze(object):
     """docstring for HitAnalyze"""
@@ -286,7 +286,7 @@ class AllHitAnalyze(object):
         colors = ['#9dfff0', '#69f1f1', '#25d8d8', '#32a9c7', '#2F97FF', 'green', 'orange', 'red']
         labels_pie = ["EXACT<5ms", "EXACT<10ms", "EXACT<20ms", "EXACT<45ms", "Exact", "Great", "Right", "Miss"]
 
-        pie_rtn, _ = ax2.pie(
+        pie_rtn, _ = ax2.pie( # type: ignore
             self.accurate_rate,
             wedgeprops=wedgeprops,
             startangle=90,

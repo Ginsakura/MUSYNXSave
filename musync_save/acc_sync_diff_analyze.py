@@ -3,7 +3,9 @@ import csv
 import logging
 
 from matplotlib import pyplot as plot
+from matplotlib.figure import Figure
 from matplotlib.ticker import MultipleLocator
+from mpl_toolkits.mplot3d import Axes3D
 
 from . import Logger
 
@@ -19,7 +21,7 @@ def analyze_3d() -> None:
     # 1. 安全的数据读取 (使用 csv 模块代替手动 split)
     try:
         with open('./musync_data/Acc-Sync.csv', mode='r', encoding='utf-8') as f:
-            reader = csv.reader(f)
+            reader: csv._reader = csv.reader(f)
             for line_num, row in enumerate(reader, start=1):
                 # 忽略空行
                 if not row:
@@ -37,7 +39,7 @@ def analyze_3d() -> None:
         return
 
     # 防御性检查
-    if not acc or not sync or not diff:
+    if (not acc) or (not sync) or (not diff):
         logger.error("No valid 3D data found in Acc-Sync.csv")
         return
 
@@ -46,11 +48,12 @@ def analyze_3d() -> None:
     plot.rcParams['font.sans-serif'] = ['LXGW WenKai Mono', 'SimHei']
     plot.rcParams['axes.unicode_minus'] = False
 
-    fig = plot.figure('AvgAcc vs SYNC.Rate vs Diff (3D)', figsize=(9, 9))
+    fig: Figure = plot.figure('AvgAcc vs SYNC.Rate vs Diff (3D)', figsize=(9, 9))
     fig.clear()
+    fig.subplots_adjust(left=0.0, bottom=0.0, right=1.0, top=1.0)
 
     # 使用 projection='3d' 声明 3D 子图
-    ax = fig.add_subplot(111, projection='3d')
+    ax: Axes3D = fig.add_subplot(111, projection='3d')
 
     # 3. 动态轴距计算与限制 (依据你的 0~250, 0~125, 1~15 规范)
     max_acc: float = min(max(acc) + 5, 250.0)  # 最大不超过 250
@@ -104,12 +107,12 @@ def analyze_3d() -> None:
         # 在 3D 中画线需要传入 (X_list, Y_list, Z_list)
         ax.plot(
             [min_acc, max_acc], [y_wall, y_wall], [z_line, z_line],
-            linestyle=line_style, alpha=0.5, linewidth=line_width, color=color
+            ls=line_style, alpha=0.5, lw=line_width, c=color
         )
         # 添加文本标注 (zdir='x' 让文本贴合墙面)
         ax.text(
             max_acc, y_wall, z_line,
-            f' {label}', color=color, fontsize=9, alpha=0.8
+            f' {label}', c=color, fontsize=9, alpha=0.8
         )
 
     # 纵向 5ms 参考线 (同样绘制在 Y = 15 的后墙上)
@@ -121,7 +124,7 @@ def analyze_3d() -> None:
 
     #     ax.plot(
     #         [acc_line, acc_line], [y_wall, y_wall], [min(sync), 125],
-    #         linestyle=line_style, alpha=alpha_val, linewidth=1, color='gray'
+    #         ls=line_style, alpha=alpha_val, lw=1, c='gray'
     #     )
 
     # 5. 绘制 3D 散点图
@@ -139,8 +142,6 @@ def analyze_3d() -> None:
     # 调整初始视角 (仰角 20 度, 方位角 -45 度)
     ax.view_init(elev=20, azim=-45)
 
-    # 紧凑布局
-    plot.tight_layout()
     plot.show()
 
 if __name__ == '__main__':

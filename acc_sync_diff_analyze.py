@@ -5,7 +5,7 @@ import logging
 from matplotlib import pyplot as plot
 from matplotlib.ticker import MultipleLocator
 
-from Resources import Logger
+from . import Logger
 
 def analyze_3d() -> None:
     """读取 CSV 数据并生成 3D 散点图分析视图"""
@@ -127,7 +127,7 @@ def analyze_3d() -> None:
     # 5. 绘制 3D 散点图
     # 增加深度着色或使用统一颜色
     scatter = ax.scatter(
-        acc, diff, sync,
+        acc, diff, sync,  # type: ignore
         c='#8a68d0', alpha=0.7, s=15, edgecolors='none'
     )
 

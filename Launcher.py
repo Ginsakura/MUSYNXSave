@@ -1,32 +1,16 @@
 # -*- coding: utf-8 -*-
-from Resources import Config
-Config()
-
 import sys
 import ctypes
 import logging
 from tkinter import Tk, font
-# from tkinter import *
 
-import Version
-from MainWindow import MusyncSavDecodeGUI
-#from .MainWindow_New import MusyncSavDecodeGUI
-from Resources import Logger, SaveDataInfo, SongName
-from Toolkit import Toolkit
+from . import __version__
+from . import MusyncMainWindow, Toolkit, Config, Logger
 
 logger:logging.Logger = Logger.GetLogger(name="Launcher")
 
 def Launcher()->None:
-    # Init
-    SongName()
-    SaveDataInfo()
-    Toolkit.init_resources()
-
-    if Version.isPreRelease:
-        Config.Version = Version.preVersion.replace("pre", ".")
-    else:
-        Config.Version = Version.version.replace("rc", ".")
-
+    """程序入口，负责环境检查、资源准备和主窗口启动"""
     # Launcher
     ctypes.windll.shcore.SetProcessDpiAwareness(1)
     root:Tk = Tk()
@@ -39,7 +23,7 @@ def Launcher()->None:
     root.tk.call('tk', 'scaling', 1.25)
     root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
     # 仅旧版UI可用
-    MusyncSavDecodeGUI(root=root)
+    MusyncMainWindow(root=root)
     # if cfg['EnableFramelessWindow']:
     # 	root.overrideredirect(1)
     # 	window = NewStyle.MusyncSavDecodeGUI(root=root)

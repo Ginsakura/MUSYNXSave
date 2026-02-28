@@ -8,8 +8,7 @@
 /Releases
 /dist
 /logs
-/SavDecode
-/MusyncSaveDecode
+/musync_save/__pycache__
 
 bootcfg.json
 LXGW.ttf

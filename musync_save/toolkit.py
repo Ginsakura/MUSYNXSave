@@ -166,7 +166,8 @@ class Toolkit:
                 ("./musync_data/MUSYNC.ico", "icon"),
                 ("./musync_data/SongName.json", "song_name"),
                 ("./mscorlib.dll", "core_lib"),
-                ("./musync_data/LXGW.ttf", "font")
+                ("./musync_data/LXGW.ttf", "font"),
+                ("./musync_data/Assembly-CSharp.dll", "game_lib")
             ]
 
             for file_path, tag in resources_to_check:

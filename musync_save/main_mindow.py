@@ -20,9 +20,10 @@ from tkinter.filedialog import askopenfilename
 # from PIL import Image as PILImage
 # from PIL import ImageTk
 
+from . import version, pre_version, is_pre_release
 from . import diff_score_analyze, HitDelay
 from . import MusyncSaveDecoder
-from . import SaveDataInfo, SongName, Logger, Toolkit
+from . import Config, SaveDataInfo, SongName, Logger, Toolkit
 
 class MusyncMainWindow(object):
     """
@@ -39,9 +40,9 @@ class MusyncMainWindow(object):
         """
         # super(MusyncSavDecodeGUI, self).__init__()
         self.logger:logging.Logger = Logger.GetLogger(name="MusyncSavDecodeGUI")
-        self.version:str = Version.version
-        self.preVersion:str = Version.preVersion
-        self.isPreRelease:bool = Version.isPreRelease
+        self.version:str = version
+        self.preVersion:str = pre_version
+        self.isPreRelease:bool = is_pre_release
         self.isTKroot:bool = isTKroot
         root.iconbitmap('./musync_data/Musync.ico')
         root.geometry(f'1000x670+500+300')

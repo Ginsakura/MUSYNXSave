@@ -8,11 +8,10 @@ from base64 import b64decode
 from tkinter import messagebox
 from typing import Any
 
-from . import Logger, Toolkit
+from . import Logger, Toolkit, Config, SongName, SaveDataInfo, MapDataInfo, MapInfo
 
 logger:logging.Logger = Logger.GetLogger(name="MUSYNCSavDecode")
 try:
-    from Resources import Config, SongName, SaveDataInfo, MapDataInfo, MapInfo
     # Load C# Lib
     # clr.AddReference("System.Runtime.Serialization.Formatters.Binary")
     clr.AddReference("mscorlib")
@@ -31,7 +30,7 @@ class MusyncSaveDecoder(object):
         self.__assembly_loaded:bool = False
         dllPath:str|None = None
         try:
-            dllPath = os.path.join(Config.MainExecPath, 'MUSYNX_Data', 'Managed', 'Assembly-CSharp.dll')
+            dllPath = './musync_data/Assembly-CSharp.dll'
             assembly = Assembly.LoadFrom(dllPath)
             self.__assembly = assembly
             self.__assembly_loaded = True

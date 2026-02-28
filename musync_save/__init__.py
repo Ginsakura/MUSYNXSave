@@ -9,7 +9,7 @@ Config()
 
 # 导出主要入口类和函数
 # 1. 无依赖关系的核心功能模块
-from .version import version, preVersion, isPreRelease
+from .version import version, pre_version, is_pre_release
 from .resources import Logger, SongName, SaveDataInfo, MapInfo, MapDataInfo
 
 # 2. 依赖 1 的工具模块
@@ -24,9 +24,8 @@ from .musync_save_decode import MusyncSaveDecoder
 
 # 4. 主窗口和程序入口
 from .main_mindow import MusyncMainWindow
-from .launcher import Launcher
 
-__version__ = preVersion.replace("pre",".") if (isPreRelease) else version
+__version__ = pre_version.replace("pre",".") if (is_pre_release) else version
 
 # 定义公开接口（建议使用）
 __all__ = [
@@ -35,7 +34,6 @@ __all__ = [
     "Config",
     "diff_score_analyze",
     "HitDelay",
-    "Launcher",
     "Logger",
     "MapDataInfo",
     "MapInfo",

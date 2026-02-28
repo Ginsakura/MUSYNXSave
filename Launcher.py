@@ -4,8 +4,9 @@ import ctypes
 import logging
 from tkinter import Tk, font
 
-from . import __version__
-from . import MusyncMainWindow, Toolkit, Config, Logger
+from musync_save import __version__
+from musync_save import MusyncMainWindow, HitDelay
+from musync_save import Toolkit, Config, Logger
 
 logger:logging.Logger = Logger.GetLogger(name="Launcher")
 
@@ -22,8 +23,8 @@ def Launcher()->None:
         Toolkit.change_console_style()
     root.tk.call('tk', 'scaling', 1.25)
     root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
-    # 仅旧版UI可用
     MusyncMainWindow(root=root)
+    # HitDelay(root)
     # if cfg['EnableFramelessWindow']:
     # 	root.overrideredirect(1)
     # 	window = NewStyle.MusyncSavDecodeGUI(root=root)

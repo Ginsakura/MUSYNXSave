@@ -24,7 +24,6 @@ def Launcher()->None:
     root.tk.call('tk', 'scaling', 1.25)
     root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
     MusyncMainWindow(root=root)
-    # HitDelay(root)
     # if cfg['EnableFramelessWindow']:
     # 	root.overrideredirect(1)
     # 	window = NewStyle.MusyncSavDecodeGUI(root=root)
@@ -33,9 +32,26 @@ def Launcher()->None:
     root.update()
     root.mainloop()
 
+def DEBUG() -> None:
+    """调试入口，负责测试和调试"""
+    logger.info(" ====> DEBUG() start <====")
+    root:Tk = Tk()
+    fontlist:list[str] = list(font.families())
+    Toolkit.get_save_file()
+    Toolkit.check_resources(fontlist)
+    root.tk.call('tk', 'scaling', 1.25)
+
+    # Debug Target
+    HitDelay(root)
+
+    root.update()
+    root.mainloop()
+
+    logger.info(" ====> DEBUG() end <====")
+
 if __name__ == '__main__':
-    # from datetime import datetime as dt
     exitCode:int = 0
+    # DEBUG(); sys.exit(exitCode)
     try:
         logger.info(" ====> Launcher() start <====")
         Launcher()

@@ -76,16 +76,16 @@ def diff_score_analyze() -> None:
 
     # 原生网格线
     # 替代原代码低效的 for 循环画竖线：ax.plot([mapData]*N, ...)
-    ax.grid(axis='x', linestyle='--', alpha=0.6, linewidth=1)
+    ax.grid(axis='x', ls='--', alpha=0.6, lw=1)
 
     # 向量化水平延伸线
     # 替代原代码用推导式生成 [i for i in range(17)] 的笨重写法
     for diff, (avg, _) in stats_4k.items():
         # 4K 从当前难度向右延伸至 16
-        ax.plot([diff, 16], [avg, avg], linestyle='--', alpha=1, linewidth=1, color='#1f77b4')
+        ax.plot([diff, 16], [avg, avg], ls='--', alpha=1, lw=1, c='#1f77b4')
     for diff, (avg, _) in stats_6k.items():
         # 6K 从 0 向右延伸至当前难度
-        ax.plot([0, diff], [avg, avg], linestyle='--', alpha=1, linewidth=1, color='#ff7f0e')
+        ax.plot([0, diff], [avg, avg], ls='--', alpha=1, lw=1, c='#ff7f0e')
 
     # 批量绘制等级参考线
     ref_lines: list[tuple[float, str, str]] = [
@@ -99,7 +99,7 @@ def diff_score_analyze() -> None:
     for y_val, label, color in ref_lines:
         if min_score < y_val:
             # axhline 比手动绘制一整条线性能高得多且无视 X 轴缩放
-            ax.axhline(y=y_val, color=color, linestyle='-', alpha=0.7, linewidth=1)
+            ax.axhline(y=y_val, c=color, ls='-', alpha=0.7, lw=1)
             ax.text(15.5, y_val + 0.75, label, ha='right', va='top', fontsize=9, alpha=0.7)
 
     # 排序后绘制折线
@@ -108,17 +108,17 @@ def diff_score_analyze() -> None:
     # 必须对 diff 排序，防止由于数据乱序导致折线图连线交叉错乱
     diff_keys_4k = sorted(stats_4k.keys())
     avg_vals_4k = [stats_4k[d][0] for d in diff_keys_4k]
-    ax.plot(diff_keys_4k, avg_vals_4k, linestyle='-', color='orange',
-            marker="D", markerfacecolor="Blue", alpha=0.7, linewidth=2, label="4Key Mode")
+    ax.plot(diff_keys_4k, avg_vals_4k, ls='-', c='orange',
+            marker="D", markerfacec="Blue", alpha=0.7, lw=2, label="4Key Mode")
 
     diff_keys_6k = sorted(stats_6k.keys())
     avg_vals_6k = [stats_6k[d][0] for d in diff_keys_6k]
-    ax.plot(diff_keys_6k, avg_vals_6k, linestyle='-', color='orange',
-            marker="D", markerfacecolor="Red", alpha=0.7, linewidth=2, label="6Key Mode")
+    ax.plot(diff_keys_6k, avg_vals_6k, ls='-', c='orange',
+            marker="D", markerfacec="Red", alpha=0.7, lw=2, label="6Key Mode")
 
     # 绘制散点
-    ax.scatter(diff_4k, scores_4k, alpha=0.7, color='#8A68D0', s=5)
-    ax.scatter(diff_6k, scores_6k, alpha=0.7, color='#F83535', s=5)
+    ax.scatter(diff_4k, scores_4k, alpha=0.7, c='#8A68D0', s=5)
+    ax.scatter(diff_6k, scores_6k, alpha=0.7, c='#F83535', s=5)
 
     # 现代化文本格式化
     label_texts: list[str] = []

@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>614ae87f-b8a4-457c-b876-4c6631cb2d19</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Launcher.py</StartupFile>
+    <StartupFile>launcher.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -27,19 +27,20 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AllHitAnalyze.py" />
-    <Compile Include="AvgAcc_SyncAnalyze.py" />
-    <Compile Include="Difficulty_ScoreAnalyze.py" />
-    <Compile Include="FileEncoder.py" />
-    <Compile Include="FormatSongName.py" />
-    <Compile Include="Toolkit.py" />
-    <Compile Include="HitDelay.py" />
-    <Compile Include="Launcher.py" />
-    <Compile Include="MainWindow.py" />
-    <Compile Include="MUSYNCSavDecode.py" />
-    <Compile Include="Resources.py" />
-    <Compile Include="uiautomation.py" />
-    <Compile Include="Version.py" />
+    <Compile Include="file_encoder.py" />
+    <Compile Include="format_song_name.py" />
+    <Compile Include="musync_save\acc_sync_diff_analyze.py" />
+    <Compile Include="musync_save\all_hit_analyze.py" />
+    <Compile Include="musync_save\difficulty_score_analyze.py" />
+    <Compile Include="musync_save\hit_delay.py" />
+    <Compile Include="musync_save\main_mindow.py" />
+    <Compile Include="musync_save\musync_save_decode.py" />
+    <Compile Include="musync_save\resources.py" />
+    <Compile Include="musync_save\toolkit.py" />
+    <Compile Include="musync_save\uiautomation.py" />
+    <Compile Include="musync_save\version.py" />
+    <Compile Include="musync_save\__init__.py" />
+    <Compile Include="launcher.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".github\" />
@@ -47,6 +48,7 @@
     <Folder Include=".github\workflows\" />
     <Folder Include="CSharp Code\" />
     <Folder Include="musync_data\" />
+    <Folder Include="musync_save\" />
     <Folder Include="ReadmeResources\" />
     <Folder Include="saveFile\" />
     <Folder Include="skin\" />
@@ -77,10 +79,8 @@
     <Content Include="musync_data\bootcfg.json" />
     <Content Include="musync_data\how to use.psd" />
     <Content Include="musync_data\ico.rc" />
-    <Content Include="musync_data\ico.res" />
     <Content Include="musync_data\LXGW.ttf" />
     <Content Include="musync_data\Musync.ico" />
-    <Content Include="musync_data\SaveFilePath.sfp" />
     <Content Include="musync_data\songname.json" />
     <Content Include="musync_data\songname.ver" />
     <Content Include="Push.ps1" />

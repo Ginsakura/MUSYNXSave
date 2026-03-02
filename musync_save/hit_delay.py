@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import matplotlib as mpl
 import os
 import pyperclip
 import struct
@@ -7,12 +8,17 @@ import sqlite3
 import time
 import tkinter as tk
 import uiautomation as uiauto
-from datetime import datetime as dt
 
-from matplotlib import axes, pyplot as plt, gridspec, figure
+from datetime import datetime as dt
+from matplotlib.axes import Axes
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends._backend_tk import NavigationToolbar2Tk
+from matplotlib.figure import Figure
+from matplotlib.gridspec import GridSpec
 from matplotlib.ticker import MultipleLocator
 from tkinter import ttk, messagebox
 from typing import Any, Literal
+
 
 # 外部数据分析模块导入
 from . import acc_sync_diff_analyze, AllHitAnalyze, Logger, Config, Toolkit
@@ -33,7 +39,7 @@ class HitDelay:
     _select_rowid: int = -1
     _game_console_handle: uiauto.DocumentControl | None = None
 
-    def __init__(self, subroot: tk.Tk | tk.Toplevel) -> None:
+    def __init__(self, root: tk.Tk | tk.Toplevel) -> None:
         self._logger: logging.Logger = Logger.GetLogger("HitDelay")
 
         if not os.path.isfile(self._DB_PATH):
@@ -41,17 +47,17 @@ class HitDelay:
             messagebox.showerror("Error", '发生错误: HitDelayHistory.db 数据库文件不存在!')
             return
 
-        self._subroot: tk.Tk | tk.Toplevel = subroot
+        self._root: tk.Tk | tk.Toplevel = root
 
         try:
-            self._subroot.iconbitmap('./musync_data/Musync.ico')
+            self._root.iconbitmap('./musync_data/Musync.ico')
         except Exception:
             self._logger.warning("Musync.ico 未找到，使用默认图标")
 
         # 修改组件样式
-        self._subroot.geometry('1200x600+300+300')
-        self._subroot.title("高精度延迟分析")
-        self._subroot['background'] = '#efefef'
+        self._root.geometry('1200x600+300+300')
+        self._root.title("高精度延迟分析")
+        self._root['background'] = '#efefef'
 
         self._style: ttk.Style = ttk.Style()
         self._style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',13))
@@ -60,17 +66,27 @@ class HitDelay:
         self._style.configure("update.TButton", font=self._font, relief="raised",background='#A6E22B')
         self._style.configure("delete.TButton", font=self._font, relief="raised", foreground='#FF4040', background='#FF2020')
         
-        self._subroot.option_add('*TCombobox*Listbox.font', self._font)
+        self._root.option_add('*TCombobox*Listbox.font', self._font)
 
         # TODO: 绑定全局按键
-        self._subroot.bind('<F5>', self._action_refresh_data)
-        self._subroot.bind('<Control-Escape>', self._on_closing)
-        self._subroot.bind("<Control-r>", self._reset_ui_state)
-        self._subroot.protocol("WM_DELETE_WINDOW", self._on_closing)
+        self._root.bind('<F5>', self._on_refresh_data)
+        self._root.bind('<Control-Escape>', self._on_closing)
+        self._root.bind("<Control-r>", self._on_reset_ui_state)
+        self._root.protocol("WM_DELETE_WINDOW", self.on_closing)
 
         # MVC 架构流转：初始化视图 -> 加载数据 -> 渲染数据
         self._init_ui()
         self._action_refresh_data()
+
+        # 初始化 Matplotlib 图表窗口
+        self._line_chart_window: tk.Toplevel = tk.Toplevel(self._root)
+        mpl.rcParams['font.family'] = ['LXGW WenKai Mono', 'sans-serif']
+        mpl.rcParams['axes.unicode_minus'] = False
+        self._fig_line = Figure(figsize=(9, 4))
+        self._fig_line.subplots_adjust(left=0.045, bottom=0.055, right=1.0, top=1.0)
+        self._axis = self._fig_line.add_subplot(111)
+        self._fig_canvas = FigureCanvasTkAgg(self._fig_line, master=self._line_chart_window)
+        self._fig_canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
     # ==========================================
     # [Level 0] 视图初始化与布局层 (View / UI)
@@ -78,7 +94,7 @@ class HitDelay:
     def _init_ui(self) -> None:
         """初始化动态流式 UI 布局 (嵌套 Grid 架构)"""
         # 1. 主容器 (左右分割)
-        main_frame: tk.Frame = tk.Frame(self._subroot, bg='#efefef')
+        main_frame: tk.Frame = tk.Frame(self._root, bg='#efefef')
         main_frame.pack(fill=tk.BOTH, expand=True, padx=1, pady=1)
 
         main_frame.columnconfigure(0, weight=1)  # 左侧数据区：弹性拉伸
@@ -389,7 +405,7 @@ class HitDelay:
     # ==========================================
     # [Level 2] 局部视图渲染层 (View Render)
     # ==========================================
-    def _reset_ui_state(self) -> None:
+    def _reset_ui_state(self, event: tk.Event) -> None:
         """重置右侧控制面板的状态"""
         self._get_data_button.config(state=tk.DISABLED)
         self._history_delete_button.config(state=tk.DISABLED)
@@ -417,71 +433,65 @@ class HitDelay:
         """Matplotlib 数据绘图"""
         if not self._data_list:
             return
+        
+        font: dict = {'family': 'LXGW WenKai Mono', 'weight': 'normal', 'size': 12}
 
         # 绘制当前数据的 All Hit 分析结果
-        rate, data_length = AllHitAnalyze(self._data_list).show()
-
-        plt.rcParams['font.family'] = ['LXGW WenKai Mono', 'sans-serif']
-        plt.rcParams['axes.unicode_minus'] = False
-
-        fig = plt.figure(f'AvgDelay: {self._selected_row_data["avg_delay"]:.4f}ms    Notes: {self._selected_row_data["notes"]}    '\
-            f'Combo: {self._selected_row_data["combo"]}    AvgAcc: {self._selected_row_data["avg_acc"]:.4f}ms',figsize=(9, 4))
-        fig.clear()
-        fig.subplots_adjust(**{"left":0.045,"bottom":0.055,"right":1,"top":1})
-        ax = fig.add_subplot()
-
+        rate, data_length = AllHitAnalyze(self._root, self._data_list).show()
+        
+        self._line_chart_window.title(f'AvgDelay: {self._selected_row_data["avg_delay"]:.4f}ms    Notes: {self._selected_row_data["notes"]}    '\
+            f'Combo: {self._selected_row_data["combo"]}    AvgAcc: {self._selected_row_data["avg_acc"]:.4f}ms')
         self._logger.info(f'data info:\n'\
             f'\tAvgDelay: {self._selected_row_data["avg_delay"]}\n'\
             f'\tNotes: {self._selected_row_data["notes"]}\n'\
             f'\tAvgAcc: {self._selected_row_data["avg_acc"]}')
-        font: dict = {'family': 'LXGW WenKai Mono',
-                      'weight': 'normal',
-                      'size': 12}
-        ax.text(-10,5,"Slower→", ha='left',color='#c22472',rotation=90, fontdict=font)
-        ax.text(-10,-5,"←Faster", ha='left',va='top',color='#288328',rotation=90, fontdict=font)
+        
+        self._fig_line.clear()
+
+        self._axis.text(-10,5,"Slower→", ha='left',color='#c22472',rotation=90, fontdict=font)
+        self._axis.text(-10,-5,"←Faster", ha='left',va='top',color='#288328',rotation=90, fontdict=font)
 
         max_y_axis: int = max(int(max(self._data_list)), 45)
         min_y_axis: int = min(int(min(self._data_list)), -45)
 
-        ax.set_ylim(min_y_axis - 5, max_y_axis + 5)
-        ax.set_xlim(-15, data_length * 1.02)
+        self._axis.set_ylim(min_y_axis - 5, max_y_axis + 5)
+        self._axis.set_xlim(-15, data_length * 1.02)
 
         # ==========================================
         # 正值部分：从外向内判断 (max_y_axis >= 阈值)
         # ==========================================
         if max_y_axis >= 250:
-            ax.axhline(y=250, c='orange', ls='--', lw=1, alpha=0.8, label=f"> 250 ms    -- MISS {rate[4]:>4}")
+            self._axis.axhline(y=250, c='orange', ls='--', lw=1, alpha=0.8, label=f"> 250 ms    -- MISS {rate[4]:>4}")
         if max_y_axis >= 150:
-            ax.axhline(y=150, c='green', ls='--', lw=1, alpha=0.8, label=f"> 150 ms    --RIGHT {rate[3]:>4}")
+            self._axis.axhline(y=150, c='green', ls='--', lw=1, alpha=0.8, label=f"> 150 ms    --RIGHT {rate[3]:>4}")
         if max_y_axis >= 90:
-            ax.axhline(y=90, c='blue', ls='--', lw=1, alpha=0.8, label=f">  90 ms    --GREAT {rate[2]:>4}")
+            self._axis.axhline(y=90, c='blue', ls='--', lw=1, alpha=0.8, label=f">  90 ms    --GREAT {rate[2]:>4}")
         if max_y_axis >= 45:
-            ax.axhline(y=45, c='cyan', ls='--', lw=1, alpha=0.8, label=f">  45 ms    --EXACT {rate[1]:>4}")
-        ax.axhline(y=0, c='red', ls='-', lw=1, alpha=1.0, label=f"   0 ms    -- CyEX  {rate[0]:>4}")
+            self._axis.axhline(y=45, c='cyan', ls='--', lw=1, alpha=0.8, label=f">  45 ms    --EXACT {rate[1]:>4}")
+        self._axis.axhline(y=0, c='red', ls='-', lw=1, alpha=1.0, label=f"   0 ms    -- CyEX  {rate[0]:>4}")
 
         # ==========================================
         # 负值部分：从外向内判断 (min_y_axis <= 阈值)
         # 注意：不再重复添加 label，防止图例重复
         # ==========================================
         if min_y_axis <= -150:
-            ax.axhline(y=-150, c='green', ls='--', lw=1, alpha=0.8)
+            self._axis.axhline(y=-150, c='green', ls='--', lw=1, alpha=0.8)
         if min_y_axis <= -90:
-            ax.axhline(y=-90, c='blue', ls='--', lw=1, alpha=0.8)
+            self._axis.axhline(y=-90, c='blue', ls='--', lw=1, alpha=0.8)
         if min_y_axis <= -45:
-            ax.axhline(y=-45, c='cyan', ls='--', lw=1, alpha=0.8)
+            self._axis.axhline(y=-45, c='cyan', ls='--', lw=1, alpha=0.8)
 
-        ax.legend()
+        self._axis.legend()
 
         # TODO: 图表绘制
 
-        ax.set_xlabel("延迟量 Delay (ms)")
-        ax.set_ylabel("击打频数 (Hits)")
+        self._axis.set_xlabel("延迟量 Delay (ms)")
+        self._axis.set_ylabel("击打频数 (Hits)")
 
         # 强制格式化右下角坐标系为纯整数显示 (消除科学计数法)
-        ax.format_coord = lambda x, y: f"Delay: {int(x)}ms, 频数: {int(y)}"
-
-        plt.tight_layout()
-        plt.show()
+        self._axis.format_coord = lambda x, y: f"Delay: {y:.1f}ms, 频数: {int(x)}"
+        
+        self._fig_canvas.draw()
 
     # ==========================================
     # [Level 1] 统筹调度与事件响应层 (Controllers)
@@ -658,6 +668,16 @@ class HitDelay:
     #         # 设置最小宽度防止缩没，并更新当前宽度
     #         self._treeview.column(col_id, width=target_width, minwidth=int(base_width*0.5))
 
+    def on_closing(self) -> None:
+        """UI 事件：窗口关闭时清理资源"""
+        if messagebox.askokcancel("退出", "确定要退出高精度延迟分析吗？"):
+            try:
+                self._cursor.close()
+                self._db.close()
+            except Exception as e:
+                self._logger.warning(f"关闭数据库连接时发生异常: {e}")
+            self._root.destroy()
+
     def _on_tree_select(self, event: tk.Event) -> None:
         """回调：点击表格行获取 ROWID 并更新右侧面板输入框"""
         selected_items: tuple[str, ...] = self._treeview.selection()
@@ -720,25 +740,13 @@ class HitDelay:
         except Exception as e:
             self._logger.warning(f"表格排序失败: {e}")
 
-    def _on_closing(self) -> None:
-        """UI 事件：窗口关闭时清理资源"""
-        if messagebox.askokcancel("退出", "确定要退出高精度延迟分析吗？"):
-            try:
-                self._cursor.close()
-                self._db.close()
-            except Exception as e:
-                self._logger.warning(f"关闭数据库连接时发生异常: {e}")
-            self._subroot.destroy()
+    def _on_closing(self, event: tk.Event) -> None:
+        self.on_closing()
 
-if __name__ == "__main__":
-    from . import version, pre_version, is_pre_release
+    def _on_refresh_data(self, event: tk.Event) -> None:
+        """快捷键事件: F5 刷新数据"""
+        self._action_refresh_data()
 
-    # Init
-    Config().Version = pre_version.replace("pre",".") if (is_pre_release) else version
-
-    # Launcher
-    root: tk.Tk = tk.Tk()
-    root.tk.call('tk', 'scaling', 1.25)
-    HitDelay(root)
-    root.update()
-    root.mainloop()
+    def _on_reset_ui_state(self, event: tk.Event) -> None:
+        """快捷键事件: Esc 重置 UI 状态"""
+        self._reset_ui_state(event)

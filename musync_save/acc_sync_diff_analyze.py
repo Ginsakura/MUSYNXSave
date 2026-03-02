@@ -21,7 +21,7 @@ def analyze_3d() -> None:
     # 1. 安全的数据读取 (使用 csv 模块代替手动 split)
     try:
         with open('./musync_data/Acc-Sync.csv', mode='r', encoding='utf-8') as f:
-            reader: csv._reader = csv.reader(f)
+            reader = csv.reader(f)
             for line_num, row in enumerate(reader, start=1):
                 # 忽略空行
                 if not row:
@@ -143,6 +143,3 @@ def analyze_3d() -> None:
     ax.view_init(elev=20, azim=-45)
 
     plot.show()
-
-if __name__ == '__main__':
-    analyze_3d()

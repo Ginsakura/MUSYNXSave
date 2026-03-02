@@ -332,7 +332,7 @@ class MusyncMainWindow(object):
             l.sort(reverse=self.dataSortMethodsort[1])
             for index, (val, k) in enumerate(l):
                 self.saveData.move(k, '', index)
-            print(f"Treeview SortClick Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+            print(f"Treeview SortClick Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
             self.TreeviewColumnUpdate()
         if isinstance(event, list):
             self.dataSortMethodsort[1] = not self.dataSortMethodsort[1]
@@ -383,7 +383,7 @@ class MusyncMainWindow(object):
                 if messagebox.askyesno("无法获取谱面信息更新", '是否前往网页查看是否存在更新?\n(请比对 SongName.json 中的时间是否比本地文件中的时间更大)'):
                     webbrowser.open(repo + "songname.json")
             self.root.after(0, show_error)
-        self.logger.info(f"CheckJsonUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        self.logger.info(f"CheckJsonUpdate() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
 
     def CheckUpdate(self) -> None:
         """检查软件更新"""
@@ -450,7 +450,7 @@ class MusyncMainWindow(object):
         # 	self.gitHubUrlVar = "点击打开GitHub仓库	点个Star吧，秋梨膏"
         # 	labelUrl = "https://github.com/Ginsakura/MUSYNCSave"
         self.root.after(0, lambda _:self.gitHubLink.configure(command=lambda:webbrowser.open(labelUrl)))
-        self.logger.info(f"CheckUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        self.logger.info(f"CheckUpdate() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
 
 # 初始化提示框
     def InitLabel(self,text,close=False) -> None:
@@ -556,7 +556,7 @@ class MusyncMainWindow(object):
         if not self.dataSortMethodsort[0] is None:
             self.SortClick(self.dataSortMethodsort)
         self.InitLabel('数据展示生成完成.',close=True)
-        self.logger.debug(f"DataLoad Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        self.logger.debug(f"DataLoad Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
         self.UpdateWindowInfo()
 
 # 控件更新功能组
@@ -609,7 +609,7 @@ class MusyncMainWindow(object):
             except Exception:
                 logger.debug("Checking has Unknown Exception")
                 pass
-            logger.info(f"CheckGameIsStart Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+            logger.info(f"CheckGameIsStart Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
         logger.warning("Stop Thread: CheckGameIsStart.")
 
     def TreeviewColumnUpdate(self):
@@ -759,26 +759,3 @@ class MessageBoxEnum(Enum):
     # TODO: 补全
     showerror = 0
     askyesno = 1
-
-
-if __name__ == '__main__':
-    """主函数"""
-    # Launcher
-    root:Tk = Tk()
-    ctypes.windll.shcore.SetProcessDpiAwareness(1)
-    fontlist:list[str] = list(font.families())
-    Toolkit.check_resources(fonts=fontlist)
-    # del fonts
-    if Config().ChangeConsoleStyle:
-        Toolkit.change_console_style()
-    root.tk.call('tk', 'scaling', 1.25)
-    root.resizable(False, True); #允许改变窗口高度，不允许改变窗口宽度
-    # 强制仅旧版UI
-    MusyncMainWindow(root=root)
-    # if cfg['EnableFramelessWindow']:
-    # 	root.overrideredirect(1)
-    # 	window = NewStyle.MusyncSavDecodeGUI(root=root)
-    # else:
-    # 	window = OldStyle.MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease)
-    root.update()
-    root.mainloop()

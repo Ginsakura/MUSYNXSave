@@ -60,7 +60,7 @@ class MusyncSaveDecoder(object):
             base64_data = file.read()
         self.Deserialize(b64decode(base64_data))
         self.__logger.debug("LoadSaveFile End.")
-        self.__logger.info(f"LoadSaveFile Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        self.__logger.info(f"LoadSaveFile Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
 
     def Deserialize(self, data)->None:
         """反序列化存档数据"""
@@ -158,7 +158,7 @@ class MusyncSaveDecoder(object):
 
         self.__logger.debug(SaveDataInfo.ToDict(debug=True))
         self.__logger.debug("SaveDeserialize End.")
-        self.__logger.info(f"SaveDeserialize Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        self.__logger.info(f"SaveDeserialize Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
 
     def FixUserMemory(self)->None:
         """补全缺失数据"""
@@ -216,7 +216,7 @@ class MusyncSaveDecoder(object):
         for removeIndex in removeIndexList:
             SaveDataInfo.saveInfoList.pop(removeIndex)
         self.__logger.debug("UserMemoryToJson End.")
-        self.__logger.info(f"UserMemoryToJson Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        self.__logger.info(f"UserMemoryToJson Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
 
     def FavFix(self):
         """修复收藏仅应用于每首歌的4KEZ谱面的问题"""
@@ -228,15 +228,4 @@ class MusyncSaveDecoder(object):
             if mapData.SongName in self.FavSong:
                 SaveDataInfo.saveInfoList[index].State = "Favo"
         self.__logger.debug("FavFix End.")
-        self.__logger.info(f"FavFix Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
-
-if __name__ == '__main__':
-    import argparse
-    parser = argparse.ArgumentParser()
-    parser.add_argument('savPath', nargs='?', default=None, help='Path to savedata.sav')
-    args = parser.parse_args()
-
-    savPath = args.savPath or os.path.join(Config.MainExecPath or '.', 'SavesDir', 'savedata.sav')
-
-    Object = MusyncSaveDecoder(savPath)
-    Object.Main()
+        self.__logger.info(f"FavFix Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")

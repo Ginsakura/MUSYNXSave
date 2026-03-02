@@ -13,10 +13,10 @@ from .version import version, pre_version, is_pre_release
 from .resources import Logger, SongName, SaveDataInfo, MapInfo, MapDataInfo
 
 # 2. 依赖 1 的工具模块
+from .toolkit import Toolkit
 from .acc_sync_diff_analyze import analyze_3d
 from .all_hit_analyze import AllHitAnalyze
 from .difficulty_score_analyze import diff_score_analyze
-from .toolkit import Toolkit
 
 # 3. 依赖 1 和 2 的主功能模块
 from .hit_delay import HitDelay

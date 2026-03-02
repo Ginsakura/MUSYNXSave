@@ -3,6 +3,7 @@ import gzip
 import io
 import json
 import logging
+import math
 import os
 import re
 import sqlite3
@@ -31,7 +32,17 @@ class Toolkit:
 
     @staticmethod
     def calc_end_time(start_time: int) -> float:
-        return (time.perf_counter_ns() - start_time) / 1_000_000;
+        return (time.perf_counter_ns() - start_time) / 1_000_000
+    
+    # 计算正态分布的通用函数
+    @staticmethod
+    def _calculate_pdf(x_data: list[int], avg: float, var: float, std: float, count: int) -> list[float]:
+        if var <= 0 or std <= 0:
+            return [0.0] * len(x_data)
+        # 正态分布公式： f(x) = (1 / (σ * sqrt(2π))) * e^(-(x - μ)² / (2σ²))
+        # 乘以总数 count 以将面积放大至直方图级别
+        coeff = count / (math.sqrt(2 * math.pi) * std)
+        return [coeff * math.exp(-((x - avg) ** 2) / (2 * var)) for x in x_data]
 
     @classmethod
     def init_resources(cls) -> None:
@@ -68,7 +79,7 @@ class Toolkit:
         finally:
             win32gui.ReleaseDC(0, h_dc)
         _logger.debug(f"Get DPI: {dpi}")
-        _logger.debug(f"get_dpi() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        _logger.debug(f"get_dpi() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
         return dpi
 
     @staticmethod
@@ -103,7 +114,7 @@ class Toolkit:
         except OSError as e:
             _logger.error(f"Failed to change console style: {e}")
 
-        _logger.debug(f"change_console_style() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        _logger.debug(f"change_console_style() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
 
     @staticmethod
     def get_hash(file_path: Optional[str] = None) -> str:
@@ -118,7 +129,7 @@ class Toolkit:
                 sha256_hash.update(byte_block)
 
         hash_result: str = sha256_hash.hexdigest().upper()
-        _logger.debug(f"get_hash() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        _logger.debug(f"get_hash() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
         return hash_result
 
     @classmethod
@@ -143,7 +154,7 @@ class Toolkit:
             with open(release_path, "wb") as f:
                 f.write(decompressed_data)
 
-        cls._logger.debug(f"release_resource() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        cls._logger.debug(f"release_resource() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
         return decompressed_data
 
     @classmethod
@@ -199,7 +210,7 @@ class Toolkit:
         if Config.DLLInjection:
             cls.game_lib_check()
 
-        cls._logger.debug(f"check_resources() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        cls._logger.debug(f"check_resources() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
 
     @classmethod
     def get_save_file(cls) -> str:
@@ -224,7 +235,7 @@ class Toolkit:
                     return full_path
 
         cls._logger.error("搜索不到存档文件.")
-        cls._logger.info(f"get_save_file() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        cls._logger.info(f"get_save_file() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
         return ""
 
     @classmethod
@@ -341,7 +352,7 @@ class Toolkit:
         except Exception as e:
             cls._logger.fatal(f"CheckDatabaseVersion() 异常: {e}")
 
-        cls._logger.debug(f"check_database_version() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        cls._logger.debug(f"check_database_version() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
         return rt_code
 
     @classmethod
@@ -543,5 +554,5 @@ class Toolkit:
                 return False
 
         cls._logger.info("数据库状态检查通过.")
-        cls._logger.debug(f"update_database() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        cls._logger.debug(f"update_database() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
         return True

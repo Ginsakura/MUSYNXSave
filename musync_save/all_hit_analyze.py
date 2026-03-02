@@ -30,7 +30,7 @@ class AllHitAnalyze(object):
             db.close()
         else:
             self._db_mode: bool = False
-            res: list[tuple[bytes]] = [(data,)]  # 模拟数据库查询结果，单行数据
+            res: list[tuple[bytes]] = [(data,)]  # 模拟数据库查询结果, 单行数据
         hit_map_a: list[int] = [0]*150   # -150~-1
         hit_map_b: list[int] = [0]*251   # 0~+250
         self._sum_y_num: int = 0          # with miss
@@ -57,8 +57,9 @@ class AllHitAnalyze(object):
                 continue
             # 确定整数个数：blob长度除以4（因为int32是4字节）
             count: int = len(blob) // 4
-            # 使用struct.unpack一次性解析所有整数，格式为'<i'*count
-            # 注意：如果数据量极大，一次性unpack所有整数可能会占用大量内存，但总数据量可能可控（如数百万），可以分批处理。这里按原样一次性。
+            # 使用struct.unpack一次性解析所有整数, 格式为'<i'*count
+            # 注意：如果数据量极大, 一次性unpack所有整数可能会占用大量内存,
+            # 但总数据量可能可控（如数百万）, 可以分批处理。这里按原样一次性。
             ints = struct.unpack('<' + 'i'*count, blob)   # 返回tuple
             # hitmap_field:str = row[0]
             for ival in ints:
@@ -127,9 +128,12 @@ class AllHitAnalyze(object):
         self._avg_core, self._var_core, self._std_core = self._calculate_weighted_stats(
             self._x_axis[106:195], self._y_axis[106:195], self._sum_y_num_core
         )
-        self._logger.info(f'All Rate Data:   {self._avg:.4f}  {self._var:.4f}  {self._std:.4f}  {self._sum_y_num}')
-        self._logger.info(f'Exact Rate: {self._avg_ext:.4f}  {self._var_ext:.4f}  {self._std_ext:.4f}  {self._sum_y_num_ext}')
-        self._logger.info(f'Cyan Exact Rate: {self._avg_core:.4f}  {self._var_core:.4f}  {self._std_core:.4f}  {self._sum_y_num_core}')
+        self._logger.info(f'All Rate Data:   {self._avg:.4f}  {self._var:.4f}  '\
+            f'{self._std:.4f}  {self._sum_y_num}')
+        self._logger.info(f'Exact Rate: {self._avg_ext:.4f}  {self._var_ext:.4f}  '\
+            f'{self._std_ext:.4f}  {self._sum_y_num_ext}')
+        self._logger.info(f'Cyan Exact Rate: {self._avg_core:.4f}  {self._var_core:.4f}  '\
+            f'{self._std_core:.4f}  {self._sum_y_num_core}')
 
     def _calculate_weighted_stats(
         self,
@@ -171,7 +175,7 @@ class AllHitAnalyze(object):
 
         return avg, var, std
 
-    def show(self) -> None:
+    def show(self) -> tuple[list[int], int] | None:
         """主绘制入口"""
         # 预设中文字体 (如果你系统安装了此字体)
         plot.rcParams['font.serif'] = ["LXGW WenKai Mono"]
@@ -180,8 +184,9 @@ class AllHitAnalyze(object):
         # 创建画板
         fig: Figure = plot.figure(
             f"{'All Hit Analyze' if self._db_mode else 'One Map Analyze'} "\
-                "(Total:{self._sum_y_num},  CyanEx:{self._rate[0]},  "
-            f"BlueEx:{self._rate[1]},  Great:{self._rate[2]},  Right:{self._rate[3]},  Miss:{self._rate[4]})",
+                f"(Total:{self._sum_y_num},  CyanEx:{self._rate[0]},  "\
+                f"BlueEx:{self._rate[1]},  Great:{self._rate[2]},  "\
+                f"Right:{self._rate[3]},  Miss:{self._rate[4]})",
             figsize=(16, 9)
         )
         fig.clear()
@@ -200,35 +205,45 @@ class AllHitAnalyze(object):
         # 饼图 Axes
         if Config.DonutChartinAllHitAnalyze:
             ax2: Axes = fig.add_subplot(grid[0:2, 3:])
-            ax2.add_patch(patches.Rectangle((-1.5, -1.5), 3, 3, color="white")).set_alpha(0.75)
             self._draw_pie_chart(ax2)
 
-        plot.show()
+        # 如果是数据库模式, 直接显示图表;
+        # 如果是单图模式, 可能在其他环境中调用, 暂不自动显示, 留给调用者控制显示时机
+        if self._db_mode:
+            plot.show()
+            return None
+        else:
+            return (self._rate, self._sum_y_num, )
 
     def _draw_histogram_and_curves(self, fig: Figure, ax: Axes) -> None:
-        """绘制直方图与高斯拟合曲线，并添加交互组件"""
+        """绘制直方图与高斯拟合曲线, 并添加交互组件"""
         ax.xaxis.set_major_locator(MultipleLocator(10))
 
-        # 1. 绘制底层直方图 (一次性渲染，极大地提升性能)
-        ax.bar(self._x_axis, self._y_axis, width=1, color='skyblue')
+        # 1. 绘制底层直方图 (一次性渲染, 极大地提升性能)
+        ax.bar(self._x_axis[:-1], self._y_axis[:-1], width=1, color='skyblue')
+        ax.bar(self._x_axis[-1], self._y_axis[-1], width=1, color='#FF5757')
         ax.axvline(x=0, c='black', ls='-', lw=1)
+        ax.axvline(x=249.5, c='orange', ls='--', lw=1, alpha=0.8)
 
-        # 配置对称线参数: (绝对值, 颜色)
-        symmetry_lines = [
-            (45, 'cyan'),   # 青色
-            (90, 'blue'),   # 蓝色
-            (150, 'green')  # 绿色
+        # 配置对称线参数: (绝对值, 颜色, 透明度)
+        symmetry_lines: list[tuple[float, str, float]] = [
+            (5.5, '#9dfff0', 0.8),
+            (10.5, '#69f1f1', 0.8),
+            (20.5, '#25d8d8', 0.8),
+            (45.5, '#32a9c7', 0.8),   # 青色
+            (90.5, '#2F97FF', 0.8),   # 蓝色
+            (150.5, 'green', 0.8)  # 绿色
         ]
 
         # 批量绘制正负对称虚线 (虚线, 1px)
-        for x_val, color in symmetry_lines:
-            ax.axvline(x=x_val, c=color, ls='--', lw=1)
-            ax.axvline(x=-x_val, c=color, ls='--', lw=1)
+        for x_val, color, alpha in symmetry_lines:
+            ax.axvline(x=x_val, c=color, ls='--', lw=1, alpha=alpha)
+            ax.axvline(x=-x_val, c=color, ls='--', lw=1, alpha=alpha)
 
         # 2. 设置坐标轴与自动网格 (摒弃原先的手动计算逻辑)
         ax.set_xlabel("Delay(ms)", fontsize=15)
         ax.set_ylabel("HitCount", fontsize=15)
-        ax.set_xlim(-155, 255)
+        ax.set_xlim(-152.5, 252.5)
         ax.grid(axis='y', linestyle='--', alpha=0.7) # 自动横向辅助线
 
         # 3. 计算正态分布的通用闭包函数
@@ -245,7 +260,7 @@ class AllHitAnalyze(object):
         pdf_ext = _calculate_pdf( self._x_axis, self._avg_ext,  self._var_ext,  self._std_ext,  self._sum_y_num_ext )
         pdf_core = _calculate_pdf(self._x_axis, self._avg_core, self._var_core, self._std_core, self._sum_y_num_core)
 
-        # 4. 绘制曲线，但先保存对象引用以便后续控制 (初始状态设为隐藏 visible=False)
+        # 4. 绘制曲线, 但先保存对象引用以便后续控制 (初始状态设为隐藏 visible=False)
         line_all, = ax.plot(self._x_axis, pdf_all, c='grey', lw=2,
                              label=f'Global Fit (μ={self._avg:.2f}, σ={self._std:.2f})')
         line_ext, = ax.plot(self._x_axis, pdf_ext, c='black', lw=2,
@@ -254,7 +269,7 @@ class AllHitAnalyze(object):
                               label=f'Cyan Exact Fit (μ={self._avg_core:.2f}, σ={self._std_core:.2f})')
         ax.legend(loc='upper left', prop={'size': 12})
 
-        # 生成图例后，再把不需要默认显示的曲线隐藏
+        # 生成图例后, 再把不需要默认显示的曲线隐藏
         line_all.set_visible(False)
         line_ext.set_visible(False)
 
@@ -282,14 +297,11 @@ class AllHitAnalyze(object):
 
     def _draw_pie_chart(self, ax: Axes) -> None:
         """绘制高精度命中率饼图/甜甜圈图"""
-        # 1. 强制设置背景为纯白，不透明，且提升 Z 轴层级盖住 ax1
-        ax.patch.set_visible(True)
-        ax.patch.set_facecolor('white')
-        ax.patch.set_alpha(1.0)
-        ax.set_zorder(10)  # 关键点：层级设为 10，确保它在直方图上方
+        # 1. 绘制白色半透明背景 (Background) 来增强对比度和美观度
+        ax.add_patch(patches.Rectangle((-1.5, -1.5), 3, 3, color="white")).set_alpha(0.75)
 
         # 2. 替代原代码的 Rectangle 补丁：通过扩大坐标轴范围来生成完美的白色内边距 (Padding)
-        # pie 图的标准半径是 1 (范围 -1 到 1)，设置 1.5 就相当于四周多了 50% 的留白
+        # pie 图的标准半径是 1 (范围 -1 到 1), 设置 1.5 就相当于四周多了 50% 的留白
         ax.set_xlim(-1.5, 1.5)
         ax.set_ylim(-1.5, 1.5)
 

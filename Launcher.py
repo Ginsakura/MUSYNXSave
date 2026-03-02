@@ -4,7 +4,6 @@ import ctypes
 import logging
 from tkinter import Tk, font
 
-from musync_save import __version__
 from musync_save import MusyncMainWindow, HitDelay
 from musync_save import Toolkit, Config, Logger
 
@@ -51,7 +50,7 @@ def DEBUG() -> None:
 
 if __name__ == '__main__':
     exitCode:int = 0
-    # DEBUG(); sys.exit(exitCode)
+    DEBUG(); sys.exit(exitCode)
     try:
         logger.info(" ====> Launcher() start <====")
         Launcher()

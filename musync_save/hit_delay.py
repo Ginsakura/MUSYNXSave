@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import logging
-import matplotlib as mpl
 import os
 import pyperclip
 import struct
@@ -8,56 +7,47 @@ import sqlite3
 import time
 import tkinter as tk
 import uiautomation as uiauto
-
 from datetime import datetime as dt
-from matplotlib.axes import Axes
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-from matplotlib.backends._backend_tk import NavigationToolbar2Tk
-from matplotlib.figure import Figure
-from matplotlib.gridspec import GridSpec
-from matplotlib.ticker import MultipleLocator
-from tkinter import ttk, messagebox
-from typing import Any, Literal
 
+from matplotlib import pyplot as plt
+from tkinter import ttk, messagebox
+from typing import Any, Literal, Optional
 
 # 外部数据分析模块导入
-from . import acc_sync_diff_analyze, AllHitAnalyze, Logger, Config, Toolkit
+from .config_manager import config, get_logger
+from .songname_manager import song_name
+from .acc_sync_diff_analyze import analyze_3d
+from .all_hit_analyze import AllHitAnalyze
 
 uiauto.SetGlobalSearchTimeout(1)
 
 class HitDelay:
     """游玩延迟与历史记录可视化分析主界面"""
-    _DB_PATH: str = './musync_data/HitDelayHistory.db'
-    _db: sqlite3.Connection = sqlite3.connect(_DB_PATH)
-    _cursor: sqlite3.Cursor = _db.cursor()
-    _font: tuple[str, int] = ('霞鹜文楷等宽', 16)
-    _mode_list: list[str] = ['', '4KEZ', '4KHD', '4KIN', "6KEZ", "6KHD", "6KIN"]
-    _heading_list: list[str] = []
 
-    # 全局状态容器
-    _data_list: list[int] = []
-    _select_rowid: int = -1
-    _game_console_handle: uiauto.DocumentControl | None = None
+    def __init__(self, subroot: tk.Tk | tk.Toplevel) -> None:
+        self._logger: logging.Logger = get_logger("HitDelay.HitDelayText")
 
-    def __init__(self, root: tk.Tk | tk.Toplevel) -> None:
-        self._logger: logging.Logger = Logger.GetLogger("HitDelay")
-
-        if not os.path.isfile(self._DB_PATH):
+        db_path: str = './musync_data/HitDelayHistory.db'
+        if not os.path.isfile(db_path):
             self._logger.fatal("Database Not Exists!")
             messagebox.showerror("Error", '发生错误: HitDelayHistory.db 数据库文件不存在!')
             return
 
-        self._root: tk.Tk | tk.Toplevel = root
+        self._db: sqlite3.Connection = sqlite3.connect(db_path)
+        self._db.row_factory = sqlite3.Row
+        self._cursor: sqlite3.Cursor = self._db.cursor()
+
+        self._subroot: tk.Tk | tk.Toplevel = subroot
+        self._font: tuple[str, int] = ('霞鹜文楷等宽', 16)
 
         try:
-            self._root.iconbitmap('./musync_data/Musync.ico')
+            self._subroot.iconbitmap('./musync_data/Musync.ico')
         except Exception:
             self._logger.warning("Musync.ico 未找到，使用默认图标")
 
-        # 修改组件样式
-        self._root.geometry('1200x600+300+300')
-        self._root.title("高精度延迟分析")
-        self._root['background'] = '#efefef'
+        self._subroot.geometry('1200x600+300+300')
+        self._subroot.title("高精度延迟分析")
+        self._subroot['background'] = '#efefef'
 
         self._style: ttk.Style = ttk.Style()
         self._style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',13))
@@ -65,28 +55,31 @@ class HitDelay:
         self._style.configure("TButton", font=self._font, relief="raised")
         self._style.configure("update.TButton", font=self._font, relief="raised",background='#A6E22B')
         self._style.configure("delete.TButton", font=self._font, relief="raised", foreground='#FF4040', background='#FF2020')
-        
-        self._root.option_add('*TCombobox*Listbox.font', self._font)
+        # 全局修改所有 ttk.Combobox 下拉列表 (Listbox) 的字体
+        self._subroot.option_add('*TCombobox*Listbox.font', self._font)
 
         # TODO: 绑定全局按键
-        self._root.bind('<F5>', self._on_refresh_data)
-        self._root.bind('<Control-Escape>', self._on_closing)
-        self._root.bind("<Control-r>", self._on_reset_ui_state)
-        self._root.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self._subroot.bind('<F5>', self._action_refresh_data)
+        self._subroot.bind('<Control-Escape>', self._on_closing)
+        self._subroot.bind("<Control-r>", self._reset_ui_state)
+
+        # 全局状态容器
+        self._data_song_name: str = ""
+        self._data_record_time: str = ""
+        self._data_diff: int = 0
+        self._data_mode: str = ""
+        self._data_combo: str = ""
+        self._data_avg_delay: float = 0.0
+        self._data_all_keys: int = 0
+        self._data_avg_acc: float = 0.0
+        self._data_bytes: bytes = b''
+        self._data_list: list[int] = []
+        self._select_rowid: int = -1
+        self._game_console_handle: Optional[uiauto.DocumentControl] = None;
 
         # MVC 架构流转：初始化视图 -> 加载数据 -> 渲染数据
         self._init_ui()
         self._action_refresh_data()
-
-        # 初始化 Matplotlib 图表窗口
-        self._line_chart_window: tk.Toplevel = tk.Toplevel(self._root)
-        mpl.rcParams['font.family'] = ['LXGW WenKai Mono', 'sans-serif']
-        mpl.rcParams['axes.unicode_minus'] = False
-        self._fig_line = Figure(figsize=(9, 4))
-        self._fig_line.subplots_adjust(left=0.045, bottom=0.055, right=1.0, top=1.0)
-        self._axis = self._fig_line.add_subplot(111)
-        self._fig_canvas = FigureCanvasTkAgg(self._fig_line, master=self._line_chart_window)
-        self._fig_canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
 
     # ==========================================
     # [Level 0] 视图初始化与布局层 (View / UI)
@@ -94,7 +87,7 @@ class HitDelay:
     def _init_ui(self) -> None:
         """初始化动态流式 UI 布局 (嵌套 Grid 架构)"""
         # 1. 主容器 (左右分割)
-        main_frame: tk.Frame = tk.Frame(self._root, bg='#efefef')
+        main_frame: tk.Frame = tk.Frame(self._subroot, bg='#efefef')
         main_frame.pack(fill=tk.BOTH, expand=True, padx=1, pady=1)
 
         main_frame.columnconfigure(0, weight=1)  # 左侧数据区：弹性拉伸
@@ -118,21 +111,20 @@ class HitDelay:
         headings: list[tuple[str, str, int, Literal['w', 'center', 'e']]] = [
             ("rowid", "ID", 40, tk.E),
             ("song_name", "曲名", 180, tk.W),
-            ("record_time", "记录时间", 170, tk.W),
+            ("record_time", "记录时间", 140, tk.W),
             ("mode", "模式", 50, tk.CENTER),
             ("diff", "难度", 45, tk.CENTER),
             ("combo", "Combo", 80, tk.E),
             ("notes", "Notes", 60, tk.E),
-            ("avg_delay", "平均延迟", 100, tk.E),
-            ("avg_acc", "平均准度", 100, tk.E)
+            ("avg_delay", "平均延迟", 120, tk.E),
+            ("avg_acc", "平均准度", 120, tk.E)
         ]
 
         for col_id, title, width, anchor in headings:
-            self._heading_list.append(col_id)
             self._treeview.heading(col_id, anchor=tk.CENTER, text=title)
             self._treeview.column(col_id, anchor=anchor, width=width)
             # 如果是曲名或时间，允许拉伸；其他列固定宽度
-            is_stretch = col_id == "song_name"
+            is_stretch = col_id in ["song_name", "record_time"]
             self._treeview.column(col_id, anchor=anchor, width=width, stretch=is_stretch)
 
         # 绑定大小改变事件
@@ -190,7 +182,7 @@ class HitDelay:
             control_grid,
             text="Acc-Sync-Diff\n   3D 图表",
             style="TButton",
-            command=acc_sync_diff_analyze.analyze_3d)
+            command=analyze_3d)
         self._all_hit_button.grid(row=control_row, column=0, sticky="nsew", padx=2, pady=2)
         self._avg_sync_button.grid(row=control_row, column=1, sticky="nsew", padx=2, pady=2)
 
@@ -211,8 +203,8 @@ class HitDelay:
         info_modify_row += 1
 
         # 行1: 铺面游玩标识名称显示
-        self._history_name_entry = tk.Entry(info_modify_frame, font=self._font, relief="sunken")
-        self._history_name_entry.grid(row=info_modify_row, column=0, columnspan=2, sticky='ew')
+        self._his_name_entry = tk.Entry(info_modify_frame, font=self._font, relief="sunken")
+        self._his_name_entry.grid(row=info_modify_row, column=0, columnspan=2, sticky='ew')
         info_modify_row += 1
 
         # 行2: '记录时间'
@@ -225,12 +217,12 @@ class HitDelay:
         info_modify_row += 1
 
         # 行3: 铺面游玩时间显示
-        self._history_record_time_value: tk.Label = tk.Label(
+        history_record_time_value: tk.Label = tk.Label(
             info_modify_frame,
             text="",
             font=self._font,
             relief="groove")
-        self._history_record_time_value.grid(row=info_modify_row, column=0, columnspan=2, sticky='ew')
+        history_record_time_value.grid(row=info_modify_row, column=0, columnspan=2, sticky='ew')
         info_modify_row += 1
 
         # 行4: 游玩模式显示
@@ -241,11 +233,11 @@ class HitDelay:
             relief="groove",
             anchor='e')
         history_mode_label.grid(row=info_modify_row, column=0, sticky='ew')
-        self._history_mode_value: ttk.Combobox = ttk.Combobox(
+        history_mode_value: ttk.Combobox = ttk.Combobox(
             info_modify_frame,
-            values=self._mode_list,
+            values=['', '4KEZ', '4KHD', '4KIN', "6KEZ", "6KHD", "6KIN"],
             font=self._font)
-        self._history_mode_value.grid(row=info_modify_row, column=1, sticky='ew')
+        history_mode_value.grid(row=info_modify_row, column=1, sticky='ew')
         info_modify_row += 1
 
         # 行5: 游玩难度显示
@@ -256,11 +248,11 @@ class HitDelay:
             relief="groove",
             anchor='e')
         history_difficulty_label.grid(row=info_modify_row, column=0, sticky='ew')
-        self._history_difficulty_value: ttk.Combobox = ttk.Combobox(
+        history_difficulty_value: ttk.Combobox = ttk.Combobox(
             info_modify_frame,
             values=[f"{i}" for i in range(1, 16)],
             font=self._font)
-        self._history_difficulty_value.grid(row=info_modify_row, column=1, sticky='ew')
+        history_difficulty_value.grid(row=info_modify_row, column=1, sticky='ew')
         info_modify_row += 1
 
         # 行6: Combo显示
@@ -271,30 +263,30 @@ class HitDelay:
             relief="groove",
             anchor='e')
         history_combo_label.grid(row=info_modify_row, column=0, sticky='ew')
-        self._history_combo_value: tk.Label = tk.Label(
+        history_combo_value: tk.Label = tk.Label(
             info_modify_frame,
             text="0/0    ",
             font=self._font,
             relief="groove",
             anchor='e')
-        self._history_combo_value.grid(row=info_modify_row, column=1, sticky='ew')
+        history_combo_value.grid(row=info_modify_row, column=1, sticky='ew')
         info_modify_row += 1
 
         # 行7: Notes数量显示
-        history_notes_label: tk.Label = tk.Label(
+        history_keys_label: tk.Label = tk.Label(
             info_modify_frame,
             text='按键数量: ',
             font=self._font,
             relief="groove",
             anchor='e')
-        history_notes_label.grid(row=info_modify_row, column=0, sticky='ew')
-        self._history_notes_value: tk.Label = tk.Label(
+        history_keys_label.grid(row=info_modify_row, column=0, sticky='ew')
+        history_keys_value: tk.Label = tk.Label(
             info_modify_frame,
             text="0    ",
             font=self._font,
             relief="groove",
             anchor='e')
-        self._history_notes_value.grid(row=info_modify_row, column=1, sticky='ew')
+        history_keys_value.grid(row=info_modify_row, column=1, sticky='ew')
         info_modify_row += 1
 
         # 行8: Avg Delay显示
@@ -305,13 +297,13 @@ class HitDelay:
             relief="groove",
             anchor='e')
         history_delay_label.grid(row=info_modify_row, column=0, sticky='ew')
-        self._history_delay_value: tk.Label = tk.Label(
+        history_delay_value: tk.Label = tk.Label(
             info_modify_frame,
             text="000.000000ms  ",
             font=self._font,
             relief="groove",
             anchor='e')
-        self._history_delay_value.grid(row=info_modify_row, column=1, sticky='ew')
+        history_delay_value.grid(row=info_modify_row, column=1, sticky='ew')
         info_modify_row += 1
 
         # 行9: Avg Acc显示
@@ -322,13 +314,13 @@ class HitDelay:
             relief="groove",
             anchor='e')
         history_acc_label.grid(row=info_modify_row, column=0, sticky='ew')
-        self._history_acc_value: tk.Label = tk.Label(
+        history_acc_value: tk.Label = tk.Label(
             info_modify_frame,
             text='000.000000ms  ',
             font=self._font,
             relief="groove",
             anchor='e')
-        self._history_acc_value.grid(row=info_modify_row, column=1, sticky='ew')
+        history_acc_value.grid(row=info_modify_row, column=1, sticky='ew')
         info_modify_row += 1
 
         # 行10: 操作按钮
@@ -354,43 +346,60 @@ class HitDelay:
     # ==========================================
     # [Level 2] 数据访问与解析层 (Model / DAL)
     # ==========================================
-    def _fetch_history_records(self, rowid: str = "") -> list[tuple[Any, ...]]:
+    def _fetch_history_records(self) -> list[tuple[Any, ...]]:
         """[纯函数] 仅负责从 V4 数据库获取全部历史记录"""
         try:
-            query = "SELECT ROWID, SongMapName, RecordTime, Mode, Diff, Combo, AllKeys, AvgDelay, AvgAcc FROM HitDelayHistory"
-            if rowid:
-                query += f" WHERE ROWID=?"
-            self._cursor.execute(query, (rowid,) if rowid else ())
+            self._cursor.execute("SELECT ROWID, SongMapName, RecordTime, Mode, Diff, Combo, AllKeys, AvgDelay, AvgAcc FROM HitDelayHistory")
             return self._cursor.fetchall()
         except sqlite3.Error as e:
             self._logger.error(f"查询历史记录失败: {e}")
             return []
-        
-    def _fetch_all_history_records(self) -> list[tuple[Any, ...]]:
-        return self._fetch_history_records()
 
-    def _parse_hitmap(self, rowid: int) -> list[int]:
+    def _parse_hitmap(self, rowid: int) -> bytes:
         """[纯函数] 负责从 V4 数据库读取 BLOB 并反序列化为小端整数列表"""
         try:
             self._cursor.execute("SELECT HitMap FROM HitDelayHistory WHERE ROWID=?", (rowid,))
             result = self._cursor.fetchone()
             if not result or not result[0]:
-                return []
+                return b''
 
-            hitmap_blob: bytes = result[0]
-            num_ints: int = len(hitmap_blob) // 4
-            ints_tuple: tuple[int, ...] = struct.unpack('<' + ('i' * num_ints), hitmap_blob)
-            return list(ints_tuple)
-        except (sqlite3.Error, struct.error) as e:
-            self._logger.error(f"解析 HitMap 二进制数据失败: {e}")
-            return []
+            return result[0]
+        except sqlite3.Error as e:
+            self._logger.error(f"查询 HitMap 数据失败: {e}")
+        return []
 
-    def _get_console_handle(self) -> bool:
+    def _fetch_record_by_rowid(self, rowid: int) -> Optional[sqlite3.Row]:
+        """[纯函数] 扩展自 _parse_hitmap: 根据 ROWID 获取一整行完整数据（包含 HitMap）"""
+        try:
+            # 使用 SELECT * 或者显式列出所有列
+            self._cursor.execute("""
+                SELECT ROWID, SongMapName, RecordTime, Mode, Diff, Combo, AllKeys, AvgDelay, AvgAcc, HitMap
+                FROM HitDelayHistory
+                WHERE ROWID=?
+            """, (rowid,))
+
+            # fetchone() 会返回单一的 sqlite3.Row 对象，如果没有找到则返回 None
+            return self._cursor.fetchone()
+        except sqlite3.Error as e:
+            self._logger.error(f"查询单条完整记录失败 (ROWID: {rowid}): {e}")
+            return None
+
+    def _db_delete_record(self, rowid: int) -> bool:
+        """[纯函数] 删除指定 ROWID 的记录"""
+        try:
+            self._cursor.execute("DELETE FROM HitDelayHistory WHERE ROWID=?", (rowid,))
+            self._db.commit()
+            return self._cursor.rowcount > 0  # 返回是否真的删除了数据
+        except sqlite3.Error as e:
+            self._logger.error(f"删除记录失败 (ROWID: {rowid}): {e}")
+            return False
+
+    def _get_console_handle(self) -> None:
         try:
             # 尝试查找常规状态下的控制台
             win = uiauto.WindowControl(searchDepth=1, Name='MUSYNX Delay', searchInterval=1)
             self._game_console_handle = win.DocumentControl(searchDepth=1, Name='Text Area', searchInterval=1)
-            return True
+            return
         except Exception:
             self._logger.warning("常规控制台窗口未找到，尝试查找处于“选择”状态的窗口...")
         try:
@@ -399,18 +408,17 @@ class HitDelay:
             self._game_console_handle = win.DocumentControl(searchDepth=1, Name='Text Area', searchInterval=1)
         except Exception:
             self._logger.exception("处于“选择”状态的控制台窗口也未找到。")
-            return False
-        return True
+            return
 
     # ==========================================
     # [Level 2] 局部视图渲染层 (View Render)
     # ==========================================
-    def _reset_ui_state(self, event: tk.Event) -> None:
+    def _reset_ui_state(self) -> None:
         """重置右侧控制面板的状态"""
         self._get_data_button.config(state=tk.DISABLED)
         self._history_delete_button.config(state=tk.DISABLED)
         self._history_update_button.config(state=tk.DISABLED)
-        self._history_name_entry.delete(0, tk.END)
+        self._his_name_entry.delete(0, tk.END)
         self._select_rowid = -1
 
     def _render_treeview(self, data_rows: list[tuple[Any, ...]]) -> None:
@@ -420,9 +428,8 @@ class HitDelay:
 
         for row in data_rows:
             row_id, name, rec_time, mode, diff, combo, notes, avg_delay, avg_acc = row
-            rec_time = rec_time.split('.')[0]
-            delay_str: str = f"{avg_delay:.4f}ms" if avg_delay is not None else "N/A"
-            acc_str: str = f"{avg_acc:.4f}ms" if avg_acc is not None else "N/A"
+            delay_str: str = f"{avg_delay:.6f}ms" if avg_delay is not None else "N/A"
+            acc_str: str = f"{avg_acc:.6f}ms" if avg_acc is not None else "N/A"
 
             self._treeview.insert("", tk.END, values=(row_id, name, rec_time, mode, diff, combo, notes, delay_str, acc_str))
 
@@ -433,72 +440,83 @@ class HitDelay:
         """Matplotlib 数据绘图"""
         if not self._data_list:
             return
-        
-        font: dict = {'family': 'LXGW WenKai Mono', 'weight': 'normal', 'size': 12}
 
         # 绘制当前数据的 All Hit 分析结果
-        rate, data_length = AllHitAnalyze(self._root, self._data_list).show()
-        
-        self._line_chart_window.title(f'AvgDelay: {self._selected_row_data["avg_delay"]:.4f}ms    Notes: {self._selected_row_data["notes"]}    '\
-            f'Combo: {self._selected_row_data["combo"]}    AvgAcc: {self._selected_row_data["avg_acc"]:.4f}ms')
-        self._logger.info(f'data info:\n'\
-            f'\tAvgDelay: {self._selected_row_data["avg_delay"]}\n'\
-            f'\tNotes: {self._selected_row_data["notes"]}\n'\
-            f'\tAvgAcc: {self._selected_row_data["avg_acc"]}')
-        
-        self._fig_line.clear()
+        rate, data_length = AllHitAnalyze(self._data_bytes).show()
 
-        self._axis.text(-10,5,"Slower→", ha='left',color='#c22472',rotation=90, fontdict=font)
-        self._axis.text(-10,-5,"←Faster", ha='left',va='top',color='#288328',rotation=90, fontdict=font)
+        plt.rcParams['font.family'] = ['LXGW WenKai Mono', 'sans-serif']
+        plt.rcParams['axes.unicode_minus'] = False
+
+        fig = plt.figure(f'AvgDelay: {self._data_avg_delay:.4f}ms    Notes: {self._data_all_keys}    '\
+            f'Combo: {self._data_combo}    AvgAcc: {self._data_avg_acc:.4f}ms',figsize=(9, 4))
+        fig.clear()
+        fig.subplots_adjust(**{"left":0.045,"bottom":0.055,"right":1,"top":1})
+        ax = fig.add_subplot()
+
+        self._logger.info(f'data info:\n'\
+            f'\tAvgDelay: {self._data_avg_delay}\n'\
+            f'\tAllKeys: {self._data_all_keys}\n'\
+            f'\tAvgAcc: {self._data_avg_acc}\n'\
+            f'\tCombo: {self._data_combo}')
+        font: dict = {'family': 'LXGW WenKai Mono',
+                      'weight': 'normal',
+                      'size': 12}
+        ax.text(-10,5,"Slower→", ha='left',color='#c22472',rotation=90, fontdict=font)
+        ax.text(-10,-5,"←Faster", ha='left',va='top',color='#288328',rotation=90, fontdict=font)
 
         max_y_axis: int = max(int(max(self._data_list)), 45)
         min_y_axis: int = min(int(min(self._data_list)), -45)
-
-        self._axis.set_ylim(min_y_axis - 5, max_y_axis + 5)
-        self._axis.set_xlim(-15, data_length * 1.02)
+        ax.set_ylim(min_y_axis - 5, max_y_axis + 5)
 
         # ==========================================
         # 正值部分：从外向内判断 (max_y_axis >= 阈值)
         # ==========================================
         if max_y_axis >= 250:
-            self._axis.axhline(y=250, c='orange', ls='--', lw=1, alpha=0.8, label=f"> 250 ms    -- MISS {rate[4]:>4}")
+            ax.axhline(y=250, c='orange', ls='--', lw=1, alpha=0.8, label=f"> 250 ms    -- MISS {rate[4]:>4}")
         if max_y_axis >= 150:
-            self._axis.axhline(y=150, c='green', ls='--', lw=1, alpha=0.8, label=f"> 150 ms    --RIGHT {rate[3]:>4}")
+            ax.axhline(y=150, c='green', ls='--', lw=1, alpha=0.8, label=f"> 150 ms    --RIGHT {rate[3]:>4}")
         if max_y_axis >= 90:
-            self._axis.axhline(y=90, c='blue', ls='--', lw=1, alpha=0.8, label=f">  90 ms    --GREAT {rate[2]:>4}")
+            ax.axhline(y=90, c='blue', ls='--', lw=1, alpha=0.8, label=f">  90 ms    --GREAT {rate[2]:>4}")
         if max_y_axis >= 45:
-            self._axis.axhline(y=45, c='cyan', ls='--', lw=1, alpha=0.8, label=f">  45 ms    --EXACT {rate[1]:>4}")
-        self._axis.axhline(y=0, c='red', ls='-', lw=1, alpha=1.0, label=f"   0 ms    -- CyEX  {rate[0]:>4}")
+            ax.axhline(y=45, c='cyan', ls='--', lw=1, alpha=0.8, label=f">  45 ms    --EXACT {rate[1]:>4}")
+        ax.axhline(y=0, c='red', ls='-', lw=1, alpha=1.0, label=f"    0 ms    -- CyEX {rate[0]:>4}")
 
         # ==========================================
         # 负值部分：从外向内判断 (min_y_axis <= 阈值)
         # 注意：不再重复添加 label，防止图例重复
         # ==========================================
         if min_y_axis <= -150:
-            self._axis.axhline(y=-150, c='green', ls='--', lw=1, alpha=0.8)
+            ax.axhline(y=-150, c='green', ls='--', lw=1, alpha=0.8)
         if min_y_axis <= -90:
-            self._axis.axhline(y=-90, c='blue', ls='--', lw=1, alpha=0.8)
+            ax.axhline(y=-90, c='blue', ls='--', lw=1, alpha=0.8)
         if min_y_axis <= -45:
-            self._axis.axhline(y=-45, c='cyan', ls='--', lw=1, alpha=0.8)
+            ax.axhline(y=-45, c='cyan', ls='--', lw=1, alpha=0.8)
 
-        self._axis.legend()
+        ax.legend()
 
-        # TODO: 图表绘制
+        ax.plot(self._data_list, marker='o', markersize=3,
+                linestyle='-', color='#8a68d0', alpha=0.7, label='Hit Delay')
 
-        self._axis.set_xlabel("延迟量 Delay (ms)")
-        self._axis.set_ylabel("击打频数 (Hits)")
+        for x, y in zip(range(len(self._data_list)), self._data_list, strict=True):
+            if y<0:
+                ax.text(x,y-3,'%dms'%y,ha='center',va='top',fontsize=7.5,alpha=0.7)
+            else:
+                ax.text(x,y+3,'%dms'%y,ha='center',va='bottom',fontsize=7.5,alpha=0.7)
+
+        ax.set_xlabel("延迟量 Delay (ms)")
+        ax.set_ylabel("击打频数 (Hits)")
 
         # 强制格式化右下角坐标系为纯整数显示 (消除科学计数法)
-        self._axis.format_coord = lambda x, y: f"Delay: {y:.1f}ms, 频数: {int(x)}"
-        
-        self._fig_canvas.draw()
+        ax.format_coord = lambda x, y: f"Delay: {int(y)}ms, 频数: {int(x)}"
+
+        plt.show()
 
     # ==========================================
     # [Level 1] 统筹调度与事件响应层 (Controllers)
     # ==========================================
     def _action_refresh_data(self) -> None:
         """统筹事件：拉取数据 -> 重置界面状态 -> 渲染表格"""
-        data = self._fetch_all_history_records()
+        data = self._fetch_history_records()
         self._reset_ui_state()
         self._render_treeview(data)
 
@@ -508,8 +526,7 @@ class HitDelay:
         if not messagebox.askyesno("确认删除", "确定要删除这条游玩记录吗？\n删除后不可恢复！"): return
 
         try:
-            self._cursor.execute("DELETE FROM HitDelayHistory WHERE ROWID=?", (self._select_rowid,))
-            self._db.commit()
+            self._db_delete_record(self._select_rowid)
             self._logger.info(f"已删除记录 ROWID: {self._select_rowid}")
             self._action_refresh_data()
         except sqlite3.Error as e:
@@ -519,7 +536,7 @@ class HitDelay:
     def _action_change_mark(self) -> None:
         """UI 事件：修改选中记录的标记名称"""
         if self._select_rowid == -1: return
-        new_mark: str = self._history_name_entry.get().strip()
+        new_mark: str = self._his_name_entry.get().strip()
         if not new_mark:
             messagebox.showwarning("警告", "请输入有效的标记名称！")
             return
@@ -537,10 +554,34 @@ class HitDelay:
         """UI 事件：解析二进制数据并绘制单曲直方图"""
         if self._select_rowid == -1: return
 
-        self._data_list = self._parse_hitmap(self._select_rowid)
-        if not self._data_list:
+        # 通过ROWID获取一行数据
+        row_data = self._fetch_record_by_rowid(self._select_rowid)
+        if not row_data:
+            messagebox.showerror("错误", "未找到选中记录的数据！")
+            return
+
+        # 将数据库中的字段值赋给全局状态变量，供绘图函数使用
+        self._data_song_name = row_data['SongMapName']
+        self._data_record_time = row_data['RecordTime']
+        self._data_diff = row_data['Diff']
+        self._data_mode = row_data["Mode"]
+        self._data_combo = row_data['Combo']
+        self._data_avg_delay = row_data['AvgDelay']
+        self._data_all_keys = row_data['AllKeys']
+        self._data_avg_acc = row_data['AvgAcc']
+        self._data_bytes = row_data['HitMap']
+
+        if not self._data_bytes:
             messagebox.showwarning("警告", "该记录的击打数据为空或已损坏，无法绘图。")
             return
+
+        try:
+            # 将二进制数据解析为整数列表，注意小端序和 int32 类型
+            num_ints: int = len(self._data_bytes) // 4
+            data_tuple = struct.unpack('<' + ('i' * num_ints), self._data_bytes)
+            self._data_list = [x/10000 for x in data_tuple]
+        except struct.error as e:
+            self._logger.error(f"解析 HitMap 二进制数据失败: {e}")
 
         self._logger.info(f"成功载入 {len(self._data_list)} 个 note 数据准备绘图。")
         self._do_matplotlib_draw()
@@ -548,19 +589,14 @@ class HitDelay:
     def _action_get_console_data(self) -> None:
         """UI 事件：通过 UIAutomation 捕获控制台数据并写入 V4 数据库"""
         self._logger.info("尝试获取控制台数据...")
-        start_time: int = time.perf_counter_ns()
 
         # 1. 尝试并复制文本
         for i in range(3): # 最多尝试3次，增加成功率
-            self._get_data_button.config(
-                state=(
-                    tk.NORMAL if self._get_console_handle() else tk.DISABLED
-                    )
-                )
-            if self._game_console_handle is not None:
-                break
-            self._logger.warning(f"第 {i+1} 次尝试获取控制台数据失败，正在重试...")
-            time.sleep(0.5)
+             self._get_console_handle()
+             if self._game_console_handle is not None:
+                 break
+             self._logger.warning(f"第 {i+1} 次尝试获取控制台数据失败，正在重试...")
+             time.sleep(1)
         else:
             self._logger.error("多次尝试后仍未找到控制台窗口，无法获取数据。")
             messagebox.showerror("获取失败", '无法获取控制台数据，请确认后台已运行 MUSYNX Delay 控制台程序！')
@@ -575,16 +611,25 @@ class HitDelay:
 
         hit_delays: list[float] = []
         combo_str: str = "0/0"
+        song_info: str = "0"
+        sync_number: float = "0"
 
         for line in lines:
             if line.startswith("> SongInfo"):
                 # 解析 Combo 数据: > "SongInfo::SID:141801,SN:12184,MC:536,TC:536"
                 try:
                     parts = line.split(',')
+                    # 谱面信息 SongID(SID)
+                    song_info = parts[0].split('::')[1]
+                    # 同步率 (SN)，转换为小数形式
+                    sync_number = int(parts[1].split(':')[1]) / 100.0
+                    # MaxCombo
                     mc = parts[2].split(':')[1]
+                    # TotalCombo
                     tc = parts[3].split(':')[1].replace('"', '')
                     combo_str = f"{mc}/{tc}"
                 except IndexError:
+                    self._logger.exception("解析 SongInfo 行时发生错误，行内容: " + line)
                     pass
             elif line.startswith("> Delay:"):
                 # 解析延迟数据: > Delay: -12.3ms
@@ -599,22 +644,19 @@ class HitDelay:
             messagebox.showwarning("警告", "在控制台中未提取到任何有效的击打数据 (Delay)。")
             return
 
-        # 3. 统计计算 (过滤极端的 Miss 延迟以计算平均偏差)
-        delay_interval: int = 150 # 定义有效判定区间，规避极端数值影响平均值
-        valid_delays = [x for x in hit_delays if -delay_interval < x < delay_interval]
-
-        avg_delay: float = sum(valid_delays) / len(valid_delays) if valid_delays else 0.0
+        # 3. 统计计算
+        avg_delay: float = sum(hit_delays) / len(hit_delays) if hit_delays else 0.0
         avg_acc: float = sum(abs(x) for x in hit_delays) / all_keys
 
         # 4. 适配 V4 数据库：转换为小端序 int32 二进制流
-        hitmap_ints: list[int] = [int(x) for x in hit_delays]
+        hitmap_ints: list[int] = [int(round(x * 10000)) for x in hit_delays]
         hitmap_bytes: bytes = struct.pack('<' + ('i' * len(hitmap_ints)), *hitmap_ints)
 
         record_time: str = dt.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # 智能获取命名：优先使用界面输入框内的文本，为空则填充默认名
-        input_name = self._history_name_entry.get().strip().replace("\'", "’")
-        default_name: str = input_name if input_name else "新导入记录"
+        # 智能获取命名：优先使用SID查询SongName, 其次从界面输入框内获取文本, 最后则填充默认名
+        input_name: str = song_name.data.get(song_info, self._his_name_entry.get().strip().replace("\'", "’"))
+        default_name: str = input_name if input_name else f"未命名谱面 {dt.now().strftime('%H%M%S')}"
 
         # 5. 写入数据库并自动刷新 UI
         try:
@@ -625,9 +667,7 @@ class HitDelay:
             """, (default_name, record_time, "4K", 0, combo_str, all_keys, avg_delay, avg_acc, hitmap_bytes))
             self._db.commit()
 
-            new_rowid: int | None = self._cursor.lastrowid
-            if new_rowid is None:
-                new_rowid = len(self._treeview.get_children()) + 1
+            new_rowid = self._cursor.lastrowid
             self._logger.info(f"成功导入来自控制台的数据，生成新记录 ROWID: {new_rowid}")
 
             # 刷新表格
@@ -641,7 +681,6 @@ class HitDelay:
         except sqlite3.Error as e:
             self._logger.error(f"将捕获数据写入数据库时失败: {e}")
             messagebox.showerror("数据库错误", f"保存捕获数据失败:\n{e}")
-        self._logger.debug(f"_action_get_console_data() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
 
     def _action_show_all_hit(self) -> None:
         """UI 事件：显示全局全量直方图 (调用外部模块)"""
@@ -668,40 +707,16 @@ class HitDelay:
     #         # 设置最小宽度防止缩没，并更新当前宽度
     #         self._treeview.column(col_id, width=target_width, minwidth=int(base_width*0.5))
 
-    def on_closing(self) -> None:
-        """UI 事件：窗口关闭时清理资源"""
-        if messagebox.askokcancel("退出", "确定要退出高精度延迟分析吗？"):
-            try:
-                self._cursor.close()
-                self._db.close()
-            except Exception as e:
-                self._logger.warning(f"关闭数据库连接时发生异常: {e}")
-            self._root.destroy()
-
     def _on_tree_select(self, event: tk.Event) -> None:
         """回调：点击表格行获取 ROWID 并更新右侧面板输入框"""
         selected_items: tuple[str, ...] = self._treeview.selection()
         if not selected_items: return
 
-        rowid: str = self._treeview.item(selected_items[0], "values")[0]
-        data: tuple[Any, ...] = self._fetch_history_records(rowid)[0]
-
-        if data:
-            pass
-            self._select_rowid = data[0]
-            # 将选中行的数据和数据标题添加为字典
-            self._selected_row_data = dict(zip(self._heading_list, data))
-            print(self._selected_row_data)
-
-            self._history_name_entry.delete(0, tk.END)
-            self._history_name_entry.insert(0, data[1])
-            self._history_record_time_value.config(text=data[2])
-            self._history_mode_value.current(self._mode_list.index(data[3]))
-            self._history_difficulty_value.current(data[4])
-            self._history_combo_value.config(text=f"{data[5]}    ")
-            self._history_notes_value.config(text=f"{data[6]}    ")
-            self._history_delay_value.config(text=f"{data[7]:.6f}ms  ")
-            self._history_acc_value.config(text=f"{data[8]:.6f}ms  ")
+        values: tuple[Any, ...] = self._treeview.item(selected_items[0], "values")
+        if values:
+            self._select_rowid = int(values[0])
+            self._his_name_entry.delete(0, tk.END)
+            self._his_name_entry.insert(0, str(values[1]))
 
             # 激活对应的操作按钮
             self._history_delete_button.config(state=tk.NORMAL)
@@ -740,13 +755,25 @@ class HitDelay:
         except Exception as e:
             self._logger.warning(f"表格排序失败: {e}")
 
-    def _on_closing(self, event: tk.Event) -> None:
-        self.on_closing()
+    def _on_closing(self) -> None:
+        """UI 事件：窗口关闭时清理资源"""
+        if messagebox.askokcancel("退出", "确定要退出高精度延迟分析吗？"):
+            try:
+                self._cursor.close()
+                self._db.close()
+            except Exception as e:
+                self._logger.warning(f"关闭数据库连接时发生异常: {e}")
+            self._subroot.destroy()
 
-    def _on_refresh_data(self, event: tk.Event) -> None:
-        """快捷键事件: F5 刷新数据"""
-        self._action_refresh_data()
+if __name__ == "__main__":
+    from . import version, pre_version, is_pre_release
 
-    def _on_reset_ui_state(self, event: tk.Event) -> None:
-        """快捷键事件: Esc 重置 UI 状态"""
-        self._reset_ui_state(event)
+    # Init
+    config.Version = pre_version.replace("pre",".") if (is_pre_release) else version
+
+    # Launcher
+    root: tk.Tk = tk.Tk()
+    root.tk.call('tk', 'scaling', 1.25)
+    HitDelay(root)
+    root.update()
+    root.mainloop()

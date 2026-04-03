@@ -5,7 +5,8 @@ from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from typing import Final
 
-from . import MapDataInfo, SaveDataInfo
+from .map_info import MapDataInfo
+from .save_data_manager import save_data
 
 # 定义偏移量常量，避免魔法数字
 JITTER_OFFSET: Final[float] = 0.15
@@ -23,7 +24,7 @@ def diff_score_analyze() -> None:
     scores_by_diff_6k: dict[int, list[float]] = {i: [] for i in range(1, 16)}
 
     # 2. 数据解析层 (Data Parsing)
-    data: list[MapDataInfo] = SaveDataInfo.saveInfoList
+    data: list[MapDataInfo] = save_data.saveInfoList
     for map_data in data:
         sync_rate: float = map_data.SyncNumber / 100.0
 
@@ -109,12 +110,12 @@ def diff_score_analyze() -> None:
     diff_keys_4k = sorted(stats_4k.keys())
     avg_vals_4k = [stats_4k[d][0] for d in diff_keys_4k]
     ax.plot(diff_keys_4k, avg_vals_4k, ls='-', c='orange',
-            marker="D", markerfacec="Blue", alpha=0.7, lw=2, label="4Key Mode")
+            marker="D", markerfacecolor="Blue", alpha=0.7, lw=2, label="4Key Mode")
 
     diff_keys_6k = sorted(stats_6k.keys())
     avg_vals_6k = [stats_6k[d][0] for d in diff_keys_6k]
     ax.plot(diff_keys_6k, avg_vals_6k, ls='-', c='orange',
-            marker="D", markerfacec="Red", alpha=0.7, lw=2, label="6Key Mode")
+            marker="D", markerfacecolor="Red", alpha=0.7, lw=2, label="6Key Mode")
 
     # 绘制散点
     ax.scatter(diff_4k, scores_4k, alpha=0.7, c='#8A68D0', s=5)

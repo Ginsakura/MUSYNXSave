@@ -119,8 +119,6 @@ C#重构版本: [MUSYNCSaveCSharp](https://github.com/Ginsakura/MUSYNCSaveCSharp
 | `ConsoleFontSize` | `36` | int | 游戏控制台窗口的字号 |
 | `MainExecPath` | `自动获取` | string | 游戏主程序所在的绝对路径 |
 | `ChangeConsoleStyle` | `false` | boolean | 是否启用自定义喵赛克游戏本体控制台窗口样式 |
-| `FramelessWindow` | `false` | boolean | 是否启用无边框窗口样式 (未完成) |
-| `TransparentColor` | `'#FFFFFF'` | string \| boolean | (仅限新样式) 设置透明色。设置为 `false` 即为关闭透明色 |
 
 </details>
 
@@ -153,7 +151,8 @@ C#重构版本: [MUSYNCSaveCSharp](https://github.com/Ginsakura/MUSYNCSaveCSharp
 3. 优化
     1. 更改数据库结构，增加模式、难度、连击字段 (v3 -> v4)
     2. 深度重构代码，使其全面符合 `PEP 8` 规范
-    3. 优化 patch 用 C# 代码，关闭控制台的 `快速编辑` 模式，提供更丰富的数据输出
+    3. 优化 patch 用 C# 代码，关闭控制台的 `快速编辑` 模式；
+    3. 控制台提供更丰富的数据输出
     3. 优化`Tookit`中数据库升级迁移逻辑
 4. 重构
     1. `AllHitAnalyze`: 优化底层数据处理逻辑与图表渲染性能展示
@@ -161,7 +160,7 @@ C#重构版本: [MUSYNCSaveCSharp](https://github.com/Ginsakura/MUSYNCSaveCSharp
     3. `Diffculty_ScoreAnalyze`: 以更现代、更解耦的架构重新绘制图表并展示数据
     4. `FileEncoding`: 引入防溢出屏障，以更安全的方式处理文件的 meta data，确保跨平台文件操作与 I/O 安全性
     5. `Toolkit`: 完善了文件哈希校验、资源释放的并发安全性设计，并封装了安全的 SQLite 事务流转
-
+    6. `Resource`: 重构
 ---
 
 ## 郑重声明：我 **不会** 对存档文件进行任何 **写** 操作

@@ -14,7 +14,7 @@ namespace BMSLib
 		private const int STD_OUTPUT_HANDLE = -11;
 		private const uint ENABLE_QUICK_EDIT_MODE = 0x0040;
 		private const uint ENABLE_EXTENDED_FLAGS = 0x0080;
-		
+
 		// SetWindowPos 常量
 		private static readonly IntPtr HWND_TOPMOST = new IntPtr(-1);
 		private const uint SWP_NOSIZE = 0x0001;
@@ -37,9 +37,9 @@ namespace BMSLib
 			{
 				ConsoleWindow.AllocConsole();
 			}
-			
+
 			ConsoleWindow.DisableQuickEditMode();
-			
+
 			ConsoleWindow.oldOutput = Console.Out;
 			try
 			{
@@ -55,8 +55,8 @@ namespace BMSLib
 				Console.Title = "MUSYNX Delay";
 				Console.ForegroundColor = ConsoleColor.Red;
 				Console.BackgroundColor = ConsoleColor.White;
-				Console.SetWindowSize(30, 4); 
-				Console.Clear();              
+				Console.SetWindowSize(30, 4);
+				Console.Clear();
 
 				// 3. 将控制台窗口置顶 (TopMost)
 				IntPtr consoleWindowHandle = ConsoleWindow.GetConsoleWindow();

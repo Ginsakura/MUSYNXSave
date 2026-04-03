@@ -1,9 +1,8 @@
-﻿# *- coding: utf-8 -*-
+# *- coding: utf-8 -*-
 import gzip
 import io
 import json
 import logging
-import math
 import os
 import re
 import sqlite3
@@ -13,36 +12,35 @@ import time
 import winreg
 
 from hashlib import sha256
+from pathlib import Path
 from tkinter import messagebox
 from typing import Any, Optional
 from win32 import win32gui, win32print
 from win32.lib import win32con
 from win32.win32api import GetSystemMetrics
 
-from . import Config, Logger, SongName
+from .config_manager import config, get_logger
+from .songname_manager import song_name
 
-_logger: logging.Logger = Logger().GetLogger("Toolkit")
+_logger: logging.Logger = get_logger("Toolkit")
 
 class Toolkit:
-    _logger: logging.Logger = Logger().GetLogger("Toolkit")
+    """工具包类，提供环境检查、资源管理、文件哈希、数据库更新等功能"""
+    _logger: logging.Logger = get_logger("Toolkit")
+    # 资源文件信息字典
     _resource_file_info: dict[str, dict[str, Any]] = {}
+    # 资源加载状态和文件对象
     _is_resource_loaded: bool = False
     _resource_file: Optional[io.BufferedReader] = None
+    # 异步资源访问锁，确保多线程环境下的文件安全
     _file_lock: threading.Lock = threading.Lock()
+
+    _resource_file_path: Path = Path("./musync_data/Resources.bin")
 
     @staticmethod
     def calc_end_time(start_time: int) -> float:
-        return (time.perf_counter_ns() - start_time) / 1_000_000
-    
-    # 计算正态分布的通用函数
-    @staticmethod
-    def _calculate_pdf(x_data: list[int], avg: float, var: float, std: float, count: int) -> list[float]:
-        if var <= 0 or std <= 0:
-            return [0.0] * len(x_data)
-        # 正态分布公式： f(x) = (1 / (σ * sqrt(2π))) * e^(-(x - μ)² / (2σ²))
-        # 乘以总数 count 以将面积放大至直方图级别
-        coeff = count / (math.sqrt(2 * math.pi) * std)
-        return [coeff * math.exp(-((x - avg) ** 2) / (2 * var)) for x in x_data]
+        """计算并返回从 start_time 到当前的时间差，单位为毫秒"""
+        return (time.perf_counter_ns() - start_time) / 1_000_000;
 
     @classmethod
     def init_resources(cls) -> None:
@@ -79,7 +77,7 @@ class Toolkit:
         finally:
             win32gui.ReleaseDC(0, h_dc)
         _logger.debug(f"Get DPI: {dpi}")
-        _logger.debug(f"get_dpi() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+        _logger.debug(f"get_dpi() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return dpi
 
     @staticmethod
@@ -88,7 +86,6 @@ class Toolkit:
         start_time: int = time.perf_counter_ns()
         _logger.info('Changing Console Style...')
 
-        config = Config()
         if not config.MainExecPath:
             Toolkit.get_save_file()
 
@@ -114,7 +111,7 @@ class Toolkit:
         except OSError as e:
             _logger.error(f"Failed to change console style: {e}")
 
-        _logger.debug(f"change_console_style() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+        _logger.debug(f"change_console_style() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     @staticmethod
     def get_hash(file_path: Optional[str] = None) -> str:
@@ -129,7 +126,7 @@ class Toolkit:
                 sha256_hash.update(byte_block)
 
         hash_result: str = sha256_hash.hexdigest().upper()
-        _logger.debug(f"get_hash() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+        _logger.debug(f"get_hash() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return hash_result
 
     @classmethod
@@ -154,7 +151,7 @@ class Toolkit:
             with open(release_path, "wb") as f:
                 f.write(decompressed_data)
 
-        cls._logger.debug(f"release_resource() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+        cls._logger.debug(f"release_resource() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return decompressed_data
 
     @classmethod
@@ -188,7 +185,7 @@ class Toolkit:
                 try:
                     # song_name 特殊逻辑 (按 Version 更新)
                     if tag == "song_name":
-                        if not os.path.isfile(file_path) or info["version"] > SongName.Version():
+                        if not os.path.isfile(file_path) or info["version"] > song_name.version:
                             cls.release_resource(info["offset"], info["length"], file_path)
                     # 常规哈希比对逻辑
                     else:
@@ -207,10 +204,10 @@ class Toolkit:
         cls.update_database(cls.check_database_version())
 
         cls._logger.debug("Check DLLInjection...")
-        if Config.DLLInjection:
+        if config.DllInjection:
             cls.game_lib_check()
 
-        cls._logger.debug(f"check_resources() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+        cls._logger.debug(f"check_resources() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     @classmethod
     def get_save_file(cls) -> str:
@@ -230,12 +227,12 @@ class Toolkit:
                 full_path = f"{drive}:\\{path}"
                 if os.path.isfile(f"{full_path}musynx.exe"):
                     cls._logger.debug(f"SaveFilePath: {full_path}")
-                    Config.MainExecPath = full_path
-                    Config.SaveConfig()
+                    config.MainExecPath = full_path
+                    config.save_config()
                     return full_path
 
         cls._logger.error("搜索不到存档文件.")
-        cls._logger.info(f"get_save_file() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+        cls._logger.info(f"get_save_file() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return ""
 
     @classmethod
@@ -248,7 +245,7 @@ class Toolkit:
         """
         start_time: int = time.perf_counter_ns()
         return_code: int = 0  # 初始化统一返回值
-        dll_path: str = Config.MainExecPath + 'MUSYNX_Data/Managed/Assembly-CSharp.dll'
+        dll_path: str = config.MainExecPath + 'MUSYNX_Data/Managed/Assembly-CSharp.dll'
         EMPTY_HASH: str = "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
 
         # 使用嵌套逻辑确保流程最终能流向函数末尾
@@ -352,7 +349,7 @@ class Toolkit:
         except Exception as e:
             cls._logger.fatal(f"CheckDatabaseVersion() 异常: {e}")
 
-        cls._logger.debug(f"check_database_version() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+        cls._logger.debug(f"check_database_version() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return rt_code
 
     @classmethod
@@ -554,5 +551,5 @@ class Toolkit:
                 return False
 
         cls._logger.info("数据库状态检查通过.")
-        cls._logger.debug(f"update_database() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+        cls._logger.debug(f"update_database() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return True

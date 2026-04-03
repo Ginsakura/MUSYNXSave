@@ -20,10 +20,14 @@ from tkinter.filedialog import askopenfilename
 # from PIL import Image as PILImage
 # from PIL import ImageTk
 
-from . import version, pre_version, is_pre_release
-from . import diff_score_analyze, HitDelay
-from . import MusyncSaveDecoder
-from . import Config, SaveDataInfo, SongName, Logger, Toolkit
+from .version import version, pre_version, is_pre_release
+from .config_manager import config, get_logger
+from .save_data_manager import save_data
+from .songname_manager import song_name
+from .toolkit import Toolkit
+from .musync_save_decode import MusyncSaveDecoder
+from .hit_delay import HitDelay
+from .difficulty_score_analyze import diff_score_analyze
 
 class MusyncMainWindow(object):
     """
@@ -39,7 +43,7 @@ class MusyncMainWindow(object):
                 isTKroot: bool - 是否为Tk根窗口
         """
         # super(MusyncSavDecodeGUI, self).__init__()
-        self.logger:logging.Logger = Logger.GetLogger(name="MusyncSavDecodeGUI")
+        self.logger:logging.Logger = get_logger(name="MusyncSavDecodeGUI")
         self.version:str = version
         self.preVersion:str = pre_version
         self.isPreRelease:bool = is_pre_release
@@ -188,23 +192,23 @@ class MusyncMainWindow(object):
             self.checkGameIsStartThread.start()
             threading.Thread(target=self.CheckJsonUpdate).start()
 
-            if Config().CheckUpdate:
+            if config.CheckUpdate:
                 self.logger.info("Check Updating...")
                 threading.Thread(target=self.CheckUpdate).start()
             else:
                 self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页')
                 self.logger.warning("Check update is Disable")
             self.InitLabel(text="正在读取存档路径……")
-            if (Config().MainExecPath is not None and
-                Config().MainExecPath and
-                os.path.isfile(Config().MainExecPath)
+            if (config.MainExecPath is not None and
+                config.MainExecPath and
+                os.path.isfile(config.MainExecPath)
                 ):
-                self.saveFilePathVar.set(Config().MainExecPath+"SavesDir\\savedata.sav")
+                self.saveFilePathVar.set(config.MainExecPath+"SavesDir\\savedata.sav")
             else:
                 save_path: str = Toolkit.get_save_file()
                 if save_path:
                     self.saveFilePathVar.set(save_path + "SavesDir\\savedata.sav")
-            if Config().DLLInjection:
+            if config.DLLInjection:
                 self.logger.warning("DLL Injection is Enable.")
                 self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelayCheck, font=self.font,bg='#FF5959')
                 self.hitDelay.place(x=775,y=50,width=90,height=30)
@@ -227,9 +231,9 @@ class MusyncMainWindow(object):
         self.logger.debug("Main Window Destroying...")
         self.root.destroy()
         self.logger.debug("Saving Config and Data...")
-        Config.SaveConfig()
+        config.SaveConfig()
         self.logger.debug("SaveDataInfo Dumping To Json...")
-        SaveDataInfo.DumpToJson()
+        save_data.DumpToJson()
         self.logger.info("Software Closed.")
 
 # select功能组
@@ -332,7 +336,7 @@ class MusyncMainWindow(object):
             l.sort(reverse=self.dataSortMethodsort[1])
             for index, (val, k) in enumerate(l):
                 self.saveData.move(k, '', index)
-            print(f"Treeview SortClick Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+            print(f"Treeview SortClick Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
             self.TreeviewColumnUpdate()
         if isinstance(event, list):
             self.dataSortMethodsort[1] = not self.dataSortMethodsort[1]
@@ -357,12 +361,12 @@ class MusyncMainWindow(object):
         start_time: int = time.perf_counter_ns()
 
         repo: str = "https://raw.githubusercontent.com/Ginsakura/MUSYNXSave/main/musync_data/"
-        if Config().UpdateChannel.lower() == "beta":
+        if config.UpdateChannel.lower() == "beta":
             repo = "https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/dev/musync_data/"
 
         try:
             response:requests.Response = requests.get(repo + "songname.ver", timeout=10)
-            localVersion:int = int(SongName.Version())
+            localVersion:int = int(song_name.Version())
             self.logger.info(f"   Local Json Version: {localVersion}")
             if response.status_code == 200:
                 githubVersion = int(response.content.decode('utf8'))
@@ -372,7 +376,7 @@ class MusyncMainWindow(object):
                     songNameJson = response.text
                     with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
                         snj.write(songNameJson)
-                    SongName.LoadFile()
+                    song_name.LoadFile()
             else:
                 self.logger.error("Can't get \"songname.ver\", HTTP status code: %d."%(response.status_code))
         except Exception as e:
@@ -383,7 +387,7 @@ class MusyncMainWindow(object):
                 if messagebox.askyesno("无法获取谱面信息更新", '是否前往网页查看是否存在更新?\n(请比对 SongName.json 中的时间是否比本地文件中的时间更大)'):
                     webbrowser.open(repo + "songname.json")
             self.root.after(0, show_error)
-        self.logger.info(f"CheckJsonUpdate() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+        self.logger.info(f"CheckJsonUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     def CheckUpdate(self) -> None:
         """检查软件更新"""
@@ -402,8 +406,8 @@ class MusyncMainWindow(object):
             return True
 
         start_time: int = time.perf_counter_ns()
-        updateChannel:bool = Config().UpdateChannel.lower() == "prerelease"
-        localVersion:list[int] = [int(i) for i in Version.preVersion.replace("pre",".").split(".")]
+        updateChannel:bool = config.UpdateChannel.lower() == "prerelease"
+        localVersion:list[int] = [int(i) for i in pre_version.replace("pre",".").split(".")]
         targetVersion:list[int] = [0,0,0,0]
         # 获取版本号
         try:
@@ -450,7 +454,7 @@ class MusyncMainWindow(object):
         # 	self.gitHubUrlVar = "点击打开GitHub仓库	点个Star吧，秋梨膏"
         # 	labelUrl = "https://github.com/Ginsakura/MUSYNCSave"
         self.root.after(0, lambda _:self.gitHubLink.configure(command=lambda:webbrowser.open(labelUrl)))
-        self.logger.info(f"CheckUpdate() Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+        self.logger.info(f"CheckUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
 # 初始化提示框
     def InitLabel(self,text,close=False) -> None:
@@ -468,7 +472,7 @@ class MusyncMainWindow(object):
 
     def HitDelayCheck(self):
         "DLL注入功能"
-        if not Config().DLLInjection:
+        if not config.DLLInjection:
             return
         result:int = Toolkit.game_lib_check()
         if result == 0:
@@ -501,12 +505,12 @@ class MusyncMainWindow(object):
             else				: return "黑Ex"
 
         # songNameJson = SongName.SongNameData()
-        self.root.title(f'同步音律喵赛克Steam端本地存档分析   LastPlay: {SaveDataInfo.selectSongName}')
+        self.root.title(f'同步音律喵赛克Steam端本地存档分析   LastPlay: {save_data.selectSongName}')
         [self.saveData.delete(ids) for ids in self.saveData.get_children()]
         self.saveCount = 0
         self.excludeCount = 0
         self.totalSync = 0
-        for saveInfo in SaveDataInfo.saveInfoList:
+        for saveInfo in save_data.saveInfoList:
             # 无名谱面筛选
             if saveInfo.SongName is None: continue
             # 键数筛选
@@ -556,7 +560,7 @@ class MusyncMainWindow(object):
         if not self.dataSortMethodsort[0] is None:
             self.SortClick(self.dataSortMethodsort)
         self.InitLabel('数据展示生成完成.',close=True)
-        self.logger.debug(f"DataLoad Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+        self.logger.debug(f"DataLoad Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         self.UpdateWindowInfo()
 
 # 控件更新功能组
@@ -580,7 +584,7 @@ class MusyncMainWindow(object):
 
     def CheckGameRunning(self):
         """游戏运行检测"""
-        logger:logging.Logger = Logger.GetLogger("MusyncSavDecodeGUI.CheckGameRunning")
+        logger:logging.Logger = get_logger("MusyncSavDecodeGUI.CheckGameRunning")
         logger.info("Start Thread: CheckGameIsStart.")
         def UpdateUI(text:str, bg:str)->None:
             self.isGameRunning["text"] = text; #"游戏未启动"
@@ -609,7 +613,7 @@ class MusyncMainWindow(object):
             except Exception:
                 logger.debug("Checking has Unknown Exception")
                 pass
-            logger.info(f"CheckGameIsStart Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+            logger.info(f"CheckGameIsStart Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         logger.warning("Stop Thread: CheckGameIsStart.")
 
     def TreeviewColumnUpdate(self):
@@ -759,3 +763,26 @@ class MessageBoxEnum(Enum):
     # TODO: 补全
     showerror = 0
     askyesno = 1
+
+
+if __name__ == '__main__':
+    """主函数"""
+    # Launcher
+    root:Tk = Tk()
+    ctypes.windll.shcore.SetProcessDpiAwareness(1)
+    fontlist:list[str] = list(font.families())
+    Toolkit.check_resources(fonts=fontlist)
+    # del fonts
+    if config.ChangeConsoleStyle:
+        Toolkit.change_console_style()
+    root.tk.call('tk', 'scaling', 1.25)
+    root.resizable(False, True); #允许改变窗口高度，不允许改变窗口宽度
+    # 强制仅旧版UI
+    MusyncMainWindow(root=root)
+    # if cfg['EnableFramelessWindow']:
+    # 	root.overrideredirect(1)
+    # 	window = NewStyle.MusyncSavDecodeGUI(root=root)
+    # else:
+    # 	window = OldStyle.MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease)
+    root.update()
+    root.mainloop()

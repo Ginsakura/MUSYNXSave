@@ -4,10 +4,10 @@ import ctypes
 import logging
 from tkinter import Tk, font
 
-from musync_save import MusyncMainWindow, HitDelay
-from musync_save import Toolkit, Config, Logger
+from musync_save import config, get_logger
+from musync_save import Toolkit, MusyncMainWindow, HitDelay
 
-logger:logging.Logger = Logger.GetLogger(name="Launcher")
+logger:logging.Logger = get_logger(name="Launcher")
 
 def Launcher()->None:
     """程序入口，负责环境检查、资源准备和主窗口启动"""

@@ -8,9 +8,13 @@ from base64 import b64decode
 from tkinter import messagebox
 from typing import Any
 
-from . import Logger, Toolkit, Config, SongName, SaveDataInfo, MapDataInfo, MapInfo
+from .config_manager import config, get_logger
+from .songname_manager import song_name
+from .save_data_manager import save_data
+from .map_info import MapInfo, MapDataInfo
+from .toolkit import Toolkit
 
-logger:logging.Logger = Logger.GetLogger(name="MUSYNCSavDecode")
+logger:logging.Logger = get_logger(name="MUSYNCSavDecode")
 try:
     # Load C# Lib
     # clr.AddReference("System.Runtime.Serialization.Formatters.Binary")
@@ -39,7 +43,7 @@ class MusyncSaveDecoder(object):
             raise
         self.savPath:str = savFile
         self.FavSong:list[str] = list()
-        self.__logger:logging.Logger = Logger.GetLogger(name="MUSYNCSavDecode.MUSYNCSavProcess")
+        self.__logger:logging.Logger = get_logger(name="MUSYNCSavDecode.MUSYNCSavProcess")
         self.__logger.info("creating an instance in MUSYNCSavDecode")
 
     def Main(self):
@@ -47,7 +51,7 @@ class MusyncSaveDecoder(object):
             self.LoadSaveFile()
             self.FixUserMemory()
             self.FavFix()
-            SaveDataInfo.DumpToJson()
+            save_data.DumpToJson()
         else:
             self.__logger.error(f"文件夹\"{self.savPath}\"内找不到存档文件.")
             messagebox.showerror("Error", "文件夹内找不到存档文件.")
@@ -60,7 +64,7 @@ class MusyncSaveDecoder(object):
             base64_data = file.read()
         self.Deserialize(b64decode(base64_data))
         self.__logger.debug("LoadSaveFile End.")
-        self.__logger.info(f"LoadSaveFile Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+        self.__logger.info(f"LoadSaveFile Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     def Deserialize(self, data)->None:
         """反序列化存档数据"""
@@ -150,15 +154,15 @@ class MusyncSaveDecoder(object):
         ]
         for field, converter in fieldMappings:
             raw_value = GetNonPublicField(field)
-            setattr(SaveDataInfo, field, converter(raw_value))
+            setattr(save_data, field, converter(raw_value))
 
         # 具有特殊来源的字段（直接从 userMemory 读取）
-        SaveDataInfo.AppVersion = int(userMemory.AppVersion)
-        SaveDataInfo.isUseUserMemoryDropSpeed = bool(userMemory.isUseUserMemoryDropSpeed)
+        save_data.AppVersion = int(userMemory.AppVersion)
+        save_data.isUseUserMemoryDropSpeed = bool(userMemory.isUseUserMemoryDropSpeed)
 
-        self.__logger.debug(SaveDataInfo.ToDict(debug=True))
+        self.__logger.debug(save_data.ToDict(debug=True))
         self.__logger.debug("SaveDeserialize End.")
-        self.__logger.info(f"SaveDeserialize Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+        self.__logger.info(f"SaveDeserialize Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     def FixUserMemory(self)->None:
         """补全缺失数据"""
@@ -194,11 +198,11 @@ class MusyncSaveDecoder(object):
                 ]
             return songId in OAFD
 
-        allSongData:dict[str,list] = SongName.SongNameData()
+        allSongData:dict[str,list] = song_name.SongNameData()
         removeIndexList:list[int] = list()
         self.__logger.debug("|  SongID  | SpeedStall | SyncNumber |         UploadScore        | PlayCount |  State  |")
         # 遍历列表
-        for saveIndex, mapData in enumerate(SaveDataInfo.saveInfoList):
+        for saveIndex, mapData in enumerate(save_data.saveInfoList):
             mapInfo: MapInfo|None = GetSongName(mapData.SongId)
             if ((mapInfo is None) or (mapInfo.SongName == "")):
                 mapData.State = "NoName"
@@ -212,11 +216,11 @@ class MusyncSaveDecoder(object):
                 mapData.State = "NoCR"
             self.__logger.debug(f'| {"%d"%mapData.SongId:>8} | {"%d"%mapData.SpeedStall:>10} | {"%.2f%%"%(mapData.SyncNumber/100):>10} | {"%.21f%%"%(mapData.UploadScore*100):>26} | {mapData.PlayCount:>9} | {mapData.State:>7} |')
             mapData.SetSongInfo(mapInfo)
-            SaveDataInfo.saveInfoList[saveIndex] = mapData
+            save_data.saveInfoList[saveIndex] = mapData
         for removeIndex in removeIndexList:
-            SaveDataInfo.saveInfoList.pop(removeIndex)
+            save_data.saveInfoList.pop(removeIndex)
         self.__logger.debug("UserMemoryToJson End.")
-        self.__logger.info(f"UserMemoryToJson Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+        self.__logger.info(f"UserMemoryToJson Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     def FavFix(self):
         """修复收藏仅应用于每首歌的4KEZ谱面的问题"""
@@ -224,8 +228,19 @@ class MusyncSaveDecoder(object):
         self.__logger.debug("FavFix Start.")
         # allSongData:dict[str,list] = SongName.SongNameData()
         self.__logger.debug(f"Favorites List：{self.FavSong}")
-        for index, mapData in enumerate(SaveDataInfo.saveInfoList):
+        for index, mapData in enumerate(save_data.saveInfoList):
             if mapData.SongName in self.FavSong:
-                SaveDataInfo.saveInfoList[index].State = "Favo"
+                save_data.saveInfoList[index].State = "Favo"
         self.__logger.debug("FavFix End.")
-        self.__logger.info(f"FavFix Run Time: {Toolkit.calc_end_time(start_time):.3f} ms")
+        self.__logger.info(f"FavFix Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+
+if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument('savPath', nargs='?', default=None, help='Path to savedata.sav')
+    args = parser.parse_args()
+
+    savPath = args.savPath or os.path.join(config.MainExecPath or '.', 'SavesDir', 'savedata.sav')
+
+    Object = MusyncSaveDecoder(savPath)
+    Object.Main()

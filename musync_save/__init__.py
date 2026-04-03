@@ -4,49 +4,68 @@ MUSYNXSave 工具包
 提供同步音律喵赛克 Steam 本地存档分析、延迟分析等功能
 """
 
-from .resources import Config
-Config()
 
 # 导出主要入口类和函数
-# 1. 无依赖关系的核心功能模块
+# 无依赖关系的核心功能模块
 from .version import version, pre_version, is_pre_release
-from .resources import Logger, SongName, SaveDataInfo, MapInfo, MapDataInfo
+from .config_manager import config, get_logger
+from .map_info import MapInfo, MapDataInfo
+from .save_data_manager import save_data
 
-# 2. 依赖 1 的工具模块
-from .toolkit import Toolkit
+# 仅依赖 `get_logger` 的模块
+from .songname_manager import song_name
 from .acc_sync_diff_analyze import analyze_3d
+
+# 依赖 `config`, `get_logger` 的模块
 from .all_hit_analyze import AllHitAnalyze
+
+# 依赖 `config`, `get_logger`, `song_name` 的模块
+from .toolkit import Toolkit
+
+# 依赖 `MapDataInfo` 和 `save_data` 的模块
 from .difficulty_score_analyze import diff_score_analyze
 
-# 3. 依赖 1 和 2 的主功能模块
+# 依赖 `config`, `get_logger`, `song_name`, `analyze_3d`, `AllHitAnalyze` 的模块
 from .hit_delay import HitDelay
-from .musync_save_decode import MusyncSaveDecoder
 
-# 4. 主窗口和程序入口
+# 依赖绝大多数包的模块，放在最后导入以避免循环依赖
+from .musync_save_decode import MusyncSaveDecoder
 from .main_mindow import MusyncMainWindow
 
 __version__ = pre_version.replace("pre",".") if (is_pre_release) else version
 
 # 定义公开接口（建议使用）
 __all__ = [
-    "AllHitAnalyze",
-    "analyze_3d",
-    "Config",
-    "diff_score_analyze",
-    "HitDelay",
-    "Logger",
-    "MapDataInfo",
+    # .version
+    "version",
+    "pre_version",
+    "is_pre_release",
+    # .config_manager
+    "config",
+    "get_logger",
+    # .map_info
     "MapInfo",
-    "MusyncMainWindow",
-    "MusyncSaveDecoder",
-    "SaveDataInfo",
-    "SongName",
+    "MapDataInfo",
+    # .save_data_manager
+    "save_data",
+    # .songname_manager
+    "song_name",
+    # .acc_sync_diff_analyze
+    "analyze_3d",
+    # .all_hit_analyze
+    "AllHitAnalyze",
+    # .toolkit
     "Toolkit",
+    # .difficulty_score_analyze
+    "diff_score_analyze",
+    # .hit_delay
+    "HitDelay",
+    # .musync_save_decode
+    "MusyncMainWindow",
+    # .main_mindow
+    "MusyncSaveDecoder",
 ]
 
 # 初始化单例（可选，但 Launcher 中已做，此处不再重复）
 # 如果希望导入包时自动初始化配置，可以取消下面注释
-Config().Version = __version__
-SongName()
-SaveDataInfo()
 Toolkit.init_resources()

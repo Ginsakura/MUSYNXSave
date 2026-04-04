@@ -18,7 +18,7 @@ def Launcher()->None:
     Toolkit.get_save_file()
     Toolkit.check_resources(fontlist)
     # del fonts
-    if Config.ChangeConsoleStyle:
+    if config.ChangeConsoleStyle:
         Toolkit.change_console_style()
     root.tk.call('tk', 'scaling', 1.25)
     root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
@@ -50,7 +50,7 @@ def DEBUG() -> None:
 
 if __name__ == '__main__':
     exitCode:int = 0
-    DEBUG(); sys.exit(exitCode)
+    # DEBUG(); sys.exit(exitCode)
     try:
         logger.info(" ====> Launcher() start <====")
         Launcher()

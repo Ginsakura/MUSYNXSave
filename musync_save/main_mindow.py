@@ -208,7 +208,7 @@ class MusyncMainWindow(object):
                 save_path: str = Toolkit.get_save_file()
                 if save_path:
                     self.saveFilePathVar.set(save_path + "SavesDir\\savedata.sav")
-            if config.DLLInjection:
+            if config.DllInjection:
                 self.logger.warning("DLL Injection is Enable.")
                 self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelayCheck, font=self.font,bg='#FF5959')
                 self.hitDelay.place(x=775,y=50,width=90,height=30)
@@ -231,9 +231,9 @@ class MusyncMainWindow(object):
         self.logger.debug("Main Window Destroying...")
         self.root.destroy()
         self.logger.debug("Saving Config and Data...")
-        config.SaveConfig()
+        config.save_config()
         self.logger.debug("SaveDataInfo Dumping To Json...")
-        save_data.DumpToJson()
+        save_data.dump_to_json()
         self.logger.info("Software Closed.")
 
 # select功能组
@@ -366,7 +366,7 @@ class MusyncMainWindow(object):
 
         try:
             response:requests.Response = requests.get(repo + "songname.ver", timeout=10)
-            localVersion:int = int(song_name.Version())
+            localVersion:int = song_name.version
             self.logger.info(f"   Local Json Version: {localVersion}")
             if response.status_code == 200:
                 githubVersion = int(response.content.decode('utf8'))
@@ -472,7 +472,7 @@ class MusyncMainWindow(object):
 
     def HitDelayCheck(self):
         "DLL注入功能"
-        if not config.DLLInjection:
+        if not config.DllInjection:
             return
         result:int = Toolkit.game_lib_check()
         if result == 0:

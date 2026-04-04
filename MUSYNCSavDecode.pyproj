@@ -44,6 +44,7 @@
     <Compile Include="musync_save\version.py" />
     <Compile Include="musync_save\__init__.py" />
     <Compile Include="launcher.py" />
+    <Compile Include="tmp.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".github\" />
@@ -79,6 +80,7 @@
     <Content Include="musync_data\Acc-SyncAnalyze%28Stata%29.do" />
     <Content Include="musync_data\Assembly-CSharp.dll" />
     <Content Include="musync_data\bootcfg.json" />
+    <Content Include="musync_data\HitDelayHistory.db" />
     <Content Include="musync_data\how to use.psd" />
     <Content Include="musync_data\ico.rc" />
     <Content Include="musync_data\LXGW.ttf" />
@@ -108,10 +110,9 @@
     <Content Include="saveFile\AXn233%28epic%29.sav" />
     <Content Include="saveFile\AXn233.decode" />
     <Content Include="saveFile\AXn233.sav" />
-    <Content Include="saveFile\SavDecode.decode" />
-    <Content Include="saveFile\SavDecode.decode.0" />
-    <Content Include="saveFile\SavDecode.decode.1" />
-    <Content Include="saveFile\SavDecode.decode.2" />
+    <Content Include="saveFile\nanhui233.decode" />
+    <Content Include="saveFile\nanhui233.sav" />
+    <Content Include="saveFile\selfSavDecode.decode" />
     <Content Include="skin\alphaBG.png" />
     <Content Include="skin\alphaBG.psd" />
     <Content Include="skin\Decode.png" />

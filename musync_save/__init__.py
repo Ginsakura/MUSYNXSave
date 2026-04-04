@@ -9,7 +9,7 @@ MUSYNXSave 工具包
 # 无依赖关系的核心功能模块
 from .version import version, pre_version, is_pre_release
 from .config_manager import config, get_logger
-from .map_info import MapInfo, MapDataInfo
+from .map_info import MapDataInfo
 from .save_data_manager import save_data
 
 # 仅依赖 `get_logger` 的模块
@@ -44,7 +44,6 @@ __all__ = [
     "config",
     "get_logger",
     # .map_info
-    "MapInfo",
     "MapDataInfo",
     # .save_data_manager
     "save_data",

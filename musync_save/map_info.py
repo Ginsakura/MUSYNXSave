@@ -30,6 +30,19 @@ class MapDataInfo(MapInfo):
     CrcInt: int = 0
     State: str = "    "
 
+    def update_map_info(self,SongId:int=0, SpeedStall:int=0, SyncNumber:int=0,
+            UploadScore:float=0.0, PlayCount:int=0, Isfav:bool=False,
+            CrcInt:int=0) -> None:
+        """更新谱面数据，确保数据完整性和类型安全"""
+        self.SongId:int = SongId
+        self.SpeedStall:int		= SpeedStall
+        self.SyncNumber:int		= SyncNumber
+        self.UploadScore:float	= UploadScore
+        self.PlayCount:int		= PlayCount
+        self.Isfav:bool			= Isfav
+        self.CrcInt:int			= CrcInt
+        self.State:str			= "    "
+
     def update_from_list(self, info: list, is_builtin: bool = False) -> None:
         """从列表中更新谱面信息，确保数据完整性和类型安全"""
         if not info or len(info) < 4: return

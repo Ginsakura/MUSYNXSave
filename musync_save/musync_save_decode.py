@@ -11,7 +11,7 @@ from typing import Any
 from .config_manager import config, get_logger
 from .songname_manager import song_name
 from .save_data_manager import save_data
-from .map_info import MapInfo, MapDataInfo
+from .map_info import MapDataInfo
 from .toolkit import Toolkit
 
 logger:logging.Logger = get_logger(name="MUSYNCSavDecode")
@@ -51,7 +51,7 @@ class MusyncSaveDecoder(object):
             self.LoadSaveFile()
             self.FixUserMemory()
             self.FavFix()
-            save_data.DumpToJson()
+            save_data.dump_to_json()
         else:
             self.__logger.error(f"文件夹\"{self.savPath}\"内找不到存档文件.")
             messagebox.showerror("Error", "文件夹内找不到存档文件.")
@@ -160,26 +160,37 @@ class MusyncSaveDecoder(object):
         save_data.AppVersion = int(userMemory.AppVersion)
         save_data.isUseUserMemoryDropSpeed = bool(userMemory.isUseUserMemoryDropSpeed)
 
-        self.__logger.debug(save_data.ToDict(debug=True))
+        self.__logger.debug(save_data.to_dict(debug=True))
         self.__logger.debug("SaveDeserialize End.")
         self.__logger.info(f"SaveDeserialize Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
-    def FixUserMemory(self)->None:
+    def FixUserMemory(self) -> None:
         """补全缺失数据"""
         start_time: int = time.perf_counter_ns()
         self.__logger.debug("UserMemoryToJson Start.")
 
-        def GetSongName(songId:int)->MapInfo|None:
-            """获取谱面对应的信息"""
-            songData:list|None = allSongData.get("%d"%songId)
-            if songData is None:
-                return None
-            isBuiltin:bool = songData[0] in allSongData["BuiltinSong"]
-            return MapInfo(songData,isBuiltin)
+        # ==========================================
+        # 内部纯函数定义
+        # ==========================================
+
+        def UpdateSongName(map_data: 'MapDataInfo') -> bool:
+            """[核心修复] 获取并直接在原对象上更新谱面信息，防止游玩成绩丢失"""
+            # 使用 song_name 单例的 data 属性，键名为字符串形式的 ID
+            song_data: list | None = song_name.data.get(str(map_data.SongId))
+            if song_data is None:
+                return False
+
+            # 安全获取 BuiltinSong 列表，防止不存在时抛出异常
+            builtin_list: set[str] = set(song_name.data.get("BuiltinSong", []))
+            is_builtin: bool = song_data[0] in builtin_list
+
+            # 调用新版的类方法，直接在现有对象上附加名字和难度
+            map_data.update_from_list(song_data, is_builtin)
+            return True
 
         def NoCopyright(songId:int)->bool:
             """标记无版权曲目"""
-            NCR = [
+            NCR = set(
                 102801, 102802, 102811, 102812, #粉色柠檬
                 104901, 104902, 104911, 104912, #TWINKLE STAR
                 109601, 109602, 109611, 109612, #为你而来
@@ -189,48 +200,80 @@ class MusyncSaveDecoder(object):
                 129201, 129202, 129211, 129212, #404 Not Found
                 129301, 129302, 129311, 129312, #ArroganT
                 129401, 129402, 129411, 129412, #樂園 - Atlantis
-                ]
+                )
             return songId in NCR
 
         def OldAprilFoolsDay(songId:int) -> bool:
             """标记愚人节谱面"""
-            OAFD = [
-                ]
+            OAFD = set(
+                )
             return songId in OAFD
 
-        allSongData:dict[str,list] = song_name.SongNameData()
-        removeIndexList:list[int] = list()
+        # ==========================================
+        # 遍历与状态清洗
+        # ==========================================
+
+        removeIndexList: list[int] = list()
         self.__logger.debug("|  SongID  | SpeedStall | SyncNumber |         UploadScore        | PlayCount |  State  |")
-        # 遍历列表
+
+        # 遍历 save_data 管理器中的存档列表
         for saveIndex, mapData in enumerate(save_data.saveInfoList):
-            mapInfo: MapInfo|None = GetSongName(mapData.SongId)
-            if ((mapInfo is None) or (mapInfo.SongName == "")):
+
+            # 【直接更新原对象】不再重写 mapData
+            is_found = UpdateSongName(mapData)
+
+            if not is_found or not mapData.SongName:
                 mapData.State = "NoName"
-                removeIndexList.insert(0,saveIndex)
+                # 倒序插入待删除列表，这是极好的做法！
+                removeIndexList.insert(0, saveIndex)
             elif mapData.Isfav:
-                self.FavSong.append(mapInfo.SongName)
+                # 确保外部的 FavSong 列表存在
+                if hasattr(self, 'FavSong'):
+                    self.FavSong.append(mapData.SongName)
                 mapData.State = "Favo"
             elif OldAprilFoolsDay(mapData.SongId):
                 mapData.State = "Fool"
             elif NoCopyright(mapData.SongId):
                 mapData.State = "NoCR"
-            self.__logger.debug(f'| {"%d"%mapData.SongId:>8} | {"%d"%mapData.SpeedStall:>10} | {"%.2f%%"%(mapData.SyncNumber/100):>10} | {"%.21f%%"%(mapData.UploadScore*100):>26} | {mapData.PlayCount:>9} | {mapData.State:>7} |')
-            mapData.SetSongInfo(mapInfo)
-            save_data.saveInfoList[saveIndex] = mapData
+
+            # 优化了冗余的字符串格式化，直接利用 f-string 的强大格式化能力
+            self.__logger.debug(
+                f'| {mapData.SongId:>8} | {mapData.SpeedStall:>10} | '
+                f'{mapData.SyncNumber/100:>9.2f}% | {mapData.UploadScore*100:>25.21f}% | '
+                f'{mapData.PlayCount:>9} | {mapData.State:>7} |'
+            )
+            # 因为 mapData 是引用传递，它在内存中的改变已经自动同步到列表里了！
+            # save_data.saveInfoList[saveIndex] = mapData
+
+        # ==========================================
+        # 倒序删除无效记录
+        # ==========================================
         for removeIndex in removeIndexList:
             save_data.saveInfoList.pop(removeIndex)
+
         self.__logger.debug("UserMemoryToJson End.")
         self.__logger.info(f"UserMemoryToJson Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
-    def FavFix(self):
+    def FavFix(self) -> None:
         """修复收藏仅应用于每首歌的4KEZ谱面的问题"""
         start_time: int = time.perf_counter_ns()
         self.__logger.debug("FavFix Start.")
-        # allSongData:dict[str,list] = SongName.SongNameData()
+
         self.__logger.debug(f"Favorites List：{self.FavSong}")
-        for index, mapData in enumerate(save_data.saveInfoList):
-            if mapData.SongName in self.FavSong:
-                save_data.saveInfoList[index].State = "Favo"
+
+        # 将列表转换为集合 (Set)。将 in 判定的时间复杂度从 O(N) 降为 O(1)，极大提升遍历速度
+        fav_song_set = set(self.FavSong)
+
+        # 抛弃 enumerate，直接遍历对象引用
+        for mapData in save_data.saveInfoList:
+            if mapData.SongName in fav_song_set:
+                # 直接修改内存中的对象，无需回填 save_data.saveInfoList[index]
+                mapData.State = "Favo"
+
+                # 既然是修复游戏的收藏 Bug，必须同时把 Isfav 设为 True
+                # 这样将来序列化写入 SaveDataInfo.json 时，游戏才能真正识别全难度的收藏状态！
+                mapData.Isfav = True
+
         self.__logger.debug("FavFix End.")
         self.__logger.info(f"FavFix Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 

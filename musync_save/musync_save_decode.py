@@ -8,13 +8,13 @@ from base64 import b64decode
 from tkinter import messagebox
 from typing import Any
 
-from .config_manager import config, get_logger
+from .config_manager import config, Logger
 from .songname_manager import song_name
 from .save_data_manager import save_data
 from .map_info import MapDataInfo
 from .toolkit import Toolkit
 
-logger:logging.Logger = get_logger(name="MUSYNCSavDecode")
+_logger:logging.Logger = Logger.get_logger(name="MUSYNCSavDecode")
 try:
     # Load C# Lib
     # clr.AddReference("System.Runtime.Serialization.Formatters.Binary")
@@ -24,7 +24,7 @@ try:
     from System.Reflection import Assembly
     from System.Runtime.Serialization.Formatters.Binary import BinaryFormatter
 except Exception:
-    logger.exception("Import Error.")
+    _logger.exception("Import Error.")
     sys.exit(101)
 
 class MusyncSaveDecoder(object):
@@ -39,12 +39,12 @@ class MusyncSaveDecoder(object):
             self.__assembly = assembly
             self.__assembly_loaded = True
         except Exception:
-            logger.exception(f"Failed to Load {dllPath or 'assembly (path construction failed)'}")
+            _logger.exception(f"Failed to Load {dllPath or 'assembly (path construction failed)'}")
             raise
         self.savPath:str = savFile
         self.FavSong:list[str] = list()
-        self.__logger:logging.Logger = get_logger(name="MUSYNCSavDecode.MUSYNCSavProcess")
-        self.__logger.info("creating an instance in MUSYNCSavDecode")
+        self._logger:logging.Logger = Logger.get_logger(name="MUSYNCSavDecode.MUSYNCSavProcess")
+        self._logger.info("creating an instance in MUSYNCSavDecode")
 
     def Main(self):
         if os.path.isfile(self.savPath):
@@ -53,23 +53,23 @@ class MusyncSaveDecoder(object):
             self.FavFix()
             save_data.dump_to_json()
         else:
-            self.__logger.error(f"文件夹\"{self.savPath}\"内找不到存档文件.")
+            self._logger.error(f"文件夹\"{self.savPath}\"内找不到存档文件.")
             messagebox.showerror("Error", "文件夹内找不到存档文件.")
 
     def LoadSaveFile(self)->None:
         '''加载存档文件并进行base64解码'''
         start_time: int = time.perf_counter_ns()
-        self.__logger.debug("LoadSaveFile Start.")
+        self._logger.debug("LoadSaveFile Start.")
         with open(self.savPath, 'r', encoding="utf-8") as file:
             base64_data = file.read()
         self.Deserialize(b64decode(base64_data))
-        self.__logger.debug("LoadSaveFile End.")
-        self.__logger.info(f"LoadSaveFile Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        self._logger.debug("LoadSaveFile End.")
+        self._logger.info(f"LoadSaveFile Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     def Deserialize(self, data)->None:
         """反序列化存档数据"""
         start_time: int = time.perf_counter_ns()
-        self.__logger.debug("SaveDeserialize Start.")
+        self._logger.debug("SaveDeserialize Start.")
         stream:MemoryStream = MemoryStream(data)
         try:
             userMemory = (BinaryFormatter().Deserialize(stream))
@@ -96,13 +96,13 @@ class MusyncSaveDecoder(object):
             for songSaveInfo in saveInfoList:
                 typeInfo2 = songSaveInfo.GetType()
                 saveInfoPy:MapDataInfo = MapDataInfo(
-                    GetNonPublicMethod("SongId", typeInfo=typeInfo2, instance=songSaveInfo),
-                    GetNonPublicMethod("SpeedStall", typeInfo=typeInfo2, instance=songSaveInfo),
-                    GetNonPublicMethod("SyncNumber", typeInfo=typeInfo2, instance=songSaveInfo),
-                    GetNonPublicMethod("UploadScore", typeInfo=typeInfo2, instance=songSaveInfo),
-                    GetNonPublicMethod("PlayCount", typeInfo=typeInfo2, instance=songSaveInfo),
-                    GetNonPublicMethod("Isfav", typeInfo=typeInfo2, instance=songSaveInfo),
-                    GetNonPublicMethod("CrcInt", typeInfo=typeInfo2, instance=songSaveInfo)
+                    SongId=GetNonPublicMethod("SongId", typeInfo=typeInfo2, instance=songSaveInfo),
+                    SpeedStall=GetNonPublicMethod("SpeedStall", typeInfo=typeInfo2, instance=songSaveInfo),
+                    SyncNumber=GetNonPublicMethod("SyncNumber", typeInfo=typeInfo2, instance=songSaveInfo),
+                    UploadScore=GetNonPublicMethod("UploadScore", typeInfo=typeInfo2, instance=songSaveInfo),
+                    PlayCount=GetNonPublicMethod("PlayCount", typeInfo=typeInfo2, instance=songSaveInfo),
+                    Isfav=GetNonPublicMethod("Isfav", typeInfo=typeInfo2, instance=songSaveInfo),
+                    CrcInt=GetNonPublicMethod("CrcInt", typeInfo=typeInfo2, instance=songSaveInfo)
                     )
                 saveInfos.append(saveInfoPy)
                 # self.logger.debug(saveInfoPy)
@@ -160,14 +160,14 @@ class MusyncSaveDecoder(object):
         save_data.AppVersion = int(userMemory.AppVersion)
         save_data.isUseUserMemoryDropSpeed = bool(userMemory.isUseUserMemoryDropSpeed)
 
-        self.__logger.debug(save_data.to_dict(debug=True))
-        self.__logger.debug("SaveDeserialize End.")
-        self.__logger.info(f"SaveDeserialize Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        self._logger.debug(save_data.to_dict(debug=True))
+        self._logger.debug("SaveDeserialize End.")
+        self._logger.info(f"SaveDeserialize Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     def FixUserMemory(self) -> None:
         """补全缺失数据"""
         start_time: int = time.perf_counter_ns()
-        self.__logger.debug("UserMemoryToJson Start.")
+        self._logger.debug("UserMemoryToJson Start.")
 
         # ==========================================
         # 内部纯函数定义
@@ -190,7 +190,7 @@ class MusyncSaveDecoder(object):
 
         def NoCopyright(songId:int)->bool:
             """标记无版权曲目"""
-            NCR = set(
+            NCR = set([
                 102801, 102802, 102811, 102812, #粉色柠檬
                 104901, 104902, 104911, 104912, #TWINKLE STAR
                 109601, 109602, 109611, 109612, #为你而来
@@ -200,13 +200,13 @@ class MusyncSaveDecoder(object):
                 129201, 129202, 129211, 129212, #404 Not Found
                 129301, 129302, 129311, 129312, #ArroganT
                 129401, 129402, 129411, 129412, #樂園 - Atlantis
-                )
+                ])
             return songId in NCR
 
         def OldAprilFoolsDay(songId:int) -> bool:
             """标记愚人节谱面"""
-            OAFD = set(
-                )
+            OAFD = set([
+                ])
             return songId in OAFD
 
         # ==========================================
@@ -214,7 +214,7 @@ class MusyncSaveDecoder(object):
         # ==========================================
 
         removeIndexList: list[int] = list()
-        self.__logger.debug("|  SongID  | SpeedStall | SyncNumber |         UploadScore        | PlayCount |  State  |")
+        self._logger.debug("|  SongID  | SpeedStall | SyncNumber |         UploadScore        | PlayCount |  State  |")
 
         # 遍历 save_data 管理器中的存档列表
         for saveIndex, mapData in enumerate(save_data.saveInfoList):
@@ -237,7 +237,7 @@ class MusyncSaveDecoder(object):
                 mapData.State = "NoCR"
 
             # 优化了冗余的字符串格式化，直接利用 f-string 的强大格式化能力
-            self.__logger.debug(
+            self._logger.debug(
                 f'| {mapData.SongId:>8} | {mapData.SpeedStall:>10} | '
                 f'{mapData.SyncNumber/100:>9.2f}% | {mapData.UploadScore*100:>25.21f}% | '
                 f'{mapData.PlayCount:>9} | {mapData.State:>7} |'
@@ -251,15 +251,15 @@ class MusyncSaveDecoder(object):
         for removeIndex in removeIndexList:
             save_data.saveInfoList.pop(removeIndex)
 
-        self.__logger.debug("UserMemoryToJson End.")
-        self.__logger.info(f"UserMemoryToJson Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        self._logger.debug("UserMemoryToJson End.")
+        self._logger.info(f"UserMemoryToJson Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     def FavFix(self) -> None:
         """修复收藏仅应用于每首歌的4KEZ谱面的问题"""
         start_time: int = time.perf_counter_ns()
-        self.__logger.debug("FavFix Start.")
+        self._logger.debug("FavFix Start.")
 
-        self.__logger.debug(f"Favorites List：{self.FavSong}")
+        self._logger.debug(f"Favorites List：{self.FavSong}")
 
         # 将列表转换为集合 (Set)。将 in 判定的时间复杂度从 O(N) 降为 O(1)，极大提升遍历速度
         fav_song_set = set(self.FavSong)
@@ -274,8 +274,8 @@ class MusyncSaveDecoder(object):
                 # 这样将来序列化写入 SaveDataInfo.json 时，游戏才能真正识别全难度的收藏状态！
                 mapData.Isfav = True
 
-        self.__logger.debug("FavFix End.")
-        self.__logger.info(f"FavFix Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        self._logger.debug("FavFix End.")
+        self._logger.info(f"FavFix Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
 if __name__ == '__main__':
     import argparse

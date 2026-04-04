@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 import json
 from pathlib import Path
-from typing import Any
 
-from .config_manager import get_logger
+from .config_manager import Logger
 
 class SongNameManager:
     """管理 MUSYNXSave 中的 SongName.json 文件，提供版本控制和数据访问功能。"""
@@ -14,7 +13,7 @@ class SongNameManager:
         # 数据结构
         self.data: dict[str, list] = {}
         # 日志记录器
-        self.logger = get_logger("SongNameManager")
+        self.logger = Logger.get_logger("SongNameManager")
         # 尝试加载文件，如果不存在则初始化为空字典
         self.load_file()
 

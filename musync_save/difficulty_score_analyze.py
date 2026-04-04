@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
+import logging
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MultipleLocator
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from typing import Final
 
+from .config_manager import Logger
 from .map_info import MapDataInfo
 from .save_data_manager import save_data
 
 # 定义偏移量常量，避免魔法数字
 JITTER_OFFSET: Final[float] = 0.15
+_logger:logging.Logger = Logger.get_logger("DifficultyScoreAnalyze")
 
 def diff_score_analyze() -> None:
     """分析谱面数据并生成难度与分数散点图"""

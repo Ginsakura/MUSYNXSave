@@ -21,7 +21,7 @@ from tkinter.filedialog import askopenfilename
 # from PIL import ImageTk
 
 from .version import version, pre_version, is_pre_release
-from .config_manager import config, get_logger
+from .config_manager import config, Logger
 from .save_data_manager import save_data
 from .songname_manager import song_name
 from .toolkit import Toolkit
@@ -43,7 +43,7 @@ class MusyncMainWindow(object):
                 isTKroot: bool - 是否为Tk根窗口
         """
         # super(MusyncSavDecodeGUI, self).__init__()
-        self.logger:logging.Logger = get_logger(name="MusyncSavDecodeGUI")
+        self._logger:logging.Logger = Logger.get_logger(name="MusyncSavDecodeGUI")
         self.version:str = version
         self.preVersion:str = pre_version
         self.isPreRelease:bool = is_pre_release
@@ -90,7 +90,7 @@ class MusyncMainWindow(object):
         self.checkGameIsStartThread:threading.Thread = None
         self.UpdateEnum()
 
-        self.root.protocol("WM_DELETE_WINDOW", self.Closing)
+        self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
 
         self.__controller_ui_init__()
         self.__selector_ui_init__()
@@ -188,16 +188,21 @@ class MusyncMainWindow(object):
             self.TreeviewColumnUpdate()
 
             self.checkGameStartEvent.set()
-            self.checkGameIsStartThread:threading.Thread = threading.Thread(target=self.CheckGameRunning)
-            self.checkGameIsStartThread.start()
-            threading.Thread(target=self.CheckJsonUpdate).start()
+
+            # 延迟启动线程，确保 mainloop 启动后再执行 UI 调度
+            def _start_checkgame():
+                self.checkGameIsStartThread = threading.Thread(target=self.CheckGameRunning, daemon=True)
+                self.checkGameIsStartThread.start()
+
+            self.root.after(100, _start_checkgame)
+            self.root.after(100, lambda: threading.Thread(target=self.CheckJsonUpdate, daemon=True).start())
 
             if config.CheckUpdate:
-                self.logger.info("Check Updating...")
-                threading.Thread(target=self.CheckUpdate).start()
+                self._logger.info("Check Updating...")
+                self.root.after(100, lambda: threading.Thread(target=self.CheckUpdate, daemon=True).start())
             else:
                 self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页')
-                self.logger.warning("Check update is Disable")
+                self._logger.warning("Check update is Disable")
             self.InitLabel(text="正在读取存档路径……")
             if (config.MainExecPath is not None and
                 config.MainExecPath and
@@ -209,32 +214,36 @@ class MusyncMainWindow(object):
                 if save_path:
                     self.saveFilePathVar.set(save_path + "SavesDir\\savedata.sav")
             if config.DllInjection:
-                self.logger.warning("DLL Injection is Enable.")
+                self._logger.warning("DLL Injection is Enable.")
                 self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelayCheck, font=self.font,bg='#FF5959')
                 self.hitDelay.place(x=775,y=50,width=90,height=30)
             MusyncSaveDecoder(savFile=self.saveFilePathVar.get()).Main()
             self.DataLoad()
         except Exception as e:
-            self.logger.exception("Software has some Exception:")
-            self.Closing()
+            self._logger.exception("Software has some Exception:")
+            self._on_closing()
             raise e
 
-# TK事件重载
-    def Closing(self) -> None:
+    # TK事件重载
+    def _on_closing(self) -> None:
         """重载窗口关闭事件"""
-        self.logger.info("Software Closing...")
+        self._logger.info("Software Closing...")
         self.checkGameStartEvent.clear()
-        self.logger.debug("Waiting for CheckGameIsStartThread to Exit...")
+        self._logger.debug("Waiting for CheckGameIsStartThread to Exit...")
         if self.checkGameIsStartThread and self.checkGameIsStartThread.is_alive():
             self.checkGameIsStartThread.join()
-        self.logger.debug("CheckGameIsStartThread Exited.")
-        self.logger.debug("Main Window Destroying...")
+        self._logger.debug("CheckGameIsStartThread Exited.")
+        self._logger.debug("Main Window Destroying...")
         self.root.destroy()
-        self.logger.debug("Saving Config and Data...")
+        self._logger.debug("Saving Config and Data...")
         config.save_config()
-        self.logger.debug("SaveDataInfo Dumping To Json...")
+        self._logger.debug("SaveDataInfo Dumping To Json...")
         save_data.dump_to_json()
-        self.logger.info("Software Closed.")
+        self._logger.info("Software Closed.")
+
+    def _on_refresh(self,event) -> None:
+        """F5键刷新事件处理函数"""
+        self.DataLoad()
 
 # select功能组
     def SelectKeys(self) -> None:
@@ -304,14 +313,14 @@ class MusyncMainWindow(object):
             path_ = path_.replace("/", "\\")
             self.saveFilePathVar.set(path_)
 
-# bind功能组
+    # bind功能组
     def DoubleClick(self,event) -> None:
         """双击事件处理函数"""
         e = event.widget									# 取得事件控件
         itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
         # state = e.item(itemID,"text")						# 取得text参数
         songData = e.item(itemID,"values")					# 取得values参数
-        self.logger.debug(songData)
+        self._logger.debug(songData)
         # nroot = Toplevel(self.root)
         # nroot.resizable(True, True)
         # newWindow = SubWindow(nroot, songData[0], songData[1], songData[2])
@@ -351,11 +360,8 @@ class MusyncMainWindow(object):
         else:
             messagebox.showinfo("Info", '游戏已启动')
 
-    def F5Key(self,event) -> None:
-        """F5键刷新事件处理函数"""
-        self.DataLoad()
 
-# update功能组
+    # update功能组
     def CheckJsonUpdate(self) -> None:
         """检查谱面信息更新"""
         start_time: int = time.perf_counter_ns()
@@ -367,10 +373,10 @@ class MusyncMainWindow(object):
         try:
             response:requests.Response = requests.get(repo + "songname.ver", timeout=10)
             localVersion:int = song_name.version
-            self.logger.info(f"   Local Json Version: {localVersion}")
+            self._logger.info(f"   Local Json Version: {localVersion}")
             if response.status_code == 200:
                 githubVersion = int(response.content.decode('utf8'))
-                self.logger.info(f"  Terget Json Version: {githubVersion}")
+                self._logger.info(f"  Terget Json Version: {githubVersion}")
                 if githubVersion>localVersion:
                     response = requests.get(repo + "songname.json", timeout=10)
                     songNameJson = response.text
@@ -378,16 +384,16 @@ class MusyncMainWindow(object):
                         snj.write(songNameJson)
                     song_name.LoadFile()
             else:
-                self.logger.error("Can't get \"songname.ver\", HTTP status code: %d."%(response.status_code))
+                self._logger.error("Can't get \"songname.ver\", HTTP status code: %d."%(response.status_code))
         except Exception as e:
-            self.logger.exception("谱面信息更新发生错误: ")
+            self._logger.exception("谱面信息更新发生错误: ")
             error_msg = str(e)
             def show_error(_):
                 messagebox.showerror("Error", f'发生错误: {error_msg}')
                 if messagebox.askyesno("无法获取谱面信息更新", '是否前往网页查看是否存在更新?\n(请比对 SongName.json 中的时间是否比本地文件中的时间更大)'):
                     webbrowser.open(repo + "songname.json")
             self.root.after(0, show_error)
-        self.logger.info(f"CheckJsonUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        self._logger.info(f"CheckJsonUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     def CheckUpdate(self) -> None:
         """检查软件更新"""
@@ -413,7 +419,7 @@ class MusyncMainWindow(object):
         try:
             response:requests.Response = requests.get("https://api.github.com/repositories/591967225/releases", timeout=10)
             if (response.status_code != 200):
-                self.logger.error("Can't get releases info, HTTP status code: %d."%(response.status_code))
+                self._logger.error("Can't get releases info, HTTP status code: %d."%(response.status_code))
                 raise Exception(f"无法获取更新信息，HTTP状态码: {response.status_code}")
             resJson:dict|list = response.json()
             if "message" in resJson:
@@ -424,7 +430,7 @@ class MusyncMainWindow(object):
                     self.root.after(0, lambda _:(webbrowser.open(url) if messagebox.askyesno(messageHead, message) else _ ))
                     return
                 else:
-                    self.logger.error(resJson)
+                    self._logger.error(resJson)
             else: # 取最新tag版本号
                 # 取最新版本所在索引（区分rc、pre）
                 selectedTag:dict = resJson[0]
@@ -436,15 +442,15 @@ class MusyncMainWindow(object):
                 # 将版本字符串变为版本整数数组
                 targetVersion = [int(i) for i in selectedTag["tag_name"].replace("pre",".").split(".")]
         except Exception as ex:
-            self.logger.exception("更新信息发生错误: ")
+            self._logger.exception("更新信息发生错误: ")
             error_msg = str(ex)
-            self.root.after(0, lambda _: messagebox.showerror("Error", f'发生错误: {error_msg}'))
+            self.root.after(0, lambda error_msg: messagebox.showerror("Error", f'发生错误: {error_msg}'))
         # print(localVersion,targetVersion)
-        self.logger.info('  Terget Version : %s'%".".join(map(str, targetVersion)))
+        self._logger.info('  Terget Version : %s'%".".join(map(str, targetVersion)))
         if updateChannel: # True is Pre
-            self.logger.info("Local PreVersion : %s"%".".join(map(str, localVersion)))
+            self._logger.info("Local PreVersion : %s"%".".join(map(str, localVersion)))
         else:
-            self.logger.info('   Local Version : %s'%".".join(map(str, localVersion)))
+            self._logger.info('   Local Version : %s'%".".join(map(str, localVersion)))
         labelUrl:str = ""
         if (CheckVersion(localVersion, targetVersion, updateChannel)):
             self.gitHubUrlVar.set(f'有新版本啦——点此打开下载页面	NewVersion: {".".join(map(str, targetVersion))}')
@@ -454,9 +460,9 @@ class MusyncMainWindow(object):
         # 	self.gitHubUrlVar = "点击打开GitHub仓库	点个Star吧，秋梨膏"
         # 	labelUrl = "https://github.com/Ginsakura/MUSYNCSave"
         self.root.after(0, lambda _:self.gitHubLink.configure(command=lambda:webbrowser.open(labelUrl)))
-        self.logger.info(f"CheckUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        self._logger.info(f"CheckUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
-# 初始化提示框
+    # 初始化提示框
     def InitLabel(self,text,close=False) -> None:
         self.initLabel.place(x=250,y=300,width=500,height=30)
         self.initLabel.configure(text=text, anchor="w")
@@ -477,21 +483,21 @@ class MusyncMainWindow(object):
         result:int = Toolkit.game_lib_check()
         if result == 0:
             messagebox.showerror("Error", f'DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁')
-            self.logger.error("DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁")
+            self._logger.error("DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁")
             return
         else:
-            self.logger.debug(f"return: {result}.")
-            self.logger.info("DLL Injection Success.")
+            self._logger.debug(f"return: {result}.")
+            self._logger.info("DLL Injection Success.")
         nroot:Toplevel = Toplevel(self.root)
         nroot.resizable(True, True)
         HitDelay(nroot)
 
     def DataLoad(self):
         "存档数据解析"
-        self.logger.debug("DataLoad Start")
+        self._logger.debug("DataLoad Start")
         start_time: int = time.perf_counter_ns()
         self.InitLabel(text="正在分析存档文件中……")
-        self.logger.debug("正在分析存档文件中……")
+        self._logger.debug("正在分析存档文件中……")
         time.sleep(0.1)
 
         def Rank(sync:int):
@@ -560,10 +566,10 @@ class MusyncMainWindow(object):
         if not self.dataSortMethodsort[0] is None:
             self.SortClick(self.dataSortMethodsort)
         self.InitLabel('数据展示生成完成.',close=True)
-        self.logger.debug(f"DataLoad Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        self._logger.debug(f"DataLoad Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         self.UpdateWindowInfo()
 
-# 控件更新功能组
+    # 控件更新功能组
     def ShowMessageBox(self, msgType:int=0, title:str="", msg:str=""):
         """多线程展示message box"""
         # TODO: messagebox in root.after
@@ -584,7 +590,7 @@ class MusyncMainWindow(object):
 
     def CheckGameRunning(self):
         """游戏运行检测"""
-        logger:logging.Logger = get_logger("MusyncSavDecodeGUI.CheckGameRunning")
+        logger:logging.Logger = Logger.get_logger("MusyncSavDecodeGUI.CheckGameRunning")
         logger.info("Start Thread: CheckGameIsStart.")
         def UpdateUI(text:str, bg:str)->None:
             self.isGameRunning["text"] = text; #"游戏未启动"
@@ -662,7 +668,7 @@ class MusyncMainWindow(object):
         self.isGameRunning.bind('<Button-1>', self.StartGame)
         self.saveData.bind("<Double-1>",self.DoubleClick)
         self.saveData.bind("<ButtonRelease-1>",self.SortClick)
-        self.root.bind("<F5>", self.F5Key)
+        self.root.bind("<F5>", self._on_refresh)
         self.oldWindowInfo = self.windowInfo[2:]
         self.root.update()
         # if self.after == False:

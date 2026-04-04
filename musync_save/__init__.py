@@ -8,7 +8,7 @@ MUSYNXSave 工具包
 # 导出主要入口类和函数
 # 无依赖关系的核心功能模块
 from .version import version, pre_version, is_pre_release
-from .config_manager import config, get_logger
+from .config_manager import config, Logger
 from .map_info import MapDataInfo
 from .save_data_manager import save_data
 
@@ -42,7 +42,7 @@ __all__ = [
     "is_pre_release",
     # .config_manager
     "config",
-    "get_logger",
+    "Logger",
     # .map_info
     "MapDataInfo",
     # .save_data_manager

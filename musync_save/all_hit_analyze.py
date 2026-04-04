@@ -12,14 +12,14 @@ import matplotlib.pyplot as plot
 from matplotlib.ticker import MultipleLocator
 from matplotlib.widgets import CheckButtons
 
-from .config_manager import config, get_logger
+from .config_manager import config, Logger
 
 class AllHitAnalyze(object):
     """docstring for HitAnalyze"""
 
     def __init__(self, data: bytes | None = None):
         # super(AllHitAnalyze, self).__init__()
-        self._logger: logging.Logger = get_logger(name="AllHitAnalyze")
+        self._logger: logging.Logger = Logger.get_logger(name="AllHitAnalyze")
         # self._db_source: bool = True
         if data is None:
             self._db_mode: bool = True

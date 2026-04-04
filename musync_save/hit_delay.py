@@ -14,7 +14,7 @@ from tkinter import ttk, messagebox
 from typing import Any, Literal, Optional
 
 # 外部数据分析模块导入
-from .config_manager import config, get_logger
+from .config_manager import config, Logger
 from .songname_manager import song_name
 from .acc_sync_diff_analyze import analyze_3d
 from .all_hit_analyze import AllHitAnalyze
@@ -25,7 +25,7 @@ class HitDelay:
     """游玩延迟与历史记录可视化分析主界面"""
 
     def __init__(self, subroot: tk.Tk | tk.Toplevel) -> None:
-        self._logger: logging.Logger = get_logger("HitDelay.HitDelayText")
+        self._logger: logging.Logger = Logger.get_logger("HitDelay.HitDelayText")
 
         db_path: str = './musync_data/HitDelayHistory.db'
         if not os.path.isfile(db_path):

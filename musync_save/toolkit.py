@@ -19,14 +19,13 @@ from win32 import win32gui, win32print
 from win32.lib import win32con
 from win32.win32api import GetSystemMetrics
 
-from .config_manager import config, get_logger
+from .config_manager import config, Logger
 from .songname_manager import song_name
 
-_logger: logging.Logger = get_logger("Toolkit")
+_logger: logging.Logger = Logger.get_logger("Toolkit")
 
 class Toolkit:
     """工具包类，提供环境检查、资源管理、文件哈希、数据库更新等功能"""
-    _logger: logging.Logger = get_logger("Toolkit")
     # 资源文件信息字典
     _resource_file_info: dict[str, dict[str, Any]] = {}
     # 资源加载状态和文件对象
@@ -48,7 +47,7 @@ class Toolkit:
         if cls._is_resource_loaded:
             return
 
-        cls._logger.debug("加载资源文件: \"./musync_data/Resources.bin\".")
+        _logger.debug("加载资源文件: \"./musync_data/Resources.bin\".")
         try:
             cls._resource_file = open("./musync_data/Resources.bin", "rb")
             cls._resource_file.seek(0)
@@ -62,7 +61,7 @@ class Toolkit:
             cls._resource_file_info = json.loads(decompressed_data.decode('ascii'))
             cls._is_resource_loaded = True
         except Exception as ex:
-            cls._logger.exception("资源文件加载失败.")
+            _logger.exception("资源文件加载失败.")
             messagebox.showerror("Error", f"资源文件\"./musync_data/Resources.bin\"加载失败!\n{ex}")
 
     @staticmethod
@@ -139,7 +138,7 @@ class Toolkit:
 
         with cls._file_lock:
             if cls._resource_file is None:
-                cls._logger.error("Resource file is not loaded.")
+                _logger.error("Resource file is not loaded.")
                 raise FileNotFoundError("Resource file is not loaded.")
             cls._resource_file.seek(offset)
             compressed_data: bytes = cls._resource_file.read(length)
@@ -151,7 +150,7 @@ class Toolkit:
             with open(release_path, "wb") as f:
                 f.write(decompressed_data)
 
-        cls._logger.debug(f"release_resource() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        _logger.debug(f"release_resource() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return decompressed_data
 
     @classmethod
@@ -160,7 +159,7 @@ class Toolkit:
         start_time: int = time.perf_counter_ns()
         cls.init_resources()
 
-        cls._logger.debug("Check directory structure...")
+        _logger.debug("Check directory structure...")
         if os.path.exists('./musync/'):
             os.rename('./musync/', './musync_data/')
         os.makedirs('./musync_data/', exist_ok=True)
@@ -179,7 +178,7 @@ class Toolkit:
             ]
 
             for file_path, tag in resources_to_check:
-                cls._logger.debug(f"Check if the \"{file_path}\" exists and is valid...")
+                _logger.debug(f"Check if the \"{file_path}\" exists and is valid...")
                 info = cls._resource_file_info[tag]
 
                 try:
@@ -192,28 +191,28 @@ class Toolkit:
                         if not os.path.isfile(file_path) or cls.get_hash(file_path) != info["hash"]:
                             cls.release_resource(info["offset"], info["length"], file_path)
                 except FileNotFoundError as e:
-                    cls._logger.error(f"Required resource \"{file_path}\" is missing and failed to restore: {e}")
+                    _logger.error(f"Required resource \"{file_path}\" is missing and failed to restore: {e}")
                 except Exception as e:
-                    cls._logger.error(f"Error while checking resource \"{file_path}\": {e}")
+                    _logger.error(f"Error while checking resource \"{file_path}\": {e}")
 
             if '霞鹜文楷等宽' not in fonts:
-                cls._logger.debug("Check if the \"霞鹜文楷等宽\" font is installed...")
+                _logger.debug("Check if the \"霞鹜文楷等宽\" font is installed...")
                 os.startfile(os.path.abspath(os.path.join('musync_data', 'LXGW.ttf')))
 
-        cls._logger.debug("Check Database version...")
+        _logger.debug("Check Database version...")
         cls.update_database(cls.check_database_version())
 
-        cls._logger.debug("Check DLLInjection...")
+        _logger.debug("Check DLLInjection...")
         if config.DllInjection:
             cls.game_lib_check()
 
-        cls._logger.debug(f"check_resources() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        _logger.debug(f"check_resources() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     @classmethod
     def get_save_file(cls) -> str:
         """搜索预设存档目录"""
         start_time: int = time.perf_counter_ns()
-        cls._logger.debug("正在搜索存档文件中……")
+        _logger.debug("正在搜索存档文件中……")
 
         drives = "CDEFGHIJKLMNOPQRSTUVWXYZAB"
         steam_paths = [
@@ -226,13 +225,13 @@ class Toolkit:
             for path in steam_paths:
                 full_path = f"{drive}:\\{path}"
                 if os.path.isfile(f"{full_path}musynx.exe"):
-                    cls._logger.debug(f"SaveFilePath: {full_path}")
+                    _logger.debug(f"SaveFilePath: {full_path}")
                     config.MainExecPath = full_path
                     config.save_config()
                     return full_path
 
-        cls._logger.error("搜索不到存档文件.")
-        cls._logger.info(f"get_save_file() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        _logger.error("搜索不到存档文件.")
+        _logger.info(f"get_save_file() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return ""
 
     @classmethod
@@ -250,7 +249,7 @@ class Toolkit:
 
         # 使用嵌套逻辑确保流程最终能流向函数末尾
         if not os.path.isfile(dll_path):
-            cls._logger.error(f"Assembly-CSharp.dll not found at \"{dll_path}\", skip DLLInjection.")
+            _logger.error(f"Assembly-CSharp.dll not found at \"{dll_path}\", skip DLLInjection.")
             return_code = 0
         else:
             now_hash: str = cls.get_hash(dll_path)
@@ -259,7 +258,7 @@ class Toolkit:
             source_hash: str = lib_info.get("source_hash", "")
             fix_hash: str = lib_info.get("hash", "")
 
-            cls._logger.debug(f"    Now Assembly-CSharp.dll: {now_hash}")
+            _logger.debug(f"    Now Assembly-CSharp.dll: {now_hash}")
 
             # 1. 检查是否已经是修补好的版本
             if now_hash == fix_hash:
@@ -282,7 +281,7 @@ class Toolkit:
                                              )
                         return_code = 1
                     except Exception as e:
-                        cls._logger.error(f"修补过程中发生异常: {e}")
+                        _logger.error(f"修补过程中发生异常: {e}")
                         return_code = 0
                 else:
                     return_code = 0
@@ -290,7 +289,7 @@ class Toolkit:
         # --- 统一出口 ---
         # 无论上述哪个分支执行，都会来到这里
         run_time_ms: float = Toolkit.calc_end_time(start_time)
-        cls._logger.debug(f"game_lib_check() Run Time: {run_time_ms:.2f} ms, "
+        _logger.debug(f"game_lib_check() Run Time: {run_time_ms:.2f} ms, "
                           f"Return Code: {return_code}")
         return return_code
 
@@ -328,7 +327,7 @@ class Toolkit:
                     cursor.execute("PRAGMA table_info(HitDelayHistory);")
                     column_count = len(cursor.fetchall())
                     rt_code = 2 if column_count == 6 else 1
-                    cls._logger.info(f"Database Version: {rt_code}")
+                    _logger.info(f"Database Version: {rt_code}")
 
             elif os.path.isfile("./musync_data/HitDelayHistory.db"):
                 with sqlite3.connect('./musync_data/HitDelayHistory.db') as db:
@@ -341,15 +340,15 @@ class Toolkit:
                     else:
                         cursor.execute("SELECT Value FROM Infos WHERE Key='Version';")
                         rt_code = int(cursor.fetchone()[0])
-                    cls._logger.info(f"Database Version: {rt_code}")
+                    _logger.info(f"Database Version: {rt_code}")
             else:
-                cls._logger.warning("无数据库文件存在.")
+                _logger.warning("无数据库文件存在.")
                 rt_code = 0
 
         except Exception as e:
-            cls._logger.fatal(f"CheckDatabaseVersion() 异常: {e}")
+            _logger.fatal(f"CheckDatabaseVersion() 异常: {e}")
 
-        cls._logger.debug(f"check_database_version() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        _logger.debug(f"check_database_version() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return rt_code
 
     @classmethod
@@ -372,7 +371,7 @@ class Toolkit:
             try:
                 # V0 -> V4: 直接创建最新表
                 if now_version == 0:
-                    cls._logger.info(f"创建 v{target_version} 版本数据库中...")
+                    _logger.info(f"创建 v{target_version} 版本数据库中...")
                     cls.create_new_database(db)
                     cursor.execute("INSERT OR REPLACE INTO Infos VALUES(?, ?)",
                                    ("Version", str(target_version)))
@@ -380,7 +379,7 @@ class Toolkit:
 
                 # V1 -> V2
                 if now_version == 1:
-                    cls._logger.info("记录数据迁移中... v1 -> v2")
+                    _logger.info("记录数据迁移中... v1 -> v2")
                     cursor.execute("ALTER TABLE HitDelayHistory RENAME TO HitDelayHistoryV1;")
                     cursor.execute("""
                         CREATE TABLE IF NOT EXISTS HitDelayHistory (
@@ -404,7 +403,7 @@ class Toolkit:
 
                 # V2 -> V3
                 if now_version == 2:
-                    cls._logger.info("记录数据迁移中... v2 -> v3")
+                    _logger.info("记录数据迁移中... v2 -> v3")
                     cursor.execute("CREATE TABLE IF NOT EXISTS Infos ("
                                    "Key TEXT PRIMARY KEY,"
                                    "Value TEXT DEFAULT NULL);"
@@ -415,7 +414,7 @@ class Toolkit:
 
                 # V3 -> V4
                 if now_version == 3:
-                    cls._logger.info("记录数据迁移中... v3 -> v4")
+                    _logger.info("记录数据迁移中... v3 -> v4")
 
                     # 1. 重命名旧表
                     cursor.execute("ALTER TABLE HitDelayHistory RENAME TO HitDelayHistoryOld;")
@@ -502,7 +501,7 @@ class Toolkit:
                             # 合并可能产生的多余空格 (例如 "葬歌  2D" -> "葬歌 2D")
                             song_map_name_new = re.sub(r'\s+', ' ', cleaned_name)
                         else:# === 极端情况：两套正则都没匹配上 ===
-                            cls._logger.warning(f"无法识别难度的异常谱面名称: [{song_map_name_old}]，跳过迁移。")
+                            _logger.warning(f"无法识别难度的异常谱面名称: [{song_map_name_old}]，跳过迁移。")
                             song_map_name_new = song_map_name_old  # 保持原样迁移，避免数据丢失
 
                         # 2. 将 HitMap 从 TEXT 转换为 BLOB（int32 打包）
@@ -518,7 +517,7 @@ class Toolkit:
                                     ival: int = int(round(val * 10000))
                                     ints.append(ival)
                                 except ValueError:
-                                    cls._logger.warning(f"无效的 HitMap 数值 '{token}'，跳过该值 (谱面：{song_map_name_old}，时间：{record_time})")
+                                    _logger.warning(f"无效的 HitMap 数值 '{token}'，跳过该值 (谱面：{song_map_name_old}，时间：{record_time})")
                                     continue
                             if ints:
                                 # 打包为小端 int32 字节串
@@ -544,12 +543,12 @@ class Toolkit:
                     now_version = 4
 
                 if now_version == target_version:
-                    cls._logger.info(f"当前版本: v{now_version}, 已是最新")
+                    _logger.info(f"当前版本: v{now_version}, 已是最新")
 
             except sqlite3.Error as e:
-                cls._logger.error(f"数据库更新失败并已回滚，原因: {e}")
+                _logger.error(f"数据库更新失败并已回滚，原因: {e}")
                 return False
 
-        cls._logger.info("数据库状态检查通过.")
-        cls._logger.debug(f"update_database() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        _logger.info("数据库状态检查通过.")
+        _logger.debug(f"update_database() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return True

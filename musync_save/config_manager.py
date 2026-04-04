@@ -13,37 +13,41 @@ from .version import version, pre_version, is_pre_release
 _LOG_FORMATTER = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 _LOG_FILE_PATH = Path.cwd() / "log.txt"
 
-def get_logger(name: str="MUSYNC.App") -> logging.Logger:
-    """
-    全局日志获取函数，替代旧版的 Logger.GetLogger
-    """
-    # 动态获取当前的日志过滤等级
-    # 因为全局 config 还没定义时也可能调用此函数，所以需要一个默认值 fallback
-    try:
-        current_level = config._logger_filter
-    except NameError:
-        current_level = logging.INFO
+class Logger(object):
+    @staticmethod
+    def get_logger(name: str="MUSYNC.App", filter: int=logging.INFO, default_load:bool=False) -> logging.Logger:
+        """全局日志获取函数，替代旧版的 Logger.GetLogger"""
+        if default_load:
+            filter = logging.DEBUG if is_pre_release else logging.INFO
+        else:
+            filter = config._logger_filter
+        logger = logging.getLogger(name)
+        logger.setLevel(filter)
 
-    logger = logging.getLogger(name)
-    for i in logger.handlers:
-        i.setLevel(current_level)
+        # 核心：避免为同一个名字的 logger 重复添加 Handler 导致日志输出多次
+        if not logger.hasHandlers():
+            # 1. 写入 log.txt
+            file_handler = logging.FileHandler(_LOG_FILE_PATH, encoding='utf-8')
+            file_handler.setLevel(filter)
+            file_handler.setFormatter(_LOG_FORMATTER)
 
-    # 核心：避免为同一个名字的 logger 重复添加 Handler 导致日志输出多次
-    if not logger.hasHandlers():
-        # 1. 写入 log.txt
-        file_handler = logging.FileHandler(_LOG_FILE_PATH, encoding='utf-8')
-        file_handler.setLevel(current_level)
-        file_handler.setFormatter(_LOG_FORMATTER)
+            # 2. 输出到控制台
+            console_handler = logging.StreamHandler()
+            console_handler.setLevel(filter)
+            console_handler.setFormatter(_LOG_FORMATTER)
 
-        # 2. 输出到控制台
-        console_handler = logging.StreamHandler()
-        console_handler.setLevel(current_level)
-        console_handler.setFormatter(_LOG_FORMATTER)
+            logger.addHandler(file_handler)
+            logger.addHandler(console_handler)
 
-        logger.addHandler(file_handler)
-        logger.addHandler(console_handler)
+        return logger
 
-    return logger
+    @staticmethod
+    def set_logger_filter(name: str="MUSYNC.App", filter: int=logging.INFO) -> None:
+        """动态设置指定 logger 的日志过滤等级，适用于配置变更时动态调整日志输出"""
+        logger = logging.getLogger(name)
+        logger.setLevel(filter)
+        for handler in logger.handlers:
+            handler.setLevel(filter)
 
 class AppConfigManager:
     _log_level_mapping = {
@@ -58,13 +62,14 @@ class AppConfigManager:
         self._log_path: Path = self._base_path / "log.txt"
         self._logs_dir: Path = self._base_path / "logs"
         self._logger_filter: int = logging.INFO
+        self._is_loaded: bool = False
 
         self.compress_log_file()
 
         # 配置属性
         self.Version: str = pre_version if is_pre_release else version
         self.UpdateChannel: str = "PreRelease" if is_pre_release else "Release"
-        self.LoggerFilterString: str = "INFO"
+        self.LoggerFilter: str = "INFO"
         self.CheckUpdate: bool = True
         self.DllInjection: bool = False
         self.SystemDpi: int = 100
@@ -92,13 +97,13 @@ class AppConfigManager:
                     if hasattr(self, k):
                         setattr(self, k, v)
 
-            self._logger_filter = self._log_level_mapping.get(self.LoggerFilterString, logging.INFO)
+            self._logger_filter = self._log_level_mapping.get(self.LoggerFilter, logging.INFO)
 
-            self._logger: logging.Logger = get_logger("AppConfigManager")
+            self._logger: logging.Logger = Logger.get_logger("AppConfigManager", self._logger_filter, True)
             self._logger.info("Configuration loaded.")
 
         except Exception:
-            self._logger: logging.Logger = get_logger("AppConfigManager")
+            self._logger: logging.Logger = Logger.get_logger("AppConfigManager", logging.DEBUG)
             self._logger.exception("Failed to load configuration.")
 
     def compress_log_file(self) -> None:

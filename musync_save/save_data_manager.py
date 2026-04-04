@@ -3,13 +3,13 @@ import json
 from pathlib import Path
 from typing import Any, List
 
-from .config_manager import get_logger
+from .config_manager import Logger
 from .map_info import MapDataInfo
 
 class SaveDataManager:
     def __init__(self):
         self._file_path = Path.cwd() / "musync_data" / "SaveDataInfo.json"
-        self.logger = get_logger("Resources.SaveDataInfo")
+        self.logger = Logger.get_logger("Resources.SaveDataInfo")
 
         # 属性名严格保持 C# 内存中的命名
         self.version: int = 0

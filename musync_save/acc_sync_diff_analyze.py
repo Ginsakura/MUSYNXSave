@@ -7,11 +7,11 @@ from matplotlib.figure import Figure
 from matplotlib.ticker import MultipleLocator
 from mpl_toolkits.mplot3d import Axes3D
 
-from .config_manager import get_logger
+from .config_manager import Logger
 
 def analyze_3d() -> None:
     """读取 CSV 数据并生成 3D 散点图分析视图"""
-    logger: logging.Logger = get_logger("AvgAcc_Sync_Analyze.Analyze3D")
+    logger: logging.Logger = Logger.get_logger("AvgAcc_Sync_Analyze.Analyze3D")
 
     # 强制类型注解
     acc: list[float] = []

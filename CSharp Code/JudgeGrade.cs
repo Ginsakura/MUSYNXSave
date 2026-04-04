@@ -13,6 +13,7 @@ namespace BMSLib
 			 */
 			//JudgeGrade.TotalCombo = 0;
 			//JudgeGrade.uploadScore = new float[6];
+			ConsoleWindow.Initialize();
 			Console.Clear();
 			Console.ForegroundColor = ConsoleColor.Red;
 			Console.WriteLine("> SongStart!");

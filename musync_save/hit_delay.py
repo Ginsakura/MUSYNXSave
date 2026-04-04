@@ -23,6 +23,8 @@ uiauto.SetGlobalSearchTimeout(1)
 
 class HitDelay:
     """游玩延迟与历史记录可视化分析主界面"""
+    _const_keys_mode: dict[int, str] = {4:"4K", 6:"6K"}
+    _const_diff_mode: list[str] = ["EZ", "HD", "IN", "ERR"]
 
     def __init__(self, subroot: tk.Tk | tk.Toplevel) -> None:
         self._logger: logging.Logger = Logger.get_logger("HitDelay.HitDelayText")
@@ -494,6 +496,10 @@ class HitDelay:
         if min_y_axis <= -45:
             ax.axhline(y=-45, c='cyan', ls='--', lw=1, alpha=0.8)
 
+        # avg delay 水平线
+        ax.axhline(y=self._data_avg_delay, c='red', ls='--', lw=1,
+                   alpha=1, label=f"Avg Delay: {self._data_avg_delay:.2f} ms")
+
         ax.legend()
 
         ax.plot(self._data_list, marker='o', markersize=3,
@@ -624,12 +630,19 @@ class HitDelay:
         sync_number: float = "0"
 
         for line in lines:
-            if line.startswith("> SongInfo"):
+            if line.startswith("> Delay:"):
+                # 解析延迟数据: > Delay: -12.3ms
+                try:
+                    val_str = line.split(':')[1].replace('ms', '').strip()
+                    hit_delays.append(float(val_str))
+                except (IndexError, ValueError):
+                    continue
+            elif line.startswith("> SongInfo"):
                 # 解析 Combo 数据: > "SongInfo::SID:141801,SN:12184,MC:536,TC:536"
                 try:
                     parts = line.split(',')
                     # 谱面信息 SongID(SID)
-                    song_info = parts[0].split('::')[1]
+                    song_info_id = parts[0].split(':')[-1]
                     # 同步率 (SN)，转换为小数形式
                     sync_number = int(parts[1].split(':')[1]) / 100.0
                     # MaxCombo
@@ -640,13 +653,6 @@ class HitDelay:
                 except IndexError:
                     self._logger.exception("解析 SongInfo 行时发生错误，行内容: " + line)
                     pass
-            elif line.startswith("> Delay:"):
-                # 解析延迟数据: > Delay: -12.3ms
-                try:
-                    val_str = line.split(':')[1].replace('ms', '').strip()
-                    hit_delays.append(float(val_str))
-                except (IndexError, ValueError):
-                    continue
 
         all_keys: int = len(hit_delays)
         if all_keys == 0:
@@ -666,11 +672,13 @@ class HitDelay:
         # 使用SID查询SongName
         # 列表结构为：[SongName, Mode_Keys, Mode_Diff, Difficulty]
         song_info: list = song_name.data.get(
-            song_info,
-            ['', 0, 0, 0]
+            song_info_id,
+            ['', -1, -1, 0]
             )
         input_name: str = song_info[0]
         default_name: str = input_name if input_name else f"未命名谱面 {dt.now().strftime('%H%M%S')}"
+        mode: str = self._const_keys_mode.get(song_info[1], "ERR") + self._const_diff_mode[song_info[2]]
+        diff:int = song_info[3]
 
         # 5. 写入数据库并自动刷新 UI
         try:
@@ -678,7 +686,7 @@ class HitDelay:
                 INSERT INTO HitDelayHistory
                 (SongMapName, RecordTime, Mode, Diff, Combo, AllKeys, AvgDelay, AvgAcc, HitMap)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, (default_name, record_time, "4K", 0, combo_str, all_keys, avg_delay, avg_acc, hitmap_bytes))
+            """, (default_name, record_time, mode, diff, combo_str, all_keys, avg_delay, avg_acc, hitmap_bytes))
             self._db.commit()
 
             new_rowid = self._cursor.lastrowid
@@ -687,25 +695,24 @@ class HitDelay:
             # 刷新表格
             self._action_refresh_data()
 
-            # 自动选中并加载新捕获的数据进行绘图
-            self._select_rowid = new_rowid
-            self._data_list = hitmap_ints
-            self._do_matplotlib_draw()
-
         except sqlite3.Error as e:
             self._logger.error(f"将捕获数据写入数据库时失败: {e}")
             messagebox.showerror("数据库错误", f"保存捕获数据失败:\n{e}")
 
         # 6. 追加写入Acc-Sync.csv文件
         try:
-            with open("Acc-Sync.csv", "a", encoding="utf-8") as f:
-                f.write(f"{avg_acc:.6f},{sync_number:.2f},{song_info[3]}\n")
+            with open("./musync_data/Acc-Sync.csv", "a", encoding="utf-8") as f:
+                f.write(f"{avg_acc:.6f},{sync_number:.2f},{diff}\n")
             self._logger.info("已将数据追加写入 Acc-Sync.csv 文件。")
         except Exception as e:
             self._logger.error(f"写入 Acc-Sync.csv 文件失败: {e}")
 
         # 7. 清理剪贴板，防止泄露敏感数据
         pyperclip.copy("")
+
+        # 8. 自动选中并加载新捕获的数据进行绘图
+        self._select_rowid = new_rowid
+        self._action_draw_single_line()
 
     def _action_show_all_hit(self) -> None:
         """UI 事件：显示全局全量直方图 (调用外部模块)"""
@@ -769,6 +776,7 @@ class HitDelay:
         # 直接调度控制层的绘图事件
         self._action_draw_single_line()
 
+    # TODO: 疑似异常, 未能实现排序功能
     def _sort_treeview(self, col: str, reverse: bool) -> None:
         """回调：点击表头进行双向排序"""
         try:

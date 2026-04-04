@@ -1,7 +1,7 @@
 # 同步音律喵赛克 Steam端 存档解析工具
 MUSYNX Steam Client Savefile Decode & Analyze Tool
 
-C#重构版本: [MUSYNCSaveCSharp](https://github.com/Ginsakura/MUSYNCSaveCSharp)
+~~C#重构版本: [MUSYNCSaveCSharp](https://github.com/Ginsakura/MUSYNCSaveCSharp)~~
 
 [down_svg]: https://img.shields.io/github/downloads/ginsakura/MUSYNCSave/total?label=All%20Downloads
 [all_release]: https://github.com/Ginsakura/MUSYNCSave/releases
@@ -92,6 +92,8 @@ C#重构版本: [MUSYNCSaveCSharp](https://github.com/Ginsakura/MUSYNCSaveCSharp
 
 </details>
 
+---
+
 ## 版本发布说明
 * **NoConsole 版本**：没有命令提示符界面，适合日常正常使用。
 * **WithConsole 版本**：带有命令提示符界面，适合出现 bug 时快速定位错误发生地点以及原因。
@@ -108,7 +110,7 @@ C#重构版本: [MUSYNCSaveCSharp](https://github.com/Ginsakura/MUSYNCSaveCSharp
 | `Version` | `自动获取` | string | 记录当前工具的版本号 |
 | `LoggerFilter` | `'INFO'` | string | 控制台日志输出的最低过滤等级 |
 | `CheckUpdate` | `false` | boolean | 是否启用自动检查更新 |
-| `DLLInjection` | `false` | boolean | 是否启用 DLL 注入以开启**高级功能** |
+| `DllInjection` | `false` | boolean | 是否启用 DLL 注入以开启**高级功能** |
 | `CreateUdpWhenStartup` | `false` | boolean | 在开启高级功能的前提下，是否在应用程序启动时立即启动 UDP 接收端 |
 | `SystemDPI` | `自动获取` | string | 读取系统 DPI，提供 DPI 窗体修正 (未实现) |
 | `DonutChartinHitDelay` | `false` | boolean | 是否在单次游玩统计中显示击打延迟环形图 |
@@ -160,7 +162,14 @@ C#重构版本: [MUSYNCSaveCSharp](https://github.com/Ginsakura/MUSYNCSaveCSharp
     3. `Diffculty_ScoreAnalyze`: 以更现代、更解耦的架构重新绘制图表并展示数据
     4. `FileEncoding`: 引入防溢出屏障，以更安全的方式处理文件的 meta data，确保跨平台文件操作与 I/O 安全性
     5. `Toolkit`: 完善了文件哈希校验、资源释放的并发安全性设计，并封装了安全的 SQLite 事务流转
-    6. `Resource`: 重构
+    6. `Resource`: 拆分模块, 将其拆分为`config_manager`, `map_info`, `songname_manager`, `save_data_manager`三个独立模块
+    7. `bootcfg.json`: 缩减配置项
+    7. `HitDelay`: 完全重构代码和界面, 适配最新的(v4)数据库和游戏控制台输出内容
+
+
+### 旧版本更新日志
+#### [旧版本更新日志 (2.0.0 - 2.1.0)](./ReadmeResources/OldVersionUpdateLog.md#旧版本更新日志-200---210)
+#### [旧版本更新日志 (1.0.0 - 1.2.8rc5)](./ReadmeResources/OldVersionUpdateLog.md#旧版本更新日志-100---128rc5)
 ---
 
 ## 郑重声明：我 **不会** 对存档文件进行任何 **写** 操作

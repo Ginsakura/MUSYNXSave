@@ -71,6 +71,7 @@
     <Content Include="CSharp Code\Console.cs" />
     <Content Include="CSharp Code\JudgeGrade.cs" />
     <Content Include="CSharp Code\SongInfoCore.cs" />
+    <Content Include="debug_prerelease" />
     <Content Include="Launcher.cpp" />
     <Content Include="LauncherC.exe" />
     <Content Include="LICENSE" />

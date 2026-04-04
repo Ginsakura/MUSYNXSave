@@ -59,8 +59,9 @@ class HitDelay:
         self._subroot.option_add('*TCombobox*Listbox.font', self._font)
 
         # TODO: 绑定全局按键
+        self._subroot.protocol("WM_DELETE_WINDOW", self._on_closing)
         self._subroot.bind('<F5>', self._action_refresh_data)
-        self._subroot.bind('<Control-Escape>', self._on_closing)
+        self._subroot.bind('<Escape>', self._on_closing)
         self._subroot.bind("<Control-r>", self._reset_ui_state)
 
         # 全局状态容器
@@ -217,12 +218,12 @@ class HitDelay:
         info_modify_row += 1
 
         # 行3: 铺面游玩时间显示
-        history_record_time_value: tk.Label = tk.Label(
+        self._his_record_time_value: tk.Label = tk.Label(
             info_modify_frame,
             text="",
             font=self._font,
             relief="groove")
-        history_record_time_value.grid(row=info_modify_row, column=0, columnspan=2, sticky='ew')
+        self._his_record_time_value.grid(row=info_modify_row, column=0, columnspan=2, sticky='ew')
         info_modify_row += 1
 
         # 行4: 游玩模式显示
@@ -233,11 +234,12 @@ class HitDelay:
             relief="groove",
             anchor='e')
         history_mode_label.grid(row=info_modify_row, column=0, sticky='ew')
-        history_mode_value: ttk.Combobox = ttk.Combobox(
+        self._his_mode_value: ttk.Combobox = ttk.Combobox(
             info_modify_frame,
             values=['', '4KEZ', '4KHD', '4KIN', "6KEZ", "6KHD", "6KIN"],
-            font=self._font)
-        history_mode_value.grid(row=info_modify_row, column=1, sticky='ew')
+            font=self._font,
+            state="readonly")
+        self._his_mode_value.grid(row=info_modify_row, column=1, sticky='ew')
         info_modify_row += 1
 
         # 行5: 游玩难度显示
@@ -248,11 +250,11 @@ class HitDelay:
             relief="groove",
             anchor='e')
         history_difficulty_label.grid(row=info_modify_row, column=0, sticky='ew')
-        history_difficulty_value: ttk.Combobox = ttk.Combobox(
+        self._his_difficulty_value: ttk.Combobox = ttk.Combobox(
             info_modify_frame,
             values=[f"{i}" for i in range(1, 16)],
             font=self._font)
-        history_difficulty_value.grid(row=info_modify_row, column=1, sticky='ew')
+        self._his_difficulty_value.grid(row=info_modify_row, column=1, sticky='ew')
         info_modify_row += 1
 
         # 行6: Combo显示
@@ -263,30 +265,30 @@ class HitDelay:
             relief="groove",
             anchor='e')
         history_combo_label.grid(row=info_modify_row, column=0, sticky='ew')
-        history_combo_value: tk.Label = tk.Label(
+        self._his_combo_value: tk.Label = tk.Label(
             info_modify_frame,
             text="0/0    ",
             font=self._font,
             relief="groove",
             anchor='e')
-        history_combo_value.grid(row=info_modify_row, column=1, sticky='ew')
+        self._his_combo_value.grid(row=info_modify_row, column=1, sticky='ew')
         info_modify_row += 1
 
         # 行7: Notes数量显示
-        history_keys_label: tk.Label = tk.Label(
+        history_notes_label: tk.Label = tk.Label(
             info_modify_frame,
             text='按键数量: ',
             font=self._font,
             relief="groove",
             anchor='e')
-        history_keys_label.grid(row=info_modify_row, column=0, sticky='ew')
-        history_keys_value: tk.Label = tk.Label(
+        history_notes_label.grid(row=info_modify_row, column=0, sticky='ew')
+        self._his_notes_value: tk.Label = tk.Label(
             info_modify_frame,
             text="0    ",
             font=self._font,
             relief="groove",
             anchor='e')
-        history_keys_value.grid(row=info_modify_row, column=1, sticky='ew')
+        self._his_notes_value.grid(row=info_modify_row, column=1, sticky='ew')
         info_modify_row += 1
 
         # 行8: Avg Delay显示
@@ -297,13 +299,13 @@ class HitDelay:
             relief="groove",
             anchor='e')
         history_delay_label.grid(row=info_modify_row, column=0, sticky='ew')
-        history_delay_value: tk.Label = tk.Label(
+        self._his_delay_value: tk.Label = tk.Label(
             info_modify_frame,
             text="000.000000ms  ",
             font=self._font,
             relief="groove",
             anchor='e')
-        history_delay_value.grid(row=info_modify_row, column=1, sticky='ew')
+        self._his_delay_value.grid(row=info_modify_row, column=1, sticky='ew')
         info_modify_row += 1
 
         # 行9: Avg Acc显示
@@ -314,29 +316,29 @@ class HitDelay:
             relief="groove",
             anchor='e')
         history_acc_label.grid(row=info_modify_row, column=0, sticky='ew')
-        history_acc_value: tk.Label = tk.Label(
+        self._his_acc_value: tk.Label = tk.Label(
             info_modify_frame,
             text='000.000000ms  ',
             font=self._font,
             relief="groove",
             anchor='e')
-        history_acc_value.grid(row=info_modify_row, column=1, sticky='ew')
+        self._his_acc_value.grid(row=info_modify_row, column=1, sticky='ew')
         info_modify_row += 1
 
         # 行10: 操作按钮
-        self._history_update_button: ttk.Button = ttk.Button(
+        self._his_update_button: ttk.Button = ttk.Button(
             info_modify_frame,
             text='更新记录',
             style="update.TButton",
             command=self._action_change_mark)
-        self._history_update_button.grid(row=info_modify_row, column=0, sticky='ew')
+        self._his_update_button.grid(row=info_modify_row, column=0, sticky='ew')
 
-        self._history_delete_button: ttk.Button = ttk.Button(
+        self._his_delete_button: ttk.Button = ttk.Button(
             info_modify_frame,
             text='删除记录',
             style="delete.TButton",
             command=self._action_delete_record)
-        self._history_delete_button.grid(row=info_modify_row, column=1, sticky='ew')
+        self._his_delete_button.grid(row=info_modify_row, column=1, sticky='ew')
         info_modify_row += 1
 
         for i in range(info_modify_row):
@@ -415,9 +417,9 @@ class HitDelay:
     # ==========================================
     def _reset_ui_state(self) -> None:
         """重置右侧控制面板的状态"""
-        self._get_data_button.config(state=tk.DISABLED)
-        self._history_delete_button.config(state=tk.DISABLED)
-        self._history_update_button.config(state=tk.DISABLED)
+        # self._get_data_button.config(state=tk.DISABLED)
+        self._his_delete_button.config(state=tk.DISABLED)
+        self._his_update_button.config(state=tk.DISABLED)
         self._his_name_entry.delete(0, tk.END)
         self._select_rowid = -1
 
@@ -537,14 +539,21 @@ class HitDelay:
         """UI 事件：修改选中记录的标记名称"""
         if self._select_rowid == -1: return
         new_mark: str = self._his_name_entry.get().strip()
+        new_mode: str = self._his_mode_value.get().strip()
+        new_diff: str = self._his_difficulty_value.get().strip()
+
         if not new_mark:
             messagebox.showwarning("警告", "请输入有效的标记名称！")
             return
 
         try:
-            self._cursor.execute("UPDATE HitDelayHistory SET SongMapName=? WHERE ROWID=?", (new_mark, self._select_rowid))
+            self._cursor.execute("""
+                UPDATE HitDelayHistory
+                SET SongMapName=?, Mode=?, Diff=?
+                WHERE ROWID=?
+                """, (new_mark, new_mode, new_diff, self._select_rowid))
             self._db.commit()
-            self._logger.info(f"已将 ROWID {self._select_rowid} 的标记修改为: {new_mark}")
+            self._logger.info(f"已将 ROWID {self._select_rowid} 的标记修改为: {new_mark}, {new_mode}, {new_diff}")
             self._action_refresh_data()
         except sqlite3.Error as e:
             self._logger.error(f"修改标记失败: {e}")
@@ -654,8 +663,13 @@ class HitDelay:
 
         record_time: str = dt.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        # 智能获取命名：优先使用SID查询SongName, 其次从界面输入框内获取文本, 最后则填充默认名
-        input_name: str = song_name.data.get(song_info, self._his_name_entry.get().strip().replace("\'", "’"))
+        # 使用SID查询SongName
+        # 列表结构为：[SongName, Mode_Keys, Mode_Diff, Difficulty]
+        song_info: list = song_name.data.get(
+            song_info,
+            ['', 0, 0, 0]
+            )
+        input_name: str = song_info[0]
         default_name: str = input_name if input_name else f"未命名谱面 {dt.now().strftime('%H%M%S')}"
 
         # 5. 写入数据库并自动刷新 UI
@@ -682,6 +696,17 @@ class HitDelay:
             self._logger.error(f"将捕获数据写入数据库时失败: {e}")
             messagebox.showerror("数据库错误", f"保存捕获数据失败:\n{e}")
 
+        # 6. 追加写入Acc-Sync.csv文件
+        try:
+            with open("Acc-Sync.csv", "a", encoding="utf-8") as f:
+                f.write(f"{avg_acc:.6f},{sync_number:.2f},{song_info[3]}\n")
+            self._logger.info("已将数据追加写入 Acc-Sync.csv 文件。")
+        except Exception as e:
+            self._logger.error(f"写入 Acc-Sync.csv 文件失败: {e}")
+
+        # 7. 清理剪贴板，防止泄露敏感数据
+        pyperclip.copy("")
+
     def _action_show_all_hit(self) -> None:
         """UI 事件：显示全局全量直方图 (调用外部模块)"""
         try:
@@ -692,6 +717,7 @@ class HitDelay:
     # ==========================================
     # [Level 0] 无状态 UI 独立交互 (Stateless UI callbacks)
     # ==========================================
+
     # def _on_treeview_resize(self, event: tk.Event) -> None:
     #     """当 Treeview 大小改变时，按比例调整列宽"""
     #     new_total_width = event.width
@@ -717,10 +743,17 @@ class HitDelay:
             self._select_rowid = int(values[0])
             self._his_name_entry.delete(0, tk.END)
             self._his_name_entry.insert(0, str(values[1]))
+            self._his_record_time_value["text"] = str(values[2])
+            self._his_mode_value.set(str(values[3]))
+            self._his_difficulty_value.set(str(values[4]))
+            self._his_combo_value["text"] = str(values[5])
+            self._his_notes_value["text"] = str(values[6])
+            self._his_delay_value["text"] = str(values[7])
+            self._his_acc_value["text"] = str(values[8])
 
             # 激活对应的操作按钮
-            self._history_delete_button.config(state=tk.NORMAL)
-            self._history_update_button.config(state=tk.NORMAL)
+            self._his_delete_button.config(state=tk.NORMAL)
+            self._his_update_button.config(state=tk.NORMAL)
 
     def _on_tree_double_click(self, event: tk.Event) -> None:
         """回调：双击表格行快捷绘制单曲分析图表"""

@@ -222,7 +222,7 @@ class AllHitAnalyze(object):
 
         # 1. 绘制底层直方图 (一次性渲染, 极大地提升性能)
         ax.bar(self._x_axis[:-1], self._y_axis[:-1], width=1, color='skyblue')
-        ax.bar(self._x_axis[-1], self._y_axis[-1], width=1, color='#FF5757')
+        ax.bar(self._x_axis[-1], self._y_axis[-1], width=1.5, color='#FF5757')
         ax.axvline(x=0, c='black', ls='-', lw=1)
         ax.axvline(x=249.5, c='orange', ls='--', lw=1, alpha=0.8)
 

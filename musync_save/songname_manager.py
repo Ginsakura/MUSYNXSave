@@ -12,7 +12,7 @@ class SongNameManager:
         # 文件路径
         self._file_path = Path.cwd() / "musync_data" / "SongName.json"
         # 数据结构
-        self.data: dict[str, list[Any]] = {}
+        self.data: dict[str, list] = {}
         # 日志记录器
         self.logger = get_logger("SongNameManager")
         # 尝试加载文件，如果不存在则初始化为空字典

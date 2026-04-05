@@ -79,7 +79,7 @@ jobs:
 
       - name: Build ${{ env.Version }}
         run: |
-          powershell.exe ./buildLauncher.ps1;
+          pwsh ./buildLauncher.ps1;
 
       - name: Commit Build File
         uses: softprops/action-gh-release@v2

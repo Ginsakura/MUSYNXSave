@@ -247,7 +247,7 @@ class MusyncMainWindow(object):
 
 # select功能组
     def SelectKeys(self) -> None:
-        """切换按键数筛选"""
+        """切换按键型筛选"""
         self.keys = KeysEnum((self.keys.value+1)%3)
         self.selectKeys.configure(text=self.keys.text)
         self.DataLoad()
@@ -519,7 +519,7 @@ class MusyncMainWindow(object):
         for saveInfo in save_data.saveInfoList:
             # 无名谱面筛选
             if saveInfo.SongName is None: continue
-            # 键数筛选
+            # 键型筛选
             if ((self.keys != KeysEnum.All) and (self.keys.stext != saveInfo.SongKeys)): continue
             # 难度筛选
             if (self.difficute != DiffcuteEnum.All) and (self.difficute.stext != saveInfo.SongDifficulty): continue
@@ -553,7 +553,7 @@ class MusyncMainWindow(object):
                 self.excludeCount += 1
             self.saveData.insert('', tkinter.END, values=("%d"%saveInfo.SongId, #谱面号
                 ("" if (saveInfo.SongName is None) else saveInfo.SongName), #曲名
-                ("" if (saveInfo.SongKeys is None) else saveInfo.SongKeys), #键数
+                ("" if (saveInfo.SongKeys is None) else saveInfo.SongKeys), #键型
                 ("" if (saveInfo.SongDifficulty is None) else saveInfo.SongDifficulty), #难度
                 ("" if (saveInfo.SongDifficultyNumber is None) else saveInfo.SongDifficultyNumber), #难度等级
                 f"{saveInfo.SyncNumber/10000:.2%}", #本地同步率
@@ -570,16 +570,6 @@ class MusyncMainWindow(object):
         self.UpdateWindowInfo()
 
     # 控件更新功能组
-    def ShowMessageBox(self, msgType:int=0, title:str="", msg:str=""):
-        """多线程展示message box"""
-        # TODO: messagebox in root.after
-        if (msgType==0):
-            pass
-        elif (msgType == 1):
-            pass
-        elif (msgType == 2):
-            pass
-
     def UpdateTip(self) -> None:
         """软件更新提示"""
         if self.gitHubLink.cget('fg') == '#C4245C':
@@ -624,9 +614,9 @@ class MusyncMainWindow(object):
 
     def TreeviewColumnUpdate(self):
         """TreeView列名更新"""
-        self.saveData.heading("SongId",anchor="center",text="谱面号"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SpeedStall' else ''))
+        self.saveData.heading("SongId",anchor="center",text="谱面号"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SongId' else ''))
         self.saveData.heading("SongName",anchor="center",text="曲名"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SongName' else ''))
-        self.saveData.heading("Keys",anchor="center",text="键数"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='Keys' else ''))
+        self.saveData.heading("Keys",anchor="center",text="键型"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='Keys' else ''))
         self.saveData.heading("Difficulty",anchor="center",text="难度"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='Difficulty' else ''))
         self.saveData.heading("DifficultyNumber",anchor="center",text="等级"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='DifficultyNumber' else ''))
         self.saveData.heading("SyncNumber",anchor="center",text="同步率"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SyncNumber' else ''))
@@ -638,12 +628,12 @@ class MusyncMainWindow(object):
 
     def TreeviewWidthUptate(self):
         """TreeView列宽更新"""
-        self.saveData.column("SongId",anchor="e",width=90)
+        self.saveData.column("SongId",anchor="e",width=72)
         self.saveData.column("SongName",anchor="w",width=self.windowInfo[2]-771)
-        self.saveData.column("Keys",anchor="center",width=60)
+        self.saveData.column("Keys",anchor="center",width=55)
         self.saveData.column("Difficulty",anchor="w",width=65)
-        self.saveData.column("DifficultyNumber",anchor="center",width=60)
-        self.saveData.column("SyncNumber",anchor="e",width=80)
+        self.saveData.column("DifficultyNumber",anchor="center",width=55)
+        self.saveData.column("SyncNumber",anchor="e",width=75)
         self.saveData.column("Rank",anchor="center",width=55)
         self.saveData.column("UploadScore",anchor="e",width=160)
         self.saveData.column("PlayCount",anchor="e",width=90)
@@ -751,7 +741,7 @@ class DiffcuteEnum(Enum):
 
 @unique
 class KeysEnum(Enum):
-    """键数枚举"""
+    """键型枚举"""
     Key4 = 0
     Key6 = 1
     All = 2

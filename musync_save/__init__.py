@@ -30,7 +30,7 @@ from .hit_delay import HitDelay
 
 # 依赖绝大多数包的模块，放在最后导入以避免循环依赖
 from .musync_save_decode import MusyncSaveDecoder
-from .main_mindow import MusyncMainWindow
+from .main_window import MusyncMainWindow
 
 __version__ = pre_version.replace("pre",".") if (is_pre_release) else version
 

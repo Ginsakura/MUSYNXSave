@@ -34,7 +34,7 @@
     <Compile Include="musync_save\config_manager.py" />
     <Compile Include="musync_save\difficulty_score_analyze.py" />
     <Compile Include="musync_save\hit_delay.py" />
-    <Compile Include="musync_save\main_mindow.py" />
+    <Compile Include="musync_save\main_window.py" />
     <Compile Include="musync_save\map_info.py" />
     <Compile Include="musync_save\musync_save_decode.py" />
     <Compile Include="musync_save\save_data_manager.py" />

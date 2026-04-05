@@ -302,7 +302,7 @@ class Toolkit:
                 SongMapName TEXT NOT NULL DEFAULT '',
                 RecordTime TEXT NOT NULL DEFAULT '',
                 Diff INTEGER NOT NULL DEFAULT 0,
-                Keys TEXT NOT NULL DEFAULT '',
+                Mode TEXT NOT NULL DEFAULT '',
                 Combo TEXT NOT NULL DEFAULT '0/0',
                 AvgDelay REAL,
                 AllKeys INTEGER,
@@ -468,7 +468,7 @@ class Toolkit:
                         mode: str = ""
                         combo: str = "0/0"
                         hitmap_bytes: bytes = b''
-                        
+
                         if not song_map_name_old:
                             continue
 
@@ -538,7 +538,7 @@ class Toolkit:
 
                     # 4. 删除旧表
                     cursor.execute("DROP TABLE HitDelayHistoryOld;")
-                    
+
                     cursor.execute("UPDATE Infos SET Value = ? WHERE Key = ?", ("4", "Version"))
                     now_version = 4
 

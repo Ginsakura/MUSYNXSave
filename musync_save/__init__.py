@@ -60,11 +60,10 @@ __all__ = [
     # .hit_delay
     "HitDelay",
     # .musync_save_decode
-    "MusyncMainWindow",
-    # .main_mindow
     "MusyncSaveDecoder",
+    # .main_window
+    "MusyncMainWindow",
 ]
 
-# 初始化单例（可选，但 Launcher 中已做，此处不再重复）
 # 如果希望导入包时自动初始化配置，可以取消下面注释
 Toolkit.init_resources()

@@ -370,7 +370,7 @@ class HitDelay:
             return result[0]
         except sqlite3.Error as e:
             self._logger.error(f"查询 HitMap 数据失败: {e}")
-        return []
+        return b''
 
     def _fetch_record_by_rowid(self, rowid: int) -> Optional[sqlite3.Row]:
         """[纯函数] 扩展自 _parse_hitmap: 根据 ROWID 获取一整行完整数据（包含 HitMap）"""
@@ -417,7 +417,7 @@ class HitDelay:
     # ==========================================
     # [Level 2] 局部视图渲染层 (View Render)
     # ==========================================
-    def _reset_ui_state(self) -> None:
+    def _reset_ui_state(self, event: tk.Event = None) -> None:
         """重置右侧控制面板的状态"""
         # self._get_data_button.config(state=tk.DISABLED)
         self._his_delete_button.config(state=tk.DISABLED)

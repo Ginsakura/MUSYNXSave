@@ -1,4 +1,4 @@
-﻿# Step 0: 检查参数列表
+# Step 0: 检查参数列表
 [CmdletBinding()]
 param (
     [switch]$noarchive
@@ -11,18 +11,18 @@ param (
 # ------------------------------------------
 # 功能: 构建C/C++图标资源
 # ------------------------------------------
-function BuildIcon{
-    $resPath = "ico.res";   # C++图标res资源
-    $rcPath = "ico.rc";     # C++图标rc资源
-    Set-Location -Path "musync_data/";
-    if (-not (Test-Path -Path $resPath)) {
-        & windres $rcPath -O coff -o $resPath;
-        Write-Host ("图标资源 {0}{1} 创建成功！ " -f $path, $resPath) -ForegroundColor Green;
-    } else {
-        Write-Host ("图标资源 {0}{1} 已存在。 " -f $path, $resPath) -ForegroundColor Yellow;
-    }
-    Set-Location -Path ..;
-}
+# function BuildIcon{
+#     $resPath = "ico.res";   # C++图标res资源
+#     $rcPath = "ico.rc";     # C++图标rc资源
+#     Set-Location -Path "musync_data/";
+#     if (-not (Test-Path -Path $resPath)) {
+#         & windres $rcPath -O coff -o $resPath;
+#         Write-Host ("图标资源 {0}{1} 创建成功！ " -f $path, $resPath) -ForegroundColor Green;
+#     } else {
+#         Write-Host ("图标资源 {0}{1} 已存在。 " -f $path, $resPath) -ForegroundColor Yellow;
+#     }
+#     Set-Location -Path ..;
+# }
 
 # ------------------------------------------
 # 功能: 检查目录是否存在，如果不存在则创建该目录。
@@ -92,6 +92,7 @@ function Create-Compress-Archive {
     }
     catch {
         Write-Host ("打包失败：{0} " -f $_.Exception.Message) -ForegroundColor Red
+        throw
     }
 }
 
@@ -100,7 +101,7 @@ function Create-Compress-Archive {
 # ==========================================
 
 cd ./musync_save/;
-$isPreRelease = python -c "import version;print(version.is_is_pre_release)";
+$isPreRelease = python -c "import version;print(version.is_pre_release)";
 $isPreReleaseBool = [bool]::Parse($isPreRelease);
 # 根据布尔值调用不同的属性并赋值给 $version
 if ($isPreReleaseBool) {
@@ -113,10 +114,10 @@ $archive_AC = @("logs", "musync_data", "MusyncSaveDecodeCLI.exe");              
 $archive_ANC = @("logs", "musync_data", "MusyncSaveDecodeNoCLI.exe");                  # NoCLI all in one archive files
 $archive_C = @("logs", "musync_data", "_internal", "MusyncSaveDecodeCLI.exe");
 $archive_NC = @("logs", "musync_data", "_internal", "MusyncSaveDecodeNoCLI.exe");
-$destinationZip_AC = "Archive/MusyncSaveDecode_WithConsole_${version}_AllInOne.zip"
-$destinationZip_ANC = "Archive/MusyncSaveDecode_NoConsole_${version}_AllInOne.zip"
-$destinationZip_C = "../Archive/MusyncSaveDecode_WithConsole_${version}.zip";
-$destinationZip_NC = "../Archive/MusyncSaveDecode_NoConsole_${version}.zip";
+$destinationZip_AC = "Archive/MusyncSaveDecode_CLI_${version}_AllInOne.zip"
+$destinationZip_ANC = "Archive/MusyncSaveDecode_NoCLI_${version}_AllInOne.zip"
+$destinationZip_C = "../Archive/MusyncSaveDecode_CLI_${version}.zip";
+$destinationZip_NC = "../Archive/MusyncSaveDecode_NoCLI_${version}.zip";
 cd ../;
 
 Clear-Host;

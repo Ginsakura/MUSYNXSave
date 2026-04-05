@@ -164,13 +164,14 @@ function Compress-Archive {
 }
 
 # 定义变量
-$isPreRelease = python -c "import Version;print(Version.isPreRelease)";
+cd ./musync_save/;
+$isPreRelease = python -c "import version;print(version.is_is_pre_release)";
 $isPreReleaseBool = [bool]::Parse($isPreRelease);
 # 根据布尔值调用不同的属性并赋值给 $version
 if ($isPreReleaseBool) {
-    $version = py -c "import Version; print(Version.preVersion)";
+    $version = py -c "import version; print(version.pre_version)";
 } else {
-    $version = py -c "import Version; print(Version.version)";
+    $version = py -c "import version; print(version.version)";
 }
 $resourceFiles = @("Resources.bin", "songname.json", "songname.ver", "Musync.ico");  # 资源文件
 $archive_AC = @("logs", "musync_data", "MusyncSaveDecodeCLI.exe");                     # CLI all in one archive files
@@ -181,6 +182,7 @@ $destinationZip_AC = "Archive/MusyncSaveDecode_WithConsole_${version}_AllInOne.z
 $destinationZip_ANC = "Archive/MusyncSaveDecode_NoConsole_${version}_AllInOne.zip"
 $destinationZip_C = "../Archive/MusyncSaveDecode_WithConsole_${version}.zip";
 $destinationZip_NC = "../Archive/MusyncSaveDecode_NoConsole_${version}.zip";
+cd ../;
 
 Clear-Host;
 Write-Host "==== 任务开始 ====";

@@ -1,12 +1,11 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 a = Analysis(
-    ["Launcher.py", "MainWindow.py", "Difficulty_ScoreAnalyze.py", "HitDelay.py",
-        "MusyncSavDecode.py", "Resources.py", "Toolkit.py"],
-    pathex=["F:\Files\Project_File\Program_Project\Python\MUSYNCSavDecode"],
+    ['launcher.py'],
+    pathex=['.', 'musync_save'], # 使用相对路径，'.' 代表执行构建时的当前目录
     binaries=[],
     datas=[],
-    hiddenimports=["MainWindow", "Difficulty_ScoreAnalyze", "HitDelay", "MusyncSavDecode", "Resources", "Toolkit"],
+    hiddenimports=[],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

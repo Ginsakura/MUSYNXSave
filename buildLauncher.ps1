@@ -8,29 +8,25 @@ param (
 # 函数定义区
 # ==========================================
 
-<#
-.SYNOPSIS
-构建C/C++图标资源
-#>
+# ------------------------------------------
+# 功能: 构建C/C++图标资源
+# ------------------------------------------
 function BuildIcon{
     $resPath = "ico.res";   # C++图标res资源
     $rcPath = "ico.rc";     # C++图标rc资源
     Set-Location -Path "musync_data/";
     if (-not (Test-Path -Path $resPath)) {
         & windres $rcPath -O coff -o $resPath;
-        Write-Host "图标资源 ${path}${resPath} 创建成功！" -ForegroundColor Green;
+        Write-Host ("图标资源 {0}{1} 创建成功！ " -f $path, $resPath) -ForegroundColor Green;
     } else {
-        Write-Host "图标资源 ${path}${resPath} 已存在。" -ForegroundColor Yellow;
+        Write-Host ("图标资源 {0}{1} 已存在。 " -f $path, $resPath) -ForegroundColor Yellow;
     }
     Set-Location -Path ..;
 }
 
-<#
-.SYNOPSIS
-检查目录是否存在，如果不存在则创建该目录。
-.PARAMETER Dir
-指定要检查的目录路径。
-#>
+# ------------------------------------------
+# 功能: 检查目录是否存在，如果不存在则创建该目录。
+# ------------------------------------------
 function CheckDir {
     [CmdletBinding()]
     param (
@@ -42,23 +38,16 @@ function CheckDir {
     process {
         if (-not (Test-Path -Path $Dir)) {
             New-Item -ItemType Directory -Path $Dir -ErrorAction Stop | Out-Null
-            Write-Host "目录 ${Dir} 创建成功！" -ForegroundColor Green
+            Write-Host ("目录 {0} 创建成功！ " -f $Dir) -ForegroundColor Green
         } else {
-            Write-Host "目录 ${Dir} 已存在。" -ForegroundColor Yellow
+            Write-Host ("目录 {0} 已存在。 " -f $Dir) -ForegroundColor Yellow
         }
     }
 }
 
-<#
-.SYNOPSIS
-Copies specified resources from a source directory to a target directory.
-.PARAMETER SourceDirectory
-The directory containing the source files to be copied.
-.PARAMETER TargetDirectory
-The directory where the files will be copied to.
-.PARAMETER ResourceFiles
-An array of file names to be copied.
-#>
+# ------------------------------------------
+# 功能: 复制资源文件
+# ------------------------------------------
 function Copy-Resources {
     param (
         [string]$SourceDirectory,
@@ -73,21 +62,16 @@ function Copy-Resources {
 
         if (Test-Path -Path $sourceFile) {
             Copy-Item -Path $sourceFile -Destination $destinationFile
-            Write-Host "文件 ${file} 已拷贝到 ${TargetDirectory}" -ForegroundColor Green
+            Write-Host ("文件 {0} 已拷贝到 {1}。 " -f $file, $TargetDirectory) -ForegroundColor Green
         } else {
-            Write-Host "文件 ${file} 不存在于 ${SourceDirectory}，跳过拷贝。" -ForegroundColor Yellow
+            Write-Host ("文件 {0} 不存在于 {1}，跳过拷贝。 " -f $file, $SourceDirectory) -ForegroundColor Yellow
         }
     }
 }
 
-<#
-.SYNOPSIS
-创建ZIP文件，将指定的文件和文件夹打包。
-.PARAMETER SourceItems
-要打包的文件和文件夹路径数组。
-.PARAMETER DestinationZip
-输出的ZIP文件路径。
-#>
+# ------------------------------------------
+# 功能: 创建ZIP文件 (已重命名以避免与系统内置压缩命令冲突导致卡死)
+# ------------------------------------------
 function Create-Compress-Archive {
     param (
         [Parameter(Mandatory = $true)]
@@ -104,14 +88,17 @@ function Create-Compress-Archive {
     # 打包文件和文件夹
     try {
         Compress-Archive -Path $SourceItems -DestinationPath $DestinationZip -Force
-        Write-Host "打包成功！输出文件：${DestinationZip}" -ForegroundColor Green
+        Write-Host ("打包成功！输出文件：{0} " -f $DestinationZip) -ForegroundColor Green
     }
     catch {
-        Write-Host "打包失败：$($_.Exception.Message)" -ForegroundColor Red
+        Write-Host ("打包失败：{0} " -f $_.Exception.Message) -ForegroundColor Red
     }
 }
 
-# 定义变量
+# ==========================================
+# 变量声明与业务逻辑区
+# ==========================================
+
 cd ./musync_save/;
 $isPreRelease = python -c "import version;print(version.is_is_pre_release)";
 $isPreReleaseBool = [bool]::Parse($isPreRelease);
@@ -147,9 +134,9 @@ CheckDir -Dir "MusyncSaveDecode/Archive/";
 # Step 3: Pyinstaller编译
 & pyinstaller "buildLauncher.spec" --distpath "./MusyncSaveDecode" --clean;
 if ($?) {
-    Write-Host "Pyinstaller编译成功!" -ForegroundColor Green;
+    Write-Host "Pyinstaller编译成功! " -ForegroundColor Green;
 } else {
-    Write-Host "Pyinstaller编译失败!" -ForegroundColor Red;
+    Write-Host "Pyinstaller编译失败! " -ForegroundColor Red;
     exit 1;
 }
 # Write-Host "正在编译Cython模块 ..."

@@ -28,14 +28,15 @@ jobs:
 
       - name: Create Build Variable
         run: |
-          $ErrorActionPreference = 'Stop'
-          $isPreRelease = python -c "import Version;print(Version.isPreRelease)";
+          $ErrorActionPreference = 'Stop';
+          cd ./musync_save/;
+          $isPreRelease = python -c "import version;print(version.is_pre_release)";
           $isPreReleaseBool = [bool]::Parse($isPreRelease);
           if ($isPreReleaseBool) {
-              $version = python -c "import Version; print(Version.preVersion)";
+              $version = python -c "import version; print(version.pre_version)";
               $rcVersion = $version -replace "pre", " PreRelease ";
           } else {
-              $version = python -c "import Version; print(Version.version)";
+              $version = python -c "import version; print(version.version)";
               $rcVersion = $version + "Release";
           }
           echo "v:'${version}',rcv:'${rcVersion}'";

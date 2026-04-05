@@ -35,6 +35,11 @@ jobs:
         run: |
           # 获取 PR 所有 commits
           $COMMITS = gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits" | ConvertFrom-Json
+          Write-Host "Total commits in this PR: $($COMMITS.Count)"
+          Write-Host "All commit messages in this PR:"
+            foreach ($commit in $COMMITS) {
+                Write-Host "- $($commit.commit.message)"
+            }
           # 提取最新的 commit message（第一行）
           $LATEST_MSG = $COMMITS[-1].commit.message -split "`n" | Select-Object -First 1
           Write-Host "Latest dev commit message: $LATEST_MSG"

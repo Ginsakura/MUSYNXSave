@@ -31,6 +31,34 @@ jobs:
       - name: Install requirements
         run: pip3 install -r ./requirements.txt
 
+      - name: Append Commits to Changelog
+        run: |
+          # 1. 定义你要修改的 changelog 文件路径
+          $changelogPath = "${{ github.workspace }}/changelog.md"
+          # 2. 如果文件不存在，先创建一个空的，防止报错
+          if (-not (Test-Path $changelogPath)) {
+              New-Item -Path $changelogPath -ItemType File | Out-Null
+          }
+          # 3. 追加一个优雅的 Markdown 标题
+          "`n### 🚀 本次更新包含的 Commits:`n" | Out-File -FilePath $changelogPath -Encoding utf8 -Append
+          # 4. 解析 push 事件自带的 commits JSON 数据
+          $commitsJson = '${{ toJson(github.event.commits) }}' | ConvertFrom-Json
+          # 5. 遍历并追加到 changelog.md 中
+          if ($commitsJson) {
+              foreach ($commit in $commitsJson) {
+                  # 提取 commit message
+                  $msg = $commit.message -replace '[\r\n]+', '<br>'
+                  # 提取 7 位短 hash (类似 git log --oneline)
+                  $shortHash = $commit.id.Substring(0,7)
+                  # 写入文件，格式为: - `a1b2c3d` 这是我的提交信息
+                  "- `'$shortHash'` $msg" | Out-File -FilePath $changelogPath -Encoding utf8 -Append
+                  # 同时在控制台打印，方便调试看日志
+                  Write-Host "- $shortHash $msg"
+              }
+          } else {
+              "- 无新增提交记录" | Out-File -FilePath $changelogPath -Encoding utf8 -Append
+          }
+
       - name: Create Build Variable
         run: |
           $ErrorActionPreference = 'Stop';

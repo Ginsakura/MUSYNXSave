@@ -72,27 +72,27 @@ jobs:
       - name: Upload build artifacts { ${{ env.Version }} With Console AllInOne}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }}  [ Auto Release ]
-          path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_WithConsole_${{ env.Version }}_AllInOne.zip
+          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }} With Console AllInOne [ Auto Release ]
+          path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_CLI_${{ env.Version }}_AllInOne.zip
           retention-days: 7          # 可选：保留天数（默认 90 天）
 
       - name: Upload build artifacts { ${{ env.Version }} Without Console AllInOne}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }}  [ Auto Release ]
-          path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_WithConsole_${{ env.Version }}_AllInOne.zip
+          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }} Without Console AllInOne [ Auto Release ]
+          path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_NoCLI_${{ env.Version }}_AllInOne.zip
           retention-days: 7          # 可选：保留天数（默认 90 天）
 
       - name: Upload build artifacts { ${{ env.Version }} With Console}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }}  [ Auto Release ]
-          path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_WithConsole_${{ env.Version }}.zip
+          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }} With Console [ Auto Release ]
+          path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_CLI_${{ env.Version }}.zip
           retention-days: 7          # 可选：保留天数（默认 90 天）
 
       - name: Upload build artifacts { ${{ env.Version }} Without Console}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }}  [ Auto Release ]
-          path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_NoConsole_${{ env.Version }}.zip
+          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }} Without Console [ Auto Release ]
+          path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_NoCLI_${{ env.Version }}.zip
           retention-days: 7          # 可选：保留天数（默认 90 天）

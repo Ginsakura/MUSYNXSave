@@ -405,11 +405,16 @@ class MusyncMainWindow(object):
                 channel: bool - 更新通道 (is pre-release)
             return: bool - 是否存在更新
             """
-            if (local[0] > target[0]): return False
-            elif (local[1] > target[1]): return False
-            elif (local[2] > target[2]): return False
-            elif channel and (local[3] > target[3]): return False
-            return True
+            # Compare version components in order
+            for i in range(3):
+                if local[i] > target[i]:
+                    return False
+                if local[i] < target[i]:
+                    return True
+            # Major.Minor.Patch are equal, check pre-release if applicable
+            if channel and len(local) > 3 and len(target) > 3:
+                return local[3] < target[3]
+            return False  # Same version, no update needed
 
         start_time: int = time.perf_counter_ns()
         updateChannel:bool = config.UpdateChannel.lower() == "prerelease"
@@ -498,7 +503,6 @@ class MusyncMainWindow(object):
         start_time: int = time.perf_counter_ns()
         self.InitLabel(text="正在分析存档文件中……")
         self._logger.debug("正在分析存档文件中……")
-        time.sleep(0.1)
 
         def Rank(sync:int):
             if	 (sync == 0)	: return ""
@@ -598,11 +602,11 @@ class MusyncMainWindow(object):
                 for ids in psutil.pids():
                     if psutil.Process(pid=ids).name() == "MUSYNX.exe":
                         # Config["MainExecPath"]
-                        self.root.after(100, UpdateUI("游戏已启动", "#98E22B"))
+                        self.root.after(100, lambda: UpdateUI("游戏已启动", "#98E22B"))
                         logger.debug("Game is Running.")
                         break
                 else:
-                    self.root.after(100, UpdateUI("游戏未启动", "#FF8080"))
+                    self.root.after(100, lambda: UpdateUI("游戏未启动", "#FF8080"))
                     logger.debug("Game is not Running.")
             except RuntimeError:
                 logger.debug("Checking has RuntimeError")

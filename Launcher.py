@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import ctypes
 import logging
-import re
 import sys
 
 from pathlib import Path

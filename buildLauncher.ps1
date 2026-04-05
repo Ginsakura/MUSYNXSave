@@ -131,12 +131,13 @@ CheckDir -Dir "MusyncSaveDecode/Archive/";
 # CheckDir -Dir "MusyncSaveDecode/MusyncSaveDecodeCLI/";
 # CheckDir -Dir "MusyncSaveDecode/MusyncSaveDecodeNoCLI/";
 
-# Step 3: Pyinstaller编译
+# Step 3: Pyinstaller构建
+Write-Host "Pyinstaller构建开始..." -ForegroundColor Green;
 & pyinstaller "buildLauncher.spec" --distpath "./MusyncSaveDecode" --clean;
 if ($?) {
-    Write-Host "Pyinstaller编译成功! " -ForegroundColor Green;
+    Write-Host "Pyinstaller构建成功! " -ForegroundColor Green;
 } else {
-    Write-Host "Pyinstaller编译失败! " -ForegroundColor Red;
+    Write-Host "Pyinstaller构建失败! " -ForegroundColor Red;
     exit 1;
 }
 # Write-Host "正在编译Cython模块 ..."

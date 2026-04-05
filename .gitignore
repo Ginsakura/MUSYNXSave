@@ -9,6 +9,7 @@
 /dist
 /logs
 /musync_save/__pycache__
+/MusyncSaveDecode
 
 bootcfg.json
 LXGW.ttf

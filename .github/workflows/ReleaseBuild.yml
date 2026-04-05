@@ -1,8 +1,12 @@
 name: Auto Release Build Action
 on:
-  push:
+  pull_request:
     branches:
-    - 'main'
+      - 'main'
+    types: [closed] # 监听 PR 被关闭的事件
+
+permissions:
+  contents: write
 
 env:
   RCVersion: < 0.0.0 PreRelease 0>
@@ -12,6 +16,7 @@ env:
 jobs:
   Build_Release_Application:
     name: Build Release Application
+    if: github.event.pull_request.merged == true
     runs-on: windows-2025
     steps:
       - name: CheckOut Repo
@@ -51,7 +56,7 @@ jobs:
       - name: Commit Build File
         uses: softprops/action-gh-release@v2
         env:
-          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GITHUB_TOKEN: ${{ github.token }}
         with:
           name: ${{ env.RCVersion }}  ${{ github.event.head_commit.message }}  < Auto Release >
           tag_name: ${{ env.Version }}

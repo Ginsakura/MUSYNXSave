@@ -590,7 +590,7 @@ class MusyncMainWindow(object):
             self.isGameRunning["text"] = text; #"游戏未启动"
             self.isGameRunning["bg"] = bg; #"#FF8080"
         threadInvert:int = 300; # 30s = 100ms * 300
-        counter:int = threadInvert
+        counter:int = 0
         is_running: bool = False
         while self.checkGameStartEvent.is_set():
             if (counter): # counter != 0

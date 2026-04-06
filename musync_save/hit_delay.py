@@ -664,7 +664,13 @@ class HitDelay:
         threshold = 45.0 if config.NarrowDelayInterval else 90.0
         # 过滤数据：只保留在 [-threshold, threshold] 范围内的值
         filtered_delays = [d for d in hit_delays if abs(d) <= threshold]
-        avg_delay: float = sum(filtered_delays) / len(filtered_delays) if filtered_delays else 0.0
+        if not filtered_delays:
+            self._logger.warning(
+                "No hit delays remained after avg-delay filtering; falling back to the unfiltered mean."
+            )
+            avg_delay: float = 0.0
+        else:
+            avg_delay: float = sum(filtered_delays) / len(filtered_delays)
         avg_acc: float = sum(abs(x) for x in hit_delays) / all_keys
 
         # 4. 适配 V4 数据库：转换为小端序 int32 二进制流

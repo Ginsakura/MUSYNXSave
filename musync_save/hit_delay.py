@@ -470,7 +470,7 @@ class HitDelay:
 
         max_y_axis: int = max(int(max(self._data_list)), 45)
         min_y_axis: int = min(int(min(self._data_list)), -45)
-        ax.set_ylim(min_y_axis - 5, max_y_axis + 5)
+        ax.set_ylim(min_y_axis - 10, max_y_axis + 10)
 
         # ==========================================
         # 正值部分：从外向内判断 (max_y_axis >= 阈值)
@@ -660,7 +660,17 @@ class HitDelay:
             return
 
         # 3. 统计计算
-        avg_delay: float = sum(hit_delays) / len(hit_delays) if hit_delays else 0.0
+        # NarrowDelayInterval 为 True 时用 45ms，False 时用 90ms
+        threshold = 45.0 if config.NarrowDelayInterval else 90.0
+        # 过滤数据：只保留在 [-threshold, threshold] 范围内的值
+        filtered_delays = [d for d in hit_delays if abs(d) <= threshold]
+        if not filtered_delays:
+            self._logger.warning(
+                "No hit delays remained after avg-delay filtering; falling back to the unfiltered mean."
+            )
+            avg_delay: float = 0.0
+        else:
+            avg_delay: float = sum(filtered_delays) / len(filtered_delays)
         avg_acc: float = sum(abs(x) for x in hit_delays) / all_keys
 
         # 4. 适配 V4 数据库：转换为小端序 int32 二进制流
@@ -702,7 +712,7 @@ class HitDelay:
         # 6. 追加写入Acc-Sync.csv文件
         try:
             with open("./musync_data/Acc-Sync.csv", "a", encoding="utf-8") as f:
-                f.write(f"{avg_acc:.6f},{sync_number:.2f},{diff}\n")
+                f.write(f"{avg_acc:.4f},{sync_number:.2f},{diff}\n")
             self._logger.info("已将数据追加写入 Acc-Sync.csv 文件。")
         except Exception as e:
             self._logger.error(f"写入 Acc-Sync.csv 文件失败: {e}")

@@ -258,7 +258,7 @@ class Toolkit:
             source_hash: str = lib_info.get("source_hash", "")
             fix_hash: str = lib_info.get("hash", "")
 
-            _logger.debug(f"    Now Assembly-CSharp.dll: {now_hash}")
+            _logger.debug(f"Now Assembly-CSharp.dll: {now_hash}")
 
             # 1. 检查是否已经是修补好的版本
             if now_hash == fix_hash:

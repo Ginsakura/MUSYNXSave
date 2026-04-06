@@ -562,7 +562,7 @@ class MusyncMainWindow(object):
                 ("" if (saveInfo.SongDifficultyNumber is None) else saveInfo.SongDifficultyNumber), #难度等级
                 f"{saveInfo.SyncNumber/10000:.2%}", #本地同步率
                 (Rank(saveInfo.SyncNumber)), #Rank
-                f"{saveInfo.UploadScore:.21%}", #云端同步率
+                f"{saveInfo.UploadScore:.14%}", #云端同步率
                 saveInfo.PlayCount, #游玩计数
                 saveInfo.State #谱面状态
                 ))
@@ -589,8 +589,9 @@ class MusyncMainWindow(object):
         def UpdateUI(text:str, bg:str)->None:
             self.isGameRunning["text"] = text; #"游戏未启动"
             self.isGameRunning["bg"] = bg; #"#FF8080"
-        threadInvert:int = 50; # 100ms
-        counter:int = threadInvert
+        threadInvert:int = 300; # 30s = 100ms * 300
+        counter:int = 0
+        is_running: bool = False
         while self.checkGameStartEvent.is_set():
             if (counter): # counter != 0
                 counter -= 1
@@ -598,21 +599,29 @@ class MusyncMainWindow(object):
                 continue
             counter = threadInvert
             start_time: int = time.perf_counter_ns()
+            is_running_tmp: bool = False
             try:
-                for ids in psutil.pids():
-                    if psutil.Process(pid=ids).name() == "MUSYNX.exe":
-                        # Config["MainExecPath"]
+                for proc in psutil.process_iter(['name']):
+                    try:
+                        if proc.info['name'] == "MUSYNX.exe":
+                            is_running_tmp = True
+                            break
+                    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                        # 遍历过程中进程可能已经关闭，直接跳过
+                        continue
+
+                if is_running_tmp != is_running:
+                    if is_running_tmp:
                         self.root.after(100, lambda: UpdateUI("游戏已启动", "#98E22B"))
                         logger.debug("Game is Running.")
-                        break
-                else:
-                    self.root.after(100, lambda: UpdateUI("游戏未启动", "#FF8080"))
-                    logger.debug("Game is not Running.")
+                    else:
+                        self.root.after(100, lambda: UpdateUI("游戏未启动", "#FF8080"))
+                        logger.debug("Game is not Running.")
+                    is_running = is_running_tmp
             except RuntimeError:
                 logger.debug("Checking has RuntimeError")
             except Exception:
                 logger.debug("Checking has Unknown Exception")
-                pass
             logger.info(f"CheckGameIsStart Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         logger.warning("Stop Thread: CheckGameIsStart.")
 

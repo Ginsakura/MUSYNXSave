@@ -562,7 +562,7 @@ class MusyncMainWindow(object):
                 ("" if (saveInfo.SongDifficultyNumber is None) else saveInfo.SongDifficultyNumber), #难度等级
                 f"{saveInfo.SyncNumber/10000:.2%}", #本地同步率
                 (Rank(saveInfo.SyncNumber)), #Rank
-                f"{saveInfo.UploadScore:.21%}", #云端同步率
+                f"{saveInfo.UploadScore:.14%}", #云端同步率
                 saveInfo.PlayCount, #游玩计数
                 saveInfo.State #谱面状态
                 ))
@@ -589,7 +589,7 @@ class MusyncMainWindow(object):
         def UpdateUI(text:str, bg:str)->None:
             self.isGameRunning["text"] = text; #"游戏未启动"
             self.isGameRunning["bg"] = bg; #"#FF8080"
-        threadInvert:int = 50; # 100ms
+        threadInvert:int = 50; # 5000ms = 100ms * 50
         counter:int = threadInvert
         while self.checkGameStartEvent.is_set():
             if (counter): # counter != 0

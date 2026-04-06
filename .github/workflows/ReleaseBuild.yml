@@ -35,6 +35,31 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
+          # 此时 PR 上下文是完整的，可以直接拿到 Number！
+          $PR_NUMBER = "${{ github.event.pull_request.number }}"
+          Write-Host "当前触发的 PR 编号: #$PR_NUMBER"
+          # 直接调用 API 获取该 PR 的所有提交记录
+          $COMMITS = gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER/commits" | ConvertFrom-Json
+
+          $changelogPath = "${{ github.workspace }}/changelog.md"
+          if (-not (Test-Path $changelogPath)) {
+              New-Item -Path $changelogPath -ItemType File | Out-Null
+          }
+
+          "`n### 🚀 本次更新包含的 Commits (来自 PR #$PR_NUMBER):`n" | Out-File -FilePath $changelogPath -Encoding utf8 -Append
+
+          Write-Host "Total commits in this PR: $($COMMITS.Count)"
+
+          foreach ($commit in $COMMITS) {
+              # 继续使用我们之前写好的安全格式化 (-f) 和换行符替换
+              $msg = $commit.commit.message -replace '[\r\n]+', ' '
+              $shortHash = $commit.sha.Substring(0,7)
+
+              ("- `{0}` {1}" -f $shortHash, $msg) | Out-File -FilePath $changelogPath -Encoding utf8 -Append
+              Write-Host ("- {0} {1}" -f $shortHash, $msg)
+          }
+
+
           # 1. 定义你要修改的 changelog 文件路径
           $changelogPath = "${{ github.workspace }}/changelog.md"
           # 2. 如果文件不存在，先创建一个空的，防止报错

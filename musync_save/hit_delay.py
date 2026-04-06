@@ -702,7 +702,7 @@ class HitDelay:
         # 6. 追加写入Acc-Sync.csv文件
         try:
             with open("./musync_data/Acc-Sync.csv", "a", encoding="utf-8") as f:
-                f.write(f"{avg_acc:.6f},{sync_number:.2f},{diff}\n")
+                f.write(f"{avg_acc:.4f},{sync_number:.2f},{diff}\n")
             self._logger.info("已将数据追加写入 Acc-Sync.csv 文件。")
         except Exception as e:
             self._logger.error(f"写入 Acc-Sync.csv 文件失败: {e}")

@@ -470,7 +470,7 @@ class HitDelay:
 
         max_y_axis: int = max(int(max(self._data_list)), 45)
         min_y_axis: int = min(int(min(self._data_list)), -45)
-        ax.set_ylim(min_y_axis - 5, max_y_axis + 5)
+        ax.set_ylim(min_y_axis - 10, max_y_axis + 10)
 
         # ==========================================
         # 正值部分：从外向内判断 (max_y_axis >= 阈值)
@@ -660,7 +660,11 @@ class HitDelay:
             return
 
         # 3. 统计计算
-        avg_delay: float = sum(hit_delays) / len(hit_delays) if hit_delays else 0.0
+        # NarrowDelayInterval 为 True 时用 45ms，False 时用 90ms
+        threshold = 45.0 if config.NarrowDelayInterval else 90.0
+        # 过滤数据：只保留在 [-threshold, threshold] 范围内的值
+        filtered_delays = [d for d in hit_delays if abs(d) <= threshold]
+        avg_delay: float = sum(filtered_delays) / len(filtered_delays) if filtered_delays else 0.0
         avg_acc: float = sum(abs(x) for x in hit_delays) / all_keys
 
         # 4. 适配 V4 数据库：转换为小端序 int32 二进制流

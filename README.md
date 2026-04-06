@@ -147,15 +147,21 @@ MUSYNX Steam Client Savefile Decode & Analyze Tool
 ### Version 3.0.0
 #### Release 1
 1. 更新
-    1. xxx
+    1. ***更新2026年02月14日喵赛克联动新增曲目***
+        - Miss You (EZ HD)
+        - Rainbow (EZ HD)
+    1. ***更新2026年04月03日喵赛克联动新增曲目***
+        - Vacant Gloria (EZ HD)
+        - Memory Accelerator (EZ HD)
 2. 修复
-    1. xxx
+    1. 修复重构产生的各种 bug
 3. 优化
     1. 更改数据库结构，增加模式、难度、连击字段 (v3 -> v4)
     2. 深度重构代码，使其全面符合 `PEP 8` 规范
     3. 优化 patch 用 C# 代码，关闭控制台的 `快速编辑` 模式；
     3. 控制台提供更丰富的数据输出
     3. 优化`Tookit`中数据库升级迁移逻辑
+    3. 优化游戏启动监测逻辑, 降低资源占用
 4. 重构
     1. `AllHitAnalyze`: 优化底层数据处理逻辑与图表渲染性能展示
     2. `AvgAcc-SyncAnalyze`: 引入 `Diff` 轴映射，将平面图表重构为 3D 景深散点图

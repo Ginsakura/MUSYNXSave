@@ -73,7 +73,7 @@ class HitDelay:
         self._data_mode: str = ""
         self._data_combo: str = ""
         self._data_avg_delay: float = 0.0
-        self._data_all_keys: int = 0
+        self._data_all_notes: int = 0
         self._data_avg_acc: float = 0.0
         self._data_bytes: bytes = b''
         self._data_list: list[int] = []
@@ -451,7 +451,7 @@ class HitDelay:
         plt.rcParams['font.family'] = ['LXGW WenKai Mono', 'sans-serif']
         plt.rcParams['axes.unicode_minus'] = False
 
-        fig = plt.figure(f'AvgDelay: {self._data_avg_delay:.4f}ms    Notes: {self._data_all_keys}    '\
+        fig = plt.figure(f'AvgDelay: {self._data_avg_delay:.4f}ms    Notes: {self._data_all_notes}    '\
             f'Combo: {self._data_combo}    AvgAcc: {self._data_avg_acc:.4f}ms',figsize=(9, 4))
         fig.clear()
         fig.subplots_adjust(**{"left":0.045,"bottom":0.055,"right":1,"top":1})
@@ -459,7 +459,7 @@ class HitDelay:
 
         self._logger.info(f'data info:\n'\
             f'\tAvgDelay: {self._data_avg_delay}\n'\
-            f'\tAllKeys: {self._data_all_keys}\n'\
+            f'\tAllKeys: {self._data_all_notes}\n'\
             f'\tAvgAcc: {self._data_avg_acc}\n'\
             f'\tCombo: {self._data_combo}')
         font: dict = {'family': 'LXGW WenKai Mono',
@@ -471,6 +471,7 @@ class HitDelay:
         max_y_axis: int = max(int(max(self._data_list)), 45)
         min_y_axis: int = min(int(min(self._data_list)), -45)
         ax.set_ylim(min_y_axis - 10, max_y_axis + 10)
+        ax.set_xlim(-len(self._data_all_notes)//50, len(self._data_all_notes) + len(self._data_all_notes)//50)
 
         # ==========================================
         # 正值部分：从外向内判断 (max_y_axis >= 阈值)
@@ -582,7 +583,7 @@ class HitDelay:
         self._data_mode = row_data["Mode"]
         self._data_combo = row_data['Combo']
         self._data_avg_delay = row_data['AvgDelay']
-        self._data_all_keys = row_data['AllKeys']
+        self._data_all_notes = row_data['AllKeys']
         self._data_avg_acc = row_data['AvgAcc']
         self._data_bytes = row_data['HitMap']
 

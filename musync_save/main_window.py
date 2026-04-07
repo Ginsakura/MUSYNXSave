@@ -392,7 +392,7 @@ class MusyncMainWindow(object):
                 messagebox.showerror("Error", f'发生错误: {error_msg}')
                 if messagebox.askyesno("无法获取谱面信息更新", '是否前往网页查看是否存在更新?\n(请比对 SongName.json 中的时间是否比本地文件中的时间更大)'):
                     webbrowser.open(repo + "songname.json")
-            self.root.after(0, show_error)
+            self.root.after(100, show_error)
         self._logger.info(f"CheckJsonUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     def CheckUpdate(self) -> None:
@@ -432,7 +432,7 @@ class MusyncMainWindow(object):
                     messageHead:str = "GitHub公共API访问速率已达上限"
                     message:str = "是否前往发布页查看是否存在更新？"
                     url:str = "https://github.com/Ginsakura/MUSYNCSave/releases/latest"
-                    self.root.after(0, lambda:webbrowser.open(url) if messagebox.askyesno(messageHead, message) else None)
+                    self.root.after(100, lambda:webbrowser.open(url) if messagebox.askyesno(messageHead, message) else None)
                     return
                 else:
                     self._logger.error(resJson)
@@ -449,7 +449,7 @@ class MusyncMainWindow(object):
         except Exception as ex:
             self._logger.exception("更新信息发生错误: ")
             error_msg = str(ex)
-            self.root.after(0, lambda msg: messagebox.showerror("Error", f'发生错误: {msg}'), error_msg)
+            self.root.after(100, lambda msg: messagebox.showerror("Error", f'发生错误: {msg}'), error_msg)
         # print(localVersion,targetVersion)
         self._logger.info('  Terget Version : %s'%".".join(map(str, targetVersion)))
         if updateChannel: # True is Pre
@@ -464,7 +464,7 @@ class MusyncMainWindow(object):
         # else:
         # 	self.gitHubUrlVar = "点击打开GitHub仓库	点个Star吧，秋梨膏"
         # 	labelUrl = "https://github.com/Ginsakura/MUSYNCSave"
-        self.root.after(0, lambda:self.gitHubLink.configure(command=lambda:webbrowser.open(labelUrl)))
+        self.root.after(100, lambda:self.gitHubLink.configure(command=lambda:webbrowser.open(labelUrl)))
         self._logger.info(f"CheckUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     # 初始化提示框

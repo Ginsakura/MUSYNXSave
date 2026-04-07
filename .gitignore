@@ -41,3 +41,5 @@ SavDecode.decode
 ico.res
 ico.o
 debug_prerelease
+tmp.py
+debug_launcher.py

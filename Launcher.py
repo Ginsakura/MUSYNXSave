@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+import os
+# === 启动时自动将工作目录切换到当前 main.py 所在的文件夹 ===
+# 必须放在所有自定义模块（如 controller）导入之前！
+current_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(current_dir)
+
 import ctypes
 import logging
 import sys

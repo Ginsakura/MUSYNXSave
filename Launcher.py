@@ -9,11 +9,10 @@ import ctypes
 import logging
 import sys
 
-from pathlib import Path
 from tkinter import Tk, font
 
 from musync_save import config, Logger
-from musync_save import Toolkit, MusyncMainWindow, HitDelay
+from musync_save import Toolkit, MusyncMainWindow
 
 logger:logging.Logger = Logger.get_logger(name="Launcher")
 

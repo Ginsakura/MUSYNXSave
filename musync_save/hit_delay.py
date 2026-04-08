@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+import mplcursors
 import os
 import pyperclip
 import struct
@@ -455,6 +456,7 @@ class HitDelay:
             f'Combo: {self._data_combo}    AvgAcc: {self._data_avg_acc:.4f}ms',figsize=(9, 4))
         fig.clear()
         fig.subplots_adjust(**{"left":0.045,"bottom":0.055,"right":1,"top":1})
+        # fig.subplots_adjust(**{"left":0.06, "bottom":0.1, "right":0.98, "top":0.98}) # 微调了边距防裁剪
         ax = fig.add_subplot()
 
         self._logger.info(f'data info:\n'\
@@ -462,61 +464,100 @@ class HitDelay:
             f'\tAllKeys: {self._data_all_notes}\n'\
             f'\tAvgAcc: {self._data_avg_acc}\n'\
             f'\tCombo: {self._data_combo}')
+
         font: dict = {'family': 'LXGW WenKai Mono',
                       'weight': 'normal',
                       'size': 12}
-        ax.text(-10,5,"Slower→", ha='left',color='#c22472',rotation=90, fontdict=font)
-        ax.text(-10,-5,"←Faster", ha='left',va='top',color='#288328',rotation=90, fontdict=font)
+        ax.text(-10, 7, "Slower→", ha='left', color='#c22472', rotation=90, fontdict=font)
+        ax.text(-10, -5, "←Faster", ha='left', va='top', color='#288328', rotation=90, fontdict=font)
 
         max_y_axis: int = max(int(max(self._data_list)), 45)
         min_y_axis: int = min(int(min(self._data_list)), -45)
-        ax.set_ylim(min_y_axis - 10, max_y_axis + 10)
-        ax.set_xlim(-len(self._data_all_notes)//50, len(self._data_all_notes) + len(self._data_all_notes)//50)
+        ax.set_ylim(min_y_axis - 15, max_y_axis + 15)
+        offset: int = self._data_all_notes // 50
+        ax.set_xlim(min(-10, -offset), self._data_all_notes + offset)
 
         # ==========================================
-        # 正值部分：从外向内判断 (max_y_axis >= 阈值)
+        # 判定基准线 (设置 zorder=1 让它们处于底层)
         # ==========================================
         if max_y_axis >= 250:
-            ax.axhline(y=250, c='orange', ls='--', lw=1, alpha=0.8, label=f"> 250 ms    -- MISS {rate[4]:>4}")
+            ax.axhline(y=250, c='orange', ls='--', lw=1, alpha=0.6, zorder=1, label=f"> 250 ms    -- MISS {rate[4]:>4}")
         if max_y_axis >= 150:
-            ax.axhline(y=150, c='green', ls='--', lw=1, alpha=0.8, label=f"> 150 ms    --RIGHT {rate[3]:>4}")
+            ax.axhline(y=150, c='green', ls='--', lw=1, alpha=0.6, zorder=1, label=f"> 150 ms    --RIGHT {rate[3]:>4}")
         if max_y_axis >= 90:
-            ax.axhline(y=90, c='blue', ls='--', lw=1, alpha=0.8, label=f">  90 ms    --GREAT {rate[2]:>4}")
+            ax.axhline(y=90, c='blue', ls='--', lw=1, alpha=0.6, zorder=1, label=f">  90 ms    --GREAT {rate[2]:>4}")
         if max_y_axis >= 45:
-            ax.axhline(y=45, c='cyan', ls='--', lw=1, alpha=0.8, label=f">  45 ms    --EXACT {rate[1]:>4}")
-        ax.axhline(y=0, c='red', ls='-', lw=1, alpha=1.0, label=f"    0 ms    -- CyEX {rate[0]:>4}")
+            ax.axhline(y=45, c='cyan', ls='--', lw=1, alpha=0.6, zorder=1, label=f">  45 ms    --EXACT {rate[1]:>4}")
+        ax.axhline(y=0, c='red', ls='-', lw=1.5, alpha=0.8, zorder=1, label=f"    0 ms    -- CyEX {rate[0]:>4}")
 
-        # ==========================================
-        # 负值部分：从外向内判断 (min_y_axis <= 阈值)
-        # 注意：不再重复添加 label，防止图例重复
-        # ==========================================
         if min_y_axis <= -150:
-            ax.axhline(y=-150, c='green', ls='--', lw=1, alpha=0.8)
+            ax.axhline(y=-150, c='green', ls='--', lw=1, alpha=0.6, zorder=1)
         if min_y_axis <= -90:
-            ax.axhline(y=-90, c='blue', ls='--', lw=1, alpha=0.8)
+            ax.axhline(y=-90, c='blue', ls='--', lw=1, alpha=0.6, zorder=1)
         if min_y_axis <= -45:
-            ax.axhline(y=-45, c='cyan', ls='--', lw=1, alpha=0.8)
+            ax.axhline(y=-45, c='cyan', ls='--', lw=1, alpha=0.6, zorder=1)
 
-        # avg delay 水平线
-        ax.axhline(y=self._data_avg_delay, c='red', ls='--', lw=1,
-                   alpha=1, label=f"Avg Delay: {self._data_avg_delay:.2f} ms")
+        # 平均延迟线
+        ax.axhline(y=self._data_avg_delay, c='#FF1493', ls='-.', lw=1.5,
+                   alpha=0.9, zorder=2, label=f"Avg Delay: {self._data_avg_delay:.2f} ms")
 
-        ax.legend()
-
-        ax.plot(self._data_list, marker='o', markersize=3,
-                linestyle='-', color='#8a68d0', alpha=0.7, label='Hit Delay')
-
-        for x, y in zip(range(len(self._data_list)), self._data_list, strict=True):
-            if y<0:
-                ax.text(x,y-3,'%dms'%y,ha='center',va='top',fontsize=7.5,alpha=0.7)
+        # ==========================================
+        # 核心优化：动态颜色映射与散点图绘制
+        # ==========================================
+        point_colors = []
+        for y in self._data_list:
+            abs_y = abs(y)
+            if abs_y <= 45:
+                point_colors.append('#00CED1')   # 暗青色 (Cyan EXACT区间)
+            elif abs_y <= 90:
+                point_colors.append('#4169E1')   # 皇家蓝 (EXACT区间)
+            elif abs_y <= 150:
+                point_colors.append('#32CD32')   # 莱姆绿 (GREAT区间)
+            elif abs_y <= 250:
+                point_colors.append('#FF4500')   # 橙红色 (RIGHT/严重偏离)
             else:
-                ax.text(x,y+3,'%dms'%y,ha='center',va='bottom',fontsize=7.5,alpha=0.7)
+                point_colors.append("#CC0000")   # 深红色 (MISS/极端偏离)
 
-        ax.set_xlabel("延迟量 Delay (ms)")
-        ax.set_ylabel("击打频数 (Hits)")
+        x_coords = list(range(len(self._data_list)))
 
-        # 强制格式化右下角坐标系为纯整数显示 (消除科学计数法)
-        ax.format_coord = lambda x, y: f"Delay: {int(y)}ms, 频数: {int(x)}"
+        # 使用 scatter 绘制散点，避免折线图带来的凌乱感，zorder=3 确保点在基准线之上
+        scatter = ax.scatter(x_coords, self._data_list, c=point_colors, s=15, alpha=0.7, edgecolors='none', zorder=3)
+
+        # 绘制移动平均趋势线 (Moving Average)，消除微小波动，显示整体偏早还是偏晚
+        window = min(20, len(self._data_list) // 5 + 1) # 动态窗口大小
+        if len(self._data_list) >= window:
+            ma_y = []
+            for i in range(len(self._data_list)):
+                start = max(0, i - window // 2)
+                end = min(len(self._data_list), i + window // 2)
+                ma_y.append(sum(self._data_list[start:end]) / (end - start))
+            ax.plot(x_coords, ma_y, color='white', linewidth=2, zorder=4) # 白色发光底色
+            ax.plot(x_coords, ma_y, color='#9400D3', linewidth=1.5, alpha=0.8, zorder=5, label='Trend (Moving Avg)')
+
+        # 修正坐标轴标签（原代码中两轴概念互换了）
+        ax.set_xlabel("音符序号 (Note Index)")
+        ax.set_ylabel("击打延迟 Delay (ms)")
+
+        ax.legend(loc='best', fontsize=9, framealpha=0.8)
+
+        # 底部坐标信息格式化
+        ax.format_coord = lambda x, y: f"Note: {int(x)}, Delay: {int(y)}ms"
+
+        # ==========================================
+        # 进阶交互：鼠标悬停提示 (需 pip install mplcursors)
+        # ==========================================
+        try:
+            # 将游标绑定到散点图上
+            cursor = mplcursors.cursor(scatter, hover=True)
+            @cursor.connect("add")
+            def on_add(sel):
+                x_val = int(sel.target[0])
+                y_val = int(sel.target[1])
+                # 设置悬停浮窗的文本格式
+                sel.annotation.set_text(f"Note: {x_val}\nDelay: {y_val} ms")
+                sel.annotation.get_bbox_patch().set(alpha=0.8, color='white')
+        except ImportError:
+            self._logger.debug("mplcursors not installed, tooltip feature disabled.")
 
         plt.show()
 
@@ -626,6 +667,7 @@ class HitDelay:
         lines: list[str] = [line.strip() for line in raw_text.split('\n') if line.strip()]
 
         hit_delays: list[float] = []
+        song_info_id: str = ""
         combo_str: str = "0/0"
         song_info: str = "0"
         sync_number: float = "0"
@@ -654,6 +696,10 @@ class HitDelay:
                 except IndexError:
                     self._logger.exception("解析 SongInfo 行时发生错误，行内容: " + line)
                     pass
+
+        if song_info_id == "":
+            messagebox.showwarning("警告", "请等待控制台中出现\"> SongInfo\"字段。")
+            return
 
         all_keys: int = len(hit_delays)
         if all_keys == 0:
@@ -809,6 +855,12 @@ class HitDelay:
 
     def _on_closing(self) -> None:
         """UI 事件：窗口关闭时清理资源"""
+        self._cursor.close()
+        self._db.close()
+        self._subroot.destroy()
+
+    def _on_closing_bak(self) -> None:
+        """UI 事件：窗口关闭时清理资源(留作备用)"""
         if messagebox.askokcancel("退出", "确定要退出高精度延迟分析吗？"):
             try:
                 self._cursor.close()

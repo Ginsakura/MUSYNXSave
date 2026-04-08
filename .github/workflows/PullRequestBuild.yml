@@ -28,23 +28,23 @@ jobs:
       - name: Install requirements
         run: pip3 install -r ./requirements.txt
 
-      - name: Get commit message
-        env:
-          # 核心修复 1：为 gh 注入临时的 GitHub Token 权限
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          # 获取 PR 所有 commits
-          $COMMITS = gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits" | ConvertFrom-Json
-          Write-Host "Total commits in this PR: $($COMMITS.Count)"
-          Write-Host "All commit messages in this PR:"
-            foreach ($commit in $COMMITS) {
-                Write-Host "- $($commit.commit.message)"
-            }
-          # 提取最新的 commit message（第一行）
-          $LATEST_MSG = $COMMITS[-1].commit.message -split "`n" | Select-Object -First 1
-          Write-Host "Latest dev commit message: $LATEST_MSG"
-          # 保存到环境变量（PowerShell 方式）
-          "CommitMessage=$LATEST_MSG" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+      # - name: Get commit message
+      #   env:
+      #     # 核心修复 1：为 gh 注入临时的 GitHub Token 权限
+      #     GH_TOKEN: ${{ github.token }}
+      #   run: |
+      #     # 获取 PR 所有 commits
+      #     $COMMITS = gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits" | ConvertFrom-Json
+      #     Write-Host "Total commits in this PR: $($COMMITS.Count)"
+      #     Write-Host "All commit messages in this PR:"
+      #       foreach ($commit in $COMMITS) {
+      #           Write-Host "- $($commit.commit.message)"
+      #       }
+      #     # 提取最新的 commit message（第一行）
+      #     $LATEST_MSG = $COMMITS[-1].commit.message -split "`n" | Select-Object -First 1
+      #     Write-Host "Latest dev commit message: $LATEST_MSG"
+      #     # 保存到环境变量（PowerShell 方式）
+      #     "CommitMessage=$LATEST_MSG" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Create Build Variable
         run: |
@@ -64,6 +64,12 @@ jobs:
           echo "Version=${version}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append;
           echo "RCVersion=[ ${rcVersion} ]" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append;
 
+      - name: Get Short SHA
+        run: |
+          $shortSha = "${{ github.sha }}".Substring(0, 7)
+          Write-Host "Short SHA is: $shortSha"
+          "SHORT_SHA=$shortSha" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
       - name: Build ${{ env.Version }}
         run: |
           pwsh ./buildLauncher.ps1;
@@ -72,27 +78,27 @@ jobs:
       - name: Upload build artifacts { ${{ env.Version }} With Console AllInOne}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }} With Console AllInOne [ Auto Release ]
+          name: ${{ env.RCVersion }}  ${{ env.SHORT_SHA }} With Console AllInOne [ Auto Release ]
           path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_CLI_${{ env.Version }}_AllInOne.zip
           retention-days: 7          # 可选：保留天数（默认 90 天）
 
       - name: Upload build artifacts { ${{ env.Version }} Without Console AllInOne}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }} Without Console AllInOne [ Auto Release ]
+          name: ${{ env.RCVersion }}  ${{ env.SHORT_SHA }} Without Console AllInOne [ Auto Release ]
           path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_NoCLI_${{ env.Version }}_AllInOne.zip
           retention-days: 7          # 可选：保留天数（默认 90 天）
 
       - name: Upload build artifacts { ${{ env.Version }} With Console}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }} With Console [ Auto Release ]
+          name: ${{ env.RCVersion }}  ${{ env.SHORT_SHA }} With Console [ Auto Release ]
           path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_CLI_${{ env.Version }}.zip
           retention-days: 7          # 可选：保留天数（默认 90 天）
 
       - name: Upload build artifacts { ${{ env.Version }} Without Console}
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.RCVersion }}  ${{ env.CommitMessage }} Without Console [ Auto Release ]
+          name: ${{ env.RCVersion }}  ${{ env.SHORT_SHA }} Without Console [ Auto Release ]
           path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_NoCLI_${{ env.Version }}.zip
           retention-days: 7          # 可选：保留天数（默认 90 天）

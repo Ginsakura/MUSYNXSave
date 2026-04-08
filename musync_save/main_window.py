@@ -388,7 +388,7 @@ class MusyncMainWindow(object):
         except Exception as e:
             self._logger.exception("谱面信息更新发生错误: ")
             error_msg = str(e)
-            def show_error(_):
+            def show_error():
                 messagebox.showerror("Error", f'发生错误: {error_msg}')
                 if messagebox.askyesno("无法获取谱面信息更新", '是否前往网页查看是否存在更新?\n(请比对 SongName.json 中的时间是否比本地文件中的时间更大)'):
                     webbrowser.open(repo + "songname.json")
@@ -456,14 +456,11 @@ class MusyncMainWindow(object):
             self._logger.info("Local PreVersion : %s"%".".join(map(str, localVersion)))
         else:
             self._logger.info('   Local Version : %s'%".".join(map(str, localVersion)))
-        labelUrl:str = ""
+        labelUrl:str = "https://github.com/Ginsakura/MUSYNCSave"
         if (CheckVersion(localVersion, targetVersion, updateChannel)):
             self.gitHubUrlVar.set(f'有新版本啦——点此打开下载页面	NewVersion: {".".join(map(str, targetVersion))}')
             labelUrl = f"https://github.com/Ginsakura/MUSYNCSave/releases/tag/{'.'.join(map(str, targetVersion))}"
             self.UpdateTip()
-        # else:
-        # 	self.gitHubUrlVar = "点击打开GitHub仓库	点个Star吧，秋梨膏"
-        # 	labelUrl = "https://github.com/Ginsakura/MUSYNCSave"
         self.root.after(100, lambda:self.gitHubLink.configure(command=lambda:webbrowser.open(labelUrl)))
         self._logger.info(f"CheckUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 

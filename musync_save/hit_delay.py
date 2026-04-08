@@ -525,11 +525,13 @@ class HitDelay:
 
         # 绘制移动平均趋势线 (Moving Average)，消除微小波动，显示整体偏早还是偏晚
         window = min(20, len(self._data_list) // 5 + 1) # 动态窗口大小
-        if len(self._data_list) >= window:
+        if window > 0:
             ma_y = []
+            left_span = (window - 1) // 2
+            right_span = window // 2
             for i in range(len(self._data_list)):
-                start = max(0, i - window // 2)
-                end = min(len(self._data_list), i + window // 2)
+                start = max(0, i - left_span)
+                end = min(len(self._data_list), i + right_span + 1)
                 ma_y.append(sum(self._data_list[start:end]) / (end - start))
             ax.plot(x_coords, ma_y, color='white', linewidth=2, zorder=4) # 白色发光底色
             ax.plot(x_coords, ma_y, color='#9400D3', linewidth=1.5, alpha=0.8, zorder=5, label='Trend (Moving Avg)')
@@ -546,7 +548,7 @@ class HitDelay:
         # ==========================================
         # 进阶交互：鼠标悬停提示 (需 pip install mplcursors)
         # ==========================================
-        try:
+        if mplcursors is not None:
             # 将游标绑定到散点图上
             cursor = mplcursors.cursor(scatter, hover=True)
             @cursor.connect("add")
@@ -556,7 +558,7 @@ class HitDelay:
                 # 设置悬停浮窗的文本格式
                 sel.annotation.set_text(f"Note: {x_val}\nDelay: {y_val} ms")
                 sel.annotation.get_bbox_patch().set(alpha=0.8, color='white')
-        except ImportError:
+        else:
             self._logger.debug("mplcursors not installed, tooltip feature disabled.")
 
         plt.show()
@@ -715,7 +717,7 @@ class HitDelay:
             self._logger.warning(
                 "No hit delays remained after avg-delay filtering; falling back to the unfiltered mean."
             )
-            avg_delay: float = 0.0
+            avg_delay: float = sum(hit_delays) / all_keys
         else:
             avg_delay: float = sum(filtered_delays) / len(filtered_delays)
         avg_acc: float = sum(abs(x) for x in hit_delays) / all_keys

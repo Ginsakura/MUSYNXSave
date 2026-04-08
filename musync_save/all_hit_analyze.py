@@ -218,7 +218,7 @@ class AllHitAnalyze(object):
 
     def _draw_histogram_and_curves(self, fig: Figure, ax: Axes) -> None:
         """绘制直方图与高斯拟合曲线, 并添加交互组件"""
-        ax.xaxis.set_major_locator(MultipleLocator(10))
+        ax.xaxis.set_major_locator(MultipleLocator(10 if self._db_mode else 20))
 
         # 1. 绘制底层直方图 (一次性渲染, 极大地提升性能)
         ax.bar(self._x_axis[:-1], self._y_axis[:-1], width=1, color='skyblue')

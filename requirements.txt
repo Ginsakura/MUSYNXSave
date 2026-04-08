@@ -9,3 +9,4 @@ requests==2.32.5
 pyinstaller==6.19.0
 pythonnet==3.0.5
 Cython==3.2.4
+mplcursors==0.7.1

@@ -645,7 +645,7 @@ class HitDelay:
         except struct.error as e:
             self._logger.error(f"解析 HitMap 二进制数据失败: {e}")
 
-        self._logger.info(f"成功载入 {len(self._data_list)} 个 note 数据准备绘图。")
+        self._logger.debug(f"成功载入 {len(self._data_list)} 个 note 数据准备绘图。")
         self._do_matplotlib_draw()
 
     def _action_get_console_data(self) -> None:

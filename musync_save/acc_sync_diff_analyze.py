@@ -68,7 +68,7 @@ def analyze_3d() -> None:
     # 调整 3D 渲染包围盒的比例
     # 参数分别对应 (X轴渲染长度, Y轴渲染长度, Z轴渲染长度)
     # 我们将 X(acc) 设为最长 3，Z(sync) 设为中等 1.5，Y(diff) 深度压缩为 0.8
-    ax.set_box_aspect((2.0, 1.0, 2.0))
+    ax.set_box_aspect((2.0, 0.5, 2.0))
 
     # 设置主刻度步长
     if (max(acc) <= 75):

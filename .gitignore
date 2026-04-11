@@ -19,11 +19,10 @@ SaveDataInfo.json
 SavDecode.decode
 
 *.bat
-*.b64
+*.bak
 *.bin
 !Resources.bin
 *.cfg
-
 *.db
 *.dll
 *.exe

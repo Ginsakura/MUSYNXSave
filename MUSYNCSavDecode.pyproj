@@ -40,7 +40,9 @@
     <Compile Include="musync_save\musync_save_decode.py" />
     <Compile Include="musync_save\save_data_manager.py" />
     <Compile Include="musync_save\songname_manager.py" />
+    <Compile Include="musync_save\sync_data_analyzer.py" />
     <Compile Include="musync_save\toolkit.py" />
+    <Compile Include="musync_save\tooltip.py" />
     <Compile Include="musync_save\uiautomation.py" />
     <Compile Include="musync_save\version.py" />
     <Compile Include="musync_save\__init__.py" />

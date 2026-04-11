@@ -23,6 +23,8 @@ from tkinter.filedialog import askopenfilename
 from .version import version, pre_version, is_pre_release
 from .config_manager import config, Logger
 from .save_data_manager import save_data
+from .tooltip import Tooltip
+from .sync_data_analyzer import SyncDataAnalyzer
 from .songname_manager import song_name
 from .toolkit import Toolkit
 from .musync_save_decode import MusyncSaveDecoder
@@ -88,16 +90,17 @@ class MusyncMainWindow(object):
         self.songSelect:SongSelectEnum = SongSelectEnum.All
         self.checkGameStartEvent:threading.Event = threading.Event()
         self.checkGameIsStartThread:threading.Thread = None
+        self.map_sync_data: SyncDataAnalyzer = SyncDataAnalyzer()
         self.UpdateEnum()
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
 
-        self.__controller_ui_init__()
-        self.__selector_ui_init__()
-        self.__extra_selector_ui_init__()
-        self.__run_in_init__()
+        self._controller_ui_init()
+        self._selector_ui_init()
+        self._extra_selector_ui_init()
+        self._run_in_init()
 
-    def __controller_ui_init__(self) -> None:
+    def _controller_ui_init(self) -> None:
         """控制ui控件初始化"""
         self.DecodeSaveFile = ttk.Button(self.root, text="解码并刷新",command=self.RefreshSave,style='F5.TButton')
         self.DecodeSaveFile.place(x=10,y=10,width=160,height=30)
@@ -131,14 +134,20 @@ class MusyncMainWindow(object):
         self.difficuteScoreAnalyze = Button(self.root, text="成绩分布",command=lambda:diff_score_analyze(), font=self.font)
         self.difficuteScoreAnalyze.place(x=775,y=88,width=90,height=30)
 
-        self.totalSyncFrameLabel = Label(self.root, text='', relief="groove")
-        self.totalSyncFrameLabel.place(x=868,y=48,width=124,height=74)
-        self.totalSyncTextLabel = Label(self.root, text='综合同步率', anchor="center", font=self.font, relief="flat")
-        self.totalSyncTextLabel.place(x=870,y=50,width=120,height=30)
-        self.avgSyncLabel = Label(self.root, text=f'{(self.totalSync / (1 if self.saveCount==0 else self.saveCount)):.6f}%', anchor="w", font=self.font, relief="flat")
-        self.avgSyncLabel.place(x=870,y=90,width=120,height=30)
+        # 创建 Frame 容器
+        totalSyncFrame = Frame(self.root, relief="groove", bd=2)
+        totalSyncFrame.place(x=868, y=48, width=124, height=74)
+        # 将标题 Label 挂载到 Frame 上
+        totalSyncTextLabel = Label(totalSyncFrame, text='综合同步率', anchor="center", font=self.font, relief="flat")
+        totalSyncTextLabel.place(x=0, y=0, width=120, height=30)
+        # 将数值 Label 挂载到 Frame 上
+        sync_value = self.totalSync / (1 if self.saveCount == 0 else self.saveCount)
+        self.avgSyncLabel = Label(totalSyncFrame, text=f'{sync_value:.6f}%', anchor="w", font=self.font, relief="flat")
+        self.avgSyncLabel.place(x=0, y=40, width=120, height=30)
 
-    def __selector_ui_init__(self) -> None:
+        Tooltip(totalSyncFrame, text_func=self._get_map_analyze)
+
+    def _selector_ui_init(self) -> None:
         """筛选ui控件初始化"""
         self.selectFrame = Frame(self.root, relief="groove",bd=2)
         self.selectFrame.place(x=180,y=50,width=380,height=70)
@@ -166,7 +175,7 @@ class MusyncMainWindow(object):
         self.select120Button = Button(self.selectFrame, text='红Ex', command=lambda:self.SelectMethod('Sync120'), anchor="w", font=self.font)
         self.select120Button.place(x=324,y=35,width=50,height=30)
 
-    def __extra_selector_ui_init__(self) -> None:
+    def _extra_selector_ui_init(self) -> None:
         """额外筛选ui控件初始化"""
         self.selectExFrame = Frame(self.root, bd=2, relief="groove")
         self.selectExFrame.place(x=570,y=50,width=200,height=70)
@@ -179,7 +188,7 @@ class MusyncMainWindow(object):
         self.selectDifficute = Button(self.selectExFrame, text=self.difficute.text, command=lambda:self.SelectDifficute(), anchor='w', font=self.font)
         self.selectDifficute.place(x=80,y=35,width=92,height=30)
 
-    def __run_in_init__(self) -> None:
+    def _run_in_init(self) -> None:
         """AutoRun"""
         try:
             self.InitLabel('初始化函数执行中......')
@@ -217,12 +226,24 @@ class MusyncMainWindow(object):
                 self._logger.warning("DLL Injection is Enable.")
                 self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelayCheck, font=self.font,bg='#FF5959')
                 self.hitDelay.place(x=775,y=50,width=90,height=30)
+            self.InitLabel(text="正在分析存档文件中……")
             MusyncSaveDecoder(savFile=self.saveFilePathVar.get()).Main()
             self.DataLoad()
         except Exception as e:
             self._logger.exception("Software has some Exception:")
             self._on_closing()
             raise e
+
+    def _get_map_analyze(self) -> str:
+        """获取谱面分析数据的字符串表示"""
+        map_sync_data: dict[str, list[int, float]] = self.map_sync_data.calculate_all_stats()
+        lines = []
+        for mode, (counter, avg_sync) in map_sync_data.items():
+            if mode.startswith("separator"):
+                lines.append("─" * 22)
+            else:
+                lines.append(f"{mode:>4}: 共 {counter:>4} 张谱面, 综合同步率: {avg_sync:>10.6f}%")
+        return "\n".join(lines)
 
     # TK事件重载
     def _on_closing(self) -> None:
@@ -498,7 +519,6 @@ class MusyncMainWindow(object):
         "存档数据解析"
         self._logger.debug("DataLoad Start")
         start_time: int = time.perf_counter_ns()
-        self.InitLabel(text="正在分析存档文件中……")
         self._logger.debug("正在分析存档文件中……")
 
         def Rank(sync:int):
@@ -517,9 +537,16 @@ class MusyncMainWindow(object):
         self.saveCount = 0
         self.excludeCount = 0
         self.totalSync = 0
+        self.map_sync_data.clear()
         for saveInfo in save_data.saveInfoList:
             # 无名谱面筛选
             if saveInfo.SongName is None: continue
+            # 所有谱面数据收集
+            if (saveInfo.State.strip() in ['', 'Favo']):
+                key: str = saveInfo.SongKeys + saveInfo.SongDifficulty
+                self.map_sync_data.data[key][0] += 1
+                self.map_sync_data.data[key][1] += saveInfo.UploadScore
+
             # 键型筛选
             if ((self.keys != KeysEnum.All) and (self.keys.stext != saveInfo.SongKeys)): continue
             # 难度筛选
@@ -547,7 +574,8 @@ class MusyncMainWindow(object):
                 if ((saveInfo.SyncNumber//100 < 75) or (saveInfo.SyncNumber//100 >= 95)): continue
             elif (self.dataSelectMethod == "RankC"):
                 if ((saveInfo.SyncNumber//100 == 0) or (saveInfo.SyncNumber//100 >= 75)): continue
-            if (saveInfo.State in ['    ', 'Favo']):
+            # 显示综合同步率和计数
+            if (saveInfo.State.strip() in ['', 'Favo']):
                 self.saveCount += 1
                 self.totalSync += saveInfo.UploadScore
             else:
@@ -564,6 +592,8 @@ class MusyncMainWindow(object):
                 saveInfo.State #谱面状态
                 ))
         # print(songNameJson["NotDLCSong"])
+
+
         if not self.dataSortMethodsort[0] is None:
             self.SortClick(self.dataSortMethodsort)
         self.InitLabel('数据展示生成完成.',close=True)

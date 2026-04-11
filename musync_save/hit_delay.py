@@ -453,7 +453,7 @@ class HitDelay:
         plt.rcParams['axes.unicode_minus'] = False
 
         fig = plt.figure(f'AvgDelay: {self._data_avg_delay:.4f}ms    Notes: {self._data_all_notes}    '\
-            f'Combo: {self._data_combo}    AvgAcc: {self._data_avg_acc:.4f}ms',figsize=(9, 4))
+            f'Combo: {self._data_combo}    AvgAcc: {self._data_avg_acc:.4f}ms',figsize=(9, 3))
         fig.clear()
         fig.subplots_adjust(**{"left":0.045,"bottom":0.055,"right":1,"top":1})
         # fig.subplots_adjust(**{"left":0.06, "bottom":0.1, "right":0.98, "top":0.98}) # 微调了边距防裁剪

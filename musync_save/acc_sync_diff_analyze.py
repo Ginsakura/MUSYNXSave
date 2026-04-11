@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import csv
 import logging
+import mplcursors
 
 from matplotlib import pyplot as plot
 from matplotlib.figure import Figure
@@ -11,7 +12,7 @@ from .config_manager import Logger
 
 def analyze_3d() -> None:
     """读取 CSV 数据并生成 3D 散点图分析视图"""
-    logger: logging.Logger = Logger.get_logger("AvgAcc_Sync_Analyze.Analyze3D")
+    _logger: logging.Logger = Logger.get_logger("AvgAcc_Sync_Analyze.Analyze3D")
 
     # 强制类型注解
     acc: list[float] = []
@@ -32,15 +33,15 @@ def analyze_3d() -> None:
                     sync.append(float(row[1]))
                     diff.append(float(row[2]))
                 except (ValueError, IndexError):
-                    logger.warning(f"Failed to parse row {line_num}: {row} - 已跳过")
+                    _logger.warning(f"Failed to parse row {line_num}: {row} - 已跳过")
                     continue
     except FileNotFoundError:
-        logger.error("Acc-Sync.csv not found. 请确保文件路径正确。")
+        _logger.error("Acc-Sync.csv not found. 请确保文件路径正确。")
         return
 
     # 防御性检查
     if (not acc) or (not sync) or (not diff):
-        logger.error("No valid 3D data found in Acc-Sync.csv")
+        _logger.error("No valid 3D data found in Acc-Sync.csv")
         return
 
     # 2. 3D 画布初始化
@@ -141,5 +142,23 @@ def analyze_3d() -> None:
 
     # 调整初始视角 (仰角 20 度, 方位角 -45 度)
     ax.view_init(elev=20, azim=-45)
+
+    # ==========================================
+    # 进阶交互：鼠标悬停提示 (需 pip install mplcursors)
+    # ==========================================
+    if mplcursors is not None:
+        # 将游标绑定到散点图上
+        cursor = mplcursors.cursor(scatter, hover=True)
+        @cursor.connect("add")
+        def on_add(sel):
+            x_val = int(sel.target[0])
+            y_val = int(sel.target[1])
+            z_val = int(sel.target[2])
+            # 设置悬停浮窗的文本格式
+            sel.annotation.set_text(f"Acc: {x_val} ms\nDiff: {y_val}\nSYNC: {z_val}%")
+            sel.annotation.get_bbox_patch().set(alpha=0.8, color='white')
+    else:
+        _logger.debug("mplcursors not installed, tooltip feature disabled.")
+
 
     plot.show()

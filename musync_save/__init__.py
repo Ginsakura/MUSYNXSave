@@ -11,6 +11,8 @@ from .version import version, pre_version, is_pre_release
 from .config_manager import config, Logger
 from .map_info import MapDataInfo
 from .save_data_manager import save_data
+from .tooltip import Tooltip
+from .sync_data_analyzer import SyncDataAnalyzer
 
 # 仅依赖 `get_logger` 的模块
 from .songname_manager import song_name
@@ -47,6 +49,10 @@ __all__ = [
     "MapDataInfo",
     # .save_data_manager
     "save_data",
+    # .tooltip
+    "Tooltip",
+    # .sync_data_analyzer
+    "SyncDataAnalyzer",
     # .songname_manager
     "song_name",
     # .acc_sync_diff_analyze

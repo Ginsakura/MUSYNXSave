@@ -28,7 +28,7 @@ jobs:
 
       - name: Install requirements
         run: pip3 install -r ./requirements.txt
-        
+
       # 把本次 Push 的最新 Commit 作为标题提取
       - name: Resolve Push Title
         run: |
@@ -36,6 +36,15 @@ jobs:
           $TITLE = "${{ github.event.head_commit.message }}" -split "`n" | Select-Object -First 1
           Write-Host "Resolved Title: $TITLE"
           echo "RELEASE_TITLE=$TITLE" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Hardcode Release Type (Pre-Release)
+        run: |
+          $versionPath = "./musync_save/version.py"
+          $content = Get-Content -Path $versionPath -Raw
+          # 升级版正则：强制设为 True
+          $content = $content -replace '(?m)^is_pre_release\s*(:\s*bool\s*)?=\s*(True|False)', 'is_pre_release: bool = True'
+          Set-Content -Path $versionPath -Value $content -Encoding utf8
+          Write-Host "已将 version.py 中的 is_pre_release 强制设置为 True (预发布版)"
 
       - name: Create Build Variable
         run: |
@@ -66,6 +75,6 @@ jobs:
           name: ${{ env.RCVersion }}  ${{ env.RELEASE_TITLE }}  < Auto Push Pre-Release >
           tag_name: ${{ env.Version }}
           draft: false
-          prerelease: true               # 强制锁定为预发布
-          generate_release_notes: true   # GitHub 的自动日志比对功能
+          prerelease: ${{ env.isPreRelease }} # 强制锁定为预发布
+          generate_release_notes: true # GitHub 的自动日志比对功能
           files: ./MusyncSaveDecode/Archive/*

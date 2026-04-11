@@ -61,6 +61,15 @@ jobs:
               Write-Host ("- {0} {1}" -f $shortHash, $msg)
           }
 
+      - name: Hardcode Release Type (Release)
+        run: |
+          $versionPath = "./musync_save/version.py"
+          $content = Get-Content -Path $versionPath -Raw
+          # 升级版正则：兼容匹配 is_pre_release: bool = True/False
+          $content = $content -replace '(?m)^is_pre_release\s*(:\s*bool\s*)?=\s*(True|False)', 'is_pre_release: bool = False'
+          Set-Content -Path $versionPath -Value $content -Encoding utf8
+          Write-Host "已将 version.py 中的 is_pre_release 强制设置为 False (正式版)"
+
       - name: Create Build Variable
         run: |
           $ErrorActionPreference = 'Stop';

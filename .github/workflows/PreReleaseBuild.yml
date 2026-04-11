@@ -49,6 +49,15 @@ jobs:
               ("- `{0}` {1}" -f $shortHash, $msg) | Out-File -FilePath $changelogPath -Encoding utf8 -Append
           }
 
+      - name: Hardcode Release Type (Pre-Release)
+        run: |
+          $versionPath = "./musync_save/version.py"
+          $content = Get-Content -Path $versionPath -Raw
+          # 升级版正则：强制设为 True
+          $content = $content -replace '(?m)^is_pre_release\s*(:\s*bool\s*)?=\s*(True|False)', 'is_pre_release: bool = True'
+          Set-Content -Path $versionPath -Value $content -Encoding utf8
+          Write-Host "已将 version.py 中的 is_pre_release 强制设置为 True (预发布版)"
+
       - name: Create Build Variable
         run: |
           $ErrorActionPreference = 'Stop';
@@ -80,6 +89,6 @@ jobs:
           tag_name: ${{ env.Version }}
           draft: false
           body_path: ${{ github.workspace }}/changelog.md
-          prerelease: true               # 锁定为 Pre-Release
-          generate_release_notes: true   # 开启 GitHub 原生多 PR 智能汇总！
+          prerelease: ${{ env.isPreRelease }} # 锁定为 Pre-Release
+          generate_release_notes: true # 开启 GitHub 原生多 PR 智能汇总！
           files: ./MusyncSaveDecode/Archive/*

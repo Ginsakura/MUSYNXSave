@@ -111,7 +111,7 @@ MUSYNX Steam Client Savefile Decode & Analyze Tool
 | `LoggerFilter` | `'INFO'` | string | 控制台日志输出的最低过滤等级 |
 | `CheckUpdate` | `false` | boolean | 是否启用自动检查更新 |
 | `DllInjection` | `false` | boolean | 是否启用 DLL 注入以开启**高级功能** |
-| `CreateUdpWhenStartup` | `false` | boolean | 在开启高级功能的前提下，是否在应用程序启动时立即启动 UDP 接收端 |
+| `PlayedScatterAvgAccWindowSize` | `0` | int | HitDelay中散点图中`移动平均趋势线`的窗口大小, 0表示自动计算, 1表示逐点折线图(参考旧图), 建议在5~30之间 |
 | `SystemDPI` | `自动获取` | string | 读取系统 DPI，提供 DPI 窗体修正 (未实现) |
 | `DonutChartinHitDelay` | `false` | boolean | 是否在单次游玩统计中显示击打延迟环形图 |
 | `DonutChartinAllHitAnalyze` | `false` | boolean | 是否在全局统计中显示击打延迟环形图 |
@@ -143,9 +143,14 @@ MUSYNX Steam Client Savefile Decode & Analyze Tool
 * **AvgAcc (平均击打偏差)**：即所有击打的绝对值的平均值，该值总为正数。该值反映了您当前谱面本次游玩击打 Key 时机的精准度，与本次游玩的结算成绩密切相关：**该值越小，说明击打越精准**（当该值小于 45ms 时，您的分值就会越高）。
 
 ## 更新日志
+### Version 3.0.1
+<!--1. 更新-->
+1. 修复
+    
+1. 优化
+    1. 
 
 ### Version 3.0.0
-#### Release 1
 1. 更新
     1. ***更新2026年02月14日喵赛克联动新增曲目***
         - Miss You (EZ HD)

@@ -524,7 +524,10 @@ class HitDelay:
         scatter = ax.scatter(x_coords, self._data_list, c=point_colors, s=15, alpha=0.7, edgecolors='none', zorder=3)
 
         # 绘制移动平均趋势线 (Moving Average)，消除微小波动，显示整体偏早还是偏晚
-        window = min(20, len(self._data_list) // 5 + 1) # 动态窗口大小
+        if config.PlayedScatterAvgAccWindowSize > 0:
+            window = config.PlayedScatterAvgAccWindowSize
+        else:
+            window = min(20, len(self._data_list) // 5 + 1) # 动态窗口大小
         if window > 0:
             ma_y = []
             left_span = (window - 1) // 2

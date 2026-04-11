@@ -74,6 +74,7 @@ jobs:
         with:
           name: ${{ env.RCVersion }}  ${{ env.RELEASE_TITLE }}  < Auto Push Pre-Release >
           tag_name: ${{ env.Version }}
+          target_commitish: ${{ github.ref_name }}
           draft: false
           body_path: ${{ github.workspace }}/changelog.md
           prerelease: ${{ env.isPreRelease }} # 强制锁定为预发布

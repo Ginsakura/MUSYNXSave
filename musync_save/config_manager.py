@@ -72,6 +72,7 @@ class AppConfigManager:
         self.LoggerFilter: str = "INFO"
         self.CheckUpdate: bool = True
         self.DllInjection: bool = False
+        self.PlayedScatterAvgAccWindowSize: int = 0
         self.SystemDpi: int = 100
         self.DonutChartInHitDelay: bool = True
         self.DonutChartInAllHitAnalyze: bool = True

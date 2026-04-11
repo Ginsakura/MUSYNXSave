@@ -4,6 +4,8 @@ on:
     branches:
     - 'dev'
     - 'main'
+    - 'v1_archive'
+    - 'NewTechnicalVerification'
 
 env:
   RCVersion: < 0.0.0 PreRelease 0>
@@ -27,24 +29,6 @@ jobs:
 
       - name: Install requirements
         run: pip3 install -r ./requirements.txt
-
-      # - name: Get commit message
-      #   env:
-      #     # 核心修复 1：为 gh 注入临时的 GitHub Token 权限
-      #     GH_TOKEN: ${{ github.token }}
-      #   run: |
-      #     # 获取 PR 所有 commits
-      #     $COMMITS = gh api "repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/commits" | ConvertFrom-Json
-      #     Write-Host "Total commits in this PR: $($COMMITS.Count)"
-      #     Write-Host "All commit messages in this PR:"
-      #       foreach ($commit in $COMMITS) {
-      #           Write-Host "- $($commit.commit.message)"
-      #       }
-      #     # 提取最新的 commit message（第一行）
-      #     $LATEST_MSG = $COMMITS[-1].commit.message -split "`n" | Select-Object -First 1
-      #     Write-Host "Latest dev commit message: $LATEST_MSG"
-      #     # 保存到环境变量（PowerShell 方式）
-      #     "CommitMessage=$LATEST_MSG" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Create Build Variable
         run: |

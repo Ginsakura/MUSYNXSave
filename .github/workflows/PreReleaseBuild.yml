@@ -1,9 +1,10 @@
-name: Auto Release Build Action
+name: Auto Pre-Release Build Action
 on:
   pull_request:
     branches:
-      - 'main'
-    types: [closed] # 监听 PR 被关闭的事件
+      - 'dev'           # 专门监听合并到 dev 分支的 PR
+      - 'v1_archive'    # 也监听合并到 v1_archive 的 PR，方便对旧版本的维护
+    types: [closed]
 
 permissions:
   contents: write
@@ -14,8 +15,9 @@ env:
   Version: Init
 
 jobs:
-  Build_Release_Application:
-    name: Build Release Application
+  Build_PreRelease_Application:
+    name: Build PreRelease Application
+    # 同样必须是 merged 才触发
     if: github.event.pull_request.merged == true
     runs-on: windows-2025
     steps:
@@ -26,39 +28,25 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11.5'
-          cache: 'pip' # caching pip dependencies
+          cache: 'pip'
 
       - name: Install requirements
         run: pip3 install -r ./requirements.txt
 
+      # 沿用你手动获取 PR Commits 写入 Changelog 的优秀设计
       - name: Append Commits to Changelog
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
-          # 此时 PR 上下文是完整的，可以直接拿到 Number！
           $PR_NUMBER = "${{ github.event.pull_request.number }}"
-          Write-Host "当前触发的 PR 编号: #$PR_NUMBER"
-          # 直接调用 API 获取该 PR 的所有提交记录
           $COMMITS = gh api "repos/${{ github.repository }}/pulls/$PR_NUMBER/commits" | ConvertFrom-Json
-
-          # 定义 changelog 文件路径
           $changelogPath = "${{ github.workspace }}/changelog.md"
-          # 如果文件不存在，创建，防止报错
-          if (-not (Test-Path $changelogPath)) {
-              New-Item -Path $changelogPath -ItemType File | Out-Null
-          }
-
+          if (-not (Test-Path $changelogPath)) { New-Item -Path $changelogPath -ItemType File | Out-Null }
           "`n### 🚀 本次更新包含的 Commits (来自 PR #$PR_NUMBER):`n" | Out-File -FilePath $changelogPath -Encoding utf8 -Append
-
-          Write-Host "Total commits in this PR: $($COMMITS.Count)"
-
           foreach ($commit in $COMMITS) {
-              # 使用安全格式化 (-f) 和换行符替换
               $msg = $commit.commit.message -replace '[\r\n]+', '<br/>'
               $shortHash = $commit.sha.Substring(0,7)
-
               ("- `{0}` {1}" -f $shortHash, $msg) | Out-File -FilePath $changelogPath -Encoding utf8 -Append
-              Write-Host ("- {0} {1}" -f $shortHash, $msg)
           }
 
       - name: Create Build Variable
@@ -83,15 +71,15 @@ jobs:
         run: |
           pwsh ./buildLauncher.ps1;
 
-      - name: Commit Build File
+      - name: Commit Pre-Release File
         uses: softprops/action-gh-release@v2
         env:
           GITHUB_TOKEN: ${{ github.token }}
         with:
-          name: ${{ env.RCVersion }}  ${{ github.event.pull_request.title }}  < Auto Release >
+          name: ${{ env.RCVersion }}  ${{ github.event.pull_request.title }}  < Auto Pre-Release >
           tag_name: ${{ env.Version }}
           draft: false
-          generate_release_notes: true
           body_path: ${{ github.workspace }}/changelog.md
-          prerelease: ${{ env.isPreRelease }}
+          prerelease: true               # 锁定为 Pre-Release
+          generate_release_notes: true   # 开启 GitHub 原生多 PR 智能汇总！
           files: ./MusyncSaveDecode/Archive/*

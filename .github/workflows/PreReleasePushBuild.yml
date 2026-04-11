@@ -75,6 +75,7 @@ jobs:
           name: ${{ env.RCVersion }}  ${{ env.RELEASE_TITLE }}  < Auto Push Pre-Release >
           tag_name: ${{ env.Version }}
           draft: false
+          body_path: ${{ github.workspace }}/changelog.md
           prerelease: ${{ env.isPreRelease }} # 强制锁定为预发布
           generate_release_notes: true # GitHub 的自动日志比对功能
           files: ./MusyncSaveDecode/Archive/*

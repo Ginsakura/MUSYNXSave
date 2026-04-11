@@ -31,7 +31,7 @@ def analyze_3d() -> None:
                     # 按照 X, Z, Y 的逻辑读取 (假设 CSV 列序为: acc, sync, diff)
                     acc.append(float(row[0]))
                     sync.append(float(row[1]))
-                    diff.append(float(row[2]))
+                    diff.append(int(row[2]))
                 except (ValueError, IndexError):
                     _logger.warning(f"Failed to parse row {line_num}: {row} - 已跳过")
                     continue
@@ -151,12 +151,24 @@ def analyze_3d() -> None:
         cursor = mplcursors.cursor(scatter, hover=True)
         @cursor.connect("add")
         def on_add(sel):
-            x_val = int(sel.target[0])
-            y_val = int(sel.target[1])
-            z_val = int(sel.target[2])
+            # 核心修正：使用 sel.index 获取原始数据的绝对索引
+            # 注意：某些情况下对于散点图，index 可能被包装在序列中，安全起见取第一个
+            idx = sel.index
+            if isinstance(idx, (list, tuple)):
+                idx = idx[0]
+            # 直接从原始数据数组中提取精确数值
+            x_val: float = acc[idx]
+            y_val: int = diff[idx]
+            z_val: float = sync[idx]
             # 设置悬停浮窗的文本格式
             sel.annotation.set_text(f"Acc: {x_val} ms\nDiff: {y_val}\nSYNC: {z_val}%")
-            sel.annotation.get_bbox_patch().set(alpha=0.8, color='white')
+
+            # 美化浮窗
+            sel.annotation.get_bbox_patch().set(
+                alpha=0.85,
+                color='#2b2b2b',   # 极客深色背景
+            )
+            sel.annotation.set_color("#a9b7c6") # 浅色文字
     else:
         _logger.debug("mplcursors not installed, tooltip feature disabled.")
 

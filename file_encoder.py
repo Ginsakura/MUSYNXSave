@@ -14,7 +14,6 @@ from typing import Optional, Any
 
 # ==================== 常量定义 (Constants) ====================
 FILL_SIZE: int = 512
-FIX_DLL: str = "E93D03FC58F6E70BBFAD2B2F89326FC9C4697D4C8C83F9182EDCA7F43EF3F282"
 SOURCE_DLL: str = 'E6ED56C611F475CC895B469F65856F5E8F2C199693C3AD86A87D19CA4986C9D9'
 
 # ==================== 核心逻辑 (Core Logic) ====================

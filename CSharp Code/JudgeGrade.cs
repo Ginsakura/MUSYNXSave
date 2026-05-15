@@ -42,11 +42,16 @@ namespace BMSLib
                     if (kDsign)
                         { Console.ForegroundColor = ConsoleColor.DarkYellow; }
                     else
-                        { Console.ForegroundColor = ConsoleColor.DarkBlue; }
+                        { Console.ForegroundColor = ConsoleColor.Blue; }
                 }
-                // 45 ~ 90 & -45 ~ -90c
+                // 45 ~ 90 & -45 ~ -90
                 else if (kd < 900000L)
+                {
+                    if (kDsign)
+                    { Console.ForegroundColor = ConsoleColor.Green; }
+                    else
                     { Console.ForegroundColor = ConsoleColor.Magenta; }
+                }
                 // 90 ~ 150 & -90 ~ -150
                 else if (kd < 1500000L)
                     { Console.ForegroundColor = ConsoleColor.DarkMagenta; }

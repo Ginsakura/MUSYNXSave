@@ -1,15 +1,15 @@
-/__pycache__
-/.venv
-/.vs
-/.vscode
-/build
-/musync
-/saveFile
-/Releases
-/dist
-/logs
-/musync_save/__pycache__
-/MusyncSaveDecode
+__pycache__/
+.tempdir/
+.venv/
+.vs/
+.vscode/
+build/
+musync/
+saveFile/
+Releases/
+dist/
+logs/
+MusyncSaveDecode/
 
 bootcfg.json
 LXGW.ttf

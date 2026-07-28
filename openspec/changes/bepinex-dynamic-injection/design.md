@@ -105,9 +105,8 @@
   "gesture": { "drag_distance_px": 5, "hold_ms": 300 },
   "delay_overlay": {
     "enabled": true,
-    "rect": { "x": 0.02, "y": 0.30, "w": 0.18, "h": 0.10 },
+    "rect": { "x": 0.02, "y": 0.30, "w": 0.12, "h": 0.045 },
     "aspect_locked": true,
-    "max_lines": 10,
     "font_size": 24,
     "alpha": 0.85
   },
@@ -206,12 +205,13 @@ static void JudgePostfix(long knockDistance)
 ### Patch 2: 新一局重置
 
 ```csharp
+// 已确认：Reset 在每局开头被调用（清零所有 Total* + Console.Clear + "> SongStart!"）
 [HarmonyPatch(typeof(JudgeGrade), "Reset")]
 [HarmonyPostfix]
 static void ResetPostfix()
 {
     // 清空本局 hits 缓冲区
-    // 重置 DelayOverlay
+    // 重置 DelayOverlay 当前值
 }
 ```
 
@@ -254,7 +254,7 @@ static void SettlementUIPostfix(MonoBehaviour __instance)
 ### Patch 健壮性约束（横切要求）
 
 - **异常隔离**：每个 Postfix 方法体**整体 try-catch 包裹**，捕获后仅写 BepInEx Logger，**绝不向游戏抛异常**。Harmony 在某些配置下会把 patch 异常传播回原方法，对 `GetJudgeGrade` 这种判定核心方法，一次未捕获异常可能导致漏判/崩溃。插件 bug 不能拖垮游戏主循环
-- **高频 patch 零/低分配**：`GetJudgeGrade` 每帧每音符调用一次，其 Postfix **禁止**每帧 `new List/数组/字符串`、字符串拼接、LINQ、`ToString` 格式化、写日志。delay 队列用预分配环形缓冲（固定容量，覆盖写）；颜色映射用查表/分支返回 `Color` 结构体（值类型，无分配）。目标：Postfix 单次 < 几微秒、0 GC alloc
+- **高频 patch 零/低分配**：`GetJudgeGrade` 每帧每音符调用一次，其 Postfix **禁止**每帧 `new List/数组/字符串`、字符串拼接、LINQ、`ToString` 格式化、写日志。单条模式下只需存"当前一个 float + 一个 Color"两个字段（值类型，无分配）；`SetText` 仅在每次打击时调一次（频率=音符频率，非每帧），拼一个短串如 `"3.2"` 允许一次 Gen0 短命分配，可接受。颜色映射用查表/分支返回 `Color` 结构体。目标：Postfix 单次 < 几微秒、每帧 0 GC alloc
 - **线程安全**：后台 Socket 线程与主线程共享的缓存/队列，用 `Interlocked`/`volatile`/锁保护；主线程读、后台线程写的引用交换用 `Interlocked.Exchange`，避免半写状态
 - **生命周期**：Overlay Canvas 与 DontDestroyOnLoad 对象在插件 `Awake` 创建一次；`OnApplicationQuit` 时关闭后台 Socket、落盘 config
 
@@ -265,14 +265,16 @@ static void SettlementUIPostfix(MonoBehaviour __instance)
 ```
 JudgeGrade.GetJudgeGrade(knockDistance)  [主线程，高频]
     │
-    ├─ [Harmony Postfix, try-catch 包裹, 0 分配]
+    ├─ [Harmony Postfix, try-catch 包裹, 每帧 0 分配]
     │   捕获 knockDistance → 算 ms → 查表得颜色
-    │   写入预分配环形缓冲（覆盖写，无 GC）
-    │   标记 UGUI Text 脏（SetText；UGUI 脏标记驱动，非每帧重绘）
+    │   存当前值 (float delayMs + Color color)  ← 两个值类型字段，无 GC
+    │   标记 UGUI Text 脏（SetText 仅打击时调一次，非每帧）
     │
-    └─ DelayOverlay (UGUI) 显示最近 N 条延迟
+    └─ DelayOverlay (UGUI) 显示当前一条延迟（单行）
          文本/背景 RaycastTarget=false → 不拦游戏判定
 ```
+
+**单条 vs N 条**：本期 overlay 仅显示**当前一次打击**的延迟值（单行），不做 N 条滚动列表。理由：单行更紧凑、更不挡视线、贴合"看当前这一击偏多少"的直觉；N 条历史滚动列表作为**非目标**留待未来可选变更。MISS 已确认会触发 `GetJudgeGrade`（传超大 knockDistance → 红），故单条模式下 MISS 时 overlay 正确闪红，无需超时淡出。
 
 ### 结算时 (数据分析 + 图表)
 
@@ -492,6 +494,37 @@ Python → 游戏:
 └── MUSYNX_Data/Managed/
     └── Assembly-CSharp.dll      ← 原版，不动
 ```
+
+## Non-Goals (本期不做，留待未来可选变更)
+
+- **N 条历史滚动列表**：游玩中 delay overlay 仅显示当前一条延迟值（单行），不做 N 条滚动/队列显示。若未来有需求（如观察连续偏移趋势），可作为独立变更加入
+- **自动写回游戏 offset**：校准提示仅展示调整量窗口，不逆向/修改游戏配置文件
+- **跨局收敛状态机**：插件不记录"第几次玩/上次欠补多少"，不做多局综合校准决策
+- **音画偏移**：游戏内有两项 offset（判定偏移 + 音画偏移），本插件只负责判定偏移
+
+## Python 端数据持久化（复用现有逻辑）
+
+现有 Python 工具已通过 sqlite 实现完整的历史记录读写，新方案**复用**而非重写：
+
+- 数据库文件：`musync_data/HitDelayHistory.db`
+- Schema（当前版本 v4，见 `toolkit.py` `create_new_database`）：
+
+  | 列 | 类型 | 说明 |
+  | --- | --- | --- |
+  | SongMapName | TEXT | 谱面名（PK 之一） |
+  | RecordTime | TEXT | 记录时间（PK 之一） |
+  | Diff | INTEGER | 难度 |
+  | Mode | TEXT | 模式（4K/6K 等） |
+  | Combo | TEXT | 如 "706/706" |
+  | AvgDelay | REAL | 平均延迟 ms |
+  | AllKeys | INTEGER | 总键数 |
+  | AvgAcc | REAL | 平均准确率 |
+  | HitMap | BLOB | 逐键延迟序列化数据 |
+
+- 写入逻辑：`hit_delay.py` 的 `INSERT INTO HitDelayHistory`（结算时写入）
+- 读取/分析逻辑：`all_hit_analyze.py`（全打击分析）、`hit_delay.py`（历史查看）
+- Schema 迁移：`toolkit.py` 的 `check_database_version` + `update_database`（v0→v4 瀑布式）
+- 新方案变更点：数据源从"Console 读取 + 剪贴板"改为"Socket 接收"，但**写入格式和 schema 不变**，确保新旧数据兼容、tkinter GUI 的历史查看功能无需改动
 
 ## Risks & Mitigations
 

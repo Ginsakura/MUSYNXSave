@@ -52,7 +52,7 @@
 ## Open Questions (待继续讨论)
 
 - [x] 结算检测机制 → `SongInfoCore.UpdateSync(Int32)` 收集数据；`SettlementController.Start` / `NewSettlementController.Start` 注入结算 UI（两者均 patch，flag 防重复）
-- [ ] BepInEx 插件项目结构：命名空间、文件组织、编译配置（实施阶段细化）
+- [x] BepInEx 插件项目结构 → 已在 tasks.md 第 2 组拆解（Class Library + 目标框架 + 引用游戏 dll 且 Copy Local=false + BaseUnityPlugin 入口 + OnApplicationQuit 生命周期）
 - [x] 部署自动化 → 初期打包分发 BepInEx 5.4.x，后续加国内镜像在线更新
 - [x] 配置存储 → `BepInEx/plugins/MUSYNCDelay/config.json`，含交互持久化字段（坐标归一化 0~1，y=0 为顶）
 - [x] Python GUI → 保留 tkinter，用于未启动游戏时查看历史数据

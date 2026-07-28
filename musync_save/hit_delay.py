@@ -787,21 +787,6 @@ class HitDelay:
     # [Level 0] 无状态 UI 独立交互 (Stateless UI callbacks)
     # ==========================================
 
-    # def _on_treeview_resize(self, event: tk.Event) -> None:
-    #     """当 Treeview 大小改变时，按比例调整列宽"""
-    #     new_total_width = event.width
-    #     if new_total_width <= 100: return # 忽略初始化时的极小值
-
-    #     # 计算拉伸比例系数
-    #     # 减去 20px 预留给滚动条的空间，防止出现水平滚动条
-    #     scale_factor = (new_total_width - 20) / self._total_base_width
-
-    #     for col_id, title, base_width, anchor in self._headings:
-    #         # 核心算法：目标宽度 = 基准宽度 * 比例系数
-    #         target_width = int(base_width * scale_factor)
-    #         # 设置最小宽度防止缩没，并更新当前宽度
-    #         self._treeview.column(col_id, width=target_width, minwidth=int(base_width*0.5))
-
     def _on_tree_select(self, event: tk.Event) -> None:
         """回调：点击表格行获取 ROWID 并更新右侧面板输入框"""
         selected_items: tuple[str, ...] = self._treeview.selection()
@@ -863,16 +848,6 @@ class HitDelay:
         self._cursor.close()
         self._db.close()
         self._subroot.destroy()
-
-    def _on_closing_bak(self) -> None:
-        """UI 事件：窗口关闭时清理资源(留作备用)"""
-        if messagebox.askokcancel("退出", "确定要退出高精度延迟分析吗？"):
-            try:
-                self._cursor.close()
-                self._db.close()
-            except Exception as e:
-                self._logger.warning(f"关闭数据库连接时发生异常: {e}")
-            self._subroot.destroy()
 
 if __name__ == "__main__":
     from . import version, pre_version, is_pre_release

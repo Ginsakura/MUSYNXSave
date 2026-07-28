@@ -6,7 +6,7 @@ import sys
 import time
 from base64 import b64decode
 from tkinter import messagebox
-from typing import Any
+from typing import Any, Callable
 
 from .config_manager import config, Logger
 from .songname_manager import song_name
@@ -16,8 +16,6 @@ from .toolkit import Toolkit
 
 _logger:logging.Logger = Logger.get_logger(name="MUSYNCSavDecode")
 try:
-    # Load C# Lib
-    # clr.AddReference("System.Runtime.Serialization.Formatters.Binary")
     clr.AddReference("mscorlib")
     from System import Reflection
     from System.IO import MemoryStream
@@ -27,10 +25,9 @@ except Exception:
     _logger.exception("Import Error.")
     sys.exit(101)
 
-class MusyncSaveDecoder(object):
-    """docstring for MUSYNCSavProcess"""
+class MusyncSaveDecoder:
+    """存档解密核心：Base64 解码 → .NET 反序列化 → 结构映射 → JSON 导出"""
     def __init__(self, savFile:str=''):
-        super(MusyncSaveDecoder, self).__init__()
         self.__assembly_loaded:bool = False
         dllPath:str|None = None
         try:
@@ -43,30 +40,30 @@ class MusyncSaveDecoder(object):
             raise
         self.savPath:str = savFile
         self.FavSong:list[str] = list()
-        self._logger:logging.Logger = Logger.get_logger(name="MUSYNCSavDecode.MUSYNCSavProcess")
+        self._logger:logging.Logger = Logger.get_logger(name="MUSYNCSavDecode.MusyncSaveDecoder")
         self._logger.info("creating an instance in MUSYNCSavDecode")
 
-    def Main(self):
+    def main(self):
         if os.path.isfile(self.savPath):
-            self.LoadSaveFile()
-            self.FixUserMemory()
-            self.FavFix()
+            self._load_save_file()
+            self._fix_user_memory()
+            self._fav_fix()
             save_data.dump_to_json()
         else:
             self._logger.error(f"文件夹\"{self.savPath}\"内找不到存档文件.")
             messagebox.showerror("Error", "文件夹内找不到存档文件.")
 
-    def LoadSaveFile(self)->None:
+    def _load_save_file(self)->None:
         '''加载存档文件并进行base64解码'''
         start_time: int = time.perf_counter_ns()
         self._logger.debug("LoadSaveFile Start.")
         with open(self.savPath, 'r', encoding="utf-8") as file:
             base64_data = file.read()
-        self.Deserialize(b64decode(base64_data))
+        self._deserialize(b64decode(base64_data))
         self._logger.debug("LoadSaveFile End.")
         self._logger.info(f"LoadSaveFile Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
-    def Deserialize(self, data)->None:
+    def _deserialize(self, data)->None:
         """反序列化存档数据"""
         start_time: int = time.perf_counter_ns()
         self._logger.debug("SaveDeserialize Start.")
@@ -105,14 +102,10 @@ class MusyncSaveDecoder(object):
                     CrcInt=GetNonPublicMethod("CrcInt", typeInfo=typeInfo2, instance=songSaveInfo)
                     )
                 saveInfos.append(saveInfoPy)
-                # self.logger.debug(saveInfoPy)
             return saveInfos
 
-        # # 修改 private 字段的值
-        # secret_name_field.SetValue(instance, "Bob")
-        # secret_age_field.SetValue(instance, 25)
         # 获取 private 字段的值
-        fieldMappings: list[tuple[str, object]] = [
+        fieldMappings: list[tuple[str, Callable[[Any], Any]]] = [
             ("version", int),
             ("crc", int),
             ("saveInfoList", lambda v: NetListToPyList(v)),
@@ -164,7 +157,7 @@ class MusyncSaveDecoder(object):
         self._logger.debug("SaveDeserialize End.")
         self._logger.info(f"SaveDeserialize Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
-    def FixUserMemory(self) -> None:
+    def _fix_user_memory(self) -> None:
         """补全缺失数据"""
         start_time: int = time.perf_counter_ns()
         self._logger.debug("UserMemoryToJson Start.")
@@ -254,7 +247,7 @@ class MusyncSaveDecoder(object):
         self._logger.debug("UserMemoryToJson End.")
         self._logger.info(f"UserMemoryToJson Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
-    def FavFix(self) -> None:
+    def _fav_fix(self) -> None:
         """修复收藏仅应用于每首歌的4KEZ谱面的问题"""
         start_time: int = time.perf_counter_ns()
         self._logger.debug("FavFix Start.")
@@ -286,4 +279,4 @@ if __name__ == '__main__':
     savPath = args.savPath or os.path.join(config.MainExecPath or '.', 'SavesDir', 'savedata.sav')
 
     Object = MusyncSaveDecoder(savPath)
-    Object.Main()
+    Object.main()

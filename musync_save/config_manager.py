@@ -13,7 +13,7 @@ from .version import version, pre_version, is_pre_release
 _LOG_FORMATTER = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 _LOG_FILE_PATH = Path.cwd() / "log.txt"
 
-class Logger(object):
+class Logger:
     @staticmethod
     def get_logger(name: str="MUSYNC.App", filter: int=logging.INFO, default_load:bool=False) -> logging.Logger:
         """全局日志获取函数，替代旧版的 Logger.GetLogger"""

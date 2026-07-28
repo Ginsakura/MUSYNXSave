@@ -19,9 +19,9 @@ class SyncDataAnalyzer:
         for key in self.data:
             self.data[key] = [0, 0.0]
 
-    def calculate_all_stats(self) -> dict[str, float]:
+    def calculate_all_stats(self) -> dict[str, list[int, float]]:
         """计算并返回所有维度的综合同步率"""
-        stats = {
+        stats: dict[str, list[int, float]] = {
             # mode: counter, avg
             "": [0, 0.0],
             "separator0": [0, 0.0],

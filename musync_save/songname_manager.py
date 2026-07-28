@@ -13,14 +13,15 @@ class SongNameManager:
         # 数据结构
         self.data: dict[str, list] = {}
         # 日志记录器
-        self.logger = Logger.get_logger("SongNameManager")
+        self._logger = Logger.get_logger("SongNameManager")
         # 尝试加载文件，如果不存在则初始化为空字典
         self.load_file()
 
     @property
     def version(self) -> int:
         """安全访问版本号，如果数据未加载或格式不正确返回0"""
-        return self.data.get("version", 0) if self.data else 0
+        version = self.data.get("version", 0) if self.data else 0
+        return int(version) if isinstance(version, (int, str, float)) else 0
 
     @property
     def file_path(self) -> str:
@@ -36,7 +37,7 @@ class SongNameManager:
             try:
                 self.data = json.load(f)
             except Exception:
-                self.logger.exception(
+                self._logger.exception(
                     f"Failed to load SongName.json from {self.file_path}")
 
 song_name = SongNameManager()

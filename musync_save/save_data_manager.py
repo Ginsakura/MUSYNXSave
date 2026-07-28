@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import json
 from pathlib import Path
-from typing import Any, List
+from typing import Any
 
 from .config_manager import Logger
 from .map_info import MapDataInfo
@@ -9,13 +9,13 @@ from .map_info import MapDataInfo
 class SaveDataManager:
     def __init__(self):
         self._file_path = Path.cwd() / "musync_data" / "SaveDataInfo.json"
-        self.logger = Logger.get_logger("Resources.SaveDataInfo")
+        self._logger = Logger.get_logger("Resources.SaveDataInfo")
 
         # 属性名严格保持 C# 内存中的命名
         self.version: int = 0
         self.crc: int = 0
-        self.saveInfoList: List[MapDataInfo] = []
-        self.purchaseIds: List[str] = []
+        self.saveInfoList: list[MapDataInfo] = []
+        self.purchaseIds: list[str] = []
         self.songIndex: int = 1
         self.isHard: int = 0
         self.buttonNumber: int = 4
@@ -36,8 +36,8 @@ class SaveDataManager:
         self.playTimeKnockEX: int = 0
         self.playTimeKnockNote: int = 0
         self.playVsync: bool = True
-        self.buttonSetting4K: List[int] = []
-        self.buttonSetting6K: List[int] = []
+        self.buttonSetting4K: list[int] = []
+        self.buttonSetting6K: list[int] = []
         self.hiddenUnlockSongs: bool = False
         self.hideLeaderboardMini: bool = True
         self.playingSceneName: str = ""
@@ -58,7 +58,7 @@ class SaveDataManager:
         data = {}
         # 直接使用 __dict__，但过滤掉私有属性和 logger
         for key, value in self.__dict__.items():
-            if key.startswith('_') or key == 'logger':
+            if key.startswith('_'):
                 continue
 
             if key == 'saveInfoList':
@@ -72,8 +72,8 @@ class SaveDataManager:
         try:
             with open(self._file_path, "w", encoding="utf-8") as f:
                 json.dump(self.to_dict(), f, ensure_ascii=False, indent=2)
-            self.logger.info("SaveDataInfo successfully saved.")
+            self._logger.info("SaveDataInfo successfully saved.")
         except Exception:
-            self.logger.exception("Failed to save SaveDataInfo.json")
+            self._logger.exception("Failed to save SaveDataInfo.json")
 
 save_data = SaveDataManager()

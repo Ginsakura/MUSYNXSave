@@ -8,17 +8,12 @@ import threading
 import time
 import tkinter
 import webbrowser
-#import win32api
-#import win32con
-#import win32gui_struct
-#import win32gui
 from enum import Enum, unique
 from tkinter import Label,Entry,Button,Scrollbar,Frame
 from tkinter import font,messagebox,StringVar
 from tkinter import Tk,ttk,Toplevel
 from tkinter.filedialog import askopenfilename
-# from PIL import Image as PILImage
-# from PIL import ImageTk
+from typing import Optional
 
 from .version import version, pre_version, is_pre_release
 from .config_manager import config, Logger
@@ -31,67 +26,60 @@ from .musync_save_decode import MusyncSaveDecoder
 from .hit_delay import HitDelay
 from .difficulty_score_analyze import diff_score_analyze
 
-class MusyncMainWindow(object):
+class MusyncMainWindow:
     """
-        docstring for MusyncSavDecodeGUI
-        描述: MusyncSavDecodeGUI主窗口类
+        MusyncMainWindow 主窗口类
         功能: 初始化主窗口, 控件布局, 事件绑定, UI逻辑处理
     """
-    def __init__(self, root:Tk=None, isTKroot:bool=True):
+    def __init__(self, root:Optional[Tk]=None, isTKroot:bool=True):
         """
-            MusyncSavDecodeGUI类初始化函数
+            MusyncMainWindow 类初始化函数
             param:
                 root: Tk - 主窗口Tk实例
                 isTKroot: bool - 是否为Tk根窗口
         """
-        # super(MusyncSavDecodeGUI, self).__init__()
-        self._logger:logging.Logger = Logger.get_logger(name="MusyncSavDecodeGUI")
+        self._logger:logging.Logger = Logger.get_logger(name="MusyncMainWindow")
         self.version:str = version
         self.preVersion:str = pre_version
         self.isPreRelease:bool = is_pre_release
         self.isTKroot:bool = isTKroot
-        root.iconbitmap('./musync_data/Musync.ico')
-        root.geometry(f'1000x670+500+300')
-        root.title("同步音律喵赛克Steam端本地存档分析")
-        root['background'] = '#efefef'
-        self.root:Tk = root
+        self.root:Tk = root or Tk()
+        self.root.iconbitmap('./musync_data/Musync.ico')
+        self.root.geometry(f'1000x670+500+300')
+        self.root.title("同步音律喵赛克Steam端本地存档分析")
+        self.root['background'] = '#efefef'
         self.root.minsize(500, 460)
-        # def fixed_map(option):
-        # 	return [elm for elm in style.map("Treeview", query_opt=option) if elm[:2] != ("!disabled", "!selected")]
         style:ttk.Style = ttk.Style()
-        if 1 :# Config['SystemDPI'] == 100:
-            style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',13))
-            style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
-            # style.configure("Checkbutton", foreground=[])
-            style.configure("reload.TButton", font=('霞鹜文楷等宽',16))
-            style.configure("F5.TButton", font=('霞鹜文楷等宽',16),
-                image=[
-                    #photo=PhotoImage(file="./skin/F5.png").subsample(5, 4),
-                    style.map("F5.TButton",
-                    foreground=[('pressed', 'red'), ('active', 'blue')],
-                    background=[('pressed', '!disabled', 'black'), ('active', 'white')])
-                ])
-            style.configure("close.TButton", font=('霞鹜文楷等宽',16), bg="#EEBBBB")
-            self.font:tuple = ('霞鹜文楷等宽',16)
+        style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',13))
+        style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
+        style.configure("reload.TButton", font=('霞鹜文楷等宽',16))
+        style.configure("F5.TButton", font=('霞鹜文楷等宽',16),
+            image=[
+                style.map("F5.TButton",
+                foreground=[('pressed', 'red'), ('active', 'blue')],
+                background=[('pressed', '!disabled', 'black'), ('active', 'white')])
+            ])
+        style.configure("close.TButton", font=('霞鹜文楷等宽',16), bg="#EEBBBB")
+        self.font:tuple = ('霞鹜文楷等宽',16)
         self.saveFilePathVar:StringVar = StringVar()
         self.saveFilePathVar.set('Input SaveFile or AnalyzeFile Path (savedata.sav)or(SavAnalyze.json)')
         self.gitHubUrlVar:StringVar = StringVar()
         self.gitHubUrlVar.set("点击打开GitHub仓库	点个Star吧，秋梨膏")
-        self.windowInfo:list[int] = [root.winfo_x(), root.winfo_y(), root.winfo_width(), root.winfo_height()]
+        self.windowInfo:list[int] = [self.root.winfo_x(), self.root.winfo_y(), self.root.winfo_width(), self.root.winfo_height()]
         self.oldWindowInfo:list[int] = [0, 0]
         self.saveCount:int = 0
         self.totalSync:int = 0
         self.excludeCount:int = 0
         self.dataSortMethodsort:list[bool] = [None, True]
-        self.dataSelectMethod:str = None
+        self.dataSelectMethod:str = ""
         self.treeviewColumns:list[str] = ["SongId",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","Status"]
         self.difficute:DiffcuteEnum = DiffcuteEnum.All
         self.keys:KeysEnum = KeysEnum.All
         self.songSelect:SongSelectEnum = SongSelectEnum.All
         self.checkGameStartEvent:threading.Event = threading.Event()
-        self.checkGameIsStartThread:threading.Thread = None
+        self.checkGameIsStartThread:threading.Thread = threading.Thread(target=self._check_game_running, daemon=True)
         self.map_sync_data: SyncDataAnalyzer = SyncDataAnalyzer()
-        self.UpdateEnum()
+        self._update_enum()
 
         self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
 
@@ -102,7 +90,7 @@ class MusyncMainWindow(object):
 
     def _controller_ui_init(self) -> None:
         """控制ui控件初始化"""
-        self.DecodeSaveFile = ttk.Button(self.root, text="解码并刷新",command=self.RefreshSave,style='F5.TButton')
+        self.DecodeSaveFile = ttk.Button(self.root, text="解码并刷新",command=self._refresh_save,style='F5.TButton')
         self.DecodeSaveFile.place(x=10,y=10,width=160,height=30)
         self.isGameRunning = Label(self.root, text="游戏未启动", font=self.font,bg='#FF8080')
         self.isGameRunning.place(x=30,y=85,width=110,height=30)
@@ -115,13 +103,11 @@ class MusyncMainWindow(object):
         self.saveCountLabel.place(x=100,y=0,width=60,height=30)
 
         self.saveFilePathEntry = Entry(self.root, textvariable=self.saveFilePathVar, font=self.font, relief="sunken")
-        self.getSaveFilePath = Button(self.root, text='打开存档', command=self.SelectPath, font=self.font)
+        self.getSaveFilePath = Button(self.root, text='打开存档', command=self._select_path, font=self.font)
 
         self.saveData = ttk.Treeview(self.root, show="headings", columns = self.treeviewColumns)
         self.saveInfoScroll = Scrollbar(self.saveData, orient='vertical', command=self.saveData.yview)
         self.saveData.configure(yscrollcommand=self.saveInfoScroll.set)
-        # self.saveData.tag_configure("BuiltinSong",background='#FF0000',foreground='blue')
-        # self.saveData.tag_configure("DLCSong",background='#FDFFAE',foreground='blue')
 
         self.developer = Label(self.root, text=f'Version {self.preVersion if self.isPreRelease else self.version} | Develop By Ginsakura', font=self.font, relief="groove")
         self.gitHubLink = Button(self.root, textvariable=self.gitHubUrlVar, command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNXSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
@@ -129,8 +115,6 @@ class MusyncMainWindow(object):
         self.initLabel = Label(self.root, text='启动中......', anchor="w", font=self.font, relief="groove")
         self.initLabel.place(x=250,y=300,width=500,height=30)
 
-        # self.closeWindow = ttk.Button(self.root, text="关闭",command=lambda : self.root.destroy(),style='close.TButton')
-        # self.closeWindow.place(x=100,y=88,width=90,height=30)
         self.difficuteScoreAnalyze = Button(self.root, text="成绩分布",command=lambda:diff_score_analyze(), font=self.font)
         self.difficuteScoreAnalyze.place(x=775,y=88,width=90,height=30)
 
@@ -153,26 +137,25 @@ class MusyncMainWindow(object):
         self.selectFrame.place(x=180,y=50,width=380,height=70)
         self.selectLabel0 = Label(self.selectFrame, text="筛选\n控件", anchor="w", font=self.font, relief="flat")
         self.selectLabel0.place(x=0,y=5,width=50,height=60)
-        # self.selectPlayedButton = Checkbutton(self.selectFrame, text='已游玩', command=lambda:self.SelectMethod('Played'), anchor="w", font=self.font)
-        self.selectPlayedButton = Button(self.selectFrame, text='已游玩', command=lambda:self.SelectMethod('Played'), anchor="w", font=self.font)
+        self.selectPlayedButton = Button(self.selectFrame, text='已游玩', command=lambda:self._select_method('Played'), anchor="w", font=self.font)
         self.selectPlayedButton.place(x=50,y=0,width=75,height=30)
-        self.selectUnplayButton = Button(self.selectFrame, text='未游玩', command=lambda:self.SelectMethod('Unplay'), anchor="w", font=self.font)
+        self.selectUnplayButton = Button(self.selectFrame, text='未游玩', command=lambda:self._select_method('Unplay'), anchor="w", font=self.font)
         self.selectUnplayButton.place(x=50,y=35,width=75,height=30)
-        self.selectIsFavButton = Button(self.selectFrame, text='已收藏', command=lambda:self.SelectMethod('IsFav'), anchor="w", font=self.font)
+        self.selectIsFavButton = Button(self.selectFrame, text='已收藏', command=lambda:self._select_method('IsFav'), anchor="w", font=self.font)
         self.selectIsFavButton.place(x=125,y=0,width=75,height=30)
-        self.selectExRankButton = Button(self.selectFrame, text='RankEx', command=lambda:self.SelectMethod('RankEX'), anchor="w", font=self.font)
+        self.selectExRankButton = Button(self.selectFrame, text='RankEx', command=lambda:self._select_method('RankEX'), anchor="w", font=self.font)
         self.selectExRankButton.place(x=125,y=35,width=75,height=30)
-        self.selectSRankButton = Button(self.selectFrame, text='RankS', command=lambda:self.SelectMethod('RankS'), anchor="w", font=self.font)
+        self.selectSRankButton = Button(self.selectFrame, text='RankS', command=lambda:self._select_method('RankS'), anchor="w", font=self.font)
         self.selectSRankButton.place(x=200,y=0,width=62,height=30)
-        self.selectARankButton = Button(self.selectFrame, text='RankA', command=lambda:self.SelectMethod('RankA'), anchor="w", font=self.font)
+        self.selectARankButton = Button(self.selectFrame, text='RankA', command=lambda:self._select_method('RankA'), anchor="w", font=self.font)
         self.selectARankButton.place(x=200,y=35,width=62,height=30)
-        self.selectBRankButton = Button(self.selectFrame, text='RankB', command=lambda:self.SelectMethod('RankB'), anchor="w", font=self.font)
+        self.selectBRankButton = Button(self.selectFrame, text='RankB', command=lambda:self._select_method('RankB'), anchor="w", font=self.font)
         self.selectBRankButton.place(x=262,y=0,width=62,height=30)
-        self.selectCRankButton = Button(self.selectFrame, text='RankC', command=lambda:self.SelectMethod('RankC'), anchor="w", font=self.font)
+        self.selectCRankButton = Button(self.selectFrame, text='RankC', command=lambda:self._select_method('RankC'), anchor="w", font=self.font)
         self.selectCRankButton.place(x=262,y=35,width=62,height=30)
-        self.select122Button = Button(self.selectFrame, text='黑Ex', command=lambda:self.SelectMethod('Sync122'), anchor="w", font=self.font)
+        self.select122Button = Button(self.selectFrame, text='黑Ex', command=lambda:self._select_method('Sync122'), anchor="w", font=self.font)
         self.select122Button.place(x=324,y=0,width=50,height=30)
-        self.select120Button = Button(self.selectFrame, text='红Ex', command=lambda:self.SelectMethod('Sync120'), anchor="w", font=self.font)
+        self.select120Button = Button(self.selectFrame, text='红Ex', command=lambda:self._select_method('Sync120'), anchor="w", font=self.font)
         self.select120Button.place(x=324,y=35,width=50,height=30)
 
     def _extra_selector_ui_init(self) -> None:
@@ -181,38 +164,37 @@ class MusyncMainWindow(object):
         self.selectExFrame.place(x=570,y=50,width=200,height=70)
         self.selectLabel1 = Label(self.selectExFrame, text="额外\n筛选", anchor="w", font=self.font, relief="flat")
         self.selectLabel1.place(x=0,y=5,width=50,height=60)
-        self.selectDLCSong = Button(self.selectExFrame, text=self.songSelect.text, command=lambda:self.SelectDLCSong(), anchor='w', font=self.font)
+        self.selectDLCSong = Button(self.selectExFrame, text=self.songSelect.text, command=lambda:self._select_dlc_song(), anchor='w', font=self.font)
         self.selectDLCSong.place(x=48,y=0,width=30,height=65)
-        self.selectKeys = Button(self.selectExFrame, text=self.keys.text, command=lambda:self.SelectKeys(), anchor='center', font=self.font)
+        self.selectKeys = Button(self.selectExFrame, text=self.keys.text, command=lambda:self._select_keys(), anchor='center', font=self.font)
         self.selectKeys.place(x=80,y=0,width=92,height=30)
-        self.selectDifficute = Button(self.selectExFrame, text=self.difficute.text, command=lambda:self.SelectDifficute(), anchor='w', font=self.font)
+        self.selectDifficute = Button(self.selectExFrame, text=self.difficute.text, command=lambda:self._select_difficute(), anchor='w', font=self.font)
         self.selectDifficute.place(x=80,y=35,width=92,height=30)
 
     def _run_in_init(self) -> None:
         """AutoRun"""
         try:
-            self.InitLabel('初始化函数执行中......')
-            self.UpdateWindowInfo()
-            self.TreeviewWidthUptate()
-            self.TreeviewColumnUpdate()
+            self._init_label('初始化函数执行中......')
+            self._update_window_info()
+            self._treeview_width_update()
+            self._treeview_column_update()
 
             self.checkGameStartEvent.set()
 
             # 延迟启动线程，确保 mainloop 启动后再执行 UI 调度
             def _start_checkgame():
-                self.checkGameIsStartThread = threading.Thread(target=self.CheckGameRunning, daemon=True)
                 self.checkGameIsStartThread.start()
 
             self.root.after(100, _start_checkgame)
-            self.root.after(100, lambda: threading.Thread(target=self.CheckJsonUpdate, daemon=True).start())
+            self.root.after(100, lambda: threading.Thread(target=self._check_json_update, daemon=True).start())
 
             if config.CheckUpdate:
                 self._logger.info("Check Updating...")
-                self.root.after(100, lambda: threading.Thread(target=self.CheckUpdate, daemon=True).start())
+                self.root.after(100, lambda: threading.Thread(target=self._check_update, daemon=True).start())
             else:
                 self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页')
                 self._logger.warning("Check update is Disable")
-            self.InitLabel(text="正在读取存档路径……")
+            self._init_label(text="正在读取存档路径……")
             if (config.MainExecPath is not None and
                 config.MainExecPath and
                 os.path.isfile(config.MainExecPath)
@@ -224,11 +206,11 @@ class MusyncMainWindow(object):
                     self.saveFilePathVar.set(save_path + "SavesDir\\savedata.sav")
             if config.DllInjection:
                 self._logger.warning("DLL Injection is Enable.")
-                self.hitDelay = Button(self.root, text="游玩结算",command=self.HitDelayCheck, font=self.font,bg='#FF5959')
+                self.hitDelay = Button(self.root, text="游玩结算",command=self._hit_delay_check, font=self.font,bg='#FF5959')
                 self.hitDelay.place(x=775,y=50,width=90,height=30)
-            self.InitLabel(text="正在分析存档文件中……")
-            MusyncSaveDecoder(savFile=self.saveFilePathVar.get()).Main()
-            self.DataLoad()
+            self._init_label(text="正在分析存档文件中……")
+            MusyncSaveDecoder(savFile=self.saveFilePathVar.get()).main()
+            self._data_load()
         except Exception as e:
             self._logger.exception("Software has some Exception:")
             self._on_closing()
@@ -264,40 +246,40 @@ class MusyncMainWindow(object):
 
     def _on_refresh(self,event) -> None:
         """F5键刷新事件处理函数"""
-        self.DataLoad()
+        self._data_load()
 
 # select功能组
-    def SelectKeys(self) -> None:
+    def _select_keys(self) -> None:
         """切换按键型筛选"""
         self.keys = KeysEnum((self.keys.value+1)%3)
         self.selectKeys.configure(text=self.keys.text)
-        self.DataLoad()
+        self._data_load()
         self.root.update()
-    def SelectDifficute(self) -> None:
+    def _select_difficute(self) -> None:
         """切换难度筛选"""
         self.difficute = DiffcuteEnum((self.difficute.value+1)%4)
         self.selectDifficute.configure(text=self.difficute.text)
-        self.DataLoad()
+        self._data_load()
         self.root.update()
-    def SelectDLCSong(self) -> None:
+    def _select_dlc_song(self) -> None:
         """切换DLC筛选"""
         self.songSelect = SongSelectEnum((self.songSelect.value+1)%3)
         self.selectDLCSong.configure(text=self.songSelect.text)
         self.selectDLCSong.configure(bg=self.songSelect.background)
-        self.DataLoad()
+        self._data_load()
         self.root.update()
-    def SelectMethod(self,method) -> None:
+    def _select_method(self,method) -> None:
         """切换筛选方法"""
         if self.dataSelectMethod == method:
             self.dataSelectMethod = None
-            self.SelectButtonGrey(method)
+            self._select_button_grey(method)
         else:
-            self.SelectButtonGrey(self.dataSelectMethod)
+            self._select_button_grey(self.dataSelectMethod)
             self.dataSelectMethod = method
-            self.SelectButtonGreen(self.dataSelectMethod)
-        self.DataLoad()
+            self._select_button_green(self.dataSelectMethod)
+        self._data_load()
         self.root.update()
-    def SelectButtonGreen(self,method) -> None:
+    def _select_button_green(self,method) -> None:
         """设置按钮为绿色"""
         if method == "Played":self.selectPlayedButton.configure(bg='#98E22B')
         elif method == "Unplay":self.selectUnplayButton.configure(bg='#98E22B')
@@ -309,7 +291,7 @@ class MusyncMainWindow(object):
         elif method == "RankA":self.selectARankButton.configure(bg='#98E22B')
         elif method == "RankB":self.selectBRankButton.configure(bg='#98E22B')
         elif method == "RankC":self.selectCRankButton.configure(bg='#98E22B')
-    def SelectButtonGrey(self,method) -> None:
+    def _select_button_grey(self,method) -> None:
         """设置按钮为灰色"""
         if method == "Played":self.selectPlayedButton.configure(bg='#F0F0F0')
         elif method == "Unplay":self.selectUnplayButton.configure(bg='#F0F0F0')
@@ -322,7 +304,7 @@ class MusyncMainWindow(object):
         elif method == "RankB":self.selectBRankButton.configure(bg='#F0F0F0')
         elif method == "RankC":self.selectCRankButton.configure(bg='#F0F0F0')
 
-    def SelectPath(self) -> None:
+    def _select_path(self) -> None:
         """选择存档文件路径"""
         # 使用askdirectory()方法返回文件夹的路径
         path_ = askopenfilename(title="打开存档文件", filetypes=(("Sav Files", "*.sav"),("All Files","*.*"),))
@@ -335,18 +317,15 @@ class MusyncMainWindow(object):
             self.saveFilePathVar.set(path_)
 
     # bind功能组
-    def DoubleClick(self,event) -> None:
+    def _on_double_click(self,event) -> None:
         """双击事件处理函数"""
         e = event.widget									# 取得事件控件
         itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
         # state = e.item(itemID,"text")						# 取得text参数
         songData = e.item(itemID,"values")					# 取得values参数
         self._logger.debug(songData)
-        # nroot = Toplevel(self.root)
-        # nroot.resizable(True, True)
-        # newWindow = SubWindow(nroot, songData[0], songData[1], songData[2])
 
-    def SortClick(self,event) -> None:
+    def _on_sort_click(self,event) -> None:
         """列标题点击排序事件处理函数"""
         def TreeviewSortColumn(col) -> None:
             start_time: int = time.perf_counter_ns()
@@ -367,14 +346,14 @@ class MusyncMainWindow(object):
             for index, (val, k) in enumerate(l):
                 self.saveData.move(k, '', index)
             print(f"Treeview SortClick Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
-            self.TreeviewColumnUpdate()
+            self._treeview_column_update()
         if isinstance(event, list):
             self.dataSortMethodsort[1] = not self.dataSortMethodsort[1]
             TreeviewSortColumn(event[0])
         for col in self.treeviewColumns:
             self.saveData.heading(col, command=lambda _col=col:TreeviewSortColumn(_col))
 
-    def StartGame(self,event) -> None:
+    def _start_game(self,event) -> None:
         """启动游戏事件处理函数"""
         if self.isGameRunning["text"] == '游戏未启动':
             os.system('start steam://rungameid/952040')
@@ -383,7 +362,7 @@ class MusyncMainWindow(object):
 
 
     # update功能组
-    def CheckJsonUpdate(self) -> None:
+    def _check_json_update(self) -> None:
         """检查谱面信息更新"""
         start_time: int = time.perf_counter_ns()
 
@@ -403,7 +382,7 @@ class MusyncMainWindow(object):
                     songNameJson = response.text
                     with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
                         snj.write(songNameJson)
-                    song_name.LoadFile()
+                    song_name.load_file()
             else:
                 self._logger.error("Can't get \"songname.ver\", HTTP status code: %d."%(response.status_code))
         except Exception as e:
@@ -416,7 +395,7 @@ class MusyncMainWindow(object):
             self.root.after(100, show_error)
         self._logger.info(f"CheckJsonUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
-    def CheckUpdate(self) -> None:
+    def _check_update(self) -> None:
         """检查软件更新"""
         def CheckVersion(local:list[int], target:list[int], channel:bool=False)->bool:
             """版本号比较
@@ -481,12 +460,12 @@ class MusyncMainWindow(object):
         if (CheckVersion(localVersion, targetVersion, updateChannel)):
             self.gitHubUrlVar.set(f'有新版本啦——点此打开下载页面	NewVersion: {".".join(map(str, targetVersion))}')
             labelUrl = f"https://github.com/Ginsakura/MUSYNCSave/releases/tag/{'.'.join(map(str, targetVersion))}"
-            self.UpdateTip()
+            self._update_tip()
         self.root.after(100, lambda:self.gitHubLink.configure(command=lambda:webbrowser.open(labelUrl)))
         self._logger.info(f"CheckUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     # 初始化提示框
-    def InitLabel(self,text,close=False) -> None:
+    def _init_label(self,text,close=False) -> None:
         self.initLabel.place(x=250,y=300,width=500,height=30)
         self.initLabel.configure(text=text, anchor="w")
         self.root.update()
@@ -494,12 +473,12 @@ class MusyncMainWindow(object):
             self.initLabel.place(x=-1,width=0)
 
 # 数据分析功能组
-    def RefreshSave(self)->None:
+    def _refresh_save(self)->None:
         "刷新存档"
-        MusyncSaveDecoder(savFile=self.saveFilePathVar.get()).Main()
-        self.DataLoad()
+        MusyncSaveDecoder(savFile=self.saveFilePathVar.get()).main()
+        self._data_load()
 
-    def HitDelayCheck(self):
+    def _hit_delay_check(self):
         "DLL注入功能"
         if not config.DllInjection:
             return
@@ -515,7 +494,7 @@ class MusyncMainWindow(object):
         nroot.resizable(True, True)
         HitDelay(nroot)
 
-    def DataLoad(self):
+    def _data_load(self):
         "存档数据解析"
         self._logger.debug("DataLoad Start")
         start_time: int = time.perf_counter_ns()
@@ -591,27 +570,26 @@ class MusyncMainWindow(object):
                 saveInfo.PlayCount, #游玩计数
                 saveInfo.State #谱面状态
                 ))
-        # print(songNameJson["NotDLCSong"])
 
 
         if not self.dataSortMethodsort[0] is None:
-            self.SortClick(self.dataSortMethodsort)
-        self.InitLabel('数据展示生成完成.',close=True)
+            self._on_sort_click(self.dataSortMethodsort)
+        self._init_label('数据展示生成完成.',close=True)
         self._logger.debug(f"DataLoad Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
-        self.UpdateWindowInfo()
+        self._update_window_info()
 
     # 控件更新功能组
-    def UpdateTip(self) -> None:
+    def _update_tip(self) -> None:
         """软件更新提示"""
         if self.gitHubLink.cget('fg') == '#C4245C':
             self.gitHubLink.configure(fg='#4BB1DA')
         else:
             self.gitHubLink.configure(fg='#C4245C')
-        self.root.after(500, self.UpdateTip)
+        self.root.after(500, self._update_tip)
 
-    def CheckGameRunning(self):
+    def _check_game_running(self):
         """游戏运行检测"""
-        logger:logging.Logger = Logger.get_logger("MusyncSavDecodeGUI.CheckGameRunning")
+        logger:logging.Logger = Logger.get_logger("MusyncMainWindow._check_game_running")
         logger.info("Start Thread: CheckGameIsStart.")
         def UpdateUI(text:str, bg:str)->None:
             self.isGameRunning["text"] = text; #"游戏未启动"
@@ -652,7 +630,7 @@ class MusyncMainWindow(object):
             logger.info(f"CheckGameIsStart Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         logger.warning("Stop Thread: CheckGameIsStart.")
 
-    def TreeviewColumnUpdate(self):
+    def _treeview_column_update(self):
         """TreeView列名更新"""
         self.saveData.heading("SongId",anchor="center",text="谱面号"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SongId' else ''))
         self.saveData.heading("SongName",anchor="center",text="曲名"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SongName' else ''))
@@ -666,7 +644,7 @@ class MusyncMainWindow(object):
         self.saveData.heading("Status",anchor="center",text="Status"+(('⇓   ' if self.dataSortMethodsort[1] else '⇑   ') if self.dataSortMethodsort[0]=='Status' else '   '))
         self.root.update()
 
-    def TreeviewWidthUptate(self):
+    def _treeview_width_update(self):
         """TreeView列宽更新"""
         self.saveData.column("SongId",anchor="e",width=72)
         self.saveData.column("SongName",anchor="w",width=self.windowInfo[2]-771)
@@ -679,7 +657,7 @@ class MusyncMainWindow(object):
         self.saveData.column("PlayCount",anchor="e",width=90)
         self.saveData.column("Status",anchor="w",width=80)
 
-    def UpdateWindowInfo(self,event=None):
+    def _update_window_info(self,event=None):
         """窗口更新"""
         self.windowInfo = ['root.winfo_x()','root.winfo_y()',self.root.winfo_width(),self.root.winfo_height()]
 
@@ -687,25 +665,21 @@ class MusyncMainWindow(object):
         self.getSaveFilePath.place(x=(self.windowInfo[2]-90),y=10,width=90,height=30)
         self.saveData.place(x=0 ,y=130 ,width=(self.windowInfo[2]-1) ,height=(self.windowInfo[3]-160))
         if not self.oldWindowInfo == self.windowInfo[2:]:
-            self.TreeviewWidthUptate()
+            self._treeview_width_update()
             self.saveInfoScroll.place(x=self.windowInfo[2]-22, y=1, width=20, height=self.windowInfo[3]-162)
-        # self.saveCountVar.set()
         self.saveCountLabel.configure(text=str(self.saveCount+self.excludeCount))
         self.avgSyncLabel.configure(text=f'{(self.totalSync * 100 / (1 if self.saveCount==0 else self.saveCount)):.6f}%')
         self.developer.place(x=0,y=self.windowInfo[3]-30,width=420,height=30)
         self.gitHubLink.place(x=420,y=self.windowInfo[3]-30,width=self.windowInfo[2]-420,height=30)
 
-        self.isGameRunning.bind('<Button-1>', self.StartGame)
-        self.saveData.bind("<Double-1>",self.DoubleClick)
-        self.saveData.bind("<ButtonRelease-1>",self.SortClick)
+        self.isGameRunning.bind('<Button-1>', self._start_game)
+        self.saveData.bind("<Double-1>",self._on_double_click)
+        self.saveData.bind("<ButtonRelease-1>",self._on_sort_click)
         self.root.bind("<F5>", self._on_refresh)
         self.oldWindowInfo = self.windowInfo[2:]
         self.root.update()
-        # if self.after == False:
-        # 	self.after = True
-        # 	self.root.after(100,self.UpdateWindowInfo)
 
-    def UpdateEnum(self)->None:
+    def _update_enum(self)->None:
         """枚举内容赋值"""
         DiffcuteEnum.Easy.text = "简单难度"
         DiffcuteEnum.Easy.stext = "Easy"
@@ -730,46 +704,6 @@ class MusyncMainWindow(object):
         SongSelectEnum.Builtin.background = '#FF9B9B'
         SongSelectEnum.DLC.background = '#98E22B'
         SongSelectEnum.All.background = '#F0F0F0'
-
-class SubWindow(object):
-    def __init__(self, nroot, songID, songName, songDifficute):
-        ##Init##
-        nroot.iconbitmap('./musync_data/Musync.ico')
-        # super(SubWindow, self).__init__()
-        self.font=('霞鹜文楷等宽',16)
-        nroot.geometry(f'1000x630+500+300')
-        style = ttk.Style()
-        style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',12))
-        style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',12))
-        nroot.title(f"{songID}:{songName}:{songDifficute} 全球排行")
-        nroot['background'] = '#efefef'
-        self.root = nroot
-        self.songID = songID
-        self.globalSync = ttk.Treeview(self.root, show="headings")
-        self.globalSync.configure(columns = ['SongName',"Difficulty","Rank","SyncNumber"])
-        self.VScroll = Scrollbar(self.globalSync, orient='vertical', command=self.globalSync.yview)
-
-        self.TIPS = Label(self.root, text="这里还没有被实现鸭——", relief="groove", font=('霞鹜文楷等宽',15))
-        self.TIPS.place(x=10,y=10,width=300,height=30)
-
-        ##AutoRun##
-        self.UpdateWindow()
-
-    def UpdateWindow(self):
-        self.root.update()
-        self.windowInfo = ['root.winfo_x()','root.winfo_y()',self.root.winfo_width(),self.root.winfo_height()]
-
-        self.globalSync.place(x=10 ,y=10 ,width=(self.windowInfo[2]-20) ,height=(self.windowInfo[3]-20))
-        self.globalSync.column("SongName",anchor="w",width=100)
-        self.globalSync.heading("SongName",anchor="center",text="曲名")
-        self.globalSync.column("Difficulty",anchor="w",width=90)
-        self.globalSync.heading("Difficulty",anchor="center",text="难度")
-        self.globalSync.column("Rank",anchor="e",width=90)
-        self.globalSync.heading("Rank",anchor="center",text="Rank")
-        self.globalSync.column("SyncNumber",anchor="e",width=70)
-        self.globalSync.heading("SyncNumber",anchor="center",text="同步率")
-
-        self.VScroll.place(x=self.windowInfo[2]-40, y=1, width=20, relheight=1)
 
 @unique
 class DiffcuteEnum(Enum):
@@ -796,9 +730,13 @@ class SongSelectEnum(Enum):
 @unique
 class MessageBoxEnum(Enum):
     """messagebox 类型枚举"""
-    # TODO: 补全
     showerror = 0
     askyesno = 1
+    showinfo = 2
+    showwarning = 3
+    askokcancel = 4
+    askyesnocancel = 5
+    askretrycancel = 6
 
 
 if __name__ == '__main__':
@@ -813,12 +751,6 @@ if __name__ == '__main__':
         Toolkit.change_console_style()
     root.tk.call('tk', 'scaling', 1.25)
     root.resizable(False, True); #允许改变窗口高度，不允许改变窗口宽度
-    # 强制仅旧版UI
     MusyncMainWindow(root=root)
-    # if cfg['EnableFramelessWindow']:
-    # 	root.overrideredirect(1)
-    # 	window = NewStyle.MusyncSavDecodeGUI(root=root)
-    # else:
-    # 	window = OldStyle.MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease)
     root.update()
     root.mainloop()

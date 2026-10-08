@@ -71,7 +71,7 @@ class AppConfigManager:
         self.UpdateChannel: str = "PreRelease" if is_pre_release else "Release"
         self.LoggerFilter: str = "INFO"
         self.CheckUpdate: bool = True
-        self.DllInjection: bool = False
+        self.DllInjection: bool = False  # 已弃用：DLL 注入已被 BepInEx 插件替代，保留字段仅为向后兼容 config 文件
         self.PlayedScatterAvgAccWindowSize: int = 0
         self.SystemDpi: int = 100
         self.DonutChartInHitDelay: bool = True
@@ -82,6 +82,7 @@ class AppConfigManager:
         self.ConsoleFontSize: int = 36
         self.MainExecPath: str = ""
         self.ChangeConsoleStyle: bool = True
+        self.SocketPort: int = 26531
 
         self.load_config()
 

@@ -13,7 +13,7 @@ from .version import version, pre_version, is_pre_release
 _LOG_FORMATTER = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 _LOG_FILE_PATH = Path.cwd() / "log.txt"
 
-class Logger(object):
+class Logger:
     @staticmethod
     def get_logger(name: str="MUSYNC.App", filter: int=logging.INFO, default_load:bool=False) -> logging.Logger:
         """全局日志获取函数，替代旧版的 Logger.GetLogger"""
@@ -72,6 +72,7 @@ class AppConfigManager:
         self.LoggerFilter: str = "INFO"
         self.CheckUpdate: bool = True
         self.DllInjection: bool = False
+        self.PlayedScatterAvgAccWindowSize: int = 0
         self.SystemDpi: int = 100
         self.DonutChartInHitDelay: bool = True
         self.DonutChartInAllHitAnalyze: bool = True

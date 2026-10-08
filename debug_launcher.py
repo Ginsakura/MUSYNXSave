@@ -33,9 +33,9 @@ def auto_increment_prerelease() -> None:
         is_pre_release: bool = True if content[2] == "1" else False
 
         version_script: str = "# -*- coding: utf-8 -*-\n" \
-            f"version:str = '{version}'						# Release版本号\n" \
-            f"pre_version:str = '{version}pre{pre_version}'				# PreRelease版本号\n" \
-            f"is_pre_release:bool = {is_pre_release}"
+            f"version: str = '{version}'						# Release版本号\n" \
+            f"pre_version: str = '{version}pre{pre_version}'				# PreRelease版本号\n" \
+            f"is_pre_release: bool = {is_pre_release}"
 
         # 将新的版本信息写回 version.py
         with version_file.open("w", encoding="utf-8") as vf:

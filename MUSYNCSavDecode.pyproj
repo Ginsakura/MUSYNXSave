@@ -40,7 +40,9 @@
     <Compile Include="musync_save\musync_save_decode.py" />
     <Compile Include="musync_save\save_data_manager.py" />
     <Compile Include="musync_save\songname_manager.py" />
+    <Compile Include="musync_save\sync_data_analyzer.py" />
     <Compile Include="musync_save\toolkit.py" />
+    <Compile Include="musync_save\tooltip.py" />
     <Compile Include="musync_save\uiautomation.py" />
     <Compile Include="musync_save\version.py" />
     <Compile Include="musync_save\__init__.py" />
@@ -63,8 +65,10 @@
     <Content Include=".github\ISSUE_TEMPLATE\bug_report.md" />
     <Content Include=".github\ISSUE_TEMPLATE\custom.md" />
     <Content Include=".github\ISSUE_TEMPLATE\feature_request.md" />
+    <Content Include=".github\workflows\PreReleasePRBuild.yml" />
+    <Content Include=".github\workflows\PreReleasePushBuild.yml" />
     <Content Include=".github\workflows\PullRequestBuild.yml" />
-    <Content Include=".github\workflows\ReleaseBuild.yml" />
+    <Content Include=".github\workflows\ReleasePRBuild.yml" />
     <Content Include=".gitignore" />
     <Content Include="buildLauncher.ps1" />
     <Content Include="buildLauncher.spec" />

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import csv
 import logging
+import mplcursors
 
 from matplotlib import pyplot as plot
 from matplotlib.figure import Figure
@@ -11,7 +12,7 @@ from .config_manager import Logger
 
 def analyze_3d() -> None:
     """读取 CSV 数据并生成 3D 散点图分析视图"""
-    logger: logging.Logger = Logger.get_logger("AvgAcc_Sync_Analyze.Analyze3D")
+    _logger: logging.Logger = Logger.get_logger("AvgAcc_Sync_Analyze.Analyze3D")
 
     # 强制类型注解
     acc: list[float] = []
@@ -30,17 +31,17 @@ def analyze_3d() -> None:
                     # 按照 X, Z, Y 的逻辑读取 (假设 CSV 列序为: acc, sync, diff)
                     acc.append(float(row[0]))
                     sync.append(float(row[1]))
-                    diff.append(float(row[2]))
+                    diff.append(int(row[2]))
                 except (ValueError, IndexError):
-                    logger.warning(f"Failed to parse row {line_num}: {row} - 已跳过")
+                    _logger.warning(f"Failed to parse row {line_num}: {row} - 已跳过")
                     continue
     except FileNotFoundError:
-        logger.error("Acc-Sync.csv not found. 请确保文件路径正确。")
+        _logger.error("Acc-Sync.csv not found. 请确保文件路径正确。")
         return
 
     # 防御性检查
     if (not acc) or (not sync) or (not diff):
-        logger.error("No valid 3D data found in Acc-Sync.csv")
+        _logger.error("No valid 3D data found in Acc-Sync.csv")
         return
 
     # 2. 3D 画布初始化
@@ -67,7 +68,7 @@ def analyze_3d() -> None:
     # 调整 3D 渲染包围盒的比例
     # 参数分别对应 (X轴渲染长度, Y轴渲染长度, Z轴渲染长度)
     # 我们将 X(acc) 设为最长 3，Z(sync) 设为中等 1.5，Y(diff) 深度压缩为 0.8
-    ax.set_box_aspect((2.0, 1.0, 2.0))
+    ax.set_box_aspect((2.0, 0.5, 2.0))
 
     # 设置主刻度步长
     if (max(acc) <= 75):
@@ -141,5 +142,35 @@ def analyze_3d() -> None:
 
     # 调整初始视角 (仰角 20 度, 方位角 -45 度)
     ax.view_init(elev=20, azim=-45)
+
+    # ==========================================
+    # 进阶交互：鼠标悬停提示 (需 pip install mplcursors)
+    # ==========================================
+    if mplcursors is not None:
+        # 将游标绑定到散点图上
+        cursor = mplcursors.cursor(scatter, hover=True)
+        @cursor.connect("add")
+        def on_add(sel):
+            # 核心修正：使用 sel.index 获取原始数据的绝对索引
+            # 注意：某些情况下对于散点图，index 可能被包装在序列中，安全起见取第一个
+            idx = sel.index
+            if isinstance(idx, (list, tuple)):
+                idx = idx[0]
+            # 直接从原始数据数组中提取精确数值
+            x_val: float = acc[idx]
+            y_val: int = diff[idx]
+            z_val: float = sync[idx]
+            # 设置悬停浮窗的文本格式
+            sel.annotation.set_text(f"Acc: {x_val} ms\nDiff: {y_val}\nSYNC: {z_val}%")
+
+            # 美化浮窗
+            sel.annotation.get_bbox_patch().set(
+                alpha=0.85,
+                color='#2b2b2b',   # 极客深色背景
+            )
+            sel.annotation.set_color("#a9b7c6") # 浅色文字
+    else:
+        _logger.debug("mplcursors not installed, tooltip feature disabled.")
+
 
     plot.show()

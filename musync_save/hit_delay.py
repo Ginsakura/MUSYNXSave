@@ -453,7 +453,7 @@ class HitDelay:
         plt.rcParams['axes.unicode_minus'] = False
 
         fig = plt.figure(f'AvgDelay: {self._data_avg_delay:.4f}ms    Notes: {self._data_all_notes}    '\
-            f'Combo: {self._data_combo}    AvgAcc: {self._data_avg_acc:.4f}ms',figsize=(9, 4))
+            f'Combo: {self._data_combo}    AvgAcc: {self._data_avg_acc:.4f}ms',figsize=(9, 3))
         fig.clear()
         fig.subplots_adjust(**{"left":0.045,"bottom":0.055,"right":1,"top":1})
         # fig.subplots_adjust(**{"left":0.06, "bottom":0.1, "right":0.98, "top":0.98}) # 微调了边距防裁剪
@@ -524,7 +524,10 @@ class HitDelay:
         scatter = ax.scatter(x_coords, self._data_list, c=point_colors, s=15, alpha=0.7, edgecolors='none', zorder=3)
 
         # 绘制移动平均趋势线 (Moving Average)，消除微小波动，显示整体偏早还是偏晚
-        window = min(20, len(self._data_list) // 5 + 1) # 动态窗口大小
+        if config.PlayedScatterAvgAccWindowSize > 0:
+            window = config.PlayedScatterAvgAccWindowSize
+        else:
+            window = min(20, len(self._data_list) // 5 + 1) # 动态窗口大小
         if window > 0:
             ma_y = []
             left_span = (window - 1) // 2
@@ -642,7 +645,7 @@ class HitDelay:
         except struct.error as e:
             self._logger.error(f"解析 HitMap 二进制数据失败: {e}")
 
-        self._logger.info(f"成功载入 {len(self._data_list)} 个 note 数据准备绘图。")
+        self._logger.debug(f"成功载入 {len(self._data_list)} 个 note 数据准备绘图。")
         self._do_matplotlib_draw()
 
     def _action_get_console_data(self) -> None:
@@ -784,21 +787,6 @@ class HitDelay:
     # [Level 0] 无状态 UI 独立交互 (Stateless UI callbacks)
     # ==========================================
 
-    # def _on_treeview_resize(self, event: tk.Event) -> None:
-    #     """当 Treeview 大小改变时，按比例调整列宽"""
-    #     new_total_width = event.width
-    #     if new_total_width <= 100: return # 忽略初始化时的极小值
-
-    #     # 计算拉伸比例系数
-    #     # 减去 20px 预留给滚动条的空间，防止出现水平滚动条
-    #     scale_factor = (new_total_width - 20) / self._total_base_width
-
-    #     for col_id, title, base_width, anchor in self._headings:
-    #         # 核心算法：目标宽度 = 基准宽度 * 比例系数
-    #         target_width = int(base_width * scale_factor)
-    #         # 设置最小宽度防止缩没，并更新当前宽度
-    #         self._treeview.column(col_id, width=target_width, minwidth=int(base_width*0.5))
-
     def _on_tree_select(self, event: tk.Event) -> None:
         """回调：点击表格行获取 ROWID 并更新右侧面板输入框"""
         selected_items: tuple[str, ...] = self._treeview.selection()
@@ -860,16 +848,6 @@ class HitDelay:
         self._cursor.close()
         self._db.close()
         self._subroot.destroy()
-
-    def _on_closing_bak(self) -> None:
-        """UI 事件：窗口关闭时清理资源(留作备用)"""
-        if messagebox.askokcancel("退出", "确定要退出高精度延迟分析吗？"):
-            try:
-                self._cursor.close()
-                self._db.close()
-            except Exception as e:
-                self._logger.warning(f"关闭数据库连接时发生异常: {e}")
-            self._subroot.destroy()
 
 if __name__ == "__main__":
     from . import version, pre_version, is_pre_release

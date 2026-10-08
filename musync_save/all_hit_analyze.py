@@ -14,11 +14,10 @@ from matplotlib.widgets import CheckButtons
 
 from .config_manager import config, Logger
 
-class AllHitAnalyze(object):
-    """docstring for HitAnalyze"""
+class AllHitAnalyze:
+    """全量击打延迟统计分析"""
 
     def __init__(self, data: bytes | None = None):
-        # super(AllHitAnalyze, self).__init__()
         self._logger: logging.Logger = Logger.get_logger(name="AllHitAnalyze")
         # self._db_source: bool = True
         if data is None:

@@ -54,7 +54,7 @@ namespace BMSLib
 				// 2. 设置控制台 UI
 				Console.Title = "MUSYNX Delay";
 				Console.ForegroundColor = ConsoleColor.Red;
-				Console.BackgroundColor = ConsoleColor.White;
+				Console.BackgroundColor = ConsoleColor.Gray;
 				Console.SetWindowSize(30, 4);
 				Console.Clear();
 

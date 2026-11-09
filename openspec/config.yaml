@@ -1,4 +1,4 @@
-schema: spec-driven
+schema: spec-driven-cn
 
 # Project context (optional)
 # This is shown to AI when creating artifacts.
@@ -18,3 +18,8 @@ schema: spec-driven
 #       - Always include a "Non-goals" section
 #     tasks:
 #       - Break tasks into chunks of max 2 hours
+
+context: |
+  语言：中文（简体）
+  所有产出物必须用简体中文撰写。
+  为兼容 OpenSpec 官方解析器，协议头与格式关键字保持英文。

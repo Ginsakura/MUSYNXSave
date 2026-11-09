@@ -1,0 +1,143 @@
+name: spec-driven-cn
+version: 1
+description: OpenSpec 中文工作流补丁 - 在不修改上游解析协议的前提下使用中文撰写 proposal / specs / design / tasks
+artifacts:
+  - id: proposal
+    generates: proposal.md
+    description: 用中文编写的变更提案文档
+    template: proposal.md
+    instruction: |
+      请创建 proposal 文档，说明这次变更为什么要做、准备改什么，以及影响范围。
+
+      中文化要求：
+      - 除了协议标题和能力标识符外，正文请使用简体中文。
+      - 能力名继续使用 kebab-case，例如 `user-auth`、`data-export`。
+
+      兼容性要求（必须保留英文标题，否则 OpenSpec 校验/解析会失败）：
+      - `## Why`
+      - `## What Changes`
+      - `## Capabilities`
+      - `### New Capabilities`
+      - `### Modified Capabilities`
+      - `## Impact`
+
+      撰写要求：
+      - **Why**：用 1-2 段中文说明问题、机会点、优先级，以及为什么现在要做。
+      - **What Changes**：用中文条目列出本次变更，明确新增、修改、删除了什么；涉及破坏性变更时请标注 **BREAKING**。
+      - **Capabilities**：明确哪些能力会新增、哪些既有能力的需求会变化。
+      - **Impact**：说明会影响到的代码、接口、依赖、系统或流程。
+
+      重要说明：
+      - `Capabilities` 是 proposal 和 specs 之间的契约。这里列出的每个 capability，后续都要有对应的 `specs/<capability>/spec.md`。
+      - 内容尽量简洁，重点说清“为什么做”和“做什么”，实现细节放到 design.md。
+    requires: []
+
+  - id: specs
+    generates: "specs/**/*.md"
+    description: 用中文编写的详细规格说明
+    template: spec.md
+    instruction: |
+      请创建 spec 文件，描述系统“应该做什么”。
+
+      中文化要求：
+      - 需求名称、需求正文、场景名称、WHEN/THEN 的描述内容都使用简体中文。
+      - 为了兼容官方解析器，协议头和关键字必须保留英文。
+
+      兼容性要求（必须原样保留）：
+      - `## ADDED Requirements`
+      - `## MODIFIED Requirements`
+      - `## REMOVED Requirements`
+      - `## RENAMED Requirements`
+      - `### Requirement:`
+      - `#### Scenario:`
+      - `**WHEN**`
+      - `**THEN**`
+      - `**AND**`（如需）
+
+      创建规则：
+      - proposal 的 `Capabilities` 里每个 capability 都要有一个 spec 文件。
+      - 新增能力：使用 proposal 中的 kebab-case 名称，路径为 `specs/<capability>/spec.md`。
+      - 修改能力：使用现有能力目录名，在 `specs/<capability>/spec.md` 中编写 delta spec。
+
+      Delta 规则：
+      - `ADDED Requirements`：新增需求
+      - `MODIFIED Requirements`：修改既有需求，必须贴出完整更新后的 requirement 内容
+      - `REMOVED Requirements`：移除需求，必须包含 **Reason** 和 **Migration**
+      - `RENAMED Requirements`：仅重命名，使用 `FROM:` / `TO:` 格式
+
+      格式要求：
+      - 每个 requirement 使用 `### Requirement: <名称>`
+      - requirement 正文请用中文，但必须包含 `SHALL` 或 `MUST` 之一，例如：`系统 MUST 在用户提交后返回中文错误提示。`
+      - 每个 requirement 至少有一个 `#### Scenario: <名称>`
+      - Scenario 内容请使用 `- **WHEN**` / `- **THEN**` 格式，描述内容用中文
+      - `#### Scenario:` 必须是 4 个 `#`，不能少
+
+      修改既有需求时：
+      1. 先找到 `openspec/specs/<capability>/spec.md` 里的既有 requirement
+      2. 将整个 requirement block 复制到 `## MODIFIED Requirements` 下
+      3. 再修改为新的完整内容
+
+      目标：
+      - 让 spec 既满足官方解析格式，又能让团队用中文阅读和维护。
+    requires:
+      - proposal
+
+  - id: design
+    generates: design.md
+    description: 用中文编写的技术设计文档
+    template: design.md
+    instruction: |
+      请创建 design 文档，说明这次变更准备如何实现。
+
+      全文使用简体中文。重点解释技术方案背后的原因，而不是逐行实现细节。
+
+      建议内容：
+      - 背景：当前状态、约束、相关方
+      - 目标 / 非目标：本次设计要解决什么，不解决什么
+      - 关键决策：主要技术选择、备选方案、取舍原因
+      - 风险 / 权衡：已知风险、性能/安全/复杂度影响，以及缓解手段
+      - 迁移计划：上线步骤、回滚策略、兼容性安排
+      - 待确认问题：仍需要决定或补充的信息
+
+      什么时候需要 design.md：
+      - 涉及多个模块或服务的跨层改动
+      - 引入新依赖、数据模型调整、迁移复杂
+      - 安全、性能、发布风险较高
+      - 先做技术决策可以明显降低后续实现不确定性
+    requires:
+      - proposal
+
+  - id: tasks
+    generates: tasks.md
+    description: 用中文编写的实施任务清单
+    template: tasks.md
+    instruction: |
+      请创建 tasks 文档，把实现工作拆成可执行、可勾选的任务。
+
+      中文化要求：
+      - 分组标题和任务描述使用简体中文。
+
+      兼容性要求：
+      - 每个任务必须保持 `- [ ]` 复选框格式，否则 apply 阶段无法追踪。
+
+      编写原则：
+      - 按依赖顺序组织任务
+      - 每个任务足够小，最好一次工作会话内可完成
+      - 任务描述要具体、可验证
+      - 适当按阶段分组，例如准备、核心实现、测试验证、发布收尾
+
+      参考：
+      - specs 说明“要做什么”
+      - design 说明“怎么做”
+      - tasks 负责把它们拆成落地步骤
+    requires:
+      - specs
+      - design
+
+apply:
+  requires: [tasks]
+  tracks: tasks.md
+  instruction: |
+    先阅读 proposal / specs / design / tasks，再按任务顺序实施。
+    实施过程中请持续把已完成任务从 `- [ ]` 改为 `- [x]`。
+    若遇到阻塞、信息不足或存在高风险决策，请暂停并补充确认。

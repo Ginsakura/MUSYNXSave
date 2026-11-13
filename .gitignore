@@ -1,15 +1,17 @@
 __pycache__/
-.tempdir/
 .venv/
 .vs/
 .vscode/
+.tempdir/
 build/
 musync/
 saveFile/
 Releases/
 dist/
 logs/
+.dsh-acl-recovery/
 MusyncSaveDecode/
+
 
 bootcfg.json
 LXGW.ttf

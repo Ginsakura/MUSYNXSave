@@ -14,7 +14,7 @@ from typing import Optional, Any
 
 # ==================== 常量定义 (Constants) ====================
 FILL_SIZE: int = 512
-SOURCE_DLL: str = 'E6ED56C611F475CC895B469F65856F5E8F2C199693C3AD86A87D19CA4986C9D9'
+SOURCE_DLL: str = 'C3A4811D45228DDF3A70C316E12BC63F3BF2C11C44DC62569D6060C4886B3EB3'
 
 # ==================== 核心逻辑 (Core Logic) ====================
 def get_hash(file_path: Optional[str] = None) -> str:

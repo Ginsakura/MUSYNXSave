@@ -160,6 +160,16 @@ MUSYNX Steam Client Savefile Decode & Analyze Tool
     1. 
 -->
 
+### Version 3.0.1
+
+1. 更新
+    1. ***更新2026年06月26日喵赛克新增曲目***
+        * RED RAVE (EZ HD IN)
+    1. ***更新2026年08月10日喵赛克联动新增曲目***
+        * Vatrum (EZ HD)
+    1. ***更新2026年09月24日喵赛克联动新增曲目***
+        * Scaffold (EZ HD IN)
+
 ### Version 3.0.0
 
 1. 更新

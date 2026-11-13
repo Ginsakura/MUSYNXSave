@@ -205,9 +205,9 @@ class MusyncMainWindow:
                 if save_path:
                     self.saveFilePathVar.set(save_path + "SavesDir\\savedata.sav")
             if config.DllInjection:
-                self._logger.warning("DLL Injection is Enable.")
-                self.hitDelay = Button(self.root, text="游玩结算",command=self._hit_delay_check, font=self.font,bg='#FF5959')
-                self.hitDelay.place(x=775,y=50,width=90,height=30)
+                self._logger.warning("DLL Injection is Enable (legacy, deprecated).")
+            self.hitDelay = Button(self.root, text="游玩结算",command=self._hit_delay_check, font=self.font,bg='#FF5959')
+            self.hitDelay.place(x=775,y=50,width=90,height=30)
             self._init_label(text="正在分析存档文件中……")
             MusyncSaveDecoder(savFile=self.saveFilePathVar.get()).main()
             self._data_load()
@@ -479,17 +479,7 @@ class MusyncMainWindow:
         self._data_load()
 
     def _hit_delay_check(self):
-        "DLL注入功能"
-        if not config.DllInjection:
-            return
-        result:int = Toolkit.game_lib_check()
-        if result == 0:
-            messagebox.showerror("Error", f'DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁')
-            self._logger.error("DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁")
-            return
-        else:
-            self._logger.debug(f"return: {result}.")
-            self._logger.info("DLL Injection Success.")
+        "打开游玩延迟分析窗口（数据通过 Socket Server 接收）"
         nroot:Toplevel = Toplevel(self.root)
         nroot.resizable(True, True)
         HitDelay(nroot)

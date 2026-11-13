@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net40</TargetFramework>
+    <LangVersion>7.3</LangVersion>
+    <AssemblyName>MUSYNCDelay</AssemblyName>
+    <RootNamespace>MUSYNCDelay</RootNamespace>
+    <OutputType>Library</OutputType>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <!-- 游戏路径：可通过环境变量 MUSYNX_PATH 或 MSBuild 属性覆盖 -->
+    <GamePath Condition="'$(GamePath)' == '' AND '$(MUSYNX_PATH)' != ''">$(MUSYNX_PATH)</GamePath>
+    <GamePath Condition="'$(GamePath)' == ''">I:\SteamLibrary\steamapps\common\MUSYNX</GamePath>
+    <!-- BepInEx 框架路径：可通过环境变量 BEPINEX_PATH 覆盖 -->
+    <BepInExPath Condition="'$(BepInExPath)' == '' AND '$(BEPINEX_PATH)' != ''">$(BEPINEX_PATH)</BepInExPath>
+    <BepInExPath Condition="'$(BepInExPath)' == ''">$(GamePath)\BepInEx</BepInExPath>
+  </PropertyGroup>
+
+  <!-- 2.2 游戏原版 DLL 引用，Copy Local = false -->
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(GamePath)\MUSYNX_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(GamePath)\MUSYNX_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GamePath)\MUSYNX_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule" Condition="Exists('$(GamePath)\MUSYNX_Data\Managed\UnityEngine.CoreModule.dll')">
+      <HintPath>$(GamePath)\MUSYNX_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- 2.3 BepInEx / Harmony 引用，Copy Local = false -->
+  <ItemGroup>
+    <Reference Include="BepInEx">
+      <HintPath>$(BepInExPath)\core\BepInEx.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(BepInExPath)\core\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- 系统引用 -->
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+
+</Project>

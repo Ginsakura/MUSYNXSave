@@ -13,6 +13,7 @@ from tkinter import Tk, font
 
 from musync_save import config, Logger
 from musync_save import Toolkit, MusyncMainWindow
+from musync_save.socket_server import start_server as start_socket_server
 
 logger:logging.Logger = Logger.get_logger(name="Launcher")
 
@@ -27,6 +28,8 @@ def launcher()->None:
     # del fonts
     if config.ChangeConsoleStyle:
         Toolkit.change_console_style()
+    # 启动 Socket Server（后台守护线程，接收游戏插件结算数据）
+    start_socket_server()
     root.tk.call('tk', 'scaling', 1.25)
     root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
     MusyncMainWindow(root=root)

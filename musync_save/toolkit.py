@@ -202,10 +202,6 @@ class Toolkit:
         _logger.debug("Check Database version...")
         cls.update_database(cls.check_database_version())
 
-        _logger.debug("Check DLLInjection...")
-        if config.DllInjection:
-            cls.game_lib_check()
-
         _logger.debug(f"check_resources() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
 
     @classmethod
@@ -233,65 +229,6 @@ class Toolkit:
         _logger.error("搜索不到存档文件.")
         _logger.info(f"get_save_file() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
         return ""
-
-    @classmethod
-    def game_lib_check(cls) -> int:
-        """
-        游戏脚本 DLL 检查与修补
-        Returns:
-            0: 无法修补或未匹配到修补条件
-            1: 已修补 (包括已经是最新或修补成功)
-        """
-        start_time: int = time.perf_counter_ns()
-        return_code: int = 0  # 初始化统一返回值
-        dll_path: str = config.MainExecPath + 'MUSYNX_Data/Managed/Assembly-CSharp.dll'
-        EMPTY_HASH: str = "E3B0C44298FC1C149AFBF4C8996FB92427AE41E4649B934CA495991B7852B855"
-
-        # 使用嵌套逻辑确保流程最终能流向函数末尾
-        if not os.path.isfile(dll_path):
-            _logger.error(f"Assembly-CSharp.dll not found at \"{dll_path}\", skip DLLInjection.")
-            return_code = 0
-        else:
-            now_hash: str = cls.get_hash(dll_path)
-            # 假设资源信息已加载
-            lib_info: dict = cls._resource_file_info.get("game_lib", {})
-            source_hash: str = lib_info.get("source_hash", "")
-            fix_hash: str = lib_info.get("hash", "")
-
-            _logger.debug(f"Now Assembly-CSharp.dll: {now_hash}")
-
-            # 1. 检查是否已经是修补好的版本
-            if now_hash == fix_hash:
-                return_code = 1
-            else:
-                # 2. 检查是否符合修补条件
-                # 逻辑：如果 source_hash 是空的，或者当前文件就是原版文件且不等于目标文件
-                if (source_hash == EMPTY_HASH or
-                    (source_hash == now_hash and source_hash != fix_hash)):
-                    try:
-                        old_dll: str = f'{dll_path}.old'
-                        if os.path.isfile(old_dll):
-                            os.remove(old_dll)
-                        os.rename(dll_path, old_dll)
-
-                        # 释放资源
-                        cls.release_resource(lib_info["offset"],
-                                             lib_info["length"],
-                                             dll_path
-                                             )
-                        return_code = 1
-                    except Exception as e:
-                        _logger.error(f"修补过程中发生异常: {e}")
-                        return_code = 0
-                else:
-                    return_code = 0
-
-        # --- 统一出口 ---
-        # 无论上述哪个分支执行，都会来到这里
-        run_time_ms: float = Toolkit.calc_end_time(start_time)
-        _logger.debug(f"game_lib_check() Run Time: {run_time_ms:.2f} ms, "
-                          f"Return Code: {return_code}")
-        return return_code
 
     @staticmethod
     def create_new_database(db: sqlite3.Connection) -> None:

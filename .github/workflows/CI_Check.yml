@@ -1,0 +1,90 @@
+name: CI Check
+on:
+  pull_request:
+    branches:
+      - 'main'
+      - 'develop'
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+env:
+  RCVersion: < 0.0.0 PreRelease 0>
+  isPreRelease: true
+  Version: Init
+
+jobs:
+  CI_Check:
+    name: Build and Check Pull Request
+    runs-on: windows-2025
+    steps:
+      - name: CheckOut Repo
+        uses: actions/checkout@v4
+
+      - name: Cache and Setup Python Environment
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11.5'
+          cache: 'pip'
+          cache-dependency-path: './requirements.txt'
+
+      - name: Install requirements
+        run: pip3 install -r ./requirements.txt
+
+      - name: Create Build Variable
+        run: |
+          $ErrorActionPreference = 'Stop';
+          cd ./musync_save/;
+          $isPreRelease = python -c "import version;print(version.is_pre_release)";
+          $isPreReleaseBool = [bool]::Parse($isPreRelease);
+          if ($isPreReleaseBool) {
+              $version = python -c "import version; print(version.pre_version)";
+              $rcVersion = $version -replace "pre", " PreRelease ";
+          } else {
+              $version = python -c "import version; print(version.version)";
+              $rcVersion = $version + " Release";
+          }
+          echo "v:'$version',rcv:'$rcVersion'";
+          echo "isPreRelease=$isPreReleaseBool" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append;
+          echo "Version=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append;
+          echo "RCVersion=[ $rcVersion ]" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append;
+
+      - name: Get Short SHA
+        run: |
+          $shortSha = "${{ github.sha }}".Substring(0, 7)
+          Write-Host "Short SHA is: $shortSha"
+          "SHORT_SHA=$shortSha" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Build ${{ env.Version }}
+        run: |
+          pwsh ./buildLauncher.ps1;
+
+      # 临时构建产物：仅用于 PR 评审下载，7 天后自动清理
+      - name: Upload build artifacts { ${{ env.Version }} With Console AllInOne}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.RCVersion }}  ${{ env.SHORT_SHA }} With Console AllInOne [ Auto PR ]
+          path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_CLI_${{ env.Version }}_AllInOne.zip
+          retention-days: 7
+
+      - name: Upload build artifacts { ${{ env.Version }} Without Console AllInOne}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.RCVersion }}  ${{ env.SHORT_SHA }} Without Console AllInOne [ Auto PR ]
+          path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_NoCLI_${{ env.Version }}_AllInOne.zip
+          retention-days: 7
+
+      - name: Upload build artifacts { ${{ env.Version }} With Console}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.RCVersion }}  ${{ env.SHORT_SHA }} With Console [ Auto PR ]
+          path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_CLI_${{ env.Version }}.zip
+          retention-days: 7
+
+      - name: Upload build artifacts { ${{ env.Version }} Without Console}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.RCVersion }}  ${{ env.SHORT_SHA }} Without Console [ Auto PR ]
+          path: ./MusyncSaveDecode/Archive/MusyncSaveDecode_NoCLI_${{ env.Version }}.zip
+          retention-days: 7

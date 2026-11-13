@@ -1,5 +1,4 @@
-# 使用教程 (v2.1.0)
-
+# 使用教程 (v3.0.0)
 ## 菜单
 [steamlink]: https://store.steampowered.com/app/952040/_/
 本程序为Steam游戏[`同步音律喵赛克`][steamlink]的非官方插件，用于对游戏本体进行功能扩展。
@@ -24,7 +23,7 @@
 ## 获取本程序
 [release]: https://github.com/Ginsakura/MUSYNCSave/releases
 [requirements]: https://github.com/Ginsakura/MUSYNCSave/blob/main/requirements.txt
-1. 从[release][release]页面下载
+1. 从[release页面][release]下载
 
     [latest_prerelease_svg]: https://img.shields.io/github/v/release/ginsakura/MUSYNCSave?display_name=release&label=Latest%20PreRelease&include_prereleases
     [all_tags]: https://github.com/Ginsakura/MUSYNCSave/tags
@@ -57,15 +56,15 @@
 
 ## 功能介绍
 ### 启动页
-#### 控制区
+#### 头部
 
-![maintitle](/ReadmeResources/how_to_use_maintitle.png "maintitle")
+![maintitle](./how_to_use_maintitle.png "maintitle")
 
 ① 本程序标题
 
 ② 存档中解析出的上次游玩
 
-③ 刷新与解码存档文件，绑定`F5`按键
+③ 刷新与解码存档文件，绑定`F5`按键 (~~$\color{Red}{实际上两个按钮功能相似}$~~ 新版已合并)
 
 ④ 存档地址文本与从文件管理器中选取按钮
 
@@ -94,10 +93,10 @@
 
 然后就进游戏里游玩，玩的时候会弹出一个命令框，这个东西别关，一关游戏也跟着退了
 玩完之后按照顺序填写①，切换②，点击③，结果会出现在④中
-![play_settlement](/ReadmeResources/how_to_use_play_settlement.png "play_settlement")
+![play_settlement](./how_to_use_play_settlement.png "play_settlement")
 
 然后就会生成一个折线图窗口和一个环形图+柱状图的窗口
-![ring&bar](/ReadmeResources/how_to_use_ring&bar_chart.png "ring & bar chart")
+![ring&bar](./how_to_use_ring&bar_chart.png "ring & bar chart")
 
 后面窗口就会出现一条新的记录，(上面窗口的④)
 曲名列显示的是你输入的①和②总共五个列，
@@ -115,7 +114,7 @@
 前面假设你已经玩了一把，得到了Delay的值，
 
 接下来在游戏中，点击谱面，进入准备阶段
-![in_game](/ReadmeResources/how_to_use_preparatory_phase.png "in game")
+![in_game](./how_to_use_preparatory_phase.png "in game")
 
 然后看判定补偿这一项
 

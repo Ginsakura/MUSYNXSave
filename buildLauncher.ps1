@@ -1,108 +1,54 @@
-﻿# Step 0: 检查参数列表
+# Step 0: 检查参数列表
 [CmdletBinding()]
 param (
     [switch]$noarchive
 )
 
-# 定义函数
-# 构建图标资源
-function BuildIcon{
-    <#
-    .SYNOPSIS
-    构建C/C++图标资源
-    .DESCRIPTION
-    构建C/C++图标资源
-    .PARAMETER None
-    无参数
-    .EXAMPLE
-    BuildIcon
-    .NOTES
-    提供其他重要信息，如注意事项、限制条件、已知问题等。
-    .INPUTS
-    描述函数可以接收的输入类型，通常用于支持管道输入的函数。
-    .OUTPUTS
-    描述函数的输出类型和内容。
-    #>
-    $resPath = "ico.res";   # C++图标res资源
-    $rcPath = "ico.rc";     # C++图标rc资源
-    Set-Location -Path "musync_data/";
-    if (-not (Test-Path -Path $resPath)) {
-        & windres $rcPath -O coff -o $resPath;
-        Write-Host "图标资源 ${path}${resPath} 创建成功！" -ForegroundColor Green;
-    } else {
-        Write-Host "图标资源 ${path}${resPath} 已存在。" -ForegroundColor Yellow;
-    }
-    Set-Location -Path ..;
-}
+# ==========================================
+# 函数定义区
+# ==========================================
 
-# 目录检查
+# ------------------------------------------
+# 功能: 构建C/C++图标资源
+# ------------------------------------------
+# function BuildIcon{
+#     $resPath = "ico.res";   # C++图标res资源
+#     $rcPath = "ico.rc";     # C++图标rc资源
+#     Set-Location -Path "musync_data/";
+#     if (-not (Test-Path -Path $resPath)) {
+#         & windres $rcPath -O coff -o $resPath;
+#         Write-Host ("图标资源 {0}{1} 创建成功！ " -f $path, $resPath) -ForegroundColor Green;
+#     } else {
+#         Write-Host ("图标资源 {0}{1} 已存在。 " -f $path, $resPath) -ForegroundColor Yellow;
+#     }
+#     Set-Location -Path ..;
+# }
+
+# ------------------------------------------
+# 功能: 检查目录是否存在，如果不存在则创建该目录。
+# ------------------------------------------
 function CheckDir {
-    <#
-    .SYNOPSIS
-    检查目录是否存在，如果不存在则创建该目录。
-
-    .DESCRIPTION
-    此函数检查指定的目录是否存在。如果目录不存在，将创建该目录，并返回成功消息。
-    如果目录已存在，则返回相应的提示消息。
-
-    .PARAMETER Dir
-    指定要检查的目录路径。
-
-    .EXAMPLE
-    CheckDir -Dir "C:\tempdir"
-    检查目录 "C:\tempdir" 是否存在，如果不存在则创建该目录。
-
-    .EXAMPLE
-    "C:\tempdir" | CheckDir
-    通过管道输入目录路径，检查目录是否存在，如果不存在则创建该目录。
-
-    .NOTES
-    此函数适用于需要确保目录存在的场景。如果目录路径无效（例如包含非法字符），可能会导致错误。
-
-    .INPUTS
-    此函数接受字符串类型的目录路径作为输入。支持通过管道输入。
-
-    .OUTPUTS
-    此函数不返回任何输出，但会通过 Write-Host 输出状态消息。
-    #>
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [string]$Dir
     )
 
+
     process {
         if (-not (Test-Path -Path $Dir)) {
             New-Item -ItemType Directory -Path $Dir -ErrorAction Stop | Out-Null
-            Write-Host "目录 ${Dir} 创建成功！" -ForegroundColor Green
+            Write-Host ("目录 {0} 创建成功！ " -f $Dir) -ForegroundColor Green
         } else {
-            Write-Host "目录 ${Dir} 已存在。" -ForegroundColor Yellow
+            Write-Host ("目录 {0} 已存在。 " -f $Dir) -ForegroundColor Yellow
         }
     }
 }
 
-# 复制资源文件
+# ------------------------------------------
+# 功能: 复制资源文件
+# ------------------------------------------
 function Copy-Resources {
-    <#
-    .SYNOPSIS
-    Copies specified resources from a source directory to a target directory.
-
-    .DESCRIPTION
-    This function takes a list of resource files, copies them from the source directory to the target directory,
-    and provides feedback on the success or failure of each copy operation.
-
-    .PARAMETER SourceDirectory
-    The directory containing the source files to be copied.
-
-    .PARAMETER TargetDirectory
-    The directory where the files will be copied to.
-
-    .PARAMETER ResourceFiles
-    An array of file names to be copied.
-
-    .EXAMPLE
-    Copy-Resources -SourceDirectory "musync_data" -TargetDirectory "MusyncSaveDecode/musync_data" -ResourceFiles @("Resources.bin", "songname.json", "songname.ver", "Musync.ico")
-    #>
     param (
         [string]$SourceDirectory,
         [string]$TargetDirectory,
@@ -116,31 +62,17 @@ function Copy-Resources {
 
         if (Test-Path -Path $sourceFile) {
             Copy-Item -Path $sourceFile -Destination $destinationFile
-            Write-Host "文件 ${file} 已拷贝到 ${TargetDirectory}" -ForegroundColor Green
+            Write-Host ("文件 {0} 已拷贝到 {1}。 " -f $file, $TargetDirectory) -ForegroundColor Green
         } else {
-            Write-Host "文件 ${file} 不存在于 ${SourceDirectory}，跳过拷贝。" -ForegroundColor Yellow
+            Write-Host ("文件 {0} 不存在于 {1}，跳过拷贝。 " -f $file, $SourceDirectory) -ForegroundColor Yellow
         }
     }
 }
 
-# 定义打包函数
-function Create-Archive {
-    <#
-    .SYNOPSIS
-    创建ZIP文件，将指定的文件和文件夹打包。
-
-    .DESCRIPTION
-    此函数根据提供的文件列表和目标路径，使用Compress-Archive命令创建ZIP文件。
-
-    .PARAMETER SourceItems
-    要打包的文件和文件夹路径数组。
-
-    .PARAMETER DestinationZip
-    输出的ZIP文件路径。
-
-    .EXAMPLE
-    Create-Archive -SourceItems @("logs", "musync_data", "MusyncSaveDecodeCLI.exe") -DestinationZip "MusyncSaveDecode_WithConsole_1.0.0_AllInOne.zip"
-    #>
+# ------------------------------------------
+# 功能: 创建ZIP文件 (已重命名以避免与系统内置压缩命令冲突导致卡死)
+# ------------------------------------------
+function Create-Compress-Archive {
     param (
         [Parameter(Mandatory = $true)]
         [string[]]$SourceItems,
@@ -156,31 +88,37 @@ function Create-Archive {
     # 打包文件和文件夹
     try {
         Compress-Archive -Path $SourceItems -DestinationPath $DestinationZip -Force
-        Write-Host "打包成功！输出文件：${DestinationZip}" -ForegroundColor Green
+        Write-Host ("打包成功！输出文件：{0} " -f $DestinationZip) -ForegroundColor Green
     }
     catch {
-        Write-Host "打包失败：$($_.Exception.Message)" -ForegroundColor Red
+        Write-Host ("打包失败：{0} " -f $_.Exception.Message) -ForegroundColor Red
+        throw
     }
 }
 
-# 定义变量
-$isPreRelease = python -c "import Version;print(Version.isPreRelease)";
+# ==========================================
+# 变量声明与业务逻辑区
+# ==========================================
+
+cd ./musync_save/;
+$isPreRelease = python -c "import version;print(version.is_pre_release)";
 $isPreReleaseBool = [bool]::Parse($isPreRelease);
 # 根据布尔值调用不同的属性并赋值给 $version
 if ($isPreReleaseBool) {
-    $version = py -c "import Version; print(Version.preVersion)";
+    $version = py -c "import version; print(version.pre_version)";
 } else {
-    $version = py -c "import Version; print(Version.version)";
+    $version = py -c "import version; print(version.version)";
 }
 $resourceFiles = @("Resources.bin", "songname.json", "songname.ver", "Musync.ico");  # 资源文件
 $archive_AC = @("logs", "musync_data", "MusyncSaveDecodeCLI.exe");                     # CLI all in one archive files
 $archive_ANC = @("logs", "musync_data", "MusyncSaveDecodeNoCLI.exe");                  # NoCLI all in one archive files
 $archive_C = @("logs", "musync_data", "_internal", "MusyncSaveDecodeCLI.exe");
 $archive_NC = @("logs", "musync_data", "_internal", "MusyncSaveDecodeNoCLI.exe");
-$destinationZip_AC = "Archive/MusyncSaveDecode_WithConsole_${version}_AllInOne.zip"
-$destinationZip_ANC = "Archive/MusyncSaveDecode_NoConsole_${version}_AllInOne.zip"
-$destinationZip_C = "../Archive/MusyncSaveDecode_WithConsole_${version}.zip";
-$destinationZip_NC = "../Archive/MusyncSaveDecode_NoConsole_${version}.zip";
+$destinationZip_AC = "Archive/MusyncSaveDecode_CLI_${version}_AllInOne.zip"
+$destinationZip_ANC = "Archive/MusyncSaveDecode_NoCLI_${version}_AllInOne.zip"
+$destinationZip_C = "../Archive/MusyncSaveDecode_CLI_${version}.zip";
+$destinationZip_NC = "../Archive/MusyncSaveDecode_NoCLI_${version}.zip";
+cd ../;
 
 Clear-Host;
 Write-Host "==== 任务开始 ====";
@@ -194,12 +132,13 @@ CheckDir -Dir "MusyncSaveDecode/Archive/";
 # CheckDir -Dir "MusyncSaveDecode/MusyncSaveDecodeCLI/";
 # CheckDir -Dir "MusyncSaveDecode/MusyncSaveDecodeNoCLI/";
 
-# Step 3: Pyinstaller编译
+# Step 3: Pyinstaller构建
+Write-Host "Pyinstaller构建开始..." -ForegroundColor Green;
 & pyinstaller "buildLauncher.spec" --distpath "./MusyncSaveDecode" --clean;
 if ($?) {
-    Write-Host "Pyinstaller编译成功！" -ForegroundColor Green;
+    Write-Host "Pyinstaller构建成功! " -ForegroundColor Green;
 } else {
-    Write-Host "Pyinstaller编译失败！" -ForegroundColor Red;
+    Write-Host "Pyinstaller构建失败! " -ForegroundColor Red;
     exit 1;
 }
 # Write-Host "正在编译Cython模块 ..."
@@ -229,12 +168,12 @@ Copy-Resources -SourceDirectory "../musync_data" -TargetDirectory "MusyncSaveDec
 if ($noarchive){
     Write-Host "Skip Archive Zip File";
 } else {
-    Create-Archive -SourceItems $archive_AC -DestinationZip $destinationZip_AC;
-    Create-Archive -SourceItems $archive_ANC -DestinationZip $destinationZip_ANC;
+    Create-Compress-Archive -SourceItems $archive_AC -DestinationZip $destinationZip_AC;
+    Create-Compress-Archive -SourceItems $archive_ANC -DestinationZip $destinationZip_ANC;
     Set-Location -Path "MusyncSaveDecodeCLI";
-    Create-Archive -SourceItems $archive_C -DestinationZip $destinationZip_C;
+    Create-Compress-Archive -SourceItems $archive_C -DestinationZip $destinationZip_C;
     Set-Location -Path "../MusyncSaveDecodeNoCLI";
-    Create-Archive -SourceItems $archive_NC -DestinationZip $destinationZip_NC;
+    Create-Compress-Archive -SourceItems $archive_NC -DestinationZip $destinationZip_NC;
     Set-Location -Path "..";
 }
 Set-Location -Path "..";

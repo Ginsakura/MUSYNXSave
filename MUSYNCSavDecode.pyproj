@@ -4,7 +4,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>614ae87f-b8a4-457c-b876-4c6631cb2d19</ProjectGuid>
     <ProjectHome>.</ProjectHome>
-    <StartupFile>Launcher.py</StartupFile>
+    <StartupFile>debug_launcher.py</StartupFile>
     <SearchPath>
     </SearchPath>
     <WorkingDirectory>.</WorkingDirectory>
@@ -12,7 +12,7 @@
     <Name>MUSYNCSavDecode</Name>
     <RootNamespace>MUSYNCSavDecode</RootNamespace>
     <IsWindowsApplication>False</IsWindowsApplication>
-    <InterpreterId>MSBuild|venv|$(MSBuildProjectFullPath)</InterpreterId>
+    <InterpreterId>MSBuild|.venv|$(MSBuildProjectFullPath)</InterpreterId>
     <TestFramework>none</TestFramework>
     <UnitTestPattern>test*.py</UnitTestPattern>
     <UnitTestRootDirectory>.</UnitTestRootDirectory>
@@ -27,20 +27,27 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AllHitAnalyze.py" />
-    <Compile Include="AvgAcc_SynxAnalyze.py" />
-    <Compile Include="Difficulty_ScoreAnalyze.py" />
-    <Compile Include="File2Base64.py" />
-    <Compile Include="FormatSongName.py" />
-    <Compile Include="Toolkit.py" />
-    <Compile Include="HitDelay.py" />
-    <Compile Include="Launcher.py" />
-    <Compile Include="MainWindow.py" />
-    <Compile Include="MUSYNCSavDecode.py" />
-    <Compile Include="Resources.py" />
-    <Compile Include="UdpSocket.py" />
-    <Compile Include="uiautomation.py" />
-    <Compile Include="Version.py" />
+    <Compile Include="debug_launcher.py" />
+    <Compile Include="file_encoder.py" />
+    <Compile Include="format_song_name.py" />
+    <Compile Include="musync_save\acc_sync_diff_analyze.py" />
+    <Compile Include="musync_save\all_hit_analyze.py" />
+    <Compile Include="musync_save\config_manager.py" />
+    <Compile Include="musync_save\difficulty_score_analyze.py" />
+    <Compile Include="musync_save\hit_delay.py" />
+    <Compile Include="musync_save\main_window.py" />
+    <Compile Include="musync_save\map_info.py" />
+    <Compile Include="musync_save\musync_save_decode.py" />
+    <Compile Include="musync_save\save_data_manager.py" />
+    <Compile Include="musync_save\songname_manager.py" />
+    <Compile Include="musync_save\sync_data_analyzer.py" />
+    <Compile Include="musync_save\toolkit.py" />
+    <Compile Include="musync_save\tooltip.py" />
+    <Compile Include="musync_save\uiautomation.py" />
+    <Compile Include="musync_save\version.py" />
+    <Compile Include="musync_save\__init__.py" />
+    <Compile Include="launcher.py" />
+    <Compile Include="tmp.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include=".github\" />
@@ -48,69 +55,70 @@
     <Folder Include=".github\workflows\" />
     <Folder Include="CSharp Code\" />
     <Folder Include="musync_data\" />
+    <Folder Include="musync_save\" />
     <Folder Include="ReadmeResources\" />
     <Folder Include="saveFile\" />
     <Folder Include="skin\" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include=".editorconfig" />
     <Content Include=".github\ISSUE_TEMPLATE\bug_report.md" />
     <Content Include=".github\ISSUE_TEMPLATE\custom.md" />
     <Content Include=".github\ISSUE_TEMPLATE\feature_request.md" />
+    <Content Include=".github\workflows\PreReleasePRBuild.yml" />
+    <Content Include=".github\workflows\PreReleasePushBuild.yml" />
     <Content Include=".github\workflows\PullRequestBuild.yml" />
-    <Content Include=".github\workflows\ReleaseBuild.yml" />
+    <Content Include=".github\workflows\ReleasePRBuild.yml" />
     <Content Include=".gitignore" />
     <Content Include="buildLauncher.ps1" />
+    <Content Include="buildLauncher.spec" />
     <Content Include="changelog.md" />
+    <Content Include="CSharp Code\Console.cs" />
     <Content Include="CSharp Code\JudgeGrade.cs" />
-    <Content Include="CSharp Code\OptimizedConsole.cs" />
-    <Content Include="CSharp Code\sender.cs" />
-    <Content Include="CSharp Code\Socket.cs" />
-    <Content Include="ReadmeResources\How_to_use.en.md" />
-    <Content Include="ReadmeResources\How_to_use.v1.zh.md" />
-    <Content Include="ReadmeResources\How_to_use.zh.md" />
+    <Content Include="CSharp Code\SongInfoCore.cs" />
+    <Content Include="debug_prerelease" />
     <Content Include="Launcher.cpp" />
     <Content Include="LauncherC.exe" />
     <Content Include="LICENSE" />
-    <Content Include="MUSYNCSavDecode.sublime-project" />
-    <Content Include="MUSYNCSavDecode.sublime-workspace" />
+    <Content Include="mscorlib.dll" />
     <Content Include="MusyncSavDecodeGUI.bat" />
     <Content Include="musync_data\Acc-Sync.csv" />
     <Content Include="musync_data\Acc-SyncAnalyze%28Stata%29.do" />
     <Content Include="musync_data\Assembly-CSharp.dll" />
     <Content Include="musync_data\bootcfg.json" />
+    <Content Include="musync_data\HitDelayHistory.db" />
     <Content Include="musync_data\how to use.psd" />
     <Content Include="musync_data\ico.rc" />
-    <Content Include="musync_data\ico.res" />
     <Content Include="musync_data\LXGW.ttf" />
     <Content Include="musync_data\Musync.ico" />
-    <Content Include="musync_data\SaveFilePath.sfp" />
     <Content Include="musync_data\songname.json" />
     <Content Include="musync_data\songname.ver" />
     <Content Include="Push.ps1" />
     <Content Include="README.md" />
-    <Content Include="ReadmeResources\AllHitAnalyze.png" />
-    <Content Include="ReadmeResources\AvgAcc-SYNC.Rate.png" />
+    <Content Include="ReadmeResources\AllHitAnalyze.jpg" />
+    <Content Include="ReadmeResources\AvgAcc-SYNC.Rate.jpg" />
     <Content Include="ReadmeResources\HitAnalyze-Line.png" />
     <Content Include="ReadmeResources\HitAnalyze-Pie&amp;Bar.png" />
     <Content Include="ReadmeResources\HitDelay.png" />
+    <Content Include="ReadmeResources\How_to_use.en.md" />
+    <Content Include="ReadmeResources\How_to_use.zh.md" />
     <Content Include="ReadmeResources\how_to_use_maintitle.png" />
-    <Content Include="ReadmeResources\main.png" />
-    <Content Include="ReadmeResources\score-diff.png" />
-    <Content Include="ReadmeResources\zzz %281%29.png" />
-    <Content Include="ReadmeResources\zzz %282%29.png" />
-    <Content Include="ReadmeResources\zzz %283%29.png" />
-    <Content Include="ReadmeResources\zzz %284%29.png" />
-    <Content Include="ReadmeResources\zzz %285%29.png" />
+    <Content Include="ReadmeResources\how_to_use_play_settlement.png" />
+    <Content Include="ReadmeResources\how_to_use_preparatory_phase.png" />
+    <Content Include="ReadmeResources\how_to_use_ring&amp;bar_chart.png" />
+    <Content Include="ReadmeResources\how_to_use_settlement_title.png" />
+    <Content Include="ReadmeResources\main.jpg" />
+    <Content Include="ReadmeResources\OldVersionUpdateLog.md" />
+    <Content Include="ReadmeResources\score-diff.jpg" />
     <Content Include="requirements.txt" />
     <Content Include="saveFile\24Nice.sav" />
     <Content Include="saveFile\AXn233%28epic%29.decode" />
     <Content Include="saveFile\AXn233%28epic%29.sav" />
     <Content Include="saveFile\AXn233.decode" />
     <Content Include="saveFile\AXn233.sav" />
-    <Content Include="saveFile\SavDecode.decode" />
-    <Content Include="saveFile\SavDecode.decode.0" />
-    <Content Include="saveFile\SavDecode.decode.1" />
-    <Content Include="saveFile\SavDecode.decode.2" />
+    <Content Include="saveFile\nanhui233.decode" />
+    <Content Include="saveFile\nanhui233.sav" />
+    <Content Include="saveFile\selfSavDecode.decode" />
     <Content Include="skin\alphaBG.png" />
     <Content Include="skin\alphaBG.psd" />
     <Content Include="skin\Decode.png" />
@@ -119,10 +127,10 @@
     <Content Include="skin\MainBackGround.psd" />
   </ItemGroup>
   <ItemGroup>
-    <Interpreter Include="venv\">
-      <Id>venv</Id>
+    <Interpreter Include=".venv\">
+      <Id>.venv</Id>
       <Version>3.11</Version>
-      <Description>venv (Python 3.11 (64-bit))</Description>
+      <Description>.venv (Python 3.11 (64-bit))</Description>
       <InterpreterPath>Scripts\python.exe</InterpreterPath>
       <WindowsInterpreterPath>Scripts\pythonw.exe</WindowsInterpreterPath>
       <PathEnvironmentVariable>PYTHONPATH</PathEnvironmentVariable>

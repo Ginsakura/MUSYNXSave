@@ -1,0 +1,756 @@
+# -*- coding: utf-8 -*-
+import ctypes
+import logging
+import os
+import psutil
+import requests
+import threading
+import time
+import tkinter
+import webbrowser
+from enum import Enum, unique
+from tkinter import Label,Entry,Button,Scrollbar,Frame
+from tkinter import font,messagebox,StringVar
+from tkinter import Tk,ttk,Toplevel
+from tkinter.filedialog import askopenfilename
+from typing import Optional
+
+from .version import version, pre_version, is_pre_release
+from .config_manager import config, Logger
+from .save_data_manager import save_data
+from .tooltip import Tooltip
+from .sync_data_analyzer import SyncDataAnalyzer
+from .songname_manager import song_name
+from .toolkit import Toolkit
+from .musync_save_decode import MusyncSaveDecoder
+from .hit_delay import HitDelay
+from .difficulty_score_analyze import diff_score_analyze
+
+class MusyncMainWindow:
+    """
+        MusyncMainWindow 主窗口类
+        功能: 初始化主窗口, 控件布局, 事件绑定, UI逻辑处理
+    """
+    def __init__(self, root:Optional[Tk]=None, isTKroot:bool=True):
+        """
+            MusyncMainWindow 类初始化函数
+            param:
+                root: Tk - 主窗口Tk实例
+                isTKroot: bool - 是否为Tk根窗口
+        """
+        self._logger:logging.Logger = Logger.get_logger(name="MusyncMainWindow")
+        self.version:str = version
+        self.preVersion:str = pre_version
+        self.isPreRelease:bool = is_pre_release
+        self.isTKroot:bool = isTKroot
+        self.root:Tk = root or Tk()
+        self.root.iconbitmap('./musync_data/Musync.ico')
+        self.root.geometry(f'1000x670+500+300')
+        self.root.title("同步音律喵赛克Steam端本地存档分析")
+        self.root['background'] = '#efefef'
+        self.root.minsize(500, 460)
+        style:ttk.Style = ttk.Style()
+        style.configure("Treeview", rowheight=20, font=('霞鹜文楷等宽',13))
+        style.configure("Treeview.Heading", rowheight=20, font=('霞鹜文楷等宽',15))
+        style.configure("reload.TButton", font=('霞鹜文楷等宽',16))
+        style.configure("F5.TButton", font=('霞鹜文楷等宽',16),
+            image=[
+                style.map("F5.TButton",
+                foreground=[('pressed', 'red'), ('active', 'blue')],
+                background=[('pressed', '!disabled', 'black'), ('active', 'white')])
+            ])
+        style.configure("close.TButton", font=('霞鹜文楷等宽',16), bg="#EEBBBB")
+        self.font:tuple = ('霞鹜文楷等宽',16)
+        self.saveFilePathVar:StringVar = StringVar()
+        self.saveFilePathVar.set('Input SaveFile or AnalyzeFile Path (savedata.sav)or(SavAnalyze.json)')
+        self.gitHubUrlVar:StringVar = StringVar()
+        self.gitHubUrlVar.set("点击打开GitHub仓库	点个Star吧，秋梨膏")
+        self.windowInfo:list[int] = [self.root.winfo_x(), self.root.winfo_y(), self.root.winfo_width(), self.root.winfo_height()]
+        self.oldWindowInfo:list[int] = [0, 0]
+        self.saveCount:int = 0
+        self.totalSync:int = 0
+        self.excludeCount:int = 0
+        self.dataSortMethodsort:list[bool] = [None, True]
+        self.dataSelectMethod:str = ""
+        self.treeviewColumns:list[str] = ["SongId",'SongName',"Keys","Difficulty","DifficultyNumber","SyncNumber","Rank","UploadScore","PlayCount","Status"]
+        self.difficute:DiffcuteEnum = DiffcuteEnum.All
+        self.keys:KeysEnum = KeysEnum.All
+        self.songSelect:SongSelectEnum = SongSelectEnum.All
+        self.checkGameStartEvent:threading.Event = threading.Event()
+        self.checkGameIsStartThread:threading.Thread = threading.Thread(target=self._check_game_running, daemon=True)
+        self.map_sync_data: SyncDataAnalyzer = SyncDataAnalyzer()
+        self._update_enum()
+
+        self.root.protocol("WM_DELETE_WINDOW", self._on_closing)
+
+        self._controller_ui_init()
+        self._selector_ui_init()
+        self._extra_selector_ui_init()
+        self._run_in_init()
+
+    def _controller_ui_init(self) -> None:
+        """控制ui控件初始化"""
+        self.DecodeSaveFile = ttk.Button(self.root, text="解码并刷新",command=self._refresh_save,style='F5.TButton')
+        self.DecodeSaveFile.place(x=10,y=10,width=160,height=30)
+        self.isGameRunning = Label(self.root, text="游戏未启动", font=self.font,bg='#FF8080')
+        self.isGameRunning.place(x=30,y=85,width=110,height=30)
+
+        self.countFrameLanel = Label(self.root,text="", relief="groove")
+        self.countFrameLanel.place(x=8,y=48,width=164,height=34)
+        self.countLabel = Label(self.countFrameLanel, text='显示计数: ', font=self.font, relief="flat")
+        self.countLabel.place(x=0,y=0,width=100,height=30)
+        self.saveCountLabel = Label(self.countFrameLanel, text=str(self.saveCount+self.excludeCount), font=self.font, relief="flat")
+        self.saveCountLabel.place(x=100,y=0,width=60,height=30)
+
+        self.saveFilePathEntry = Entry(self.root, textvariable=self.saveFilePathVar, font=self.font, relief="sunken")
+        self.getSaveFilePath = Button(self.root, text='打开存档', command=self._select_path, font=self.font)
+
+        self.saveData = ttk.Treeview(self.root, show="headings", columns = self.treeviewColumns)
+        self.saveInfoScroll = Scrollbar(self.saveData, orient='vertical', command=self.saveData.yview)
+        self.saveData.configure(yscrollcommand=self.saveInfoScroll.set)
+
+        self.developer = Label(self.root, text=f'Version {self.preVersion if self.isPreRelease else self.version} | Develop By Ginsakura', font=self.font, relief="groove")
+        self.gitHubLink = Button(self.root, textvariable=self.gitHubUrlVar, command=lambda:webbrowser.open("https://github.com/Ginsakura/MUSYNXSave"), fg='#4BB1DA', anchor="center", font=self.font, relief="groove")
+
+        self.initLabel = Label(self.root, text='启动中......', anchor="w", font=self.font, relief="groove")
+        self.initLabel.place(x=250,y=300,width=500,height=30)
+
+        self.difficuteScoreAnalyze = Button(self.root, text="成绩分布",command=lambda:diff_score_analyze(), font=self.font)
+        self.difficuteScoreAnalyze.place(x=775,y=88,width=90,height=30)
+
+        # 创建 Frame 容器
+        totalSyncFrame = Frame(self.root, relief="groove", bd=2)
+        totalSyncFrame.place(x=868, y=48, width=124, height=74)
+        # 将标题 Label 挂载到 Frame 上
+        totalSyncTextLabel = Label(totalSyncFrame, text='综合同步率', anchor="center", font=self.font, relief="flat")
+        totalSyncTextLabel.place(x=0, y=0, width=120, height=30)
+        # 将数值 Label 挂载到 Frame 上
+        sync_value = self.totalSync / (1 if self.saveCount == 0 else self.saveCount)
+        self.avgSyncLabel = Label(totalSyncFrame, text=f'{sync_value:.6f}%', anchor="w", font=self.font, relief="flat")
+        self.avgSyncLabel.place(x=0, y=40, width=120, height=30)
+
+        Tooltip(totalSyncFrame, text_func=self._get_map_analyze)
+
+    def _selector_ui_init(self) -> None:
+        """筛选ui控件初始化"""
+        self.selectFrame = Frame(self.root, relief="groove",bd=2)
+        self.selectFrame.place(x=180,y=50,width=380,height=70)
+        self.selectLabel0 = Label(self.selectFrame, text="筛选\n控件", anchor="w", font=self.font, relief="flat")
+        self.selectLabel0.place(x=0,y=5,width=50,height=60)
+        self.selectPlayedButton = Button(self.selectFrame, text='已游玩', command=lambda:self._select_method('Played'), anchor="w", font=self.font)
+        self.selectPlayedButton.place(x=50,y=0,width=75,height=30)
+        self.selectUnplayButton = Button(self.selectFrame, text='未游玩', command=lambda:self._select_method('Unplay'), anchor="w", font=self.font)
+        self.selectUnplayButton.place(x=50,y=35,width=75,height=30)
+        self.selectIsFavButton = Button(self.selectFrame, text='已收藏', command=lambda:self._select_method('IsFav'), anchor="w", font=self.font)
+        self.selectIsFavButton.place(x=125,y=0,width=75,height=30)
+        self.selectExRankButton = Button(self.selectFrame, text='RankEx', command=lambda:self._select_method('RankEX'), anchor="w", font=self.font)
+        self.selectExRankButton.place(x=125,y=35,width=75,height=30)
+        self.selectSRankButton = Button(self.selectFrame, text='RankS', command=lambda:self._select_method('RankS'), anchor="w", font=self.font)
+        self.selectSRankButton.place(x=200,y=0,width=62,height=30)
+        self.selectARankButton = Button(self.selectFrame, text='RankA', command=lambda:self._select_method('RankA'), anchor="w", font=self.font)
+        self.selectARankButton.place(x=200,y=35,width=62,height=30)
+        self.selectBRankButton = Button(self.selectFrame, text='RankB', command=lambda:self._select_method('RankB'), anchor="w", font=self.font)
+        self.selectBRankButton.place(x=262,y=0,width=62,height=30)
+        self.selectCRankButton = Button(self.selectFrame, text='RankC', command=lambda:self._select_method('RankC'), anchor="w", font=self.font)
+        self.selectCRankButton.place(x=262,y=35,width=62,height=30)
+        self.select122Button = Button(self.selectFrame, text='黑Ex', command=lambda:self._select_method('Sync122'), anchor="w", font=self.font)
+        self.select122Button.place(x=324,y=0,width=50,height=30)
+        self.select120Button = Button(self.selectFrame, text='红Ex', command=lambda:self._select_method('Sync120'), anchor="w", font=self.font)
+        self.select120Button.place(x=324,y=35,width=50,height=30)
+
+    def _extra_selector_ui_init(self) -> None:
+        """额外筛选ui控件初始化"""
+        self.selectExFrame = Frame(self.root, bd=2, relief="groove")
+        self.selectExFrame.place(x=570,y=50,width=200,height=70)
+        self.selectLabel1 = Label(self.selectExFrame, text="额外\n筛选", anchor="w", font=self.font, relief="flat")
+        self.selectLabel1.place(x=0,y=5,width=50,height=60)
+        self.selectDLCSong = Button(self.selectExFrame, text=self.songSelect.text, command=lambda:self._select_dlc_song(), anchor='w', font=self.font)
+        self.selectDLCSong.place(x=48,y=0,width=30,height=65)
+        self.selectKeys = Button(self.selectExFrame, text=self.keys.text, command=lambda:self._select_keys(), anchor='center', font=self.font)
+        self.selectKeys.place(x=80,y=0,width=92,height=30)
+        self.selectDifficute = Button(self.selectExFrame, text=self.difficute.text, command=lambda:self._select_difficute(), anchor='w', font=self.font)
+        self.selectDifficute.place(x=80,y=35,width=92,height=30)
+
+    def _run_in_init(self) -> None:
+        """AutoRun"""
+        try:
+            self._init_label('初始化函数执行中......')
+            self._update_window_info()
+            self._treeview_width_update()
+            self._treeview_column_update()
+
+            self.checkGameStartEvent.set()
+
+            # 延迟启动线程，确保 mainloop 启动后再执行 UI 调度
+            def _start_checkgame():
+                self.checkGameIsStartThread.start()
+
+            self.root.after(100, _start_checkgame)
+            self.root.after(100, lambda: threading.Thread(target=self._check_json_update, daemon=True).start())
+
+            if config.CheckUpdate:
+                self._logger.info("Check Updating...")
+                self.root.after(100, lambda: threading.Thread(target=self._check_update, daemon=True).start())
+            else:
+                self.gitHubLink.configure(text='更新已禁用	点击打开GitHub仓库页')
+                self._logger.warning("Check update is Disable")
+            self._init_label(text="正在读取存档路径……")
+            if (config.MainExecPath is not None and
+                config.MainExecPath and
+                os.path.isfile(config.MainExecPath)
+                ):
+                self.saveFilePathVar.set(config.MainExecPath+"SavesDir\\savedata.sav")
+            else:
+                save_path: str = Toolkit.get_save_file()
+                if save_path:
+                    self.saveFilePathVar.set(save_path + "SavesDir\\savedata.sav")
+            if config.DllInjection:
+                self._logger.warning("DLL Injection is Enable.")
+                self.hitDelay = Button(self.root, text="游玩结算",command=self._hit_delay_check, font=self.font,bg='#FF5959')
+                self.hitDelay.place(x=775,y=50,width=90,height=30)
+            self._init_label(text="正在分析存档文件中……")
+            MusyncSaveDecoder(savFile=self.saveFilePathVar.get()).main()
+            self._data_load()
+        except Exception as e:
+            self._logger.exception("Software has some Exception:")
+            self._on_closing()
+            raise e
+
+    def _get_map_analyze(self) -> str:
+        """获取谱面分析数据的字符串表示"""
+        map_sync_data: dict[str, list[int, float]] = self.map_sync_data.calculate_all_stats()
+        lines = []
+        for mode, (counter, avg_sync) in map_sync_data.items():
+            if mode.startswith("separator"):
+                lines.append("─" * 22)
+            else:
+                lines.append(f"{mode:>4}: 共 {counter:>4} 张谱面, 综合同步率: {avg_sync:>10.6f}%")
+        return "\n".join(lines)
+
+    # TK事件重载
+    def _on_closing(self) -> None:
+        """重载窗口关闭事件"""
+        self._logger.info("Software Closing...")
+        self.checkGameStartEvent.clear()
+        self._logger.debug("Waiting for CheckGameIsStartThread to Exit...")
+        if self.checkGameIsStartThread and self.checkGameIsStartThread.is_alive():
+            self.checkGameIsStartThread.join()
+        self._logger.debug("CheckGameIsStartThread Exited.")
+        self._logger.debug("Main Window Destroying...")
+        self.root.destroy()
+        self._logger.debug("Saving Config and Data...")
+        config.save_config()
+        self._logger.debug("SaveDataInfo Dumping To Json...")
+        save_data.dump_to_json()
+        self._logger.info("Software Closed.")
+
+    def _on_refresh(self,event) -> None:
+        """F5键刷新事件处理函数"""
+        self._data_load()
+
+# select功能组
+    def _select_keys(self) -> None:
+        """切换按键型筛选"""
+        self.keys = KeysEnum((self.keys.value+1)%3)
+        self.selectKeys.configure(text=self.keys.text)
+        self._data_load()
+        self.root.update()
+    def _select_difficute(self) -> None:
+        """切换难度筛选"""
+        self.difficute = DiffcuteEnum((self.difficute.value+1)%4)
+        self.selectDifficute.configure(text=self.difficute.text)
+        self._data_load()
+        self.root.update()
+    def _select_dlc_song(self) -> None:
+        """切换DLC筛选"""
+        self.songSelect = SongSelectEnum((self.songSelect.value+1)%3)
+        self.selectDLCSong.configure(text=self.songSelect.text)
+        self.selectDLCSong.configure(bg=self.songSelect.background)
+        self._data_load()
+        self.root.update()
+    def _select_method(self,method) -> None:
+        """切换筛选方法"""
+        if self.dataSelectMethod == method:
+            self.dataSelectMethod = None
+            self._select_button_grey(method)
+        else:
+            self._select_button_grey(self.dataSelectMethod)
+            self.dataSelectMethod = method
+            self._select_button_green(self.dataSelectMethod)
+        self._data_load()
+        self.root.update()
+    def _select_button_green(self,method) -> None:
+        """设置按钮为绿色"""
+        if method == "Played":self.selectPlayedButton.configure(bg='#98E22B')
+        elif method == "Unplay":self.selectUnplayButton.configure(bg='#98E22B')
+        elif method == "IsFav":self.selectIsFavButton.configure(bg='#98E22B')
+        elif method == "Sync122":self.select122Button.configure(bg='#98E22B')
+        elif method == "Sync120":self.select120Button.configure(bg='#98E22B')
+        elif method == "RankEX":self.selectExRankButton.configure(bg='#98E22B')
+        elif method == "RankS":self.selectSRankButton.configure(bg='#98E22B')
+        elif method == "RankA":self.selectARankButton.configure(bg='#98E22B')
+        elif method == "RankB":self.selectBRankButton.configure(bg='#98E22B')
+        elif method == "RankC":self.selectCRankButton.configure(bg='#98E22B')
+    def _select_button_grey(self,method) -> None:
+        """设置按钮为灰色"""
+        if method == "Played":self.selectPlayedButton.configure(bg='#F0F0F0')
+        elif method == "Unplay":self.selectUnplayButton.configure(bg='#F0F0F0')
+        elif method == "IsFav":self.selectIsFavButton.configure(bg='#F0F0F0')
+        elif method == "Sync122":self.select122Button.configure(bg='#F0F0F0')
+        elif method == "Sync120":self.select120Button.configure(bg='#F0F0F0')
+        elif method == "RankEX":self.selectExRankButton.configure(bg='#F0F0F0')
+        elif method == "RankS":self.selectSRankButton.configure(bg='#F0F0F0')
+        elif method == "RankA":self.selectARankButton.configure(bg='#F0F0F0')
+        elif method == "RankB":self.selectBRankButton.configure(bg='#F0F0F0')
+        elif method == "RankC":self.selectCRankButton.configure(bg='#F0F0F0')
+
+    def _select_path(self) -> None:
+        """选择存档文件路径"""
+        # 使用askdirectory()方法返回文件夹的路径
+        path_ = askopenfilename(title="打开存档文件", filetypes=(("Sav Files", "*.sav"),("All Files","*.*"),))
+        if path_ == "":
+            # 当打开文件路径选择框后点击"取消" 输入框会清空路径，所以使用get()方法再获取一次路径
+            self.saveFilePathVar.get()
+        else:
+            # 实际在代码中执行的路径为“\“ 所以替换一下
+            path_ = path_.replace("/", "\\")
+            self.saveFilePathVar.set(path_)
+
+    # bind功能组
+    def _on_double_click(self,event) -> None:
+        """双击事件处理函数"""
+        e = event.widget									# 取得事件控件
+        itemID = e.identify("item",event.x,event.y)			# 取得双击项目id
+        # state = e.item(itemID,"text")						# 取得text参数
+        songData = e.item(itemID,"values")					# 取得values参数
+        self._logger.debug(songData)
+
+    def _on_sort_click(self,event) -> None:
+        """列标题点击排序事件处理函数"""
+        def TreeviewSortColumn(col) -> None:
+            start_time: int = time.perf_counter_ns()
+            if self.dataSortMethodsort[0] == col:
+                self.dataSortMethodsort[1] = not self.dataSortMethodsort[1]
+            else:
+                self.dataSortMethodsort[0] = col
+                self.dataSortMethodsort[1] = True
+            if col == 'SyncNumber' or col == 'UploadScore':
+                l = [(float((self.saveData.set(k, col))[:-1]), k) for k in self.saveData.get_children('')]
+            elif col == 'PlayCount':
+                l = [(int(self.saveData.set(k, col)), k) for k in self.saveData.get_children('')]
+            elif col == 'SongName':
+                l = [((self.saveData.set(k, col)).lower(), k) for k in self.saveData.get_children('')]
+            else:
+                l = [(self.saveData.set(k, col), k) for k in self.saveData.get_children('')]
+            l.sort(reverse=self.dataSortMethodsort[1])
+            for index, (val, k) in enumerate(l):
+                self.saveData.move(k, '', index)
+            print(f"Treeview SortClick Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+            self._treeview_column_update()
+        if isinstance(event, list):
+            self.dataSortMethodsort[1] = not self.dataSortMethodsort[1]
+            TreeviewSortColumn(event[0])
+        for col in self.treeviewColumns:
+            self.saveData.heading(col, command=lambda _col=col:TreeviewSortColumn(_col))
+
+    def _start_game(self,event) -> None:
+        """启动游戏事件处理函数"""
+        if self.isGameRunning["text"] == '游戏未启动':
+            os.system('start steam://rungameid/952040')
+        else:
+            messagebox.showinfo("Info", '游戏已启动')
+
+
+    # update功能组
+    def _check_json_update(self) -> None:
+        """检查谱面信息更新"""
+        start_time: int = time.perf_counter_ns()
+
+        repo: str = "https://raw.githubusercontent.com/Ginsakura/MUSYNXSave/main/musync_data/"
+        if config.UpdateChannel.lower() == "beta":
+            repo = "https://raw.githubusercontent.com/Ginsakura/MUSYNCSave/dev/musync_data/"
+
+        try:
+            response:requests.Response = requests.get(repo + "songname.ver", timeout=10)
+            localVersion:int = song_name.version
+            self._logger.info(f"   Local Json Version: {localVersion}")
+            if response.status_code == 200:
+                githubVersion = int(response.content.decode('utf8'))
+                self._logger.info(f"  Terget Json Version: {githubVersion}")
+                if githubVersion>localVersion:
+                    response = requests.get(repo + "songname.json", timeout=10)
+                    songNameJson = response.text
+                    with open("./musync_data/SongName.json",'w',encoding='utf8') as snj:
+                        snj.write(songNameJson)
+                    song_name.load_file()
+            else:
+                self._logger.error("Can't get \"songname.ver\", HTTP status code: %d."%(response.status_code))
+        except Exception as e:
+            self._logger.exception("谱面信息更新发生错误: ")
+            error_msg = str(e)
+            def show_error():
+                messagebox.showerror("Error", f'发生错误: {error_msg}')
+                if messagebox.askyesno("无法获取谱面信息更新", '是否前往网页查看是否存在更新?\n(请比对 SongName.json 中的时间是否比本地文件中的时间更大)'):
+                    webbrowser.open(repo + "songname.json")
+            self.root.after(100, show_error)
+        self._logger.info(f"CheckJsonUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+
+    def _check_update(self) -> None:
+        """检查软件更新"""
+        def CheckVersion(local:list[int], target:list[int], channel:bool=False)->bool:
+            """版本号比较
+            param:
+                local: list[int] - 本地版本号列表
+                target: list[int] - 目标版本号列表
+                channel: bool - 更新通道 (is pre-release)
+            return: bool - 是否存在更新
+            """
+            # Compare version components in order
+            for i in range(3):
+                if local[i] > target[i]:
+                    return False
+                if local[i] < target[i]:
+                    return True
+            # Major.Minor.Patch are equal, check pre-release if applicable
+            if channel and len(local) > 3 and len(target) > 3:
+                return local[3] < target[3]
+            return False  # Same version, no update needed
+
+        start_time: int = time.perf_counter_ns()
+        updateChannel:bool = config.UpdateChannel.lower() == "prerelease"
+        localVersion:list[int] = [int(i) for i in pre_version.replace("pre",".").split(".")]
+        targetVersion:list[int] = [0,0,0,0]
+        # 获取版本号
+        try:
+            response:requests.Response = requests.get("https://api.github.com/repositories/591967225/releases", timeout=10)
+            if (response.status_code != 200):
+                self._logger.error("Can't get releases info, HTTP status code: %d."%(response.status_code))
+                raise Exception(f"无法获取更新信息，HTTP状态码: {response.status_code}")
+            resJson:dict|list = response.json()
+            if "message" in resJson:
+                if resJson["message"][:23] == "API rate limit exceeded":
+                    messageHead:str = "GitHub公共API访问速率已达上限"
+                    message:str = "是否前往发布页查看是否存在更新？"
+                    url:str = "https://github.com/Ginsakura/MUSYNCSave/releases/latest"
+                    self.root.after(100, lambda:webbrowser.open(url) if messagebox.askyesno(messageHead, message) else None)
+                    return
+                else:
+                    self._logger.error(resJson)
+            else: # 取最新tag版本号
+                # 取最新版本所在索引（区分rc、pre）
+                selectedTag:dict = resJson[0]
+                if (not updateChannel):
+                    for ids in range(len(resJson)):
+                        if (resJson[ids]["prerelease"] == False):
+                            selectedTag = resJson[ids]
+                            break
+                # 将版本字符串变为版本整数数组
+                targetVersion = [int(i) for i in selectedTag["tag_name"].replace("pre",".").split(".")]
+        except Exception as ex:
+            self._logger.exception("更新信息发生错误: ")
+            error_msg = str(ex)
+            self.root.after(100, lambda msg: messagebox.showerror("Error", f'发生错误: {msg}'), error_msg)
+        # print(localVersion,targetVersion)
+        self._logger.info('  Terget Version : %s'%".".join(map(str, targetVersion)))
+        if updateChannel: # True is Pre
+            self._logger.info("Local PreVersion : %s"%".".join(map(str, localVersion)))
+        else:
+            self._logger.info('   Local Version : %s'%".".join(map(str, localVersion)))
+        labelUrl:str = "https://github.com/Ginsakura/MUSYNCSave"
+        if (CheckVersion(localVersion, targetVersion, updateChannel)):
+            self.gitHubUrlVar.set(f'有新版本啦——点此打开下载页面	NewVersion: {".".join(map(str, targetVersion))}')
+            labelUrl = f"https://github.com/Ginsakura/MUSYNCSave/releases/tag/{'.'.join(map(str, targetVersion))}"
+            self._update_tip()
+        self.root.after(100, lambda:self.gitHubLink.configure(command=lambda:webbrowser.open(labelUrl)))
+        self._logger.info(f"CheckUpdate() Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+
+    # 初始化提示框
+    def _init_label(self,text,close=False) -> None:
+        self.initLabel.place(x=250,y=300,width=500,height=30)
+        self.initLabel.configure(text=text, anchor="w")
+        self.root.update()
+        if close:
+            self.initLabel.place(x=-1,width=0)
+
+# 数据分析功能组
+    def _refresh_save(self)->None:
+        "刷新存档"
+        MusyncSaveDecoder(savFile=self.saveFilePathVar.get()).main()
+        self._data_load()
+
+    def _hit_delay_check(self):
+        "DLL注入功能"
+        if not config.DllInjection:
+            return
+        result:int = Toolkit.game_lib_check()
+        if result == 0:
+            messagebox.showerror("Error", f'DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁')
+            self._logger.error("DLL注入失败：软件版本过低或者游戏有更新,\n请升级到最新版或等待开发者发布新的补丁")
+            return
+        else:
+            self._logger.debug(f"return: {result}.")
+            self._logger.info("DLL Injection Success.")
+        nroot:Toplevel = Toplevel(self.root)
+        nroot.resizable(True, True)
+        HitDelay(nroot)
+
+    def _data_load(self):
+        "存档数据解析"
+        self._logger.debug("DataLoad Start")
+        start_time: int = time.perf_counter_ns()
+        self._logger.debug("正在分析存档文件中……")
+
+        def Rank(sync:int):
+            if	 (sync == 0)	: return ""
+            if	 (sync < 7500)	: return "C"
+            elif (sync < 9500)	: return "B"
+            elif (sync < 11000)	: return "A"
+            elif (sync < 11700)	: return "S"
+            elif (sync < 12000)	: return "蓝Ex"
+            elif (sync < 12200)	: return "红Ex"
+            else				: return "黑Ex"
+
+        # songNameJson = SongName.SongNameData()
+        self.root.title(f'同步音律喵赛克Steam端本地存档分析   LastPlay: {save_data.selectSongName}')
+        [self.saveData.delete(ids) for ids in self.saveData.get_children()]
+        self.saveCount = 0
+        self.excludeCount = 0
+        self.totalSync = 0
+        self.map_sync_data.clear()
+        for saveInfo in save_data.saveInfoList:
+            # 无名谱面筛选
+            if saveInfo.SongName is None: continue
+            # 所有谱面数据收集
+            if (saveInfo.State.strip() in ['', 'Favo']):
+                key: str = saveInfo.SongKeys + saveInfo.SongDifficulty
+                self.map_sync_data.data[key][0] += 1
+                self.map_sync_data.data[key][1] += saveInfo.UploadScore
+
+            # 键型筛选
+            if ((self.keys != KeysEnum.All) and (self.keys.stext != saveInfo.SongKeys)): continue
+            # 难度筛选
+            if (self.difficute != DiffcuteEnum.All) and (self.difficute.stext != saveInfo.SongDifficulty): continue
+            # 内置曲目筛选
+            if ((self.songSelect != SongSelectEnum.All) and (saveInfo.SongIsBuiltin != (self.songSelect == SongSelectEnum.Builtin))): continue
+            # 互斥筛选
+            if (self.dataSelectMethod == "Played"):
+                if ((saveInfo.PlayCount == 0) and (saveInfo.SyncNumber == 0)): continue
+            elif (self.dataSelectMethod == "Unplay"):
+                if ((saveInfo.PlayCount != 0) or (saveInfo.SyncNumber != 0)): continue
+            elif (self.dataSelectMethod == "IsFav"):
+                if (saveInfo.State != 'Favo'): continue
+            elif (self.dataSelectMethod == "Sync122"):
+                if (saveInfo.SyncNumber//100 < 122): continue
+            elif (self.dataSelectMethod == "Sync120"):
+                if ((saveInfo.SyncNumber//100 < 120) or (saveInfo.SyncNumber//100 >= 122)): continue
+            elif (self.dataSelectMethod == "RankEX"):
+                if (saveInfo.SyncNumber//100 < 117): continue
+            elif (self.dataSelectMethod == "RankS"):
+                if ((saveInfo.SyncNumber//100 < 110) or (saveInfo.SyncNumber//100 >= 117)): continue
+            elif (self.dataSelectMethod == "RankA"):
+                if ((saveInfo.SyncNumber//100 < 95) or (saveInfo.SyncNumber//100 >= 110)): continue
+            elif (self.dataSelectMethod == "RankB"):
+                if ((saveInfo.SyncNumber//100 < 75) or (saveInfo.SyncNumber//100 >= 95)): continue
+            elif (self.dataSelectMethod == "RankC"):
+                if ((saveInfo.SyncNumber//100 == 0) or (saveInfo.SyncNumber//100 >= 75)): continue
+            # 显示综合同步率和计数
+            if (saveInfo.State.strip() in ['', 'Favo']):
+                self.saveCount += 1
+                self.totalSync += saveInfo.UploadScore
+            else:
+                self.excludeCount += 1
+            self.saveData.insert('', tkinter.END, values=("%d"%saveInfo.SongId, #谱面号
+                ("" if (saveInfo.SongName is None) else saveInfo.SongName), #曲名
+                ("" if (saveInfo.SongKeys is None) else saveInfo.SongKeys), #键型
+                ("" if (saveInfo.SongDifficulty is None) else saveInfo.SongDifficulty), #难度
+                ("" if (saveInfo.SongDifficultyNumber is None) else saveInfo.SongDifficultyNumber), #难度等级
+                f"{saveInfo.SyncNumber/10000:.2%}", #本地同步率
+                (Rank(saveInfo.SyncNumber)), #Rank
+                f"{saveInfo.UploadScore:.14%}", #云端同步率
+                saveInfo.PlayCount, #游玩计数
+                saveInfo.State #谱面状态
+                ))
+
+
+        if not self.dataSortMethodsort[0] is None:
+            self._on_sort_click(self.dataSortMethodsort)
+        self._init_label('数据展示生成完成.',close=True)
+        self._logger.debug(f"DataLoad Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        self._update_window_info()
+
+    # 控件更新功能组
+    def _update_tip(self) -> None:
+        """软件更新提示"""
+        if self.gitHubLink.cget('fg') == '#C4245C':
+            self.gitHubLink.configure(fg='#4BB1DA')
+        else:
+            self.gitHubLink.configure(fg='#C4245C')
+        self.root.after(500, self._update_tip)
+
+    def _check_game_running(self):
+        """游戏运行检测"""
+        logger:logging.Logger = Logger.get_logger("MusyncMainWindow._check_game_running")
+        logger.info("Start Thread: CheckGameIsStart.")
+        def UpdateUI(text:str, bg:str)->None:
+            self.isGameRunning["text"] = text; #"游戏未启动"
+            self.isGameRunning["bg"] = bg; #"#FF8080"
+        threadInvert:int = 300; # 30s = 100ms * 300
+        counter:int = 0
+        is_running: bool = False
+        while self.checkGameStartEvent.is_set():
+            if (counter): # counter != 0
+                counter -= 1
+                time.sleep(0.1)
+                continue
+            counter = threadInvert
+            start_time: int = time.perf_counter_ns()
+            is_running_tmp: bool = False
+            try:
+                for proc in psutil.process_iter(['name']):
+                    try:
+                        if proc.info['name'] == "MUSYNX.exe":
+                            is_running_tmp = True
+                            break
+                    except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+                        # 遍历过程中进程可能已经关闭，直接跳过
+                        continue
+
+                if is_running_tmp != is_running:
+                    if is_running_tmp:
+                        self.root.after(100, lambda: UpdateUI("游戏已启动", "#98E22B"))
+                        logger.debug("Game is Running.")
+                    else:
+                        self.root.after(100, lambda: UpdateUI("游戏未启动", "#FF8080"))
+                        logger.debug("Game is not Running.")
+                    is_running = is_running_tmp
+            except RuntimeError:
+                logger.debug("Checking has RuntimeError")
+            except Exception:
+                logger.debug("Checking has Unknown Exception")
+            logger.info(f"CheckGameIsStart Run Time: {Toolkit.calc_end_time(start_time):.2f} ms")
+        logger.warning("Stop Thread: CheckGameIsStart.")
+
+    def _treeview_column_update(self):
+        """TreeView列名更新"""
+        self.saveData.heading("SongId",anchor="center",text="谱面号"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SongId' else ''))
+        self.saveData.heading("SongName",anchor="center",text="曲名"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SongName' else ''))
+        self.saveData.heading("Keys",anchor="center",text="键型"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='Keys' else ''))
+        self.saveData.heading("Difficulty",anchor="center",text="难度"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='Difficulty' else ''))
+        self.saveData.heading("DifficultyNumber",anchor="center",text="等级"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='DifficultyNumber' else ''))
+        self.saveData.heading("SyncNumber",anchor="center",text="同步率"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='SyncNumber' else ''))
+        self.saveData.heading("Rank",anchor="center",text="Rank"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='Rank' else ''))
+        self.saveData.heading("UploadScore",anchor="center",text="云端同步率"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='UploadScore' else ''))
+        self.saveData.heading("PlayCount",anchor="center",text="游玩计数"+(('⇓' if self.dataSortMethodsort[1] else '⇑') if self.dataSortMethodsort[0]=='PlayCount' else ''))
+        self.saveData.heading("Status",anchor="center",text="Status"+(('⇓   ' if self.dataSortMethodsort[1] else '⇑   ') if self.dataSortMethodsort[0]=='Status' else '   '))
+        self.root.update()
+
+    def _treeview_width_update(self):
+        """TreeView列宽更新"""
+        self.saveData.column("SongId",anchor="e",width=72)
+        self.saveData.column("SongName",anchor="w",width=self.windowInfo[2]-771)
+        self.saveData.column("Keys",anchor="center",width=55)
+        self.saveData.column("Difficulty",anchor="w",width=65)
+        self.saveData.column("DifficultyNumber",anchor="center",width=55)
+        self.saveData.column("SyncNumber",anchor="e",width=75)
+        self.saveData.column("Rank",anchor="center",width=55)
+        self.saveData.column("UploadScore",anchor="e",width=160)
+        self.saveData.column("PlayCount",anchor="e",width=90)
+        self.saveData.column("Status",anchor="w",width=80)
+
+    def _update_window_info(self,event=None):
+        """窗口更新"""
+        self.windowInfo = ['root.winfo_x()','root.winfo_y()',self.root.winfo_width(),self.root.winfo_height()]
+
+        self.saveFilePathEntry.place(x=170,y=10,width=(self.windowInfo[2]-260),height=30)
+        self.getSaveFilePath.place(x=(self.windowInfo[2]-90),y=10,width=90,height=30)
+        self.saveData.place(x=0 ,y=130 ,width=(self.windowInfo[2]-1) ,height=(self.windowInfo[3]-160))
+        if not self.oldWindowInfo == self.windowInfo[2:]:
+            self._treeview_width_update()
+            self.saveInfoScroll.place(x=self.windowInfo[2]-22, y=1, width=20, height=self.windowInfo[3]-162)
+        self.saveCountLabel.configure(text=str(self.saveCount+self.excludeCount))
+        self.avgSyncLabel.configure(text=f'{(self.totalSync * 100 / (1 if self.saveCount==0 else self.saveCount)):.6f}%')
+        self.developer.place(x=0,y=self.windowInfo[3]-30,width=420,height=30)
+        self.gitHubLink.place(x=420,y=self.windowInfo[3]-30,width=self.windowInfo[2]-420,height=30)
+
+        self.isGameRunning.bind('<Button-1>', self._start_game)
+        self.saveData.bind("<Double-1>",self._on_double_click)
+        self.saveData.bind("<ButtonRelease-1>",self._on_sort_click)
+        self.root.bind("<F5>", self._on_refresh)
+        self.oldWindowInfo = self.windowInfo[2:]
+        self.root.update()
+
+    def _update_enum(self)->None:
+        """枚举内容赋值"""
+        DiffcuteEnum.Easy.text = "简单难度"
+        DiffcuteEnum.Easy.stext = "Easy"
+        DiffcuteEnum.Hard.text = "困难难度"
+        DiffcuteEnum.Hard.stext = "Hard"
+        DiffcuteEnum.Inferno.text = "地狱难度"
+        DiffcuteEnum.Inferno.stext = "Inferno"
+        DiffcuteEnum.All.text = "所有难度"
+        DiffcuteEnum.All.stext = "ALL"
+
+        KeysEnum.Key4.text = "4 Key"
+        KeysEnum.Key4.stext = "4Key"
+        KeysEnum.Key4.width = 72
+        KeysEnum.Key6.text = "6 Key"
+        KeysEnum.Key6.stext = "6Key"
+        KeysEnum.All.text = "4&6 Key"
+        KeysEnum.All.stext = "ALL"
+
+        SongSelectEnum.Builtin.text = "本\n体"
+        SongSelectEnum.DLC.text = "扩\n展"
+        SongSelectEnum.All.text = "所\n有"
+        SongSelectEnum.Builtin.background = '#FF9B9B'
+        SongSelectEnum.DLC.background = '#98E22B'
+        SongSelectEnum.All.background = '#F0F0F0'
+
+@unique
+class DiffcuteEnum(Enum):
+    """难度枚举"""
+    Easy = 0
+    Hard = 1
+    Inferno = 2
+    All = 3
+
+@unique
+class KeysEnum(Enum):
+    """键型枚举"""
+    Key4 = 0
+    Key6 = 1
+    All = 2
+
+@unique
+class SongSelectEnum(Enum):
+    '""曲目筛选枚举""'
+    Builtin = 0
+    DLC = 1
+    All = 2
+
+@unique
+class MessageBoxEnum(Enum):
+    """messagebox 类型枚举"""
+    showerror = 0
+    askyesno = 1
+    showinfo = 2
+    showwarning = 3
+    askokcancel = 4
+    askyesnocancel = 5
+    askretrycancel = 6
+
+
+if __name__ == '__main__':
+    """主函数"""
+    # Launcher
+    root:Tk = Tk()
+    ctypes.windll.shcore.SetProcessDpiAwareness(1)
+    fontlist:list[str] = list(font.families())
+    Toolkit.check_resources(fonts=fontlist)
+    # del fonts
+    if config.ChangeConsoleStyle:
+        Toolkit.change_console_style()
+    root.tk.call('tk', 'scaling', 1.25)
+    root.resizable(False, True); #允许改变窗口高度，不允许改变窗口宽度
+    MusyncMainWindow(root=root)
+    root.update()
+    root.mainloop()

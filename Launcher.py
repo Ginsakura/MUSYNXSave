@@ -1,61 +1,47 @@
-from Resources import Config
-Config()
+# -*- coding: utf-8 -*-
+import os
+# === 启动时自动将工作目录切换到当前 main.py 所在的文件夹 ===
+# 必须放在所有自定义模块（如 controller）导入之前！
+current_dir = os.path.dirname(os.path.abspath(__file__))
+os.chdir(current_dir)
 
-import sys
 import ctypes
 import logging
+import sys
+
 from tkinter import Tk, font
-# from tkinter import *
 
-import Version
-from MainWindow import MusyncSavDecodeGUI
-#from .MainWindow_New import MusyncSavDecodeGUI
-from Resources import Logger, SaveDataInfo, SongName
-from Toolkit import Toolkit
+from musync_save import config, Logger
+from musync_save import Toolkit, MusyncMainWindow
 
-logger:logging.Logger = Logger.GetLogger(name="Launcher")
+logger:logging.Logger = Logger.get_logger(name="Launcher")
 
-def Launcher()->None:
-	# Init
-	SongName()
-	SaveDataInfo()
-
-	if Version.isPreRelease:
-		Config.Version = Version.preVersion.replace("pre", ".")
-	else:
-		Config.Version = Version.version.replace("rc", ".")
-
-	# Launcher
-	ctypes.windll.shcore.SetProcessDpiAwareness(1)
-	root:Tk = Tk()
-	fontlist:list[str] = list(font.families())
-	Toolkit.GetSaveFile()
-	Toolkit.CheckResources(fontlist)
-	# del fonts
-	if Config.ChangeConsoleStyle:
-		Toolkit.ChangeConsoleStyle()
-	root.tk.call('tk', 'scaling', 1.25)
-	root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
-	# 仅旧版UI可用
-	MusyncSavDecodeGUI(root=root)
-	# if cfg['EnableFramelessWindow']:
-	# 	root.overrideredirect(1)
-	# 	window = NewStyle.MusyncSavDecodeGUI(root=root)
-	# else:
-	# 	window = OldStyle.MusyncSavDecodeGUI(root=root,version=version,preVersion=preVersion,isPreRelease=isPreRelease)
-	root.update()
-	root.mainloop()
+def launcher()->None:
+    """程序入口，负责环境检查、资源准备和主窗口启动"""
+    # Launcher
+    ctypes.windll.shcore.SetProcessDpiAwareness(1)
+    root:Tk = Tk()
+    fontlist:list[str] = list(font.families())
+    Toolkit.get_save_file()
+    Toolkit.check_resources(fontlist)
+    # del fonts
+    if config.ChangeConsoleStyle:
+        Toolkit.change_console_style()
+    root.tk.call('tk', 'scaling', 1.25)
+    root.resizable(False, True) #允许改变窗口高度，不允许改变窗口宽度
+    MusyncMainWindow(root=root)
+    root.update()
+    root.mainloop()
 
 if __name__ == '__main__':
-	# from datetime import datetime as dt
-	exitCode:int = 0
-	try:
-		logger.info(" ====> Launcher() start <====")
-		Launcher()
-		logger.info(" ====> Launcher() end <====")
-	except Exception:
-		logger.exception("Launcher Exception.")
-		exitCode = 1
-	logger.info("====> Software Exiting <====")
-	# os.system("pause")
-	sys.exit(exitCode)
+    exitCode:int = 0
+    try:
+        logger.info(" ====> Launcher() start <====")
+        launcher()
+        logger.info(" ====> Launcher() end <====")
+    except Exception:
+        logger.exception("Launcher Exception.")
+        exitCode = 1
+    logger.info("====> Software Exiting <====")
+    # os.system("pause")
+    sys.exit(exitCode)

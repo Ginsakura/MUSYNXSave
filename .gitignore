@@ -1,14 +1,16 @@
-/__pycache__
-/.vs
-/build
-/musync
-/saveFile
-/Releases
-/.venv
-/dist
-/logs
-/SavDecode
-/MusyncSaveDecode
+__pycache__/
+.venv/
+.vs/
+.vscode/
+build/
+musync/
+saveFile/
+Releases/
+dist/
+logs/
+.dsh-acl-recovery/
+MusyncSaveDecode/
+
 
 bootcfg.json
 LXGW.ttf
@@ -18,11 +20,10 @@ SaveDataInfo.json
 SavDecode.decode
 
 *.bat
-*.b64
+*.bak
 *.bin
 !Resources.bin
 *.cfg
-
 *.db
 *.dll
 *.exe
@@ -37,4 +38,6 @@ SavDecode.decode
 *.txt
 !requirements.txt
 
-/MUSYNCSavDecode.sublime-workspace
+ico.res
+ico.o
+tmp.py

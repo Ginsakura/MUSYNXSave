@@ -1,0 +1,19 @@
+# All files
+# [*]
+# guidelines = 80
+# Named color format
+# guidelines_style = 1px dotted black
+# ARGB color format (red with 25% opacity)
+# guidelines_style = 2.5px solid 40ff0000
+# solid  实线
+# dotted  虚线
+# dashed  虚线
+
+root = true 			# 所在目录是根目录，此目录及子目录下保存的文件都会生效
+[*]
+guidelines = 80 1.5px dashed 80AC2324, 120 3px solid C0AC2324
+indent_style = space	# 缩进风格
+tab_width = 4			# 缩进宽度
+charset = utf-8			# 文件编码格式
+end_of_line = lf		# 行尾格式
+insert_final_newline = true # 文件结尾添加换行符，以防警告
